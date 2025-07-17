@@ -1,0 +1,120 @@
+# Example Cloud Custodian policies for Azure Entra ID resources using Microsoft Graph
+
+policies:
+  # Find all disabled users
+  - name: find-disabled-users
+    resource: azure.entra-user
+    filters:
+      - type: value
+        key: accountEnabled
+        value: false
+
+  # Find users who haven't signed in for 90 days
+  - name: find-inactive-users
+    resource: azure.entra-user
+    filters:
+      - type: sign-in-activity
+        key: lastSignInDateTime
+        op: less-than
+        value_type: age
+        value: 90
+
+  # Find users with Global Administrator role
+  - name: find-global-admins
+    resource: azure.entra-user
+    filters:
+      - type: directory-role
+        key: displayName
+        op: eq
+        value: Global Administrator
+
+  # Find external users
+  - name: find-external-users
+    resource: azure.entra-user
+    filters:
+      - type: value
+        key: userPrincipalName
+        op: regex
+        value: '#EXT#'
+
+  # Find security groups
+  - name: find-security-groups
+    resource: azure.entra-group
+    filters:
+      - type: value
+        key: securityEnabled
+        value: true
+
+  # Find groups with more than 100 members
+  - name: find-large-groups
+    resource: azure.entra-group
+    filters:
+      - type: member-count
+        op: greater-than
+        value: 100
+
+  # Find groups with no owners
+  - name: find-orphaned-groups
+    resource: azure.entra-group
+    filters:
+      - type: owners
+        key: length([])
+        op: eq
+        value: 0
+
+  # Find Office 365 groups
+  - name: find-office365-groups
+    resource: azure.entra-group
+    filters:
+      - type: value
+        key: groupTypes
+        op: contains
+        value: Unified
+
+  # Find applications with secrets expiring in 30 days
+  - name: find-expiring-app-secrets
+    resource: azure.entra-application
+    filters:
+      - type: credential-expiry
+        key: passwordCredentials
+        op: less-than
+        value_type: age
+        value: 30
+
+  # Find applications with overly broad permissions
+  - name: find-overprivileged-apps
+    resource: azure.entra-application
+    filters:
+      - type: api-permissions
+        key: permission
+        op: contains
+        value: Directory.ReadWrite.All
+
+  # Find applications that haven't been used in 90 days
+  - name: find-unused-apps
+    resource: azure.entra-application
+    filters:
+      - type: sign-in-activity
+        key: lastSignInDateTime
+        op: less-than
+        value_type: age
+        value: 90
+
+  # Find applications with expired certificates
+  - name: find-expired-certificates
+    resource: azure.entra-application
+    filters:
+      - type: credential-expiry
+        key: keyCredentials
+        op: less-than
+        value_type: age
+        value: 0
+
+  # Find applications with Microsoft Graph permissions
+  - name: find-apps-with-graph-permissions
+    resource: azure.entra-application
+    filters:
+      - type: api-permissions
+        key: resourceAppId
+        op: eq
+        value: 00000003-0000-0000-c000-000000000000

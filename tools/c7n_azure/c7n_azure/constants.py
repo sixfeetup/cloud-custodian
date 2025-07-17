@@ -79,6 +79,8 @@ DEFAULT_RESOURCE_AUTH_ENDPOINT = 'resource_manager'
 DEFAULT_AUTH_ENDPOINT = 'active_directory_resource_id'
 GRAPH_AUTH_ENDPOINT = 'active_directory_graph_resource_id'
 RESOURCE_GLOBAL_MGMT = 'https://management.azure.com/'
+MSGRAPH_AUTH_ENDPOINT = 'https://graph.microsoft.com/'
+MSGRAPH_SCOPE = 'https://graph.microsoft.com/.default'
 
 """
 Threading Variable

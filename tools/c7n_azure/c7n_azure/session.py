@@ -219,6 +219,18 @@ class Session:
     @lru_cache()
     def client(self, client, vault_url=None):
         self._initialize_session()
+        
+        # Handle Microsoft Graph client
+        if client == 'msgraph.GraphServiceClient':
+            try:
+                from msgraph import GraphServiceClient
+                return GraphServiceClient(
+                    credentials=self.credentials,
+                    scopes=[constants.MSGRAPH_SCOPE]
+                )
+            except ImportError:
+                raise ImportError("Microsoft Graph SDK not installed. Install with: pip install msgraph-sdk")
+        
         service_name, client_name = client.rsplit('.', 1)
         svc_module = importlib.import_module(service_name)
         klass = getattr(svc_module, client_name)

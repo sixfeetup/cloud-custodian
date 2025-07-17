@@ -439,5 +439,14 @@ class ChildResourceManager(QueryResourceManager, metaclass=QueryMeta):
             resource_class.filter_registry.register('parent', ParentFilter)
 
 
+@sources.register('describe-graph')
+class GraphDescribeSource(DescribeSource):
+    """Source for Microsoft Graph resources"""
+    
+    def get_resources(self, query):
+        # Use the manager's custom enumeration for Microsoft Graph resources
+        return self.manager.enumerate_resources(**(query or {}))
+
+
 resources.subscribe(QueryResourceManager.register_actions_and_filters)
 resources.subscribe(ChildResourceManager.register_child_specific)
