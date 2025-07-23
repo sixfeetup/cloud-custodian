@@ -1,0 +1,285 @@
+# EntraID (Azure AD) Example Policies
+# 
+# These policies demonstrate how to use Cloud Custodian to manage
+# Azure EntraID (Azure Active Directory) resources and comply with
+# CIS Microsoft Azure Foundations Benchmark requirements.
+
+# Policy 1: Find users without MFA enabled
+# Addresses CIS controls for multi-factor authentication
+policies:
+  - name: users-without-mfa
+    resource: azure.entraid-user
+    description: |
+      Find users who don't have multi-factor authentication enabled.
+      CIS Azure 1.1 - Ensure that multi-factor authentication is enabled for all privileged users
+    filters:
+      - type: value
+        key: accountEnabled
+        value: true
+      - type: mfa-enabled
+        value: false
+    actions:
+      - type: require-mfa
+        
+  # Policy 2: Find inactive user accounts
+  # Addresses CIS controls for inactive accounts
+  - name: inactive-user-accounts
+    resource: azure.entraid-user
+    description: |
+      Find user accounts that haven't signed in for more than 90 days.
+      CIS Azure 1.2 - Ensure that there are no guest users
+    filters:
+      - type: last-sign-in
+        days: 90
+        op: greater-than
+      - type: value
+        key: accountEnabled
+        value: true
+    actions:
+      - type: disable
+
+  # Policy 3: Find users with old passwords
+  # Addresses CIS password policy requirements
+  - name: users-old-passwords
+    resource: azure.entraid-user
+    description: |
+      Find users whose passwords are older than 180 days.
+      Helps enforce password rotation policies.
+    filters:
+      - type: password-age
+        days: 180
+        op: greater-than
+      - type: value
+        key: accountEnabled
+        value: true
+
+  # Policy 4: Administrative users without MFA
+  # Critical security control for privileged accounts
+  - name: admin-users-no-mfa
+    resource: azure.entraid-user
+    description: |
+      Find administrative users who don't have MFA enabled.
+      High priority security risk.
+    filters:
+      - type: group-membership
+        groups: 
+          - 'Global Administrators'
+          - 'Privileged Role Administrator'
+          - 'User Administrator'
+          - 'Security Administrator'
+        match: any
+      - type: mfa-enabled
+        value: false
+    actions:
+      - type: require-mfa
+
+  # Policy 5: Check security defaults
+  # Addresses CIS foundation security settings
+  - name: security-defaults-disabled
+    resource: azure.entraid-organization
+    description: |
+      Check if security defaults are disabled in the organization.
+      CIS Azure 1.22 - Ensure that 'Security defaults' is 'Enabled'
+    filters:
+      - type: security-defaults
+        enabled: false
+
+  # Policy 6: Disabled conditional access policies
+  # Ensures conditional access policies are active
+  - name: disabled-conditional-access-policies
+    resource: azure.entraid-conditional-access-policy
+    description: |
+      Find conditional access policies that are disabled.
+      These policies should be enabled for security.
+    filters:
+      - type: value
+        key: state
+        value: disabled
+
+  # Policy 7: Admin conditional access without MFA
+  # Ensures admins are protected by conditional access with MFA
+  - name: admin-conditional-access-no-mfa
+    resource: azure.entraid-conditional-access-policy
+    description: |
+      Find conditional access policies for admins that don't require MFA.
+      CIS Azure 1.1 - Multi-factor authentication for privileged users
+    filters:
+      - type: admin-mfa-required
+        value: false
+
+  # Policy 8: Guest users in the directory
+  # Addresses CIS controls for guest user management
+  - name: guest-users-audit
+    resource: azure.entraid-user
+    description: |
+      Find guest users in the directory for review.
+      CIS Azure 1.2 - Ensure that there are no guest users
+    filters:
+      - type: value
+        key: userType
+        value: Guest
+      - type: value
+        key: accountEnabled
+        value: true
+
+  # Policy 9: High-privileged users last activity
+  # Monitor activity of high-privilege accounts
+  - name: high-privilege-user-activity
+    resource: azure.entraid-user
+    description: |
+      Monitor last sign-in activity for high-privileged users.
+      Helps identify potentially compromised admin accounts.
+    filters:
+      - type: group-membership
+        groups: 
+          - 'Global Administrators'
+          - 'Privileged Role Administrator'
+        match: any
+      - type: last-sign-in
+        days: 30
+        op: greater-than
+
+  # Policy 10: Users with permanent privileges
+  # Identifies users who might need PIM (Privileged Identity Management)
+  - name: users-permanent-admin-roles
+    resource: azure.entraid-user
+    description: |
+      Find users with permanent administrative role assignments.
+      Consider using Azure PIM for just-in-time access.
+    filters:
+      - type: group-membership
+        groups: 
+          - 'Global Administrators'
+          - 'Privileged Role Administrator'
+          - 'Security Administrator'
+        match: any
+
+  # Policy 11: Service principals without certificate authentication
+  # Example placeholder for enhanced service principal security
+  - name: service-principals-review
+    resource: azure.entraid-user
+    description: |
+      Review service principals (applications) for security compliance.
+      Placeholder for future service principal resource implementation.
+    filters:
+      - type: value
+        key: userType
+        value: ServicePrincipal
+
+  # Policy 12: Password policies compliance check
+  # Organizational password policy enforcement
+  - name: check-password-policies
+    resource: azure.entraid-organization
+    description: |
+      Check organization password policies meet security requirements.
+      Ensures compliance with password complexity requirements.
+    filters:
+      - type: value
+        key: passwordPolicies
+        value: DisablePasswordExpiration
+        op: not-equal
+
+  # Policy 13: Directory synchronization issues
+  # Monitor hybrid identity synchronization
+  - name: directory-sync-issues
+    resource: azure.entraid-organization
+    description: |
+      Monitor for directory synchronization issues.
+      Important for hybrid identity environments.
+    filters:
+      - type: value
+        key: onPremisesSyncEnabled
+        value: true
+
+  # Policy 14: Emergency access accounts
+  # Ensure emergency access accounts are properly configured
+  - name: emergency-access-accounts
+    resource: azure.entraid-user
+    description: |
+      Monitor emergency access (break-glass) accounts.
+      These accounts should have specific security configurations.
+    filters:
+      - type: value
+        key: displayName
+        value: ".*[Bb]reak.*[Gg]lass.*"
+        op: regex
+      - type: group-membership
+        groups: ['Global Administrators']
+        match: any
+
+  # Policy 15: Conditional access baseline policies
+  - name: conditional-access-baseline-missing
+    resource: azure.entraid-conditional-access-policy
+    description: |
+      Ensure baseline conditional access policies exist.
+      Required for fundamental security posture.
+    filters:
+      - type: value
+        key: displayName
+        value: "Baseline policy.*"
+        op: regex
+      - type: value
+        key: state
+        value: disabled
+
+  # Policy 16: Administrative groups without owners
+  - name: admin-groups-no-owners
+    resource: azure.entraid-group
+    description: |
+      Find administrative groups that don't have owners.
+      CIS control for group management and accountability.
+    filters:
+      - type: group-type
+        group-type: admin
+      - type: owner-count
+        count: 0
+        op: equal
+
+  # Policy 17: Large security groups review
+  - name: large-security-groups
+    resource: azure.entraid-group
+    description: |
+      Find security groups with too many members for review.
+      Large groups may indicate over-privileged access.
+    filters:
+      - type: group-type
+        group-type: security
+      - type: member-count
+        count: 50
+        op: greater-than
+
+  # Policy 18: Groups with external members
+  - name: groups-external-members
+    resource: azure.entraid-group
+    description: |
+      Find groups that contain external or guest users.
+      Important for access review and security compliance.
+    filters:
+      - type: member-types
+        include-external: true
+
+  # Policy 19: Orphaned security groups
+  - name: orphaned-security-groups
+    resource: azure.entraid-group
+    description: |
+      Find security groups with no members or owners.
+      These may be candidates for cleanup.
+    filters:
+      - type: group-type
+        group-type: security
+      - type: member-count
+        count: 0
+        op: equal
+      - type: owner-count
+        count: 0
+        op: equal
+
+  # Policy 20: Dynamic group monitoring
+  - name: dynamic-groups-review
+    resource: azure.entraid-group
+    description: |
+      Monitor dynamic groups for security review.
+      Dynamic membership rules need periodic validation.
+    filters:
+      - type: group-type
+        group-type: dynamic
