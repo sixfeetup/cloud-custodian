@@ -15,6 +15,69 @@ from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta
 log = logging.getLogger('custodian.azure.entraid')
 
 
+# Microsoft Graph API Endpoint to Permissions Mapping
+# This ensures we only request the minimum permissions needed for each operation
+GRAPH_ENDPOINT_PERMISSIONS = {
+    # User endpoints
+    'users': ['User.Read.All'],
+    'users/{id}': ['User.Read.All'],
+    'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
+    'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
+    
+    # Identity Protection endpoints  
+    'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
+    
+    # Group endpoints
+    'groups': ['Group.Read.All'],
+    'groups/{id}': ['Group.Read.All'],
+    'groups/{id}/members': ['GroupMember.Read.All'],
+    'groups/{id}/members/$count': ['GroupMember.Read.All'],
+    'groups/{id}/owners': ['Group.Read.All'],
+    'groups/{id}/owners/$count': ['Group.Read.All'],
+    
+    # Organization endpoints
+    'organization': ['Organization.Read.All'],
+    
+    # Policy endpoints (require beta API)
+    'identity/conditionalAccess/policies': ['Policy.Read.All'],
+    'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
+}
+
+def get_required_permissions_for_endpoint(endpoint, method='GET'):
+    """Get the minimum required permissions for a Graph API endpoint."""
+    # Normalize endpoint by replacing specific IDs with {id} placeholder
+    normalized_endpoint = endpoint
+    
+    # Replace UUIDs and specific IDs with {id} placeholder for lookup
+    import re
+    normalized_endpoint = re.sub(r'/[0-9a-fA-F-]{8,}', '/{id}', normalized_endpoint)
+    
+    # For write operations, we need ReadWrite permissions
+    if method in ['PATCH', 'POST', 'PUT', 'DELETE']:
+        if 'users' in normalized_endpoint:
+            return ['User.ReadWrite.All']
+        elif 'groups' in normalized_endpoint:
+            return ['Group.ReadWrite.All']
+        elif 'authentication' in normalized_endpoint:
+            return ['UserAuthenticationMethod.ReadWrite.All']
+    
+    # Check for exact match first
+    if normalized_endpoint in GRAPH_ENDPOINT_PERMISSIONS:
+        return GRAPH_ENDPOINT_PERMISSIONS[normalized_endpoint]
+    
+    # Check for pattern matches
+    for pattern, permissions in GRAPH_ENDPOINT_PERMISSIONS.items():
+        if pattern in normalized_endpoint:
+            return permissions
+    
+    # Fail-fast for unmapped endpoints rather than using overprivileged .default
+    log.error(f"No permissions mapping found for endpoint: {endpoint}. "
+              f"This endpoint must be explicitly mapped in GRAPH_ENDPOINT_PERMISSIONS "
+              f"to ensure minimum required permissions.")
+    raise ValueError(f"Unmapped Graph API endpoint: {endpoint}. "
+                     f"Add permission mapping to prevent overprivileged access.")
+
+
 class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
     """Type info for Microsoft Graph resources"""
     id = 'id'
@@ -35,7 +98,16 @@ class EntraIDUser(QueryResourceManager):
     Provides comprehensive user management including filtering by user properties,
     authentication methods, group memberships, and security settings.
     
-    Required permissions: User.Read.All (and User.ReadWrite.All for actions)
+    **Minimum Required Permissions:**
+    - User.Read.All - Read user profiles and properties
+    - UserAuthenticationMethod.Read.All - Check MFA status (mfa-enabled filter)
+    - IdentityRiskyUser.Read.All - Check user risk levels (risk-level filter)  
+    - GroupMember.Read.All - Check group memberships (group-membership filter)
+    - User.ReadWrite.All - Disable users (disable action)
+    
+    **Security Note:** This resource requests ONLY EntraID user permissions.
+    No direct access to SharePoint sites, Exchange mailboxes, or Teams channels. 
+    Note: Group membership data may include Microsoft 365 groups connected to SharePoint/Teams.
     
     :example:
     
@@ -97,7 +169,7 @@ class EntraIDUser(QueryResourceManager):
             'lastSignInDateTime',
             'objectId'
         )
-        permissions = ('User.Read.All',)
+        permissions = ('User.Read.All', 'UserAuthenticationMethod.Read.All', 'IdentityRiskyUser.Read.All', 'GroupMember.Read.All')
 
     def get_client(self):
         """Get Microsoft Graph client session"""
@@ -105,10 +177,26 @@ class EntraIDUser(QueryResourceManager):
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET', data=None):
-        """Make a request to Microsoft Graph API"""
+        """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
-            token = session.credentials.get_token('https://graph.microsoft.com/.default')
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token with only the minimum required permissions
+            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
+                # Convert permission to full scope URL
+                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
+            else:
+                # Use the permission as-is
+                scope = required_permissions[0]
+            
+            token = session.credentials.get_token(scope)
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -199,10 +287,118 @@ class EntraIDUser(QueryResourceManager):
         except Exception:
             return 0
 
+    def check_user_mfa_status(self, user_id):
+        """Check if user has MFA enabled by querying authentication methods.
+        
+        Required permission: UserAuthenticationMethod.Read.All
+        """
+        try:
+            # Query user's authentication methods
+            endpoint = f'users/{user_id}/authentication/methods'
+            response = self.make_graph_request(endpoint)
+            
+            methods = response.get('value', [])
+            
+            # Check for MFA-capable authentication methods
+            mfa_methods = [
+                '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod',
+                '#microsoft.graph.phoneAuthenticationMethod', 
+                '#microsoft.graph.fido2AuthenticationMethod',
+                '#microsoft.graph.windowsHelloForBusinessAuthenticationMethod',
+                '#microsoft.graph.temporaryAccessPassAuthenticationMethod'
+            ]
+            
+            # Check if user has any MFA methods configured
+            has_mfa = any(method.get('@odata.type') in mfa_methods for method in methods)
+            
+            return has_mfa
+            
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to read authentication methods for user {user_id}. "
+                           "Required permission: UserAuthenticationMethod.Read.All")
+                return None  # Unknown MFA status
+            else:
+                log.error(f"Error checking MFA status for user {user_id}: {e}")
+                return None
+
+    def check_user_risk_level(self, user_id):
+        """Check user's risk level using Identity Protection API.
+        
+        Required permission: IdentityRiskyUser.Read.All
+        """
+        try:
+            # Query Identity Protection risky users endpoint
+            endpoint = f'identityProtection/riskyUsers/{user_id}'
+            response = self.make_graph_request(endpoint)
+            
+            # Extract risk level from response
+            risk_level = response.get('riskLevel', 'none')
+            
+            # Map Graph API risk levels to our filter values
+            risk_mapping = {
+                'none': 'none',
+                'low': 'low', 
+                'medium': 'medium',
+                'high': 'high',
+                'hidden': 'none',  # Treat hidden as none for filtering
+                'unknownFutureValue': 'none'
+            }
+            
+            return risk_mapping.get(risk_level.lower(), 'none')
+            
+        except requests.exceptions.RequestException as e:
+            if "404" in str(e):
+                # User not found in risky users - means no risk
+                return 'none'
+            elif "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to read risk level for user {user_id}. "
+                           "Required permission: IdentityRiskyUser.Read.All")
+                return None  # Unknown risk level
+            else:
+                log.error(f"Error checking risk level for user {user_id}: {e}")
+                return None
+
+    def get_user_group_memberships(self, user_id):
+        """Get user's group memberships from Graph API.
+        
+        Required permission: GroupMember.Read.All or Directory.Read.All
+        """
+        try:
+            # Query user's group memberships (including transitive)
+            endpoint = f'users/{user_id}/transitiveMemberOf'
+            response = self.make_graph_request(endpoint)
+            
+            groups = response.get('value', [])
+            
+            # Extract group display names and IDs for filtering
+            group_info = []
+            for group in groups:
+                # Only include actual groups (not directory roles)
+                if group.get('@odata.type') == '#microsoft.graph.group':
+                    group_info.append({
+                        'id': group.get('id'),
+                        'displayName': group.get('displayName', ''),
+                        'mail': group.get('mail', '')
+                    })
+            
+            return group_info
+            
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to read group memberships for user {user_id}. "
+                           "Required permission: GroupMember.Read.All or Directory.Read.All")
+                return None  # Unknown group memberships
+            else:
+                log.error(f"Error getting group memberships for user {user_id}: {e}")
+                return None
+
 
 @EntraIDUser.filter_registry.register('mfa-enabled')
 class MFAEnabledFilter(Filter):
     """Filter users based on MFA enablement status.
+    
+    Required permission: UserAuthenticationMethod.Read.All
     
     :example:
     
@@ -222,21 +418,34 @@ class MFAEnabledFilter(Filter):
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         mfa_enabled = self.data.get('value', True)
-        # Placeholder implementation - would need Microsoft Graph beta API calls
-        # for full MFA status checking
         filtered = []
+        
         for resource in resources:
-            # This is a simplified check - full implementation would query
-            # /users/{id}/authentication/methods endpoint
-            has_mfa = resource.get('strongAuthenticationDetail', {}).get('methods', [])
-            if bool(has_mfa) == mfa_enabled:
+            user_id = resource.get('id') or resource.get('objectId')
+            if not user_id:
+                log.warning(f"Skipping user without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Check actual MFA status via Graph API
+            has_mfa = self.manager.check_user_mfa_status(user_id)
+            
+            if has_mfa is None:
+                # Unknown MFA status (permission error or API failure)
+                # Skip this user to avoid false results
+                log.warning(f"Could not determine MFA status for user {resource.get('displayName', user_id)}")
+                continue
+                
+            if has_mfa == mfa_enabled:
                 filtered.append(resource)
+                
         return filtered
 
 
 @EntraIDUser.filter_registry.register('risk-level')
-class RiskLevelFilter(ValueFilter):
+class RiskLevelFilter(Filter):
     """Filter users by Identity Protection risk level.
+    
+    Required permission: IdentityRiskyUser.Read.All
     
     :example:
     
@@ -256,9 +465,28 @@ class RiskLevelFilter(ValueFilter):
                         value={'type': 'string', 'enum': ['none', 'low', 'medium', 'high']})
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
-        # Placeholder - would need Identity Protection API integration
-        risk_level = self.data.get('value', 'none')
-        return [r for r in resources if r.get('riskLevel', 'none').lower() == risk_level.lower()]
+        target_risk_level = self.data.get('value', 'none').lower()
+        filtered = []
+        
+        for resource in resources:
+            user_id = resource.get('id') or resource.get('objectId')
+            if not user_id:
+                log.warning(f"Skipping user without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Check actual risk level via Identity Protection API
+            user_risk_level = self.manager.check_user_risk_level(user_id)
+            
+            if user_risk_level is None:
+                # Unknown risk level (permission error or API failure)
+                # Skip this user to avoid false results
+                log.warning(f"Could not determine risk level for user {resource.get('displayName', user_id)}")
+                continue
+                
+            if user_risk_level.lower() == target_risk_level:
+                filtered.append(resource)
+                
+        return filtered
 
 
 @EntraIDUser.filter_registry.register('last-sign-in') 
@@ -306,6 +534,8 @@ class LastSignInFilter(Filter):
 class GroupMembershipFilter(Filter):
     """Filter users based on group membership.
     
+    Required permission: GroupMember.Read.All or Directory.Read.All
+    
     :example:
     
     Find users in admin groups:
@@ -332,11 +562,23 @@ class GroupMembershipFilter(Filter):
         if not target_groups:
             return resources
         
-        # Placeholder - would need Graph API calls to get user's group memberships
-        # Implementation would call /users/{id}/memberOf endpoint
         filtered = []
         for resource in resources:
-            user_groups = resource.get('memberOf', [])  # Simplified
+            user_id = resource.get('id') or resource.get('objectId')
+            if not user_id:
+                log.warning(f"Skipping user without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Get actual group memberships via Graph API
+            user_groups = self.manager.get_user_group_memberships(user_id)
+            
+            if user_groups is None:
+                # Unknown group memberships (permission error or API failure)
+                # Skip this user to avoid false results
+                log.warning(f"Could not determine group memberships for user {resource.get('displayName', user_id)}")
+                continue
+            
+            # Extract group names for matching
             group_names = [g.get('displayName', '') for g in user_groups]
             
             if match_type == 'any':
@@ -420,26 +662,59 @@ class DisableUserAction(AzureBaseAction):
 
     def _process_resource(self, resource):
         try:
-            user_id = resource['objectId']
-            # This would need the Microsoft Graph SDK for proper implementation
-            # self.graph_client.users.update(user_id, account_enabled=False)
-            self.log.info(f"Would disable user {resource['displayName']} ({user_id})")
+            user_id = resource.get('id') or resource.get('objectId')
+            display_name = resource.get('displayName', 'Unknown')
+            
+            if not user_id:
+                self.log.error(f"Cannot disable user {display_name}: missing user ID")
+                return
+            
+            # Make Graph API PATCH request to disable user
+            # Use specific permission for user modification
+            token = self.graph_session.credentials.get_token('https://graph.microsoft.com/User.ReadWrite.All')
+            
+            headers = {
+                'Authorization': f'Bearer {token.token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # PATCH request to disable user account
+            url = f'https://graph.microsoft.com/v1.0/users/{user_id}'
+            data = {
+                "accountEnabled": False
+            }
+            
+            response = requests.patch(url, headers=headers, json=data)
+            response.raise_for_status()
+            
+            self.log.info(f"Successfully disabled user {display_name} ({user_id})")
+            
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                self.log.error(f"Insufficient privileges to disable user {resource.get('displayName', 'Unknown')}. "
+                              "Required permission: User.ReadWrite.All")
+            else:
+                self.log.error(f"Failed to disable user {resource.get('displayName', 'Unknown')}: {e}")
         except Exception as e:
-            self.log.error(f"Failed to disable user {resource['displayName']}: {e}")
+            self.log.error(f"Failed to disable user {resource.get('displayName', 'Unknown')}: {e}")
 
 
 @EntraIDUser.action_registry.register('require-mfa')
 class RequireMFAAction(AzureBaseAction):
-    """Require MFA for EntraID users.
+    """Check MFA status for EntraID users and provide guidance.
+    
+    This action checks if users have MFA methods configured and provides 
+    recommendations for Conditional Access policy creation rather than 
+    attempting direct MFA enforcement.
     
     :example:
     
-    Require MFA for admin users:
+    Check MFA status for admin users:
     
     .. code-block:: yaml
     
         policies:
-          - name: admin-require-mfa
+          - name: admin-mfa-status
             resource: azure.entraid-user
             filters:
               - type: group-membership
@@ -449,7 +724,7 @@ class RequireMFAAction(AzureBaseAction):
     """
     
     schema = type_schema('require-mfa')
-    permissions = ('UserAuthenticationMethod.ReadWrite.All',)
+    permissions = ('UserAuthenticationMethod.Read.All',)
 
     def _prepare_processing(self):
         session = local_session(self.manager.session_factory)
@@ -457,11 +732,49 @@ class RequireMFAAction(AzureBaseAction):
 
     def _process_resource(self, resource):
         try:
-            user_id = resource['objectId']
-            # This would require conditional access policy creation or per-user MFA
-            self.log.info(f"Would require MFA for user {resource['displayName']} ({user_id})")
+            user_id = resource.get('id') or resource.get('objectId')
+            display_name = resource.get('displayName', 'Unknown')
+            
+            if not user_id:
+                self.log.error(f"Cannot check MFA for user {display_name}: missing user ID")
+                return
+            
+            # Check if user has MFA methods configured using v1.0 API
+            # Use specific permission for reading authentication methods
+            token = self.graph_session.credentials.get_token('https://graph.microsoft.com/UserAuthenticationMethod.Read.All')
+            
+            headers = {
+                'Authorization': f'Bearer {token.token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Check user's authentication methods
+            auth_methods_url = f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
+            auth_response = requests.get(auth_methods_url, headers=headers)
+            auth_response.raise_for_status()
+            
+            methods = auth_response.json().get('value', [])
+            mfa_methods = [m for m in methods if m.get('@odata.type') in [
+                '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod',
+                '#microsoft.graph.phoneAuthenticationMethod',
+                '#microsoft.graph.fido2AuthenticationMethod',
+                '#microsoft.graph.windowsHelloForBusinessAuthenticationMethod'
+            ]]
+            
+            if mfa_methods:
+                self.log.info(f"User {display_name} ({user_id}) already has {len(mfa_methods)} MFA method(s) configured")
+            else:
+                self.log.warning(f"User {display_name} ({user_id}) has no MFA methods configured. "
+                               f"Consider creating a Conditional Access policy to enforce MFA registration.")
+            
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                self.log.error(f"Insufficient privileges to check MFA for user {resource.get('displayName', 'Unknown')}. "
+                              "Required permission: UserAuthenticationMethod.Read.All")
+            else:
+                self.log.error(f"Failed to check MFA status for user {resource.get('displayName', 'Unknown')}: {e}")
         except Exception as e:
-            self.log.error(f"Failed to require MFA for user {resource['displayName']}: {e}")
+            self.log.error(f"Failed to process MFA requirement for user {resource.get('displayName', 'Unknown')}: {e}")
 
 
 @resources.register('entraid-organization')
@@ -471,7 +784,12 @@ class EntraIDOrganization(QueryResourceManager):
     Provides access to organization-level configuration including security defaults,
     directory properties, and compliance settings.
     
-    Required permissions: Organization.Read.All (and Organization.ReadWrite.All for actions)
+    **Minimum Required Permissions:**
+    - Organization.Read.All - Read tenant/organization properties and settings
+    - Organization.ReadWrite.All - Modify organization settings (write actions only)
+    
+    **Security Note:** This resource requests ONLY EntraID organization permissions.
+    No direct access to SharePoint tenant settings, Exchange organization config, or Teams tenant settings.
     
     :example:
     
@@ -522,10 +840,26 @@ class EntraIDOrganization(QueryResourceManager):
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API"""
+        """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
-            token = session.credentials.get_token('https://graph.microsoft.com/.default')
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token with only the minimum required permissions
+            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
+                # Convert permission to full scope URL
+                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
+            else:
+                # Use the permission as-is
+                scope = required_permissions[0]
+            
+            token = session.credentials.get_token(scope)
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -589,7 +923,14 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
     Manages conditional access policies that control access to corporate resources
     based on conditions like user, device, location, and application.
     
-    Required permissions: Policy.Read.All (and Policy.ReadWrite.ConditionalAccess for actions)
+    **Minimum Required Permissions:**
+    - Policy.Read.All - Read conditional access policies and security policies
+    - Policy.ReadWrite.ConditionalAccess - Modify conditional access policies (actions only)
+    
+    **Security Note:** This resource requests ONLY EntraID policy permissions.
+    No direct access to SharePoint policies, Exchange transport rules, or Teams policies.
+    
+    **API Note:** Requires Microsoft Graph beta API for full functionality.
     
     :example:
     
@@ -639,10 +980,26 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API"""
+        """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
-            token = session.credentials.get_token('https://graph.microsoft.com/.default')
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token with only the minimum required permissions
+            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
+                # Convert permission to full scope URL
+                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
+            else:
+                # Use the permission as-is
+                scope = required_permissions[0]
+            
+            token = session.credentials.get_token(scope)
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -722,7 +1079,15 @@ class EntraIDGroup(QueryResourceManager):
     Provides comprehensive group management including filtering by group properties,
     membership analysis, and security group monitoring.
     
-    Required permissions: Group.Read.All (and Group.ReadWrite.All for actions)
+    **Minimum Required Permissions:**
+    - Group.Read.All - Read group properties and basic information
+    - GroupMember.Read.All - Analyze group memberships and member counts
+    - User.Read.All - Analyze member types (internal vs external users)
+    - Group.ReadWrite.All - Modify groups (write actions only)
+    
+    **Security Note:** This resource requests ONLY EntraID group permissions.
+    No direct access to SharePoint site content, Teams channel content, or Exchange data.
+    Note: Microsoft 365 groups (which connect to SharePoint/Teams) are included in group enumeration.
     
     :example:
     
@@ -770,7 +1135,7 @@ class EntraIDGroup(QueryResourceManager):
             'createdDateTime',
             'id'
         )
-        permissions = ('Group.Read.All',)
+        permissions = ('Group.Read.All', 'GroupMember.Read.All')
 
     def get_client(self):
         """Get Microsoft Graph client session"""
@@ -778,10 +1143,26 @@ class EntraIDGroup(QueryResourceManager):
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API"""
+        """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
-            token = session.credentials.get_token('https://graph.microsoft.com/.default')
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token with only the minimum required permissions
+            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
+                # Convert permission to full scope URL
+                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
+            else:
+                # Use the permission as-is
+                scope = required_permissions[0]
+            
+            token = session.credentials.get_token(scope)
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -850,10 +1231,109 @@ class EntraIDGroup(QueryResourceManager):
         ]
         return any(indicator in display_name for indicator in admin_indicators)
 
+    def get_group_member_count(self, group_id):
+        """Get accurate member count for a group using Graph API.
+        
+        Required permission: GroupMember.Read.All
+        """
+        try:
+            # Use $count parameter for efficient counting
+            endpoint = f'groups/{group_id}/members/$count'
+            response = self.make_graph_request(endpoint)
+            
+            # Response should be a plain number
+            if isinstance(response, (int, str)):
+                return int(response)
+            else:
+                log.warning(f"Unexpected response format for member count: {response}")
+                return 0
+                
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to read member count for group {group_id}. "
+                           "Required permission: GroupMember.Read.All")
+                return None  # Unknown member count
+            else:
+                log.error(f"Error getting member count for group {group_id}: {e}")
+                return None
+
+    def get_group_owner_count(self, group_id):
+        """Get accurate owner count for a group using Graph API.
+        
+        Required permission: Group.Read.All
+        """
+        try:
+            # Use $count parameter for efficient counting
+            endpoint = f'groups/{group_id}/owners/$count'
+            response = self.make_graph_request(endpoint)
+            
+            # Response should be a plain number
+            if isinstance(response, (int, str)):
+                return int(response)
+            else:
+                log.warning(f"Unexpected response format for owner count: {response}")
+                return 0
+                
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to read owner count for group {group_id}. "
+                           "Required permission: Group.Read.All")
+                return None  # Unknown owner count
+            else:
+                log.error(f"Error getting owner count for group {group_id}: {e}")
+                return None
+
+    def analyze_group_member_types(self, group_id):
+        """Analyze group member types (internal vs external/guest users).
+        
+        Required permission: GroupMember.Read.All, User.Read.All
+        """
+        try:
+            # Get group members
+            endpoint = f'groups/{group_id}/members'
+            response = self.make_graph_request(endpoint)
+            
+            members = response.get('value', [])
+            
+            has_external_members = False
+            has_guest_members = False
+            
+            for member in members:
+                # Only analyze users (not other groups or service principals)
+                if member.get('@odata.type') == '#microsoft.graph.user':
+                    user_type = member.get('userType', 'Member')
+                    user_principal_name = member.get('userPrincipalName', '')
+                    
+                    # Check if user is a guest
+                    if user_type.lower() == 'guest':
+                        has_guest_members = True
+                    
+                    # Check if user is external (from different domain)
+                    # External users typically have #EXT# in their UPN or are guests
+                    if '#EXT#' in user_principal_name or user_type.lower() == 'guest':
+                        has_external_members = True
+            
+            return {
+                'has_external_members': has_external_members,
+                'has_guest_members': has_guest_members,
+                'total_members': len([m for m in members if m.get('@odata.type') == '#microsoft.graph.user'])
+            }
+            
+        except requests.exceptions.RequestException as e:
+            if "403" in str(e) or "Insufficient privileges" in str(e):
+                log.warning(f"Insufficient privileges to analyze member types for group {group_id}. "
+                           "Required permissions: GroupMember.Read.All, User.Read.All")
+                return None  # Unknown member types
+            else:
+                log.error(f"Error analyzing member types for group {group_id}: {e}")
+                return None
+
 
 @EntraIDGroup.filter_registry.register('member-count')
 class MemberCountFilter(Filter):
     """Filter groups based on member count.
+    
+    Required permission: GroupMember.Read.All
     
     :example:
     
@@ -880,9 +1360,19 @@ class MemberCountFilter(Filter):
         
         filtered = []
         for resource in resources:
-            # Note: This would require additional Graph API calls to get accurate member counts
-            # For now, we'll use a placeholder implementation
-            member_count = len(resource.get('members', []))
+            group_id = resource.get('id')
+            if not group_id:
+                log.warning(f"Skipping group without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Get actual member count via Graph API
+            member_count = self.manager.get_group_member_count(group_id)
+            
+            if member_count is None:
+                # Unknown member count (permission error or API failure)
+                # Skip this group to avoid false results
+                log.warning(f"Could not determine member count for group {resource.get('displayName', group_id)}")
+                continue
             
             if op == 'greater-than' and member_count > count_threshold:
                 filtered.append(resource)
@@ -897,6 +1387,8 @@ class MemberCountFilter(Filter):
 @EntraIDGroup.filter_registry.register('owner-count') 
 class OwnerCountFilter(Filter):
     """Filter groups based on owner count.
+    
+    Required permission: Group.Read.All
     
     :example:
     
@@ -923,9 +1415,19 @@ class OwnerCountFilter(Filter):
         
         filtered = []
         for resource in resources:
-            # Note: This would require additional Graph API calls to get owners
-            # For now, we'll use a placeholder implementation
-            owner_count = len(resource.get('owners', []))
+            group_id = resource.get('id')
+            if not group_id:
+                log.warning(f"Skipping group without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Get actual owner count via Graph API
+            owner_count = self.manager.get_group_owner_count(group_id)
+            
+            if owner_count is None:
+                # Unknown owner count (permission error or API failure)
+                # Skip this group to avoid false results
+                log.warning(f"Could not determine owner count for group {resource.get('displayName', group_id)}")
+                continue
             
             if op == 'greater-than' and owner_count > count_threshold:
                 filtered.append(resource)
@@ -940,6 +1442,8 @@ class OwnerCountFilter(Filter):
 @EntraIDGroup.filter_registry.register('member-types')
 class MemberTypesFilter(Filter):
     """Filter groups based on member types (internal vs external users).
+    
+    Required permissions: GroupMember.Read.All, User.Read.All
     
     :example:
     
@@ -967,13 +1471,24 @@ class MemberTypesFilter(Filter):
         include_guests = self.data.get('include-guests', False)
         members_only = self.data.get('members-only', False)
         
-        # This is a placeholder - would require Microsoft Graph API calls
-        # to get group members and analyze their user types
         filtered = []
         for resource in resources:
-            # Placeholder logic - in real implementation would check members
-            has_external_members = resource.get('c7n:HasExternalMembers', False)
-            has_guest_members = resource.get('c7n:HasGuestMembers', False)
+            group_id = resource.get('id')
+            if not group_id:
+                log.warning(f"Skipping group without ID: {resource.get('displayName', 'Unknown')}")
+                continue
+                
+            # Get actual member type analysis via Graph API
+            member_analysis = self.manager.analyze_group_member_types(group_id)
+            
+            if member_analysis is None:
+                # Unknown member types (permission error or API failure)
+                # Skip this group to avoid false results
+                log.warning(f"Could not analyze member types for group {resource.get('displayName', group_id)}")
+                continue
+            
+            has_external_members = member_analysis['has_external_members']
+            has_guest_members = member_analysis['has_guest_members']
             
             should_include = True
             
@@ -1065,7 +1580,12 @@ class EntraIDSecurityDefaults(QueryResourceManager):
     Manages the security defaults policy which provides pre-configured security
     settings that Microsoft manages for your directory.
     
-    Required permissions: Policy.Read.All (and Policy.ReadWrite.ConditionalAccess for actions)
+    **Minimum Required Permissions:**
+    - Policy.Read.All - Read security defaults policy configuration
+    - Policy.ReadWrite.ConditionalAccess - Modify security defaults (actions only)
+    
+    **Security Note:** This resource requests ONLY EntraID security policy permissions.
+    No direct access to SharePoint security settings, Exchange security policies, or Teams security settings.
     
     :example:
     
@@ -1100,10 +1620,26 @@ class EntraIDSecurityDefaults(QueryResourceManager):
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API"""
+        """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
-            token = session.credentials.get_token('https://graph.microsoft.com/.default')
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token with only the minimum required permissions
+            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
+                # Convert permission to full scope URL
+                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
+            else:
+                # Use the permission as-is
+                scope = required_permissions[0]
+            
+            token = session.credentials.get_token(scope)
             
             headers = {
                 'Authorization': f'Bearer {token.token}',

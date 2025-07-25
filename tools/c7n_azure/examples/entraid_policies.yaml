@@ -283,3 +283,43 @@ policies:
     filters:
       - type: group-type
         group-type: dynamic
+
+  # Test Policy: Verify MFA filter works
+  - name: test-users-without-mfa
+    resource: azure.entraid-user
+    description: Test MFA filter functionality
+    filters:
+      - type: value
+        key: accountEnabled
+        value: true
+      - type: mfa-enabled
+        value: false
+    actions:
+      - type: require-mfa
+
+  # Test Policy: Verify group membership filter works
+  - name: test-admin-group-membership
+    resource: azure.entraid-user
+    description: Test group membership filter functionality
+    filters:
+      - type: group-membership
+        groups: 
+          - 'Global Administrators'
+        match: any
+
+  # Test Policy: Verify group member count filter works
+  - name: test-large-groups
+    resource: azure.entraid-group
+    description: Test member count filter functionality
+    filters:
+      - type: member-count
+        count: 10
+        op: greater-than
+
+  # Test Policy: Verify security defaults filter works
+  - name: test-security-defaults
+    resource: azure.entraid-organization
+    description: Test security defaults filter functionality
+    filters:
+      - type: security-defaults
+        enabled: false

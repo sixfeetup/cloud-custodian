@@ -80,21 +80,37 @@ class EntraIDUserTest(BaseTest):
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
-    def test_mfa_enabled_filter(self):
-        """Test MFA enabled filter"""
+    @patch('c7n_azure.resources.entraid.EntraIDUser.check_user_mfa_status')
+    def test_mfa_enabled_filter(self, mock_mfa_check):
+        """Test MFA enabled filter with real Graph API implementation"""
         users = [
             {
+                'id': 'user1',
                 'objectId': 'user1',
-                'strongAuthenticationDetail': {'methods': ['PhoneAuth']}
+                'displayName': 'User 1'
             },
             {
+                'id': 'user2',
                 'objectId': 'user2', 
-                'strongAuthenticationDetail': {'methods': []}
+                'displayName': 'User 2'
             },
             {
-                'objectId': 'user3'
+                'id': 'user3',
+                'objectId': 'user3',
+                'displayName': 'User 3'
             }
         ]
+        
+        # Mock MFA status: user1 has MFA, user2 doesn't, user3 unknown
+        def mock_mfa_side_effect(user_id):
+            if user_id == 'user1':
+                return True
+            elif user_id == 'user2':
+                return False
+            else:
+                return None  # Unknown status
+        
+        mock_mfa_check.side_effect = mock_mfa_side_effect
         
         policy = self.load_policy({
             'name': 'test-mfa-filter',
@@ -107,9 +123,12 @@ class EntraIDUserTest(BaseTest):
         resource_mgr = policy.resource_manager
         filtered = resource_mgr.filter_resources(users)
         
-        # Only user1 has MFA enabled
+        # Only user1 has MFA enabled (user3 skipped due to unknown status)
         self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['objectId'], 'user1')
+        self.assertEqual(filtered[0]['id'], 'user1')
+        
+        # Verify the MFA check was called for each user
+        self.assertEqual(mock_mfa_check.call_count, 3)
 
     def test_last_signin_filter(self):
         """Test last sign-in filter"""
@@ -143,27 +162,42 @@ class EntraIDUserTest(BaseTest):
         self.assertEqual(len(filtered), 2)
         self.assertEqual(set(u['objectId'] for u in filtered), {'user1', 'user3'})
 
-    def test_group_membership_filter(self):
-        """Test group membership filter"""
+    @patch('c7n_azure.resources.entraid.EntraIDUser.get_user_group_memberships')
+    def test_group_membership_filter(self, mock_group_memberships):
+        """Test group membership filter with real Graph API implementation"""
         users = [
             {
+                'id': 'user1',
                 'objectId': 'user1',
-                'memberOf': [
-                    {'displayName': 'Global Administrators'},
-                    {'displayName': 'Regular Users'}
-                ]
+                'displayName': 'User 1'
             },
             {
+                'id': 'user2',
                 'objectId': 'user2',
-                'memberOf': [
-                    {'displayName': 'Regular Users'}
-                ]
+                'displayName': 'User 2'
             },
             {
+                'id': 'user3',
                 'objectId': 'user3',
-                'memberOf': []
+                'displayName': 'User 3'
             }
         ]
+        
+        # Mock group memberships: user1 in admin groups, user2 in regular, user3 unknown
+        def mock_group_side_effect(user_id):
+            if user_id == 'user1':
+                return [
+                    {'id': 'group1', 'displayName': 'Global Administrators'},
+                    {'id': 'group2', 'displayName': 'Regular Users'}
+                ]
+            elif user_id == 'user2':
+                return [
+                    {'id': 'group2', 'displayName': 'Regular Users'}
+                ]
+            else:
+                return None  # Unknown group memberships
+        
+        mock_group_memberships.side_effect = mock_group_side_effect
         
         policy = self.load_policy({
             'name': 'test-group-filter',
@@ -180,9 +214,12 @@ class EntraIDUserTest(BaseTest):
         resource_mgr = policy.resource_manager
         filtered = resource_mgr.filter_resources(users)
         
-        # Only user1 is in admin group
+        # Only user1 is in admin group (user3 skipped due to unknown status)
         self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['objectId'], 'user1')
+        self.assertEqual(filtered[0]['id'], 'user1')
+        
+        # Verify the group membership check was called
+        self.assertEqual(mock_group_memberships.call_count, 3)
 
     def test_password_age_filter(self):
         """Test password age filter"""
@@ -320,25 +357,36 @@ class EntraIDGroupTest(BaseTest):
         self.assertTrue(augmented[2]['c7n:IsSecurityGroup'])
         self.assertTrue(augmented[2]['c7n:IsDynamicGroup'])
 
-    def test_member_count_filter(self):
-        """Test member count filter"""
+    @patch('c7n_azure.resources.entraid.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter(self, mock_member_count):
+        """Test member count filter with real Graph API implementation"""
         groups = [
             {
                 'id': 'group1',
-                'displayName': 'Small Group',
-                'members': ['user1', 'user2']  # 2 members
+                'displayName': 'Small Group'
             },
             {
                 'id': 'group2',
-                'displayName': 'Large Group', 
-                'members': ['user1', 'user2', 'user3', 'user4', 'user5']  # 5 members
+                'displayName': 'Large Group'
             },
             {
                 'id': 'group3',
-                'displayName': 'Empty Group',
-                'members': []  # 0 members
+                'displayName': 'Empty Group'
             }
         ]
+        
+        # Mock member counts: group1=2, group2=5, group3=0
+        def mock_count_side_effect(group_id):
+            if group_id == 'group1':
+                return 2
+            elif group_id == 'group2':
+                return 5
+            elif group_id == 'group3':
+                return 0
+            else:
+                return None
+        
+        mock_member_count.side_effect = mock_count_side_effect
         
         policy = self.load_policy({
             'name': 'test-member-count',
@@ -354,21 +402,34 @@ class EntraIDGroupTest(BaseTest):
         # Only group2 has >3 members
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['id'], 'group2')
+        
+        # Verify the member count check was called
+        self.assertEqual(mock_member_count.call_count, 3)
 
-    def test_owner_count_filter(self):
-        """Test owner count filter"""
+    @patch('c7n_azure.resources.entraid.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter(self, mock_owner_count):
+        """Test owner count filter with real Graph API implementation"""
         groups = [
             {
                 'id': 'group1',
-                'displayName': 'Owned Group',
-                'owners': ['user1']
+                'displayName': 'Owned Group'
             },
             {
                 'id': 'group2',
-                'displayName': 'Orphaned Group',
-                'owners': []
+                'displayName': 'Orphaned Group'
             }
         ]
+        
+        # Mock owner counts: group1=1, group2=0
+        def mock_count_side_effect(group_id):
+            if group_id == 'group1':
+                return 1
+            elif group_id == 'group2':
+                return 0
+            else:
+                return None
+        
+        mock_owner_count.side_effect = mock_count_side_effect
         
         policy = self.load_policy({
             'name': 'test-owner-count',
@@ -384,6 +445,9 @@ class EntraIDGroupTest(BaseTest):
         # Only group2 has no owners
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['id'], 'group2')
+        
+        # Verify the owner count check was called
+        self.assertEqual(mock_owner_count.call_count, 2)
 
     def test_group_type_filter(self):
         """Test group type filter"""
