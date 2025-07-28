@@ -1,0 +1,112 @@
+{
+  "pytest-terraform": 1,
+  "outputs": {
+    "test_admin_user": {
+      "value": {
+        "id": "12345678-1234-1234-1234-123456789001",
+        "object_id": "12345678-1234-1234-1234-123456789001",
+        "user_principal_name": "c7n-test-admin-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Admin User",
+        "account_enabled": true,
+        "job_title": "Administrator",
+        "department": "IT"
+      }
+    },
+    "test_disabled_user": {
+      "value": {
+        "id": "12345678-1234-1234-1234-123456789002",
+        "object_id": "12345678-1234-1234-1234-123456789002",
+        "user_principal_name": "c7n-test-disabled-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Disabled User",
+        "account_enabled": false,
+        "job_title": "User",
+        "department": "HR"
+      }
+    },
+    "test_regular_user": {
+      "value": {
+        "id": "12345678-1234-1234-1234-123456789003",
+        "object_id": "12345678-1234-1234-1234-123456789003",
+        "user_principal_name": "c7n-test-regular-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Regular User",
+        "account_enabled": true,
+        "job_title": "Developer",
+        "department": "Engineering"
+      }
+    },
+    "test_old_password_user": {
+      "value": {
+        "id": "12345678-1234-1234-1234-123456789004",
+        "object_id": "12345678-1234-1234-1234-123456789004",
+        "user_principal_name": "c7n-test-oldpwd-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Old Password User",
+        "account_enabled": true,
+        "job_title": "Analyst",
+        "department": "Finance"
+      }
+    }
+  },
+  "resources": {
+    "azuread_user": {
+      "test_admin_user": {
+        "id": "12345678-1234-1234-1234-123456789001",
+        "object_id": "12345678-1234-1234-1234-123456789001",
+        "user_principal_name": "c7n-test-admin-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Admin User",
+        "mail_nickname": "c7n-test-admin-abcd1234",
+        "account_enabled": true,
+        "job_title": "Administrator",
+        "department": "IT"
+      },
+      "test_disabled_user": {
+        "id": "12345678-1234-1234-1234-123456789002",
+        "object_id": "12345678-1234-1234-1234-123456789002",
+        "user_principal_name": "c7n-test-disabled-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Disabled User",
+        "mail_nickname": "c7n-test-disabled-abcd1234",
+        "account_enabled": false,
+        "job_title": "User",
+        "department": "HR"
+      },
+      "test_regular_user": {
+        "id": "12345678-1234-1234-1234-123456789003",
+        "object_id": "12345678-1234-1234-1234-123456789003",
+        "user_principal_name": "c7n-test-regular-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Regular User",
+        "mail_nickname": "c7n-test-regular-abcd1234",
+        "account_enabled": true,
+        "job_title": "Developer",
+        "department": "Engineering"
+      },
+      "test_old_password_user": {
+        "id": "12345678-1234-1234-1234-123456789004",
+        "object_id": "12345678-1234-1234-1234-123456789004",
+        "user_principal_name": "c7n-test-oldpwd-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Test Old Password User",
+        "mail_nickname": "c7n-test-oldpwd-abcd1234",
+        "account_enabled": true,
+        "job_title": "Analyst",
+        "department": "Finance"
+      }
+    },
+    "azuread_group": {
+      "test_security_group": {
+        "id": "87654321-4321-4321-4321-210987654321",
+        "object_id": "87654321-4321-4321-4321-210987654321",
+        "display_name": "C7N Test Security Group abcd1234",
+        "description": "Test security group for Cloud Custodian EntraID testing",
+        "security_enabled": true,
+        "mail_enabled": false
+      },
+      "test_m365_group": {
+        "id": "87654321-4321-4321-4321-210987654322",
+        "object_id": "87654321-4321-4321-4321-210987654322",
+        "display_name": "C7N Test M365 Group abcd1234",
+        "description": "Test Microsoft 365 group for Cloud Custodian EntraID testing",
+        "mail_nickname": "c7n-test-m365-abcd1234",
+        "security_enabled": false,
+        "mail_enabled": true
+      }
+    }
+  }
+}
