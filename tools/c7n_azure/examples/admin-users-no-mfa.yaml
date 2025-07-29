@@ -1,0 +1,16 @@
+policies:
+  - name: admin-users-no-mfa
+    resource: azure.entraid-user
+    description: |
+      Find administrative users who don't have MFA enabled.
+      High priority security risk.
+    filters:
+      - type: group-membership
+        groups: 
+          - 'Global Administrators'
+          - 'Privileged Role Administrator'
+          - 'User Administrator'
+          - 'Security Administrator'
+        match: any
+      - type: mfa-enabled
+        value: false

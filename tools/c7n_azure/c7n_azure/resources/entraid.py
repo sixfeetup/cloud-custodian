@@ -189,13 +189,10 @@ class EntraIDUser(QueryResourceManager):
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
             
-            # Request token with only the minimum required permissions
-            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
-                # Convert permission to full scope URL
-                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
-            else:
-                # Use the permission as-is
-                scope = required_permissions[0]
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
             
@@ -855,13 +852,10 @@ class EntraIDOrganization(QueryResourceManager):
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
             
-            # Request token with only the minimum required permissions
-            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
-                # Convert permission to full scope URL
-                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
-            else:
-                # Use the permission as-is
-                scope = required_permissions[0]
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
             
@@ -996,13 +990,10 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
             
-            # Request token with only the minimum required permissions
-            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
-                # Convert permission to full scope URL
-                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
-            else:
-                # Use the permission as-is
-                scope = required_permissions[0]
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
             
@@ -1160,13 +1151,10 @@ class EntraIDGroup(QueryResourceManager):
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
             
-            # Request token with only the minimum required permissions
-            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
-                # Convert permission to full scope URL
-                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
-            else:
-                # Use the permission as-is
-                scope = required_permissions[0]
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
             
@@ -1638,13 +1626,10 @@ class EntraIDSecurityDefaults(QueryResourceManager):
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
             
-            # Request token with only the minimum required permissions
-            if len(required_permissions) == 1 and not required_permissions[0].startswith('https://'):
-                # Convert permission to full scope URL
-                scope = f'https://graph.microsoft.com/{required_permissions[0]}'
-            else:
-                # Use the permission as-is
-                scope = required_permissions[0]
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
             
