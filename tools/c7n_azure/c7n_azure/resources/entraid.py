@@ -267,8 +267,8 @@ class EntraIDUser(QueryResourceManager):
         # This is a placeholder - would need additional Graph API calls for full implementation
         privileged_indicators = [
             user.get('userPrincipalName', '').endswith('admin@'),
-            'admin' in user.get('displayName', '').lower(),
-            'administrator' in user.get('jobTitle', '').lower()
+            'admin' in (user.get('displayName') or '').lower(),
+            'administrator' in (user.get('jobTitle') or '').lower()
         ]
         return any(privileged_indicators)
 
