@@ -32,7 +32,7 @@ class EntraIDUserTest(BaseTest):
         """Test EntraID user resource type configuration"""
         resource_type = EntraIDUser.resource_type
         self.assertEqual(resource_type.service, 'graph')
-        self.assertEqual(resource_type.id, 'objectId')
+        self.assertEqual(resource_type.id, 'id')
         self.assertEqual(resource_type.name, 'displayName')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('User.Read.All', resource_type.permissions)
@@ -222,6 +222,114 @@ class EntraIDUserTest(BaseTest):
         
         # Verify the group membership check was called
         self.assertEqual(mock_group_memberships.call_count, 3)
+
+    @patch('c7n_azure.resources.entraid.EntraIDUser.make_graph_request')
+    def test_user_type_field_requested(self, mock_graph_request):
+        """Test that userType field is explicitly requested from Graph API"""
+        # Mock the Graph API response with userType field
+        mock_graph_request.return_value = {
+            'value': [
+                {
+                    'id': 'user1',
+                    'objectId': 'user1',
+                    'displayName': 'Guest User',
+                    'userPrincipalName': 'guest@external.com',
+                    'userType': 'Guest',
+                    'accountEnabled': True
+                },
+                {
+                    'id': 'user2', 
+                    'objectId': 'user2',
+                    'displayName': 'Member User',
+                    'userPrincipalName': 'member@internal.com',
+                    'userType': 'Member',
+                    'accountEnabled': True
+                }
+            ]
+        }
+        
+        policy = self.load_policy({
+            'name': 'test-usertype-field',
+            'resource': 'azure.entraid-user'
+        })
+        
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.resources()
+        
+        # Verify the API was called with $select parameter including userType
+        mock_graph_request.assert_called_once()
+        call_args = mock_graph_request.call_args[0]
+        endpoint = call_args[0]
+        self.assertIn('$select=', endpoint)
+        self.assertIn('userType', endpoint)
+        
+        # Verify userType field is present in returned resources
+        self.assertEqual(len(resources), 2)
+        self.assertEqual(resources[0]['userType'], 'Guest')
+        self.assertEqual(resources[1]['userType'], 'Member')
+
+    def test_guest_user_filter(self):
+        """Test that ValueFilter works correctly with userType field for guest users"""
+        users = [
+            {
+                'id': 'user1',
+                'objectId': 'user1',
+                'displayName': 'Guest User',
+                'userPrincipalName': 'guest@external.com',
+                'userType': 'Guest',
+                'accountEnabled': True
+            },
+            {
+                'id': 'user2',
+                'objectId': 'user2', 
+                'displayName': 'Member User',
+                'userPrincipalName': 'member@internal.com',
+                'userType': 'Member',
+                'accountEnabled': True
+            },
+            {
+                'id': 'user3',
+                'objectId': 'user3',
+                'displayName': 'Another Member',
+                'userPrincipalName': 'member2@internal.com', 
+                'userType': 'Member',
+                'accountEnabled': True
+            }
+        ]
+        
+        # Test filtering for guest users (like the guest-users.yaml policy)
+        policy = self.load_policy({
+            'name': 'test-guest-filter',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {'type': 'value', 'key': 'userType', 'value': 'Guest'},
+                {'type': 'value', 'key': 'accountEnabled', 'value': True}
+            ]
+        })
+        
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(users)
+        
+        # Should only return the guest user
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['userType'], 'Guest')
+        self.assertEqual(filtered[0]['displayName'], 'Guest User')
+        
+        # Test filtering for member users
+        policy_members = self.load_policy({
+            'name': 'test-member-filter',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {'type': 'value', 'key': 'userType', 'value': 'Member'}
+            ]
+        })
+        
+        resource_mgr_members = policy_members.resource_manager
+        filtered_members = resource_mgr_members.filter_resources(users)
+        
+        # Should return both member users
+        self.assertEqual(len(filtered_members), 2)
+        self.assertTrue(all(u['userType'] == 'Member' for u in filtered_members))
 
     def test_password_age_filter(self):
         """Test password age filter"""

@@ -10,9 +10,29 @@ from c7n.utils import local_session, type_schema
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.provider import resources
-from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta
+from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta, DescribeSource
 
 log = logging.getLogger('custodian.azure.entraid')
+
+
+class GraphSource(DescribeSource):
+    """Custom source for Microsoft Graph API resources.
+    
+    This source integrates with Cloud Custodian's filtering framework while
+    using Microsoft Graph API instead of Azure Resource Manager APIs.
+    """
+    
+    def __init__(self, manager):
+        super().__init__(manager)
+    
+    def get_resources(self, query=None):
+        """Get resources from Microsoft Graph API."""
+        try:
+            # Use the manager's Graph API methods to retrieve resources
+            return self.manager.get_graph_resources()
+        except Exception as e:
+            log.error(f"Error retrieving resources via Graph API: {e}")
+            return []
 
 
 # Microsoft Graph API Endpoint to Permissions Mapping
@@ -87,6 +107,7 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
     service = 'graph'
     resource_endpoint = MSGRAPH_RESOURCE_ID
 
+    @classmethod
     def extra_args(cls, parent_resource):
         return {}
 
@@ -108,6 +129,23 @@ class EntraIDUser(QueryResourceManager):
     **Security Note:** This resource requests ONLY EntraID user permissions.
     No direct access to SharePoint sites, Exchange mailboxes, or Teams channels. 
     Note: Group membership data may include Microsoft 365 groups connected to SharePoint/Teams.
+    
+    :example:
+    
+    Find all guest users (external users):
+    
+    .. code-block:: yaml
+    
+        policies:
+          - name: guest-users-audit
+            resource: azure.entraid-user
+            filters:
+              - type: value
+                key: userType
+                value: Guest
+              - type: value
+                key: accountEnabled
+                value: true
     
     :example:
     
@@ -152,12 +190,17 @@ class EntraIDUser(QueryResourceManager):
                 days: 90
                 op: greater-than
     """
+    
+    def __init__(self, ctx, data):
+        super().__init__(ctx, data)
+        # Use our custom GraphSource instead of the default source
+        self.source = GraphSource(self)
 
     class resource_type(GraphTypeInfo):
         doc_groups = ['EntraID', 'Identity']
         enum_spec = ('users', 'list', None)
-        detail_spec = ('users', 'get', 'objectId')
-        id = 'objectId'
+        detail_spec = ('users', 'get', 'id')
+        id = 'id'
         name = 'displayName' 
         date = 'createdDateTime'
         default_report_fields = (
@@ -165,9 +208,10 @@ class EntraIDUser(QueryResourceManager):
             'userPrincipalName',
             'mail',
             'accountEnabled',
+            'userType',
             'createdDateTime',
             'lastSignInDateTime',
-            'objectId'
+            'id'
         )
         permissions = ('User.Read.All', 'UserAuthenticationMethod.Read.All', 'IdentityRiskyUser.Read.All', 'GroupMember.Read.All')
 
@@ -218,15 +262,27 @@ class EntraIDUser(QueryResourceManager):
             log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
             raise
 
-    def resources(self, query=None, augment=True):
-        """Override resources method to use Graph API"""
+    def get_graph_resources(self):
+        """Get resources from Microsoft Graph API for use with GraphSource."""
         try:
-            response = self.make_graph_request('users')
+            # Request specific fields including userType which is not returned by default
+            # This ensures ValueFilter can work with userType field for guest user filtering
+            # Note: Some fields like signInActivity and lastPasswordChangeDateTime may require
+            # additional permissions, so we use a more conservative field selection
+            select_fields = [
+                'id', 'displayName', 'userPrincipalName', 'mail', 
+                'accountEnabled', 'createdDateTime', 'jobTitle', 'department', 'userType'
+            ]
+            endpoint = f"users?$select={','.join(select_fields)}"
+            response = self.make_graph_request(endpoint)
             resources = response.get('value', [])
             
-            if augment:
-                resources = self.augment(resources)
+            log.debug(f"Retrieved {len(resources)} users from Graph API")
+            
+            # Augment resources with additional computed fields
+            resources = self.augment(resources)
                 
+            log.debug(f"Returning {len(resources)} users after augmentation")
             return resources
         except Exception as e:
             log.error(f"Error retrieving EntraID users: {e}")
@@ -1278,13 +1334,13 @@ class EntraIDGroup(QueryResourceManager):
                 return None
 
     def analyze_group_member_types(self, group_id):
-        """Analyze group member types (internal vs external/guest users).
+        """Analyze group member types (internal vs external/guest uWhsers).
         
         Required permission: GroupMember.Read.All, User.Read.All
         """
         try:
-            # Get group members
-            endpoint = f'groups/{group_id}/members'
+            # Get group members with userType field explicitly requested
+            endpoint = f'groups/{group_id}/members?$select=id,displayName,userPrincipalName,userType'
             response = self.make_graph_request(endpoint)
             
             members = response.get('value', [])

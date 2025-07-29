@@ -49,7 +49,7 @@ class EntraIDUserTest(unittest.TestCase):
         """Test EntraID user resource type configuration"""
         resource_type = EntraIDUser.resource_type
         self.assertEqual(resource_type.service, 'graph')
-        self.assertEqual(resource_type.id, 'objectId')
+        self.assertEqual(resource_type.id, 'id')
         self.assertEqual(resource_type.name, 'displayName')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('User.Read.All', resource_type.permissions)
