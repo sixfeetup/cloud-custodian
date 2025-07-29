@@ -662,6 +662,7 @@ class EntraIDSecurityDefaultsTest(BaseTest):
 # Following the same pattern as AWS tests
 
 @terraform('entraid_user')
+@pytest.mark.functional
 def test_entraid_user_discovery_terraform(test, entraid_user):
     """Test that Cloud Custodian can discover users provisioned by Terraform"""
     # Verify terraform fixtures loaded successfully
@@ -718,6 +719,7 @@ def test_entraid_user_discovery_terraform(test, entraid_user):
 
 
 @terraform('entraid_user')
+@pytest.mark.functional
 def test_entraid_user_job_title_filter_terraform(test, entraid_user):
     """Test job title filter against Terraform-provisioned users"""
     admin_user = entraid_user.outputs['test_admin_user']['value']
@@ -740,7 +742,8 @@ def test_entraid_user_job_title_filter_terraform(test, entraid_user):
     assert policy is not None
 
 
-@terraform('entraid_user')  
+@terraform('entraid_user')
+@pytest.mark.functional
 def test_entraid_user_department_filter_terraform(test, entraid_user):
     """Test department filter against Terraform-provisioned users"""
     admin_user = entraid_user.outputs['test_admin_user']['value']
@@ -763,6 +766,7 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
 
 
 @terraform('entraid_group')
+@pytest.mark.functional
 def test_entraid_group_discovery_terraform(test, entraid_group):
     """Test that Cloud Custodian can discover groups provisioned by Terraform"""
     security_group = entraid_group.outputs['test_small_security_group']['value']
@@ -789,6 +793,7 @@ def test_entraid_group_discovery_terraform(test, entraid_group):
 
 
 @terraform('entraid_group')
+@pytest.mark.functional
 def test_entraid_group_role_assignable_terraform(test, entraid_group):
     """Test role-assignable group filter against Terraform-provisioned groups"""
     role_assignable_group = entraid_group.outputs['test_role_assignable_group']['value']
@@ -811,6 +816,7 @@ def test_entraid_group_role_assignable_terraform(test, entraid_group):
 
 
 @terraform('entraid_group')
+@pytest.mark.functional
 def test_entraid_group_types_terraform(test, entraid_group):
     """Test group types against Terraform-provisioned groups"""
     m365_group = entraid_group.outputs['test_m365_group']['value']
@@ -834,6 +840,7 @@ def test_entraid_group_types_terraform(test, entraid_group):
 
 
 @terraform('entraid_organization')
+@pytest.mark.functional
 def test_entraid_organization_discovery_terraform(test, entraid_organization):
     """Test that Cloud Custodian can discover organization provisioned by Terraform"""
     org_info = entraid_organization.outputs['organization_basic_info']['value']
@@ -854,6 +861,7 @@ def test_entraid_organization_discovery_terraform(test, entraid_organization):
 
 
 @terraform('entraid_organization')
+@pytest.mark.functional
 def test_entraid_organization_domains_terraform(test, entraid_organization):
     """Test organization domains against Terraform-provisioned data"""
     domains_info = entraid_organization.outputs['organization_domains']['value']
@@ -879,6 +887,7 @@ def test_entraid_organization_domains_terraform(test, entraid_organization):
 
 
 @terraform('entraid_organization')
+@pytest.mark.functional
 def test_entraid_organization_compliance_terraform(test, entraid_organization):
     """Test organization compliance data against Terraform-provisioned data"""
     compliance = entraid_organization.outputs['organization_compliance']['value']
@@ -905,6 +914,7 @@ def test_entraid_organization_compliance_terraform(test, entraid_organization):
 
 
 @terraform('entraid_conditional_access_policy')
+@pytest.mark.functional
 def test_entraid_conditional_access_discovery_terraform(test, entraid_conditional_access_policy):
     """Test that Cloud Custodian can discover conditional access policies provisioned by Terraform"""
     enabled_policy = entraid_conditional_access_policy.outputs['test_mfa_all_users_policy']['value']
@@ -928,6 +938,7 @@ def test_entraid_conditional_access_discovery_terraform(test, entraid_conditiona
 
 
 @terraform('entraid_conditional_access_policy')
+@pytest.mark.functional
 def test_entraid_conditional_access_states_terraform(test, entraid_conditional_access_policy):
     """Test policy state filter against Terraform-provisioned policies"""
     disabled_policy = entraid_conditional_access_policy.outputs['test_disabled_policy']['value']
@@ -950,6 +961,7 @@ def test_entraid_conditional_access_states_terraform(test, entraid_conditional_a
 
 
 @terraform('entraid_conditional_access_policy')
+@pytest.mark.functional
 def test_entraid_conditional_access_controls_terraform(test, entraid_conditional_access_policy):
     """Test grant controls against Terraform-provisioned policies"""
     mfa_policy = entraid_conditional_access_policy.outputs['test_mfa_all_users_policy']['value']
@@ -977,6 +989,7 @@ def test_entraid_conditional_access_controls_terraform(test, entraid_conditional
 
 
 @terraform('entraid_security_defaults')
+@pytest.mark.functional
 def test_entraid_security_defaults_discovery_terraform(test, entraid_security_defaults):
     """Test that Cloud Custodian can discover security defaults provisioned by Terraform"""
     enabled_defaults = entraid_security_defaults.outputs['security_defaults_enabled']['value']
@@ -998,6 +1011,7 @@ def test_entraid_security_defaults_discovery_terraform(test, entraid_security_de
 
 
 @terraform('entraid_security_defaults')
+@pytest.mark.functional
 def test_entraid_security_defaults_features_terraform(test, entraid_security_defaults):
     """Test security defaults features against Terraform-provisioned data"""
     features = entraid_security_defaults.outputs['security_defaults_features']['value']
@@ -1037,6 +1051,7 @@ def test_entraid_security_defaults_features_terraform(test, entraid_security_def
 
 
 @terraform('entraid_security_defaults')
+@pytest.mark.functional
 def test_entraid_security_defaults_compliance_terraform(test, entraid_security_defaults):
     """Test security defaults compliance against Terraform-provisioned data"""
     compliance = entraid_security_defaults.outputs['security_defaults_compliance']['value']
@@ -1074,6 +1089,7 @@ def test_entraid_security_defaults_compliance_terraform(test, entraid_security_d
 
 
 @terraform('entraid_security_defaults')
+@pytest.mark.functional
 def test_entraid_security_defaults_scenarios_terraform(test, entraid_security_defaults):
     """Test tenant scenarios against Terraform-provisioned data"""
     scenarios = entraid_security_defaults.outputs['test_scenarios']['value']

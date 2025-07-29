@@ -25,7 +25,9 @@ resource "random_string" "suffix" {
 data "azuread_client_config" "current" {}
 
 # Get all users to use in policy assignments
-data "azuread_users" "all_users" {}
+data "azuread_users" "all_users" {
+  return_all = true
+}
 
 # Create test users for policy assignments
 resource "azuread_user" "test_policy_user" {
@@ -77,10 +79,6 @@ resource "azuread_conditional_access_policy" "test_mfa_all_users" {
 
   session_controls {
     application_enforced_restrictions_enabled = false
-    cloud_app_security_policy                = ""
-    persistent_browser_mode                   = ""
-    sign_in_frequency                         = 0
-    sign_in_frequency_period                  = ""
   }
 }
 
@@ -120,10 +118,6 @@ resource "azuread_conditional_access_policy" "test_disabled_policy" {
 
   session_controls {
     application_enforced_restrictions_enabled = false
-    cloud_app_security_policy                = ""
-    persistent_browser_mode                   = ""
-    sign_in_frequency                         = 0
-    sign_in_frequency_period                  = ""
   }
 }
 
@@ -163,10 +157,6 @@ resource "azuread_conditional_access_policy" "test_report_only_policy" {
 
   session_controls {
     application_enforced_restrictions_enabled = false
-    cloud_app_security_policy                = ""
-    persistent_browser_mode                   = ""
-    sign_in_frequency                         = 0
-    sign_in_frequency_period                  = ""
   }
 }
 
@@ -206,10 +196,6 @@ resource "azuread_conditional_access_policy" "test_block_legacy_auth" {
 
   session_controls {
     application_enforced_restrictions_enabled = false
-    cloud_app_security_policy                = ""
-    persistent_browser_mode                   = ""
-    sign_in_frequency                         = 0
-    sign_in_frequency_period                  = ""
   }
 }
 

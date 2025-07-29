@@ -100,8 +100,13 @@ class EntraIDUserTest(unittest.TestCase):
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
-    def test_mfa_enabled_filter(self):
+    @patch('c7n_azure.resources.entraid.local_session')
+    def test_mfa_enabled_filter(self, mock_session):
         """Test MFA enabled filter"""
+        # Mock the session and Graph API responses
+        mock_client = Mock()
+        mock_session.return_value.get_session_for_resource.return_value = mock_client
+        
         users = [
             {
                 'objectId': 'user1',
@@ -126,6 +131,16 @@ class EntraIDUserTest(unittest.TestCase):
         
         policy = self.load_policy(policy_data)
         resource_mgr = policy.resource_manager
+        
+        # Mock the Graph API responses for MFA status
+        def mock_make_graph_request(endpoint):
+            if 'user1/authentication/methods' in endpoint:
+                return {'value': [{'@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'}]}
+            else:
+                return {'value': []}
+        
+        resource_mgr.make_graph_request = mock_make_graph_request
+        
         filtered = resource_mgr.filter_resources(users)
         
         # Only user1 has MFA enabled

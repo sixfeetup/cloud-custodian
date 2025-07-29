@@ -386,5 +386,8 @@ class Session:
         elif endpoint == constants.STORAGE_AUTH_ENDPOINT:
             # These endpoints are not Cloud specific, but the suffixes are
             return constants.STORAGE_AUTH_ENDPOINT
+        elif endpoint == constants.MSGRAPH_RESOURCE_ID:
+            # Microsoft Graph uses a specific cloud endpoint attribute
+            return self.cloud_endpoints.endpoints.microsoft_graph_resource_id
         else:
             return getattr(self.cloud_endpoints.endpoints, endpoint)
