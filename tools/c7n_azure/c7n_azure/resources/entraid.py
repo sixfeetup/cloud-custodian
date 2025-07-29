@@ -180,6 +180,7 @@ class EntraIDUser(QueryResourceManager):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
+            session._initialize_session()
             
             # Get specific permissions for this endpoint instead of using .default
             try:
@@ -671,6 +672,7 @@ class DisableUserAction(AzureBaseAction):
             
             # Make Graph API PATCH request to disable user
             # Use specific permission for user modification
+            self.graph_session._initialize_session()
             token = self.graph_session.credentials.get_token('https://graph.microsoft.com/User.ReadWrite.All')
             
             headers = {
@@ -741,6 +743,7 @@ class RequireMFAAction(AzureBaseAction):
             
             # Check if user has MFA methods configured using v1.0 API
             # Use specific permission for reading authentication methods
+            self.graph_session._initialize_session()
             token = self.graph_session.credentials.get_token('https://graph.microsoft.com/UserAuthenticationMethod.Read.All')
             
             headers = {
@@ -843,6 +846,7 @@ class EntraIDOrganization(QueryResourceManager):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
+            session._initialize_session()
             
             # Get specific permissions for this endpoint instead of using .default
             try:
@@ -983,6 +987,7 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
+            session._initialize_session()
             
             # Get specific permissions for this endpoint instead of using .default
             try:
@@ -1146,6 +1151,7 @@ class EntraIDGroup(QueryResourceManager):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
+            session._initialize_session()
             
             # Get specific permissions for this endpoint instead of using .default
             try:
@@ -1623,6 +1629,7 @@ class EntraIDSecurityDefaults(QueryResourceManager):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
+            session._initialize_session()
             
             # Get specific permissions for this endpoint instead of using .default
             try:
