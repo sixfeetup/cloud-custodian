@@ -4,22 +4,15 @@
     "organization_basic_info": {
       "value": {
         "id": "12345678-1234-1234-1234-123456789000",
-        "display_name": "Contoso Test Organization",
+        "display_name": "Test Organization",
         "tenant_id": "12345678-1234-1234-1234-123456789000",
+        "object_id": "87654321-4321-4321-4321-210987654321",
+        "client_id": "11111111-2222-3333-4444-555555555555",
         "country_letter_code": "US",
         "preferred_language": "en",
-        "privacy_profile": [
-          {
-            "contact_email": "privacy@contoso.com",
-            "statement_url": "https://contoso.com/privacy"
-          }
-        ],
-        "technical_contacts": [
-          "admin@contoso.com"
-        ],
-        "marketing_contacts": [
-          "marketing@contoso.com"
-        ]
+        "privacy_profile": [],
+        "technical_contacts": [],
+        "marketing_contacts": []
       }
     },
     "organization_domains": {
@@ -102,25 +95,17 @@
     }
   },
   "resources": {
-    "azuread_organization": {
-      "test_organization": {
-        "id": "12345678-1234-1234-1234-123456789000",
-        "display_name": "Contoso Test Organization",
-        "tenant_id": "12345678-1234-1234-1234-123456789000",
-        "country_letter_code": "US",
-        "preferred_language": "en",
-        "privacy_profile": [
-          {
-            "contact_email": "privacy@contoso.com",
-            "statement_url": "https://contoso.com/privacy"
-          }
-        ],
-        "technical_contacts": [
-          "admin@contoso.com"
-        ],
-        "marketing_contacts": [
-          "marketing@contoso.com"
-        ],
+    "data.azuread_client_config": {
+      "current": {
+        "id": "current",
+        "tenant_id": "12345678-1234-1234-1234-123456789000", 
+        "object_id": "87654321-4321-4321-4321-210987654321",
+        "client_id": "11111111-2222-3333-4444-555555555555"
+      }
+    },
+    "data.azuread_domains": {
+      "current": {
+        "id": "current",
         "domains": [
           {
             "domain_name": "contoso.onmicrosoft.com",
@@ -136,20 +121,7 @@
             "is_verified": true,
             "authentication_type": "Managed"
           }
-        ],
-        "security_defaults_enabled": true,
-        "password_policy": {
-          "minimum_length": 8,
-          "require_lowercase": true,
-          "require_uppercase": true,
-          "require_numbers": true,
-          "require_special_characters": true,
-          "password_history_count": 24,
-          "max_password_age_days": 90,
-          "min_password_age_days": 1,
-          "lockout_threshold": 5,
-          "lockout_duration_minutes": 30
-        }
+        ]
       }
     }
   }
