@@ -12,10 +12,11 @@ sys.path.insert(0, '/Users/michael/sixfeetup/cloud-custodian/tools/c7n_azure')
 sys.path.insert(0, '/Users/michael/sixfeetup/cloud-custodian')
 
 try:
-    from c7n_azure.resources.entraid import (
-        EntraIDUser, EntraIDGroup, EntraIDOrganization, 
-        EntraIDConditionalAccessPolicy, EntraIDSecurityDefaults
-    )
+    from c7n_azure.resources.entraid_user import EntraIDUser
+    from c7n_azure.resources.entraid_group import EntraIDGroup
+    from c7n_azure.resources.entraid_organization import EntraIDOrganization
+    from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
+    from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
     from c7n.config import Config
     from c7n.policy import Policy
 except ImportError as e:
@@ -54,7 +55,7 @@ class EntraIDUserTest(unittest.TestCase):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('User.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid.local_session')
+    @patch('c7n_azure.resources.entraid_user.local_session')
     def test_entraid_user_augment(self, mock_session):
         """Test user resource augmentation with computed fields"""
         mock_client = Mock()
@@ -100,7 +101,7 @@ class EntraIDUserTest(unittest.TestCase):
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
-    @patch('c7n_azure.resources.entraid.local_session')
+    @patch('c7n_azure.resources.entraid_user.local_session')
     def test_mfa_enabled_filter(self, mock_session):
         """Test MFA enabled filter"""
         # Mock the session and Graph API responses
@@ -211,7 +212,7 @@ class EntraIDGroupTest(unittest.TestCase):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Group.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid.local_session')
+    @patch('c7n_azure.resources.entraid_group.local_session')
     def test_entraid_group_augment(self, mock_session):
         """Test group resource augmentation with computed fields"""
         mock_session.return_value.get_session_for_resource.return_value = Mock()

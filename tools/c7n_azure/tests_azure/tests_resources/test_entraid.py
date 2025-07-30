@@ -6,10 +6,11 @@ from unittest.mock import Mock, patch
 import pytest
 from pytest_terraform import terraform
 
-from c7n_azure.resources.entraid import (
-    EntraIDUser, EntraIDGroup, EntraIDOrganization, 
-    EntraIDConditionalAccessPolicy, EntraIDSecurityDefaults
-)
+from c7n_azure.resources.entraid_user import EntraIDUser
+from c7n_azure.resources.entraid_group import EntraIDGroup
+from c7n_azure.resources.entraid_organization import EntraIDOrganization
+from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
+from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
 from tests_azure.azure_common import BaseTest
 
 
@@ -37,7 +38,7 @@ class EntraIDUserTest(BaseTest):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('User.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid.local_session')
+    @patch('c7n_azure.resources.entraid_user.local_session')
     def test_entraid_user_augment(self, mock_session):
         """Test user resource augmentation with computed fields"""
         mock_client = Mock()
@@ -82,7 +83,7 @@ class EntraIDUserTest(BaseTest):
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
-    @patch('c7n_azure.resources.entraid.EntraIDUser.check_user_mfa_status')
+    @patch('c7n_azure.resources.entraid_user.EntraIDUser.check_user_mfa_status')
     def test_mfa_enabled_filter(self, mock_mfa_check):
         """Test MFA enabled filter with real Graph API implementation"""
         users = [
@@ -164,7 +165,7 @@ class EntraIDUserTest(BaseTest):
         self.assertEqual(len(filtered), 2)
         self.assertEqual(set(u['objectId'] for u in filtered), {'user1', 'user3'})
 
-    @patch('c7n_azure.resources.entraid.EntraIDUser.get_user_group_memberships')
+    @patch('c7n_azure.resources.entraid_user.EntraIDUser.get_user_group_memberships')
     def test_group_membership_filter(self, mock_group_memberships):
         """Test group membership filter with real Graph API implementation"""
         users = [
@@ -223,7 +224,7 @@ class EntraIDUserTest(BaseTest):
         # Verify the group membership check was called
         self.assertEqual(mock_group_memberships.call_count, 3)
 
-    @patch('c7n_azure.resources.entraid.EntraIDUser.make_graph_request')
+    @patch('c7n_azure.resources.entraid_user.EntraIDUser.make_graph_request')
     def test_user_type_field_requested(self, mock_graph_request):
         """Test that userType field is explicitly requested from Graph API"""
         # Mock the Graph API response with userType field
@@ -406,7 +407,7 @@ class EntraIDGroupTest(BaseTest):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Group.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid.local_session')
+    @patch('c7n_azure.resources.entraid_group.local_session')
     def test_entraid_group_augment(self, mock_session):
         """Test group resource augmentation with computed fields"""
         mock_session.return_value.get_session_for_resource.return_value = Mock()
@@ -467,7 +468,7 @@ class EntraIDGroupTest(BaseTest):
         self.assertTrue(augmented[2]['c7n:IsSecurityGroup'])
         self.assertTrue(augmented[2]['c7n:IsDynamicGroup'])
 
-    @patch('c7n_azure.resources.entraid.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
     def test_member_count_filter(self, mock_member_count):
         """Test member count filter with real Graph API implementation"""
         groups = [
@@ -516,7 +517,7 @@ class EntraIDGroupTest(BaseTest):
         # Verify the member count check was called
         self.assertEqual(mock_member_count.call_count, 3)
 
-    @patch('c7n_azure.resources.entraid.EntraIDGroup.get_group_owner_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
     def test_owner_count_filter(self, mock_owner_count):
         """Test owner count filter with real Graph API implementation"""
         groups = [
