@@ -114,7 +114,7 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
 
 @resources.register('entraid-user')
 class EntraIDUser(QueryResourceManager):
-    """EntraID User resource for managing Azure AD users.
+    """EntraID User resource for managing EntraID users.
     
     Provides comprehensive user management including filtering by user properties,
     authentication methods, group memberships, and security settings.
