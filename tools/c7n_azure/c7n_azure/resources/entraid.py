@@ -15,6 +15,88 @@ from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta, DescribeSo
 log = logging.getLogger('custodian.azure.entraid')
 
 
+# ========================================
+# EntraID Common Examples and Documentation
+# ========================================
+
+"""
+**Common EntraID Policy Examples**
+
+Find guest users:
+.. code-block:: yaml
+    policies:
+      - name: guest-users-audit
+        resource: azure.entraid-user
+        filters:
+          - type: value
+            key: userType
+            value: Guest
+
+Find users without MFA:
+.. code-block:: yaml
+    policies:
+      - name: users-without-mfa
+        resource: azure.entraid-user
+        filters:
+          - type: mfa-enabled
+            value: false
+
+Find high-risk users:
+.. code-block:: yaml
+    policies:
+      - name: high-risk-users
+        resource: azure.entraid-user
+        filters:
+          - type: risk-level
+            value: high
+
+Find inactive users:
+.. code-block:: yaml
+    policies:
+      - name: inactive-users
+        resource: azure.entraid-user
+        filters:
+          - type: last-sign-in
+            days: 90
+            op: greater-than
+
+Find admin groups:
+.. code-block:: yaml
+    policies:
+      - name: admin-groups
+        resource: azure.entraid-group
+        filters:
+          - type: value
+            key: displayName
+            value: ".*[Aa]dmin.*"
+            op: regex
+
+Find groups with external members:
+.. code-block:: yaml
+    policies:
+      - name: groups-external-members
+        resource: azure.entraid-group
+        filters:
+          - type: member-types
+            include-external: true
+
+**Graph API Permissions Reference**
+
+| Resource | Read Permissions | Write Permissions |
+|----------|------------------|-------------------|
+| Users | User.Read.All, UserAuthenticationMethod.Read.All, IdentityRiskyUser.Read.All, GroupMember.Read.All | User.ReadWrite.All |
+| Groups | Group.Read.All, GroupMember.Read.All | Group.ReadWrite.All |
+| Organization | Organization.Read.All | Organization.ReadWrite.All |
+| Policies | Policy.Read.All | Policy.ReadWrite.ConditionalAccess |
+
+**Security Notes**
+- All resources request ONLY EntraID permissions, not SharePoint/Exchange/Teams data access
+- Microsoft 365 groups may reference connected SharePoint/Teams resources but no direct access
+- Permissions are enforced at app registration level; .default scope is used per Graph API best practices
+- Unknown status (permission errors) causes resources to be skipped to avoid false results
+"""
+
+
 class GraphSource(DescribeSource):
     """Custom source for Microsoft Graph API resources.
     
@@ -114,81 +196,32 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
 
 @resources.register('entraid-user')
 class EntraIDUser(QueryResourceManager):
-    """EntraID User resource for managing EntraID users.
+    """EntraID User resource for managing users.
     
-    Provides comprehensive user management including filtering by user properties,
-    authentication methods, group memberships, and security settings.
+    Supports filtering by user properties, authentication methods, group memberships,
+    and security settings. See Common EntraID Examples section for additional patterns.
     
-    **Minimum Required Permissions:**
-    - User.Read.All - Read user profiles and properties
-    - UserAuthenticationMethod.Read.All - Check MFA status (mfa-enabled filter)
-    - IdentityRiskyUser.Read.All - Check user risk levels (risk-level filter)  
-    - GroupMember.Read.All - Check group memberships (group-membership filter)
-    - User.ReadWrite.All - Disable users (disable action)
+    Available filters: value, mfa-enabled, risk-level, last-sign-in, group-membership, password-age
+    Available actions: disable, require-mfa
     
-    **Security Note:** This resource requests ONLY EntraID user permissions.
-    No direct access to SharePoint sites, Exchange mailboxes, or Teams channels. 
-    Note: Group membership data may include Microsoft 365 groups connected to SharePoint/Teams.
+    Permissions: See Graph API Permissions Reference section.
     
     :example:
     
-    Find all guest users (external users):
+    Find users with multiple security issues:
     
     .. code-block:: yaml
     
         policies:
-          - name: guest-users-audit
-            resource: azure.entraid-user
-            filters:
-              - type: value
-                key: userType
-                value: Guest
-              - type: value
-                key: accountEnabled
-                value: true
-    
-    :example:
-    
-    Find all users with MFA disabled:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: users-without-mfa
+          - name: high-risk-users-no-mfa
             resource: azure.entraid-user
             filters:
               - type: mfa-enabled
                 value: false
-    
-    :example:
-    
-    Find users with high-risk sign-ins:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: high-risk-users
-            resource: azure.entraid-user
-            filters:
               - type: risk-level
                 value: high
-    
-    :example:
-    
-    Find disabled users that should be removed:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: disabled-users-cleanup
-            resource: azure.entraid-user
-            filters:
-              - type: value
-                key: accountEnabled
-                value: false
-              - type: last-sign-in
-                days: 90
-                op: greater-than
+            actions:
+              - type: require-mfa
     """
     
     def __init__(self, ctx, data):
@@ -450,22 +483,17 @@ class EntraIDUser(QueryResourceManager):
 
 @EntraIDUser.filter_registry.register('mfa-enabled')
 class MFAEnabledFilter(Filter):
-    """Filter users based on MFA enablement status.
+    """Filter users by MFA enablement status.
     
-    Required permission: UserAuthenticationMethod.Read.All
+    Requires: UserAuthenticationMethod.Read.All
     
     :example:
     
-    Find users without MFA:
-    
     .. code-block:: yaml
     
-        policies:
-          - name: users-no-mfa
-            resource: azure.entraid-user
-            filters:
-              - type: mfa-enabled
-                value: false
+        filters:
+          - type: mfa-enabled
+            value: false
     """
     
     schema = type_schema('mfa-enabled', value={'type': 'boolean'})
@@ -499,20 +527,15 @@ class MFAEnabledFilter(Filter):
 class RiskLevelFilter(Filter):
     """Filter users by Identity Protection risk level.
     
-    Required permission: IdentityRiskyUser.Read.All
+    Requires: IdentityRiskyUser.Read.All
     
     :example:
     
-    Find high-risk users:
-    
     .. code-block:: yaml
     
-        policies:
-          - name: high-risk-users
-            resource: azure.entraid-user
-            filters:
-              - type: risk-level
-                value: high
+        filters:
+          - type: risk-level
+            value: high
     """
     
     schema = type_schema('risk-level', 
@@ -835,21 +858,16 @@ class RequireMFAAction(AzureBaseAction):
 
 @resources.register('entraid-organization')
 class EntraIDOrganization(QueryResourceManager):
-    """EntraID Organization resource for managing tenant-level settings.
+    """EntraID Organization resource for tenant-level settings.
     
-    Provides access to organization-level configuration including security defaults,
-    directory properties, and compliance settings.
+    Provides access to organization-level configuration.
+    Permissions: See Graph API Permissions Reference section.
     
-    **Minimum Required Permissions:**
-    - Organization.Read.All - Read tenant/organization properties and settings
-    - Organization.ReadWrite.All - Modify organization settings (write actions only)
-    
-    **Security Note:** This resource requests ONLY EntraID organization permissions.
-    No direct access to SharePoint tenant settings, Exchange organization config, or Teams tenant settings.
+    Available filters: value, security-defaults
     
     :example:
     
-    Check if security defaults are enabled:
+    Check if security defaults are disabled:
     
     .. code-block:: yaml
     
@@ -857,23 +875,8 @@ class EntraIDOrganization(QueryResourceManager):
           - name: security-defaults-check
             resource: azure.entraid-organization
             filters:
-              - type: value
-                key: securityDefaults.isEnabled
-                value: false
-    
-    :example:
-    
-    Find organizations with weak password policies:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: weak-password-policy
-            resource: azure.entraid-organization
-            filters:
-              - type: password-policy
-                min-length: 8
-                op: less-than
+              - type: security-defaults
+                enabled: false
     """
 
     class resource_type(GraphTypeInfo):
@@ -974,21 +977,14 @@ class SecurityDefaultsFilter(Filter):
 class EntraIDConditionalAccessPolicy(QueryResourceManager):
     """EntraID Conditional Access Policy resource.
     
-    Manages conditional access policies that control access to corporate resources
-    based on conditions like user, device, location, and application.
+    Manages conditional access policies. Requires Microsoft Graph beta API.
+    Permissions: See Graph API Permissions Reference section.
     
-    **Minimum Required Permissions:**
-    - Policy.Read.All - Read conditional access policies and security policies
-    - Policy.ReadWrite.ConditionalAccess - Modify conditional access policies (actions only)
-    
-    **Security Note:** This resource requests ONLY EntraID policy permissions.
-    No direct access to SharePoint policies, Exchange transport rules, or Teams policies.
-    
-    **API Note:** Requires Microsoft Graph beta API for full functionality.
+    Available filters: value, admin-mfa-required
     
     :example:
     
-    Find disabled conditional access policies:
+    Find disabled policies or policies not requiring MFA for admins:
     
     .. code-block:: yaml
     
@@ -999,14 +995,6 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
               - type: value
                 key: state
                 value: disabled
-    
-    :example:
-    
-    Find policies not requiring MFA for admins:
-    
-    .. code-block:: yaml
-    
-        policies:
           - name: admin-no-mfa-policies
             resource: azure.entraid-conditional-access-policy
             filters:
@@ -1128,46 +1116,26 @@ class AdminMFARequiredFilter(Filter):
 class EntraIDGroup(QueryResourceManager):
     """EntraID Group resource for managing Azure AD groups.
     
-    Provides comprehensive group management including filtering by group properties,
-    membership analysis, and security group monitoring.
+    Supports filtering by group properties, membership analysis, and security monitoring.
+    See Common EntraID Examples section for basic patterns.
     
-    **Minimum Required Permissions:**
-    - Group.Read.All - Read group properties and basic information
-    - GroupMember.Read.All - Analyze group memberships and member counts
-    - User.Read.All - Analyze member types (internal vs external users)
-    - Group.ReadWrite.All - Modify groups (write actions only)
+    Available filters: value, member-count, owner-count, member-types, group-type
     
-    **Security Note:** This resource requests ONLY EntraID group permissions.
-    No direct access to SharePoint site content, Teams channel content, or Exchange data.
-    Note: Microsoft 365 groups (which connect to SharePoint/Teams) are included in group enumeration.
+    Permissions: See Graph API Permissions Reference section.
     
     :example:
     
-    Find administrative groups:
+    Find groups without owners:
     
     .. code-block:: yaml
     
         policies:
-          - name: admin-groups
+          - name: groups-no-owners
             resource: azure.entraid-group
             filters:
-              - type: value
-                key: displayName
-                value: ".*[Aa]dmin.*"
-                op: regex
-    
-    :example:
-    
-    Find groups with external members:
-    
-    .. code-block:: yaml
-    
-        policies:
-          - name: groups-external-members
-            resource: azure.entraid-group
-            filters:
-              - type: member-types
-                include-external: true
+              - type: owner-count
+                count: 0
+                op: equal
     """
 
     class resource_type(GraphTypeInfo):
