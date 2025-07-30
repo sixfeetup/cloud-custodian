@@ -441,33 +441,3 @@ class ChildResourceManager(QueryResourceManager, metaclass=QueryMeta):
 
 resources.subscribe(QueryResourceManager.register_actions_and_filters)
 resources.subscribe(ChildResourceManager.register_child_specific)
-
-
-# Microsoft Graph API Query Support
-@sources.register('describe-msgraph')
-class MicrosoftGraphSource(DescribeSource):
-    """Source for Microsoft Graph API resources (EntraID, O365, SharePoint)"""
-    
-    def __init__(self, manager):
-        super().__init__(manager)
-        self.graph_session = None
-
-    def get_graph_session(self):
-        """Get session configured for Microsoft Graph API"""
-        if not self.graph_session:
-            from c7n_azure.constants import MSGRAPH_RESOURCE_ID
-            session = local_session(self.manager.session_factory)
-            # Microsoft Graph uses different authentication scope
-            self.graph_session = session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
-        return self.graph_session
-
-    def get_resources(self, query):  # pylint: disable=unused-argument
-        """Override to use Microsoft Graph specific client handling"""
-        # This will be implemented by specific Graph resource sources
-        return []
-
-    def get_permissions(self):
-        """Return Microsoft Graph permissions required"""
-        if hasattr(self.manager.resource_type, 'permissions'):
-            return self.manager.resource_type.permissions
-        return ()
