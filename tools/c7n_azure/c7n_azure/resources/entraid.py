@@ -205,6 +205,39 @@ class GraphResourceManager(QueryResourceManager):
         session = local_session(self.session_factory)
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
+    def make_graph_request(self, endpoint, method='GET'):
+        """Make a request to Microsoft Graph API with minimum required permissions."""
+        try:
+            session = self.get_client()
+            session._initialize_session()
+            
+            # Get specific permissions for this endpoint instead of using .default
+            try:
+                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError as e:
+                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
+                raise
+            
+            # Request token for Microsoft Graph API
+            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            scope = 'https://graph.microsoft.com/.default'
+            
+            token = session.credentials.get_token(scope)
+            
+            headers = {
+                'Authorization': f'Bearer {token.token}',
+                'Content-Type': 'application/json'
+            }
+            
+            url = f'https://graph.microsoft.com/v1.0/{endpoint}'
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
+            raise
+
 
 @resources.register('entraid-user')
 class EntraIDUser(GraphResourceManager):
@@ -900,39 +933,6 @@ class EntraIDOrganization(GraphResourceManager):
         )
         permissions = ('Organization.Read.All',)
 
-    def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API with minimum required permissions."""
-        try:
-            session = self.get_client()
-            session._initialize_session()
-            
-            # Get specific permissions for this endpoint instead of using .default
-            try:
-                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-            except ValueError as e:
-                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
-                raise
-            
-            # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
-            scope = 'https://graph.microsoft.com/.default'
-            
-            token = session.credentials.get_token(scope)
-            
-            headers = {
-                'Authorization': f'Bearer {token.token}',
-                'Content-Type': 'application/json'
-            }
-            
-            url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
-            raise
-
     def resources(self, query=None, augment=True):
         """Override resources method to use Graph API"""
         try:
@@ -1153,39 +1153,6 @@ class EntraIDGroup(GraphResourceManager):
             'id'
         )
         permissions = ('Group.Read.All', 'GroupMember.Read.All')
-
-    def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API with minimum required permissions."""
-        try:
-            session = self.get_client()
-            session._initialize_session()
-            
-            # Get specific permissions for this endpoint instead of using .default
-            try:
-                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-            except ValueError as e:
-                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
-                raise
-            
-            # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
-            scope = 'https://graph.microsoft.com/.default'
-            
-            token = session.credentials.get_token(scope)
-            
-            headers = {
-                'Authorization': f'Bearer {token.token}',
-                'Content-Type': 'application/json'
-            }
-            
-            url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
-            raise
 
     def resources(self, query=None, augment=True):
         """Override resources method to use Graph API"""
@@ -1623,39 +1590,6 @@ class EntraIDSecurityDefaults(GraphResourceManager):
             'description'
         )
         permissions = ('Policy.Read.All',)
-
-    def make_graph_request(self, endpoint, method='GET'):
-        """Make a request to Microsoft Graph API with minimum required permissions."""
-        try:
-            session = self.get_client()
-            session._initialize_session()
-            
-            # Get specific permissions for this endpoint instead of using .default
-            try:
-                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-            except ValueError as e:
-                log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
-                raise
-            
-            # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
-            scope = 'https://graph.microsoft.com/.default'
-            
-            token = session.credentials.get_token(scope)
-            
-            headers = {
-                'Authorization': f'Bearer {token.token}',
-                'Content-Type': 'application/json'
-            }
-            
-            url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
-            raise
 
     def resources(self, query=None, augment=True):
         """Override resources method to use Graph API"""
