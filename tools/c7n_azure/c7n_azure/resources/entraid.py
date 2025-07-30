@@ -194,8 +194,20 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
         return {}
 
 
+class GraphResourceManager(QueryResourceManager):
+    """Base class for Microsoft Graph API resources.
+    
+    Provides common Graph API client functionality for all EntraID resources.
+    """
+    
+    def get_client(self):
+        """Get Microsoft Graph client session"""
+        session = local_session(self.session_factory)
+        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
+
+
 @resources.register('entraid-user')
-class EntraIDUser(QueryResourceManager):
+class EntraIDUser(GraphResourceManager):
     """EntraID User resource for managing users.
     
     Supports filtering by user properties, authentication methods, group memberships,
@@ -247,11 +259,6 @@ class EntraIDUser(QueryResourceManager):
             'id'
         )
         permissions = ('User.Read.All', 'UserAuthenticationMethod.Read.All', 'IdentityRiskyUser.Read.All', 'GroupMember.Read.All')
-
-    def get_client(self):
-        """Get Microsoft Graph client session"""
-        session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET', data=None):
         """Make a request to Microsoft Graph API with minimum required permissions."""
@@ -857,7 +864,7 @@ class RequireMFAAction(AzureBaseAction):
 
 
 @resources.register('entraid-organization')
-class EntraIDOrganization(QueryResourceManager):
+class EntraIDOrganization(GraphResourceManager):
     """EntraID Organization resource for tenant-level settings.
     
     Provides access to organization-level configuration.
@@ -892,11 +899,6 @@ class EntraIDOrganization(QueryResourceManager):
             'verifiedDomains'
         )
         permissions = ('Organization.Read.All',)
-
-    def get_client(self):
-        """Get Microsoft Graph client session"""
-        session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
         """Make a request to Microsoft Graph API with minimum required permissions."""
@@ -974,7 +976,7 @@ class SecurityDefaultsFilter(Filter):
 
 
 @resources.register('entraid-conditional-access-policy')
-class EntraIDConditionalAccessPolicy(QueryResourceManager):
+class EntraIDConditionalAccessPolicy(GraphResourceManager):
     """EntraID Conditional Access Policy resource.
     
     Manages conditional access policies. Requires Microsoft Graph beta API.
@@ -1015,11 +1017,6 @@ class EntraIDConditionalAccessPolicy(QueryResourceManager):
             'modifiedDateTime'
         )
         permissions = ('Policy.Read.All',)
-
-    def get_client(self):
-        """Get Microsoft Graph client session"""
-        session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
         """Make a request to Microsoft Graph API with minimum required permissions."""
@@ -1113,7 +1110,7 @@ class AdminMFARequiredFilter(Filter):
 
 
 @resources.register('entraid-group')
-class EntraIDGroup(QueryResourceManager):
+class EntraIDGroup(GraphResourceManager):
     """EntraID Group resource for managing Azure AD groups.
     
     Supports filtering by group properties, membership analysis, and security monitoring.
@@ -1156,11 +1153,6 @@ class EntraIDGroup(QueryResourceManager):
             'id'
         )
         permissions = ('Group.Read.All', 'GroupMember.Read.All')
-
-    def get_client(self):
-        """Get Microsoft Graph client session"""
-        session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
         """Make a request to Microsoft Graph API with minimum required permissions."""
@@ -1592,7 +1584,7 @@ class GroupTypeFilter(Filter):
 
 
 @resources.register('entraid-security-defaults')
-class EntraIDSecurityDefaults(QueryResourceManager):
+class EntraIDSecurityDefaults(GraphResourceManager):
     """EntraID Security Defaults resource.
     
     Manages the security defaults policy which provides pre-configured security
@@ -1631,11 +1623,6 @@ class EntraIDSecurityDefaults(QueryResourceManager):
             'description'
         )
         permissions = ('Policy.Read.All',)
-
-    def get_client(self):
-        """Get Microsoft Graph client session"""
-        session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
         """Make a request to Microsoft Graph API with minimum required permissions."""
