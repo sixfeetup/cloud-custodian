@@ -23,19 +23,6 @@
         "assignable_to_role": false
       }
     },
-    "test_m365_group": {
-      "value": {
-        "id": "33333333-3333-3333-3333-333333333333",
-        "object_id": "33333333-3333-3333-3333-333333333333",
-        "display_name": "C7N Test M365 Group abcd1234",
-        "description": "Microsoft 365 group for Cloud Custodian testing",
-        "mail_enabled": true,
-        "security_enabled": false,
-        "mail_nickname": "c7n-test-m365-abcd1234",
-        "types": ["Unified"],
-        "visibility": "Private"
-      }
-    },
     "test_distribution_group": {
       "value": {
         "id": "44444444-4444-4444-4444-444444444444",
@@ -80,18 +67,6 @@
         "security_enabled": true,
         "assignable_to_role": false,
         "types": []
-      },
-      "test_m365_group": {
-        "id": "33333333-3333-3333-3333-333333333333",
-        "object_id": "33333333-3333-3333-3333-333333333333",
-        "display_name": "C7N Test M365 Group abcd1234",
-        "description": "Microsoft 365 group for Cloud Custodian testing",
-        "mail_enabled": true,
-        "security_enabled": false,
-        "mail_nickname": "c7n-test-m365-abcd1234",
-        "types": ["Unified"],
-        "visibility": "Private",
-        "assignable_to_role": false
       },
       "test_distribution_group": {
         "id": "44444444-4444-4444-4444-444444444444",

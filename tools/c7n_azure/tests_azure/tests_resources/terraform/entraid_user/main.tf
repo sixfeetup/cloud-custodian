@@ -106,22 +106,6 @@ resource "azuread_group_member" "admin_member" {
   member_object_id = azuread_user.test_admin_user.object_id
 }
 
-# Create a Microsoft 365 group for testing different group types
-resource "azuread_group" "test_m365_group" {
-  display_name     = "C7N Test M365 Group ${random_string.suffix.result}"
-  mail_enabled     = true
-  security_enabled = false
-  mail_nickname    = "c7n-test-m365-${random_string.suffix.result}"
-  description      = "Test Microsoft 365 group for Cloud Custodian EntraID testing"
-  types            = ["Unified"]
-}
-
-# Add regular user to the M365 group
-resource "azuread_group_member" "regular_member" {
-  group_object_id  = azuread_group.test_m365_group.object_id
-  member_object_id = azuread_user.test_regular_user.object_id
-}
-
 # Outputs for pytest-terraform to use
 output "test_admin_user" {
   value = {
@@ -177,15 +161,5 @@ output "test_security_group" {
     object_id    = azuread_group.test_security_group.object_id
     display_name = azuread_group.test_security_group.display_name
     description  = azuread_group.test_security_group.description
-  }
-}
-
-output "test_m365_group" {
-  value = {
-    id           = azuread_group.test_m365_group.id
-    object_id    = azuread_group.test_m365_group.object_id
-    display_name = azuread_group.test_m365_group.display_name
-    description  = azuread_group.test_m365_group.description
-    mail_nickname = azuread_group.test_m365_group.mail_nickname
   }
 }

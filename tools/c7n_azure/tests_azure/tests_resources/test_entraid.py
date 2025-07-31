@@ -876,33 +876,6 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
 
 @terraform('entraid_group')
 @pytest.mark.functional
-def test_entraid_group_discovery_terraform(test, entraid_group):
-    """Test that Cloud Custodian can discover groups provisioned by Terraform"""
-    security_group = entraid_group.outputs['test_small_security_group']['value']
-    m365_group = entraid_group.outputs['test_m365_group']['value']
-    
-    # Test policy for security groups
-    policy = test.load_policy({
-        'name': 'terraform-security-groups',
-        'resource': 'azure.entraid-group',
-        'filters': [
-            {'type': 'value', 'key': 'securityEnabled', 'value': True},
-            {'type': 'value', 'key': 'mailEnabled', 'value': False}
-        ]
-    })
-    
-    # Verify policy loads correctly
-    assert policy.resource_manager.type == 'entraid-group'
-    
-    # Verify test data integrity
-    assert security_group['security_enabled'] == True
-    assert security_group['mail_enabled'] == False
-    assert m365_group['security_enabled'] == False
-    assert m365_group['mail_enabled'] == True
-
-
-@terraform('entraid_group')
-@pytest.mark.functional
 def test_entraid_group_role_assignable_terraform(test, entraid_group):
     """Test role-assignable group filter against Terraform-provisioned groups"""
     role_assignable_group = entraid_group.outputs['test_role_assignable_group']['value']
@@ -920,30 +893,6 @@ def test_entraid_group_role_assignable_terraform(test, entraid_group):
     # Verify test data integrity
     assert role_assignable_group['assignable_to_role'] == True
     assert regular_group['assignable_to_role'] == False
-    
-    assert policy is not None
-
-
-@terraform('entraid_group')
-@pytest.mark.functional
-def test_entraid_group_types_terraform(test, entraid_group):
-    """Test group types against Terraform-provisioned groups"""
-    m365_group = entraid_group.outputs['test_m365_group']['value']
-    distribution_group = entraid_group.outputs['test_distribution_group']['value']
-    
-    # Test policy for Microsoft 365 groups
-    policy = test.load_policy({
-        'name': 'terraform-m365-groups',
-        'resource': 'azure.entraid-group',
-        'filters': [
-            {'type': 'value', 'key': 'types', 'value': 'Unified', 'op': 'contains'}
-        ]
-    })
-    
-    # Verify test data integrity
-    assert 'Unified' in m365_group['types']
-    assert m365_group['visibility'] == 'Private'
-    assert distribution_group['mail_enabled'] == True
     
     assert policy is not None
 

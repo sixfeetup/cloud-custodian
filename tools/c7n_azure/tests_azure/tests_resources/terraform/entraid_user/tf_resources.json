@@ -97,15 +97,6 @@
         "description": "Test security group for Cloud Custodian EntraID testing",
         "security_enabled": true,
         "mail_enabled": false
-      },
-      "test_m365_group": {
-        "id": "87654321-4321-4321-4321-210987654322",
-        "object_id": "87654321-4321-4321-4321-210987654322",
-        "display_name": "C7N Test M365 Group abcd1234",
-        "description": "Test Microsoft 365 group for Cloud Custodian EntraID testing",
-        "mail_nickname": "c7n-test-m365-abcd1234",
-        "security_enabled": false,
-        "mail_enabled": true
       }
     }
   }

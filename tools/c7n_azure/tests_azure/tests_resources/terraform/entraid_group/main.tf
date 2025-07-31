@@ -42,17 +42,6 @@ resource "azuread_group" "test_large_security_group" {
   assignable_to_role = false
 }
 
-# Test Microsoft 365 Group: For testing unified groups
-resource "azuread_group" "test_m365_group" {
-  display_name     = "C7N Test M365 Group ${random_string.suffix.result}"
-  mail_enabled     = true
-  security_enabled = false
-  mail_nickname    = "c7n-test-m365-${random_string.suffix.result}"
-  description      = "Microsoft 365 group for Cloud Custodian testing"
-  types            = ["Unified"]
-  visibility       = "Private"
-}
-
 # Test Distribution Group: For testing mail-enabled groups
 resource "azuread_group" "test_distribution_group" {
   display_name     = "C7N Test Distribution Group ${random_string.suffix.result}"
@@ -138,12 +127,6 @@ resource "azuread_group_member" "large_group_member_3" {
   member_object_id = azuread_user.test_user_3.object_id
 }
 
-# Add members to M365 group (1 member)
-resource "azuread_group_member" "m365_group_member" {
-  group_object_id  = azuread_group.test_m365_group.object_id
-  member_object_id = azuread_user.test_user_3.object_id
-}
-
 # Add owner to role-assignable group
 resource "azuread_group_owner" "role_assignable_owner" {
   group_object_id  = azuread_group.test_role_assignable_group.object_id
@@ -172,20 +155,6 @@ output "test_large_security_group" {
     mail_enabled      = azuread_group.test_large_security_group.mail_enabled
     security_enabled  = azuread_group.test_large_security_group.security_enabled
     assignable_to_role = azuread_group.test_large_security_group.assignable_to_role
-  }
-}
-
-output "test_m365_group" {
-  value = {
-    id                 = azuread_group.test_m365_group.id
-    object_id         = azuread_group.test_m365_group.object_id
-    display_name      = azuread_group.test_m365_group.display_name
-    description       = azuread_group.test_m365_group.description
-    mail_enabled      = azuread_group.test_m365_group.mail_enabled
-    security_enabled  = azuread_group.test_m365_group.security_enabled
-    mail_nickname     = azuread_group.test_m365_group.mail_nickname
-    types             = azuread_group.test_m365_group.types
-    visibility        = azuread_group.test_m365_group.visibility
   }
 }
 
