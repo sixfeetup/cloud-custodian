@@ -24,6 +24,16 @@ resource "random_string" "suffix" {
 # Get current client configuration
 data "azuread_client_config" "current" {}
 
+# Get available domains
+data "azuread_domains" "current" {
+  only_initial = false
+}
+
+# Use the first available domain for user principal names
+locals {
+  domain_name = data.azuread_domains.current.domains[0].domain_name
+}
+
 # Get all users to use in policy assignments
 data "azuread_users" "all_users" {
   return_all = true
@@ -31,7 +41,7 @@ data "azuread_users" "all_users" {
 
 # Create test users for policy assignments
 resource "azuread_user" "test_policy_user" {
-  user_principal_name   = "c7n-policy-test-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-policy-test-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Policy Test User"
   mail_nickname        = "c7n-policy-test-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"

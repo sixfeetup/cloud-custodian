@@ -24,6 +24,16 @@ resource "random_string" "suffix" {
 # Get current client configuration
 data "azuread_client_config" "current" {}
 
+# Get available domains
+data "azuread_domains" "current" {
+  only_initial = false
+}
+
+# Use the first available domain for user principal names
+locals {
+  domain_name = data.azuread_domains.current.domains[0].domain_name
+}
+
 # Test Security Group 1: Small security group with few members
 resource "azuread_group" "test_small_security_group" {
   display_name     = "C7N Test Small Security Group ${random_string.suffix.result}"
@@ -62,7 +72,7 @@ resource "azuread_group" "test_role_assignable_group" {
 
 # Create test users to populate groups
 resource "azuread_user" "test_user_1" {
-  user_principal_name   = "c7n-test-user1-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-user1-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test User 1"
   mail_nickname        = "c7n-test-user1-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -75,7 +85,7 @@ resource "azuread_user" "test_user_1" {
 }
 
 resource "azuread_user" "test_user_2" {
-  user_principal_name   = "c7n-test-user2-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-user2-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test User 2"
   mail_nickname        = "c7n-test-user2-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -88,7 +98,7 @@ resource "azuread_user" "test_user_2" {
 }
 
 resource "azuread_user" "test_user_3" {
-  user_principal_name   = "c7n-test-user3-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-user3-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test User 3"
   mail_nickname        = "c7n-test-user3-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -127,11 +137,6 @@ resource "azuread_group_member" "large_group_member_3" {
   member_object_id = azuread_user.test_user_3.object_id
 }
 
-# Add owner to role-assignable group
-resource "azuread_group_owner" "role_assignable_owner" {
-  group_object_id  = azuread_group.test_role_assignable_group.object_id
-  owner_object_id  = azuread_user.test_user_1.object_id
-}
 
 # Outputs for pytest-terraform to use
 output "test_small_security_group" {

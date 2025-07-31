@@ -28,9 +28,19 @@ resource "random_string" "suffix" {
 # Get current client configuration for tenant info
 data "azuread_client_config" "current" {}
 
+# Get available domains
+data "azuread_domains" "current" {
+  only_initial = false
+}
+
+# Use the first available domain for user principal names
+locals {
+  domain_name = data.azuread_domains.current.domains[0].domain_name
+}
+
 # Test User 1: Enabled user with admin role (for testing high-privilege detection)
 resource "azuread_user" "test_admin_user" {
-  user_principal_name   = "c7n-test-admin-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-admin-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Admin User"
   mail_nickname        = "c7n-test-admin-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -46,7 +56,7 @@ resource "azuread_user" "test_admin_user" {
 
 # Test User 2: Disabled user (for testing disabled account cleanup)
 resource "azuread_user" "test_disabled_user" {
-  user_principal_name   = "c7n-test-disabled-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-disabled-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Disabled User"
   mail_nickname        = "c7n-test-disabled-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -62,7 +72,7 @@ resource "azuread_user" "test_disabled_user" {
 
 # Test User 3: Regular enabled user (for baseline testing)
 resource "azuread_user" "test_regular_user" {
-  user_principal_name   = "c7n-test-regular-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-regular-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Regular User"
   mail_nickname        = "c7n-test-regular-${random_string.suffix.result}"
   password             = "P@ssw0rd123!"
@@ -78,7 +88,7 @@ resource "azuread_user" "test_regular_user" {
 
 # Test User 4: User with old password (simulate password age testing)
 resource "azuread_user" "test_old_password_user" {
-  user_principal_name   = "c7n-test-oldpwd-${random_string.suffix.result}@${data.azuread_client_config.current.tenant_id}"
+  user_principal_name   = "c7n-test-oldpwd-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Old Password User"
   mail_nickname        = "c7n-test-oldpwd-${random_string.suffix.result}"
   password             = "OldP@ssw0rd123!"
