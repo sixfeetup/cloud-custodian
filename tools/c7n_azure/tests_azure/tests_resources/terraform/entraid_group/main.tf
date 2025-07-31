@@ -59,6 +59,7 @@ resource "azuread_group" "test_distribution_group" {
   security_enabled = false
   mail_nickname    = "c7n-test-dist-${random_string.suffix.result}"
   description      = "Distribution group for Cloud Custodian testing"
+  types           = ["Unified"]
 }
 
 # Test Role-Assignable Group: For testing privileged groups

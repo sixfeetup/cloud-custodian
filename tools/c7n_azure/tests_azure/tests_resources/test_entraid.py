@@ -775,7 +775,7 @@ class EntraIDSecurityDefaultsTest(BaseTest):
 def test_entraid_user_discovery_terraform(test, entraid_user):
     """Test that Cloud Custodian can discover users provisioned by Terraform"""
     # Verify terraform fixtures loaded successfully
-    assert len(entraid_user.outputs) == 4, f"Expected 4 user outputs, got {len(entraid_user.outputs)}"
+    assert len(entraid_user.outputs) == 5, f"Expected 5 total outputs (4 users + 1 group), got {len(entraid_user.outputs)}"
     assert 'azuread_user' in entraid_user.resources, "azuread_user resources not found"
     
     # Get terraform-provisioned user data

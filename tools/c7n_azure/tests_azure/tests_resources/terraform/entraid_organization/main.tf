@@ -46,6 +46,9 @@ output "organization_domains" {
     domains = [for domain in data.azuread_domains.current.domains : {
       domain_name           = domain.domain_name
       authentication_type  = domain.authentication_type
+      is_default           = domain.domain_name == data.azuread_domains.current.domains[0].domain_name
+      is_initial           = domain.domain_name == data.azuread_domains.current.domains[0].domain_name
+      is_verified          = true
     }]
   }
 }
