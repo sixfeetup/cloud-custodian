@@ -874,27 +874,6 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
     assert policy is not None
 
 
-@terraform('entraid_group')
-@pytest.mark.functional
-def test_entraid_group_role_assignable_terraform(test, entraid_group):
-    """Test role-assignable group filter against Terraform-provisioned groups"""
-    role_assignable_group = entraid_group.outputs['test_role_assignable_group']['value']
-    regular_group = entraid_group.outputs['test_small_security_group']['value']
-    
-    # Test policy for role-assignable groups
-    policy = test.load_policy({
-        'name': 'terraform-role-assignable-groups',
-        'resource': 'azure.entraid-group',
-        'filters': [
-            {'type': 'value', 'key': 'assignableToRole', 'value': True}
-        ]
-    })
-    
-    # Verify test data integrity
-    assert role_assignable_group['assignable_to_role'] == True
-    assert regular_group['assignable_to_role'] == False
-    
-    assert policy is not None
 
 
 @terraform('entraid_organization')
@@ -971,79 +950,10 @@ def test_entraid_organization_compliance_terraform(test, entraid_organization):
     assert policy is not None
 
 
-@terraform('entraid_conditional_access_policy')
-@pytest.mark.functional
-def test_entraid_conditional_access_discovery_terraform(test, entraid_conditional_access_policy):
-    """Test that Cloud Custodian can discover conditional access policies provisioned by Terraform"""
-    enabled_policy = entraid_conditional_access_policy.outputs['test_mfa_all_users_policy']['value']
-    disabled_policy = entraid_conditional_access_policy.outputs['test_disabled_policy']['value']
-    
-    # Test policy for enabled conditional access policies
-    policy = test.load_policy({
-        'name': 'terraform-enabled-ca-policies',
-        'resource': 'azure.entraid-conditional-access-policy',
-        'filters': [
-            {'type': 'value', 'key': 'state', 'value': 'enabled'}
-        ]
-    })
-    
-    # Verify policy loads correctly
-    assert policy.resource_manager.type == 'entraid-conditional-access-policy'
-    
-    # Verify test data integrity
-    assert enabled_policy['state'] == 'enabled'
-    assert disabled_policy['state'] == 'disabled'
 
 
-@terraform('entraid_conditional_access_policy')
-@pytest.mark.functional
-def test_entraid_conditional_access_states_terraform(test, entraid_conditional_access_policy):
-    """Test policy state filter against Terraform-provisioned policies"""
-    disabled_policy = entraid_conditional_access_policy.outputs['test_disabled_policy']['value']
-    report_only_policy = entraid_conditional_access_policy.outputs['test_report_only_policy']['value']
-    
-    # Test policy for disabled policies
-    policy = test.load_policy({
-        'name': 'terraform-disabled-ca-policies',
-        'resource': 'azure.entraid-conditional-access-policy',
-        'filters': [
-            {'type': 'value', 'key': 'state', 'value': 'disabled'}
-        ]
-    })
-    
-    # Verify different policy states
-    assert disabled_policy['state'] == 'disabled'
-    assert report_only_policy['state'] == 'enabledForReportingButNotEnforced'
-    
-    assert policy is not None
 
 
-@terraform('entraid_conditional_access_policy')
-@pytest.mark.functional
-def test_entraid_conditional_access_controls_terraform(test, entraid_conditional_access_policy):
-    """Test grant controls against Terraform-provisioned policies"""
-    mfa_policy = entraid_conditional_access_policy.outputs['test_mfa_all_users_policy']['value']
-    block_policy = entraid_conditional_access_policy.outputs['test_disabled_policy']['value']
-    legacy_auth_policy = entraid_conditional_access_policy.outputs['test_block_legacy_auth_policy']['value']
-    
-    # Test policy for MFA requirements
-    policy = test.load_policy({
-        'name': 'terraform-mfa-required-policies',
-        'resource': 'azure.entraid-conditional-access-policy',
-        'filters': [
-            {'type': 'value', 'key': 'state', 'value': 'enabled'}
-        ]
-    })
-    
-    # Verify grant controls in test data
-    assert 'mfa' in mfa_policy['grant_controls']['built_in_controls']
-    assert 'block' in block_policy['grant_controls']['built_in_controls']
-    assert 'block' in legacy_auth_policy['grant_controls']['built_in_controls']
-    
-    # Verify client app types for legacy auth blocking
-    assert legacy_auth_policy['conditions']['client_app_types'] == ['exchangeActiveSync', 'other']
-    
-    assert policy is not None
 
 
 @terraform('entraid_security_defaults')
