@@ -1,0 +1,154 @@
+{
+  "pytest-terraform": 1,
+  "outputs": {
+    "test_mfa_all_users_policy": {
+      "value": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "display_name": "C7N Test - Require MFA for All Users abcd1234",
+        "state": "enabled",
+        "conditions": {
+          "users_included": ["All"],
+          "apps_included": ["All"],
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["mfa"]
+        }
+      }
+    },
+    "test_disabled_policy": {
+      "value": {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "display_name": "C7N Test - Disabled Policy abcd1234",
+        "state": "disabled",
+        "conditions": {
+          "users_included": ["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"],
+          "apps_included": ["All"],
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["block"]
+        }
+      }
+    },
+    "test_report_only_policy": {
+      "value": {
+        "id": "33333333-3333-3333-3333-333333333333",
+        "display_name": "C7N Test - Report Only Policy abcd1234",
+        "state": "enabledForReportingButNotEnforced",
+        "conditions": {
+          "users_included": ["All"],
+          "apps_included": ["All"],
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["compliantDevice"]
+        }
+      }
+    },
+    "test_block_legacy_auth_policy": {
+      "value": {
+        "id": "44444444-4444-4444-4444-444444444444",
+        "display_name": "C7N Test - Block Legacy Authentication abcd1234",
+        "state": "enabled",
+        "conditions": {
+          "users_included": ["All"],
+          "apps_included": ["All"],
+          "client_app_types": ["exchangeActiveSync", "other"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["block"]
+        }
+      }
+    }
+  },
+  "resources": {
+    "azuread_conditional_access_policy": {
+      "test_mfa_all_users_policy": {
+        "id": "11111111-1111-1111-1111-111111111111",
+        "display_name": "C7N Test - Require MFA for All Users abcd1234",
+        "state": "enabled",
+        "conditions": {
+          "users": {
+            "included_users": ["All"]
+          },
+          "applications": {
+            "included_applications": ["All"]
+          },
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["mfa"]
+        }
+      },
+      "test_disabled_policy": {
+        "id": "22222222-2222-2222-2222-222222222222",
+        "display_name": "C7N Test - Disabled Policy abcd1234",
+        "state": "disabled",
+        "conditions": {
+          "users": {
+            "included_users": ["aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"]
+          },
+          "applications": {
+            "included_applications": ["All"]
+          },
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["block"]
+        }
+      },
+      "test_report_only_policy": {
+        "id": "33333333-3333-3333-3333-333333333333",
+        "display_name": "C7N Test - Report Only Policy abcd1234",
+        "state": "enabledForReportingButNotEnforced",
+        "conditions": {
+          "users": {
+            "included_users": ["All"]
+          },
+          "applications": {
+            "included_applications": ["All"]
+          },
+          "client_app_types": ["all"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["compliantDevice"]
+        }
+      },
+      "test_block_legacy_auth_policy": {
+        "id": "44444444-4444-4444-4444-444444444444",
+        "display_name": "C7N Test - Block Legacy Authentication abcd1234",
+        "state": "enabled",
+        "conditions": {
+          "users": {
+            "included_users": ["All"]
+          },
+          "applications": {
+            "included_applications": ["All"]
+          },
+          "client_app_types": ["exchangeActiveSync", "other"]
+        },
+        "grant_controls": {
+          "operator": "OR",
+          "built_in_controls": ["block"]
+        }
+      }
+    },
+    "azuread_user": {
+      "test_policy_user": {
+        "id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "object_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+        "user_principal_name": "c7n-policy-test-abcd1234@example.onmicrosoft.com",
+        "display_name": "C7N Policy Test User",
+        "account_enabled": true
+      }
+    }
+  }
+}
