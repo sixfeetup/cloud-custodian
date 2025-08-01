@@ -7,10 +7,6 @@ import sys
 import os
 from unittest.mock import Mock, patch
 
-# Add the paths to sys.path
-sys.path.insert(0, '/Users/michael/sixfeetup/cloud-custodian/tools/c7n_azure')
-sys.path.insert(0, '/Users/michael/sixfeetup/cloud-custodian')
-
 try:
     from c7n_azure.resources.entraid_user import EntraIDUser
     from c7n_azure.resources.entraid_group import EntraIDGroup
