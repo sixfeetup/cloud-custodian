@@ -90,7 +90,7 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
 
             # Note: Conditional Access Policies require beta API
             url = f'https://graph.microsoft.com/beta/{endpoint}'
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:

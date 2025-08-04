@@ -108,13 +108,13 @@ class EntraIDUser(GraphResourceManager):
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
 
             if method == 'GET':
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=30)
             elif method == 'POST':
-                response = requests.post(url, headers=headers, json=data)
+                response = requests.post(url, headers=headers, json=data, timeout=30)
             elif method == 'PATCH':
-                response = requests.patch(url, headers=headers, json=data)
+                response = requests.patch(url, headers=headers, json=data, timeout=30)
             else:
-                response = requests.request(method, url, headers=headers, json=data)
+                response = requests.request(method, url, headers=headers, json=data, timeout=30)
 
             response.raise_for_status()
             return response.json()
@@ -626,7 +626,7 @@ class DisableUserAction(AzureBaseAction):
                 "accountEnabled": False
             }
 
-            response = requests.patch(url, headers=headers, json=data)
+            response = requests.patch(url, headers=headers, json=data, timeout=30)
             response.raise_for_status()
 
             self.log.info(f"Successfully disabled user {display_name} ({user_id})")
@@ -704,7 +704,7 @@ class RequireMFAAction(AzureBaseAction):
             auth_methods_url = (
                 f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
             )
-            auth_response = requests.get(auth_methods_url, headers=headers)
+            auth_response = requests.get(auth_methods_url, headers=headers, timeout=30)
             auth_response.raise_for_status()
 
             methods = auth_response.json().get('value', [])

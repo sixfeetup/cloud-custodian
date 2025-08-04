@@ -161,7 +161,7 @@ class GraphResourceManager(QueryResourceManager):
             }
 
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -216,7 +216,7 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
                 # Use the correct EntraID diagnostic settings API endpoint from our research
                 url = ('https://management.azure.com/providers/microsoft.aadiam/'
                        'diagnosticSettings?api-version=2017-04-01-preview')
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=30)
                 response.raise_for_status()
 
                 data = response.json()
