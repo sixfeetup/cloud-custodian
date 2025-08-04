@@ -218,7 +218,7 @@ class Session:
                 authorization_file=self.authorization_file,
                 cloud_endpoints=self.cloud_endpoints,
                 resource_endpoint_type=MSGRAPH_RESOURCE_ID)
-        
+
         return Session(
             subscription_id=self.subscription_id_override,
             authorization_file=self.authorization_file,
@@ -259,7 +259,7 @@ class Session:
             # 2020-06-01 is not supported, but 2019-11-01 is working as expected.
             if client == 'azure.mgmt.costmanagement.CostManagementClient':
                 client_args['raw_request_hook'] = cost_query_override_api_version
-            
+
             # Handle Microsoft Graph API client configuration
             from c7n_azure.constants import MSGRAPH_RESOURCE_ID
             if self.resource_endpoint == MSGRAPH_RESOURCE_ID:

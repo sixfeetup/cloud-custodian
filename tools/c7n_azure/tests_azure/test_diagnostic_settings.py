@@ -126,7 +126,7 @@ class DiagnosticSettingsFilterTest(BaseTest):
     @arm_template('vm.json')
     def test_filter_diagnostic_settings_not_enabled(self):
         """Verifies validation fails if the resource type
-            does not use diagnostic settings.
+        does not use diagnostic settings.
         """
         policy = {
             'name': 'test-azure-tag',
@@ -150,7 +150,7 @@ class EntraIDDiagnosticSettingsFilterTest(BaseTest):
 
     def test_entraid_diagnostic_settings_schema_validate(self):
         """Test that EntraID resources support diagnostic-settings filter schema validation."""
-        
+
         with self.sign_out_patch():
             p = self.load_policy({
                 'name': 'test-entraid-diagnostic-settings',
@@ -169,7 +169,7 @@ class EntraIDDiagnosticSettingsFilterTest(BaseTest):
 
     def test_entraid_group_diagnostic_settings_schema_validate(self):
         """Test that EntraID group resources support diagnostic-settings filter."""
-        
+
         with self.sign_out_patch():
             p = self.load_policy({
                 'name': 'test-entraid-group-diagnostic-settings',
@@ -177,7 +177,7 @@ class EntraIDDiagnosticSettingsFilterTest(BaseTest):
                 'filters': [
                     {
                         'type': 'diagnostic-settings',
-                        'key': "logs[?category == 'SignInLogs'][].enabled", 
+                        'key': "logs[?category == 'SignInLogs'][].enabled",
                         'value': 'present'
                     }
                 ]
@@ -186,7 +186,7 @@ class EntraIDDiagnosticSettingsFilterTest(BaseTest):
 
     def test_entraid_organization_diagnostic_settings_schema_validate(self):
         """Test that EntraID organization resources support diagnostic-settings filter."""
-        
+
         with self.sign_out_patch():
             p = self.load_policy({
                 'name': 'test-entraid-org-diagnostic-settings',
