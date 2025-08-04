@@ -247,5 +247,5 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
             self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
             return []
 
-resources.subscribe(GraphResourceManager.register_graph_specific)
 
+resources.subscribe(GraphResourceManager.register_graph_specific)
