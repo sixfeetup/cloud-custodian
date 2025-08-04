@@ -248,3 +248,4 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
             return []
 
 resources.subscribe(GraphResourceManager.register_graph_specific)
+
