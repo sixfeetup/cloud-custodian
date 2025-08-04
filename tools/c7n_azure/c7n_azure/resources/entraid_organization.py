@@ -95,3 +95,8 @@ class SecurityDefaultsFilter(Filter):
             if is_enabled == enabled_required:
                 filtered.append(resource)
         return filtered
+
+
+# Register diagnostic settings filter for EntraID organization
+from c7n_azure.graph_utils import EntraIDDiagnosticSettingsFilter
+EntraIDOrganization.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)

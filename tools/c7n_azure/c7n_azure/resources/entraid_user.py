@@ -670,3 +670,8 @@ class RequireMFAAction(AzureBaseAction):
                 self.log.error(f"Failed to check MFA status for user {resource.get('displayName', 'Unknown')}: {e}")
         except Exception as e:
             self.log.error(f"Failed to process MFA requirement for user {resource.get('displayName', 'Unknown')}: {e}")
+
+
+# Register diagnostic settings filter for EntraID users
+from c7n_azure.graph_utils import EntraIDDiagnosticSettingsFilter
+EntraIDUser.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)

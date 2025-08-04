@@ -459,3 +459,8 @@ class GroupTypeFilter(Filter):
                 filtered.append(resource)
                 
         return filtered
+
+
+# Register diagnostic settings filter for EntraID groups
+from c7n_azure.graph_utils import EntraIDDiagnosticSettingsFilter
+EntraIDGroup.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)
