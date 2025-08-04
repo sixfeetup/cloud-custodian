@@ -4,15 +4,12 @@
 
 import unittest
 import sys
-import os
 from unittest.mock import Mock, patch
 
 try:
     from c7n_azure.resources.entraid_user import EntraIDUser
     from c7n_azure.resources.entraid_group import EntraIDGroup
     from c7n_azure.resources.entraid_organization import EntraIDOrganization
-    from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
-    from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
     from c7n.config import Config
     from c7n.policy import Policy
 except ImportError as e:
@@ -132,7 +129,12 @@ class EntraIDUserTest(unittest.TestCase):
         # Mock the Graph API responses for MFA status
         def mock_make_graph_request(endpoint):
             if 'user1/authentication/methods' in endpoint:
-                return {'value': [{'@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'}]}
+                return {
+                    'value': [{
+                        '@odata.type':
+                        '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
+                    }]
+                }
             else:
                 return {'value': []}
 

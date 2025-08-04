@@ -99,6 +99,5 @@ class SecurityDefaultsFilter(Filter):
         return filtered
 
 
-
 # Register diagnostic settings filter for EntraID organization
 EntraIDOrganization.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)

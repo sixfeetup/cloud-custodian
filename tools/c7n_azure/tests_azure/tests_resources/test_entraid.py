@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import datetime
 from unittest.mock import Mock, patch
 import pytest
 from pytest_terraform import terraform
@@ -42,7 +41,8 @@ class EntraIDUserTest(BaseTest):
     def test_entraid_user_augment(self, mock_session):
         """Test user resource augmentation with computed fields"""
         mock_client = Mock()
-        mock_session.return_value.get_session_for_resource.return_value.client.return_value = mock_client
+        mock_session.return_value.get_session_for_resource.return_value.\
+client.return_value = mock_client
 
         # Sample user data
         users = [
@@ -362,13 +362,6 @@ class EntraIDUserTest(BaseTest):
 
     def test_disable_user_action(self):
         """Test disable user action"""
-        users = [
-            {
-                'objectId': 'user1',
-                'displayName': 'Test User',
-                'accountEnabled': True
-            }
-        ]
 
         policy = self.load_policy({
             'name': 'test-disable-action',
@@ -407,10 +400,8 @@ class EntraIDGroupTest(BaseTest):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Group.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid_group.local_session')
-    def test_entraid_group_augment(self, mock_session):
+    def test_entraid_group_augment(self):
         """Test group resource augmentation with computed fields"""
-        mock_session.return_value.get_session_for_resource.return_value = Mock()
 
         # Sample group data
         groups = [
@@ -877,8 +868,6 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
     assert policy is not None
 
 
-
-
 @terraform('entraid_organization')
 @pytest.mark.functional
 def test_entraid_organization_discovery_terraform(test, entraid_organization):
@@ -951,12 +940,6 @@ def test_entraid_organization_compliance_terraform(test, entraid_organization):
     assert 'controls' in nist_compliance
 
     assert policy is not None
-
-
-
-
-
-
 
 
 @terraform('entraid_security_defaults')

@@ -76,7 +76,8 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
+            # Note: Individual permissions like User.Read.All are enforced at
+            # the app registration level
             # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
             scope = 'https://graph.microsoft.com/.default'
 
@@ -107,7 +108,8 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
         except Exception as e:
             log.warning(f"Could not retrieve Conditional Access Policies: {e}")
             log.warning(
-                "Conditional Access Policies require Microsoft Graph beta API and appropriate permissions"
+                "Conditional Access Policies require Microsoft Graph beta API and "
+                "appropriate permissions"
             )
             return []
 

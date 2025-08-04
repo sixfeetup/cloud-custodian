@@ -5,7 +5,7 @@ import logging
 import requests
 
 from c7n.filters import Filter
-from c7n.utils import type_schema, local_session
+from c7n.utils import type_schema
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import (
     GraphResourceManager, GraphTypeInfo, GraphSource, EntraIDDiagnosticSettingsFilter
@@ -135,7 +135,6 @@ class EntraIDGroup(GraphResourceManager):
             # Use $count parameter for efficient counting
             endpoint = f'groups/{group_id}/members/$count'
             response = self.make_graph_request(endpoint)
-            
             # Response should be a plain number
             if isinstance(response, (int, str)):
                 return int(response)
@@ -162,7 +161,6 @@ class EntraIDGroup(GraphResourceManager):
             # Use $count parameter for efficient counting
             endpoint = f'groups/{group_id}/owners/$count'
             response = self.make_graph_request(endpoint)
-            
             # Response should be a plain number
             if isinstance(response, (int, str)):
                 return int(response)
@@ -192,7 +190,6 @@ class EntraIDGroup(GraphResourceManager):
                 'userPrincipalName,userType'
             )
             response = self.make_graph_request(endpoint)
-            
             members = response.get('value', [])
 
             has_external_members = False
@@ -202,11 +199,9 @@ class EntraIDGroup(GraphResourceManager):
                 if member.get('@odata.type') == '#microsoft.graph.user':
                     user_type = member.get('userType', 'Member')
                     user_principal_name = member.get('userPrincipalName', '')
-                    
                     # Check if user is a guest
                     if user_type.lower() == 'guest':
                         has_guest_members = True
-                    
                     # Check if user is external (from different domain)
                     # External users typically have #EXT# in their UPN or are guests
                     if '#EXT#' in user_principal_name or user_type.lower() == 'guest':

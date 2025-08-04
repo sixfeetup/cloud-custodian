@@ -41,7 +41,6 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'users/{id}': ['User.Read.All'],
     'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
     'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
-    
     # Identity Protection endpoints
     'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
 
@@ -60,7 +59,6 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
 }
-
 
 
 def get_required_permissions_for_endpoint(endpoint, method='GET'):
@@ -123,7 +121,8 @@ class GraphResourceManager(QueryResourceManager):
     """
 
     def get_client(self, client_type=None):
-        """Get client session. For MonitorManagementClient, use ARM session; otherwise use Graph session."""
+        """Get client session. For MonitorManagementClient, use ARM session;
+        otherwise use Graph session."""
         session = local_session(self.session_factory)
 
         # For diagnostic settings, we need to use the Azure Monitor client via ARM
@@ -147,8 +146,10 @@ class GraphResourceManager(QueryResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            # Note: Individual permissions like User.Read.All are enforced at
+            # the app registration level
+            # The scope for Microsoft Graph API should always be
+            # https://graph.microsoft.com/.default
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -175,7 +176,8 @@ class GraphResourceManager(QueryResourceManager):
 
         # Register EntraID-specific diagnostic settings filter if enabled
         if resource_class.resource_type.diagnostic_settings_enabled:
-            resource_class.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)
+            resource_class.filter_registry.register(
+                'diagnostic-settings', EntraIDDiagnosticSettingsFilter)
 
 
 class EntraIDDiagnosticSettingsFilter(ValueFilter):
@@ -195,7 +197,8 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
             session = local_session(self.manager.session_factory)
             session.client('azure.mgmt.monitor.MonitorManagementClient')
 
-            # EntraID diagnostic settings are tenant-level: /providers/microsoft.aadiam/diagnosticSettings
+            # EntraID diagnostic settings are tenant-level:
+            # /providers/microsoft.aadiam/diagnosticSettings
             tenant_diagnostic_settings = []
             try:
                 # List all EntraID diagnostic settings for the tenant
@@ -242,7 +245,6 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
         except Exception as e:
             self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
             return []
-
 
 
 from c7n_azure.provider import resources
