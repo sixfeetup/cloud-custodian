@@ -210,7 +210,7 @@ class EntraIDGroupTest(unittest.TestCase):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Group.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid_group.local_session')
+    @patch('c7n_azure.graph_utils.local_session')
     def test_entraid_group_augment(self, mock_session):
         """Test group resource augmentation with computed fields"""
         mock_session.return_value.get_session_for_resource.return_value = Mock()
