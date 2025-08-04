@@ -9,6 +9,7 @@ from c7n.utils import local_session, type_schema
 from c7n.filters import ValueFilter
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta, DescribeSource
+from c7n_azure.provider import resources
 
 log = logging.getLogger('custodian.azure.graph')
 
@@ -246,6 +247,4 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
             self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
             return []
 
-
-from c7n_azure.provider import resources
 resources.subscribe(GraphResourceManager.register_graph_specific)
