@@ -282,6 +282,20 @@ class EntraIDOrganizationTest(unittest.TestCase):
         self.assertEqual(resource_type.id, 'id')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Organization.Read.All', resource_type.permissions)
+        self.assertIn('Directory.Read.All', resource_type.permissions)
+
+    def test_password_lockout_threshold_schema_validate(self):
+        """Test password lockout threshold filter schema validation"""
+        policy_data = {
+            'name': 'test-lockout-threshold',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        }
+        p = self.load_policy(policy_data, validate=True)
+        self.assertIsNotNone(p)
+        self.assertEqual(p.name, 'test-lockout-threshold')
 
 
 if __name__ == '__main__':

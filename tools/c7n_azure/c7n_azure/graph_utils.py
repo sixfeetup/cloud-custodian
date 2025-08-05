@@ -59,6 +59,11 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     # Policy endpoints (require beta API)
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
+    
+    # Directory Settings endpoints (beta API)
+    'settings': ['Directory.Read.All'],
+    'settings/{id}': ['Directory.ReadWrite.All'],
+    'directorySettingTemplates': ['Directory.Read.All'],
 }
 
 def get_required_permissions_for_endpoint(endpoint, method='GET'):
