@@ -4,9 +4,12 @@
 import logging
 import requests
 import re
-from c7n.utils import local_session
+
+from c7n.utils import local_session, type_schema
+from c7n.filters import ValueFilter
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta, DescribeSource
+from c7n_azure.provider import resources
 
 log = logging.getLogger('custodian.azure.graph')
 
@@ -39,7 +42,7 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'users/{id}': ['User.Read.All'],
     'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
     'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
-
+  
     # Identity Protection endpoints
     'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
 
@@ -92,11 +95,15 @@ def get_required_permissions_for_endpoint(endpoint, method='GET'):
             return permissions
 
     # Fail-fast for unmapped endpoints rather than using overprivileged .default
-    log.error(f"No permissions mapping found for endpoint: {endpoint}. "
-              f"This endpoint must be explicitly mapped in GRAPH_ENDPOINT_PERMISSIONS "
-              f"to ensure minimum required permissions.")
-    raise ValueError(f"Unmapped Graph API endpoint: {endpoint}. "
-                     f"Add permission mapping to prevent overprivileged access.")
+    log.error(
+        f"No permissions mapping found for endpoint: {endpoint}. "
+        f"This endpoint must be explicitly mapped in GRAPH_ENDPOINT_PERMISSIONS "
+        f"to ensure minimum required permissions."
+    )
+    raise ValueError(
+        f"Unmapped Graph API endpoint: {endpoint}. "
+        f"Add permission mapping to prevent overprivileged access."
+    )
 
 
 class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
@@ -107,6 +114,7 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
     global_resource = True
     service = 'graph'
     resource_endpoint = MSGRAPH_RESOURCE_ID
+    diagnostic_settings_enabled = True
 
     @classmethod
     def extra_args(cls, parent_resource):
@@ -119,25 +127,36 @@ class GraphResourceManager(QueryResourceManager):
     Provides common Graph API client functionality for all EntraID resources.
     """
 
+
     def get_client(self):
         """Get Microsoft Graph client session"""
         session = local_session(self.session_factory)
-        return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
+
+        # For diagnostic settings, we need to use the Azure Monitor client via ARM
+        if client_type == 'azure.mgmt.monitor.MonitorManagementClient':
+            return session.client(client_type)
+        else:
+            # Default to Microsoft Graph session for other Graph operations
+            return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
     def make_graph_request(self, endpoint, method='GET'):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
             session._initialize_session()
+            
             # Get specific permissions for this endpoint instead of using .default
             try:
                 get_required_permissions_for_endpoint(endpoint, method)
             except ValueError:
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
+
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            # Note: Individual permissions like User.Read.All are enforced at
+            # the app registration level
+            # The scope for Microsoft Graph API should always be
+            # https://graph.microsoft.com/.default
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -148,9 +167,91 @@ class GraphResourceManager(QueryResourceManager):
             }
 
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
             log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
             raise
+
+    @staticmethod
+    def register_graph_specific(registry, resource_class):
+        """Register Graph-specific filters and actions for Graph resource managers."""
+
+        if not issubclass(resource_class, GraphResourceManager):
+            return
+
+        # Register EntraID-specific diagnostic settings filter if enabled
+        if resource_class.resource_type.diagnostic_settings_enabled:
+            resource_class.filter_registry.register(
+                'diagnostic-settings', EntraIDDiagnosticSettingsFilter)
+
+
+class EntraIDDiagnosticSettingsFilter(ValueFilter):
+    """Diagnostic settings filter for EntraID resources.
+
+    EntraID diagnostic settings are tenant-level and accessed via the microsoft.aadiam provider,
+    not per-resource like ARM resources.
+    """
+    schema = type_schema('diagnostic-settings', rinherit=ValueFilter.schema)
+    schema_alias = True
+    log = logging.getLogger('custodian.azure.entraid.DiagnosticSettingsFilter')
+
+    def process(self, resources, event=None):
+        """Process EntraID resources by checking tenant-level diagnostic settings."""
+        try:
+            # Get tenant-level diagnostic settings
+            session = local_session(self.manager.session_factory)
+            session.client('azure.mgmt.monitor.MonitorManagementClient')
+
+            # EntraID diagnostic settings are tenant-level:
+            # /providers/microsoft.aadiam/diagnosticSettings
+            tenant_diagnostic_settings = []
+            try:
+                # List all EntraID diagnostic settings for the tenant
+                # Use the correct EntraID diagnostic settings API endpoint
+                import requests
+                session_token = session.get_credentials()
+                token = session_token.get_token('https://management.azure.com/.default')
+
+                headers = {
+                    'Authorization': f'Bearer {token.token}',
+                    'Content-Type': 'application/json'
+                }
+
+                # Use the correct EntraID diagnostic settings API endpoint from our research
+                url = ('https://management.azure.com/providers/microsoft.aadiam/'
+                       'diagnosticSettings?api-version=2017-04-01-preview')
+                response = requests.get(url, headers=headers, timeout=30)
+                response.raise_for_status()
+
+                data = response.json()
+                tenant_diagnostic_settings = data.get('value', [])
+
+                if not tenant_diagnostic_settings:
+                    tenant_diagnostic_settings = [{}]
+            except Exception as e:
+                self.log.warning(f"Failed to retrieve EntraID diagnostic settings: {e}")
+                # If no settings available, use empty list so absent operator can function
+                tenant_diagnostic_settings = [{}]
+
+            # Apply filter to diagnostic settings
+            if not tenant_diagnostic_settings:
+                tenant_diagnostic_settings = [{}]
+
+            filtered_settings = super(EntraIDDiagnosticSettingsFilter, self).process(
+                tenant_diagnostic_settings, event=None)
+
+            # If diagnostic settings match the filter criteria, return all resources
+            # since EntraID diagnostic settings apply to the entire tenant
+            if filtered_settings:
+                return resources
+            else:
+                return []
+
+        except Exception as e:
+            self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
+            return []
+
+
+resources.subscribe(GraphResourceManager.register_graph_specific)

@@ -75,9 +75,7 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the
-            # app registration level. The scope for Microsoft Graph API should always
-            # be https://graph.microsoft.com/.default
+            
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -89,7 +87,7 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
 
             # Note: Conditional Access Policies require beta API
             url = f'https://graph.microsoft.com/beta/{endpoint}'
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=30)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
@@ -106,8 +104,11 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
             return resources
         except Exception as e:
             log.warning(f"Could not retrieve Conditional Access Policies: {e}")
-            log.warning("Conditional Access Policies require Microsoft Graph beta API and "
-                       "appropriate permissions")
+
+            log.warning(
+                "Conditional Access Policies require Microsoft Graph beta API and "
+                "appropriate permissions"
+            )
             return []
 
 
@@ -140,12 +141,17 @@ class AdminMFARequiredFilter(Filter):
             conditions = resource.get('conditions', {})
             users = conditions.get('users', {})
             roles = users.get('includeRoles', [])
+
             grant_controls = resource.get('grantControls', {})
             built_in_controls = grant_controls.get('builtInControls', [])
 
             # Check if admin roles are included and MFA is required
-            admin_roles = ['Global Administrator', 'Privileged Role Administrator',
-                          'User Administrator']
+            admin_roles = [
+                'Global Administrator',
+                'Privileged Role Administrator',
+                'User Administrator'
+            ]
+            
             has_admin_roles = any(role in admin_roles for role in roles)
             requires_mfa = 'mfa' in [control.lower() for control in built_in_controls]
 

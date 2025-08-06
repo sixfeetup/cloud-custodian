@@ -42,13 +42,13 @@ locals {
 resource "azuread_user" "test_admin_user" {
   user_principal_name   = "c7n-test-admin-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Admin User"
-  mail_nickname        = "c7n-test-admin-${random_string.suffix.result}"
-  password             = "P@ssw0rd123!"
+  mail_nickname         = "c7n-test-admin-${random_string.suffix.result}"
+  password              = "P@ssw0rd123!"
   force_password_change = false
-  account_enabled      = true
-  job_title           = "Administrator"
-  department          = "IT"
-  
+  account_enabled       = true
+  job_title             = "Administrator"
+  department            = "IT"
+
   lifecycle {
     ignore_changes = [password]
   }
@@ -58,13 +58,13 @@ resource "azuread_user" "test_admin_user" {
 resource "azuread_user" "test_disabled_user" {
   user_principal_name   = "c7n-test-disabled-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Disabled User"
-  mail_nickname        = "c7n-test-disabled-${random_string.suffix.result}"
-  password             = "P@ssw0rd123!"
+  mail_nickname         = "c7n-test-disabled-${random_string.suffix.result}"
+  password              = "P@ssw0rd123!"
   force_password_change = false
-  account_enabled      = false
-  job_title           = "User"
-  department          = "HR"
-  
+  account_enabled       = false
+  job_title             = "User"
+  department            = "HR"
+
   lifecycle {
     ignore_changes = [password]
   }
@@ -74,13 +74,13 @@ resource "azuread_user" "test_disabled_user" {
 resource "azuread_user" "test_regular_user" {
   user_principal_name   = "c7n-test-regular-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Regular User"
-  mail_nickname        = "c7n-test-regular-${random_string.suffix.result}"
-  password             = "P@ssw0rd123!"
+  mail_nickname         = "c7n-test-regular-${random_string.suffix.result}"
+  password              = "P@ssw0rd123!"
   force_password_change = false
-  account_enabled      = true
-  job_title           = "Developer"
-  department          = "Engineering"
-  
+  account_enabled       = true
+  job_title             = "Developer"
+  department            = "Engineering"
+
   lifecycle {
     ignore_changes = [password]
   }
@@ -90,13 +90,13 @@ resource "azuread_user" "test_regular_user" {
 resource "azuread_user" "test_old_password_user" {
   user_principal_name   = "c7n-test-oldpwd-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Test Old Password User"
-  mail_nickname        = "c7n-test-oldpwd-${random_string.suffix.result}"
-  password             = "OldP@ssw0rd123!"
+  mail_nickname         = "c7n-test-oldpwd-${random_string.suffix.result}"
+  password              = "OldP@ssw0rd123!"
   force_password_change = false
-  account_enabled      = true
-  job_title           = "Analyst"
-  department          = "Finance"
-  
+  account_enabled       = true
+  job_title             = "Analyst"
+  department            = "Finance"
+
   lifecycle {
     ignore_changes = [password]
   }
@@ -119,11 +119,11 @@ resource "azuread_group_member" "admin_member" {
 # Outputs for pytest-terraform to use
 output "test_admin_user" {
   value = {
-    id                    = azuread_user.test_admin_user.id
-    object_id            = azuread_user.test_admin_user.object_id
-    user_principal_name  = azuread_user.test_admin_user.user_principal_name
-    display_name         = azuread_user.test_admin_user.display_name
-    account_enabled      = azuread_user.test_admin_user.account_enabled
+    id                  = azuread_user.test_admin_user.id
+    object_id           = azuread_user.test_admin_user.object_id
+    user_principal_name = azuread_user.test_admin_user.user_principal_name
+    display_name        = azuread_user.test_admin_user.display_name
+    account_enabled     = azuread_user.test_admin_user.account_enabled
     job_title           = azuread_user.test_admin_user.job_title
     department          = azuread_user.test_admin_user.department
   }
@@ -131,11 +131,11 @@ output "test_admin_user" {
 
 output "test_disabled_user" {
   value = {
-    id                    = azuread_user.test_disabled_user.id
-    object_id            = azuread_user.test_disabled_user.object_id
-    user_principal_name  = azuread_user.test_disabled_user.user_principal_name
-    display_name         = azuread_user.test_disabled_user.display_name
-    account_enabled      = azuread_user.test_disabled_user.account_enabled
+    id                  = azuread_user.test_disabled_user.id
+    object_id           = azuread_user.test_disabled_user.object_id
+    user_principal_name = azuread_user.test_disabled_user.user_principal_name
+    display_name        = azuread_user.test_disabled_user.display_name
+    account_enabled     = azuread_user.test_disabled_user.account_enabled
     job_title           = azuread_user.test_disabled_user.job_title
     department          = azuread_user.test_disabled_user.department
   }
@@ -143,11 +143,11 @@ output "test_disabled_user" {
 
 output "test_regular_user" {
   value = {
-    id                    = azuread_user.test_regular_user.id
-    object_id            = azuread_user.test_regular_user.object_id
-    user_principal_name  = azuread_user.test_regular_user.user_principal_name
-    display_name         = azuread_user.test_regular_user.display_name
-    account_enabled      = azuread_user.test_regular_user.account_enabled
+    id                  = azuread_user.test_regular_user.id
+    object_id           = azuread_user.test_regular_user.object_id
+    user_principal_name = azuread_user.test_regular_user.user_principal_name
+    display_name        = azuread_user.test_regular_user.display_name
+    account_enabled     = azuread_user.test_regular_user.account_enabled
     job_title           = azuread_user.test_regular_user.job_title
     department          = azuread_user.test_regular_user.department
   }
@@ -155,11 +155,11 @@ output "test_regular_user" {
 
 output "test_old_password_user" {
   value = {
-    id                    = azuread_user.test_old_password_user.id
-    object_id            = azuread_user.test_old_password_user.object_id
-    user_principal_name  = azuread_user.test_old_password_user.user_principal_name
-    display_name         = azuread_user.test_old_password_user.display_name
-    account_enabled      = azuread_user.test_old_password_user.account_enabled
+    id                  = azuread_user.test_old_password_user.id
+    object_id           = azuread_user.test_old_password_user.object_id
+    user_principal_name = azuread_user.test_old_password_user.user_principal_name
+    display_name        = azuread_user.test_old_password_user.display_name
+    account_enabled     = azuread_user.test_old_password_user.account_enabled
     job_title           = azuread_user.test_old_password_user.job_title
     department          = azuread_user.test_old_password_user.department
   }
