@@ -75,6 +75,7 @@ class EntraIDUser(GraphResourceManager):
             'UserAuthenticationMethod.Read.All',
             'IdentityRiskyUser.Read.All',
             'GroupMember.Read.All'
+
         )
 
     def make_graph_request(self, endpoint, method='GET', data=None):
@@ -93,9 +94,11 @@ class EntraIDUser(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
+
             # Note: Individual permissions like User.Read.All are enforced at the
             # app registration level. The scope for Microsoft Graph API should
             # always be https://graph.microsoft.com/.default
+
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -361,7 +364,9 @@ class MFAEnabledFilter(Filter):
                 )
                 continue
 
+
             if has_mfa == mfa_enabled:
+
                 filtered.append(resource)
 
         return filtered
@@ -704,7 +709,7 @@ class RequireMFAAction(AzureBaseAction):
             auth_methods_url = (
                 f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
             )
-            auth_response = requests.get(auth_methods_url, headers=headers, timeout=30)
+
             auth_response.raise_for_status()
 
             methods = auth_response.json().get('value', [])

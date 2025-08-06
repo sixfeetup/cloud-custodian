@@ -7,9 +7,8 @@ import requests
 from c7n.filters import Filter
 from c7n.utils import type_schema
 from c7n_azure.provider import resources
-from c7n_azure.graph_utils import (
-    GraphResourceManager, GraphTypeInfo, GraphSource, get_required_permissions_for_endpoint
-)
+from c7n_azure.graph_utils import (GraphResourceManager, GraphTypeInfo, GraphSource,
+                                   get_required_permissions_for_endpoint)
 
 log = logging.getLogger('custodian.azure.entraid.conditional_access')
 
@@ -76,9 +75,7 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at
-            # the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -107,6 +104,7 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
             return resources
         except Exception as e:
             log.warning(f"Could not retrieve Conditional Access Policies: {e}")
+
             log.warning(
                 "Conditional Access Policies require Microsoft Graph beta API and "
                 "appropriate permissions"
@@ -153,11 +151,13 @@ class AdminMFARequiredFilter(Filter):
                 'Privileged Role Administrator',
                 'User Administrator'
             ]
+            
             has_admin_roles = any(role in admin_roles for role in roles)
             requires_mfa = 'mfa' in [control.lower() for control in built_in_controls]
 
             if has_admin_roles:
-                if (mfa_required and requires_mfa) or (not mfa_required and not requires_mfa):
+                if ((mfa_required and requires_mfa) or
+                        (not mfa_required and not requires_mfa)):
                     filtered.append(resource)
 
         return filtered

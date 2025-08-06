@@ -131,6 +131,7 @@ class EntraIDUserTest(unittest.TestCase):
             if 'user1/authentication/methods' in endpoint:
                 return {
                     'value': [{
+
                         '@odata.type':
                         '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
                     }]
@@ -177,7 +178,9 @@ class EntraIDUserTest(unittest.TestCase):
 
         # Should match user1 and user3 (>90 days)
         self.assertEqual(len(filtered), 2)
-        self.assertEqual(set(u['objectId'] for u in filtered), {'user1', 'user3'})
+        self.assertEqual(
+            set(u['objectId'] for u in filtered), {'user1', 'user3'}
+        )
 
 
 class EntraIDGroupTest(unittest.TestCase):
@@ -284,6 +287,20 @@ class EntraIDOrganizationTest(unittest.TestCase):
         self.assertEqual(resource_type.id, 'id')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Organization.Read.All', resource_type.permissions)
+        self.assertIn('Directory.Read.All', resource_type.permissions)
+
+    def test_password_lockout_threshold_schema_validate(self):
+        """Test password lockout threshold filter schema validation"""
+        policy_data = {
+            'name': 'test-lockout-threshold',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        }
+        p = self.load_policy(policy_data, validate=True)
+        self.assertIsNotNone(p)
+        self.assertEqual(p.name, 'test-lockout-threshold')
 
 
 if __name__ == '__main__':

@@ -42,6 +42,7 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'users/{id}': ['User.Read.All'],
     'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
     'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
+  
     # Identity Protection endpoints
     'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
 
@@ -59,6 +60,11 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     # Policy endpoints (require beta API)
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
+
+    # Directory Settings endpoints (beta API)
+    'settings': ['Directory.Read.All'],
+    'settings/{id}': ['Directory.ReadWrite.All'],
+    'directorySettingTemplates': ['Directory.Read.All'],
 }
 
 
@@ -121,9 +127,9 @@ class GraphResourceManager(QueryResourceManager):
     Provides common Graph API client functionality for all EntraID resources.
     """
 
-    def get_client(self, client_type=None):
-        """Get client session. For MonitorManagementClient, use ARM session;
-        otherwise use Graph session."""
+
+    def get_client(self):
+        """Get Microsoft Graph client session"""
         session = local_session(self.session_factory)
 
         # For diagnostic settings, we need to use the Azure Monitor client via ARM
@@ -138,7 +144,7 @@ class GraphResourceManager(QueryResourceManager):
         try:
             session = self.get_client()
             session._initialize_session()
-
+            
             # Get specific permissions for this endpoint instead of using .default
             try:
                 get_required_permissions_for_endpoint(endpoint, method)

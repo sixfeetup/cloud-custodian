@@ -37,8 +37,14 @@ class TerraformAzureRewriteHooks:
     def pytest_terraform_modify_state(self, tfstate):
         """Sanitize functional testing account data for Azure"""
         # Azure-specific sanitization - replace Azure GUIDs with placeholder
+        # Azure GUID pattern
+        azure_guid_pattern = (
+            r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-'
+            r'[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+        )
         tfstate.update(
             re.sub(
+                azure_guid_pattern,
                 r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',
                 '00000000-0000-0000-0000-000000000000',
                 str(tfstate)

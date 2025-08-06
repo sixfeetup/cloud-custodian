@@ -5,7 +5,9 @@ import logging
 import requests
 
 from c7n.filters import Filter
+
 from c7n.utils import type_schema
+
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import (
     GraphResourceManager, GraphTypeInfo, GraphSource, EntraIDDiagnosticSettingsFilter
@@ -96,6 +98,7 @@ class EntraIDGroup(GraphResourceManager):
                 resource['c7n:IsDistributionGroup'] = self._is_distribution_group(resource)
                 resource['c7n:IsDynamicGroup'] = self._is_dynamic_group(resource)
                 resource['c7n:IsAdminGroup'] = self._is_admin_group(resource)
+
         except Exception as e:
             log.warning(f"Failed to augment EntraID groups: {e}")
 
@@ -135,18 +138,21 @@ class EntraIDGroup(GraphResourceManager):
             # Use $count parameter for efficient counting
             endpoint = f'groups/{group_id}/members/$count'
             response = self.make_graph_request(endpoint)
+
             # Response should be a plain number
             if isinstance(response, (int, str)):
                 return int(response)
             else:
                 log.warning(f"Unexpected response format for member count: {response}")
                 return 0
+
         except requests.exceptions.RequestException as e:
             if "403" in str(e) or "Insufficient privileges" in str(e):
                 log.warning(
                     f"Insufficient privileges to read member count for group {group_id}. "
                     "Required permission: GroupMember.Read.All"
                 )
+
                 return None  # Unknown member count
             else:
                 log.error(f"Error getting member count for group {group_id}: {e}")
@@ -161,18 +167,21 @@ class EntraIDGroup(GraphResourceManager):
             # Use $count parameter for efficient counting
             endpoint = f'groups/{group_id}/owners/$count'
             response = self.make_graph_request(endpoint)
+
             # Response should be a plain number
             if isinstance(response, (int, str)):
                 return int(response)
             else:
                 log.warning(f"Unexpected response format for owner count: {response}")
                 return 0
+
         except requests.exceptions.RequestException as e:
             if "403" in str(e) or "Insufficient privileges" in str(e):
                 log.warning(
                     f"Insufficient privileges to read owner count for group {group_id}. "
                     "Required permission: Group.Read.All"
                 )
+
                 return None  # Unknown owner count
             else:
                 log.error(f"Error getting owner count for group {group_id}: {e}")
@@ -185,6 +194,7 @@ class EntraIDGroup(GraphResourceManager):
         """
         try:
             # Get group members with userType field explicitly requested
+
             endpoint = (
                 f'groups/{group_id}/members?$select=id,displayName,'
                 'userPrincipalName,userType'
@@ -194,18 +204,22 @@ class EntraIDGroup(GraphResourceManager):
 
             has_external_members = False
             has_guest_members = False
+
             for member in members:
                 # Only analyze users (not other groups or service principals)
                 if member.get('@odata.type') == '#microsoft.graph.user':
                     user_type = member.get('userType', 'Member')
                     user_principal_name = member.get('userPrincipalName', '')
+
                     # Check if user is a guest
                     if user_type.lower() == 'guest':
                         has_guest_members = True
+
                     # Check if user is external (from different domain)
                     # External users typically have #EXT# in their UPN or are guests
                     if '#EXT#' in user_principal_name or user_type.lower() == 'guest':
                         has_external_members = True
+
             return {
                 'has_external_members': has_external_members,
                 'has_guest_members': has_guest_members,
@@ -220,6 +234,7 @@ class EntraIDGroup(GraphResourceManager):
                     f"Insufficient privileges to analyze member types for group {group_id}. "
                     "Required permissions: GroupMember.Read.All, User.Read.All"
                 )
+
                 return None  # Unknown member types
             else:
                 log.error(f"Error analyzing member types for group {group_id}: {e}")
@@ -246,11 +261,13 @@ class MemberCountFilter(Filter):
                 count: 100
                 op: greater-than
     """
+
     schema = type_schema(
         'member-count',
         count={'type': 'number'},
         op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
     )
+
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         count_threshold = self.data.get('count', 0)
@@ -260,9 +277,11 @@ class MemberCountFilter(Filter):
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
+
                 log.warning(
                     f"Skipping group without ID: {resource.get('displayName', 'Unknown')}"
                 )
+
                 continue
 
             # Get actual member count via Graph API
@@ -271,11 +290,13 @@ class MemberCountFilter(Filter):
             if member_count is None:
                 # Unknown member count (permission error or API failure)
                 # Skip this group to avoid false results
+
                 log.warning(
                     f"Could not determine member count for group "
                     f"{resource.get('displayName', group_id)}"
                 )
                 continue
+
             if op == 'greater-than' and member_count > count_threshold:
                 filtered.append(resource)
             elif op == 'less-than' and member_count < count_threshold:
@@ -306,11 +327,13 @@ class OwnerCountFilter(Filter):
                 count: 0
                 op: equal
     """
+
     schema = type_schema(
         'owner-count',
         count={'type': 'number'},
         op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
     )
+
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         count_threshold = self.data.get('count', 0)
@@ -320,9 +343,11 @@ class OwnerCountFilter(Filter):
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
+
                 log.warning(
                     f"Skipping group without ID: {resource.get('displayName', 'Unknown')}"
                 )
+
                 continue
 
             # Get actual owner count via Graph API
@@ -331,11 +356,13 @@ class OwnerCountFilter(Filter):
             if owner_count is None:
                 # Unknown owner count (permission error or API failure)
                 # Skip this group to avoid false results
+
                 log.warning(
                     f"Could not determine owner count for group "
                     f"{resource.get('displayName', group_id)}"
                 )
                 continue
+
             if op == 'greater-than' and owner_count > count_threshold:
                 filtered.append(resource)
             elif op == 'less-than' and owner_count < count_threshold:
@@ -365,6 +392,7 @@ class MemberTypesFilter(Filter):
               - type: member-types
                 include-external: true
     """
+
     schema = type_schema('member-types',
                         **{
                             'include-external': {'type': 'boolean'},
@@ -380,9 +408,11 @@ class MemberTypesFilter(Filter):
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
+
                 log.warning(
                     f"Skipping group without ID: {resource.get('displayName', 'Unknown')}"
                 )
+
                 continue
 
             # Get actual member type analysis via Graph API
@@ -391,10 +421,12 @@ class MemberTypesFilter(Filter):
             if member_analysis is None:
                 # Unknown member types (permission error or API failure)
                 # Skip this group to avoid false results
+
                 log.warning(
                     f"Could not analyze member types for group "
                     f"{resource.get('displayName', group_id)}"
                 )
+
                 continue
 
             has_external_members = member_analysis['has_external_members']
@@ -448,11 +480,13 @@ class GroupTypeFilter(Filter):
               - type: group-type
                 group-type: dynamic
     """
+
     schema = type_schema('group-type',
                         **{
                             'group-type': {
                                 'type': 'string',
-                                'enum': ['security', 'distribution', 'dynamic', 'unified', 'admin']
+                                'enum': ['security', 'distribution',
+                                        'dynamic', 'unified', 'admin']
                             }
                         })
 
@@ -478,6 +512,7 @@ class GroupTypeFilter(Filter):
 
             if should_include:
                 filtered.append(resource)
+
 
         return filtered
 
