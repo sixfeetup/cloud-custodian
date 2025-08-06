@@ -6,7 +6,8 @@
 **Security Notes**
 - All resources request ONLY EntraID permissions, not SharePoint/Exchange/Teams data access
 - Microsoft 365 groups may reference connected SharePoint/Teams resources but no direct access
-- Permissions are enforced at app registration level; .default scope is used per Graph API best practices
+- Permissions are enforced at app registration level;
+  .default scope is used per Graph API best practices
 - Unknown status (permission errors) causes resources to be skipped to avoid false results
 """
 

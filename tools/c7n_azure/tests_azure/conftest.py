@@ -19,7 +19,7 @@ except ImportError:
 
     class LazyPluginCacheDir:
         pass
-    
+
     class TestUtils:
         pass
 
@@ -31,7 +31,7 @@ LazyPluginCacheDir.value = '../.tfcache'
 
 class TerraformAzureRewriteHooks:
     """Local pytest plugin for Azure terraform tests
-    
+
     Work around to allow for dynamic registration of hooks based on plugin availability
     """
     def pytest_terraform_modify_state(self, tfstate):
@@ -40,7 +40,7 @@ class TerraformAzureRewriteHooks:
         tfstate.update(
             re.sub(
                 r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',
-                '00000000-0000-0000-0000-000000000000', 
+                '00000000-0000-0000-0000-000000000000',
                 str(tfstate)
             )
         )
@@ -54,7 +54,7 @@ def pytest_configure(config):
 
 class AzureTerraformTesting(TestUtils):
     """Pytest Azure Testing Fixture for Terraform tests"""
-    
+
     def __init__(self, request):
         self.request = request
         # Set up Azure test context similar to BaseTest

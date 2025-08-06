@@ -43,11 +43,11 @@ data "azuread_users" "all_users" {
 resource "azuread_user" "test_policy_user" {
   user_principal_name   = "c7n-policy-test-${random_string.suffix.result}@${local.domain_name}"
   display_name          = "C7N Policy Test User"
-  mail_nickname        = "c7n-policy-test-${random_string.suffix.result}"
-  password             = "P@ssw0rd123!"
+  mail_nickname         = "c7n-policy-test-${random_string.suffix.result}"
+  password              = "P@ssw0rd123!"
   force_password_change = false
-  account_enabled      = true
-  
+  account_enabled       = true
+
   lifecycle {
     ignore_changes = [password]
   }
@@ -215,10 +215,10 @@ output "test_mfa_all_users_policy" {
     id           = azuread_conditional_access_policy.test_mfa_all_users.id
     display_name = azuread_conditional_access_policy.test_mfa_all_users.display_name
     state        = azuread_conditional_access_policy.test_mfa_all_users.state
-    conditions   = {
-      users_included    = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].users[0].included_users
-      apps_included     = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].applications[0].included_applications
-      client_app_types  = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].client_app_types
+    conditions = {
+      users_included   = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].users[0].included_users
+      apps_included    = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].applications[0].included_applications
+      client_app_types = azuread_conditional_access_policy.test_mfa_all_users.conditions[0].client_app_types
     }
     grant_controls = {
       operator          = azuread_conditional_access_policy.test_mfa_all_users.grant_controls[0].operator
@@ -232,10 +232,10 @@ output "test_disabled_policy" {
     id           = azuread_conditional_access_policy.test_disabled_policy.id
     display_name = azuread_conditional_access_policy.test_disabled_policy.display_name
     state        = azuread_conditional_access_policy.test_disabled_policy.state
-    conditions   = {
-      users_included    = azuread_conditional_access_policy.test_disabled_policy.conditions[0].users[0].included_users
-      apps_included     = azuread_conditional_access_policy.test_disabled_policy.conditions[0].applications[0].included_applications
-      client_app_types  = azuread_conditional_access_policy.test_disabled_policy.conditions[0].client_app_types
+    conditions = {
+      users_included   = azuread_conditional_access_policy.test_disabled_policy.conditions[0].users[0].included_users
+      apps_included    = azuread_conditional_access_policy.test_disabled_policy.conditions[0].applications[0].included_applications
+      client_app_types = azuread_conditional_access_policy.test_disabled_policy.conditions[0].client_app_types
     }
     grant_controls = {
       operator          = azuread_conditional_access_policy.test_disabled_policy.grant_controls[0].operator
@@ -249,10 +249,10 @@ output "test_report_only_policy" {
     id           = azuread_conditional_access_policy.test_report_only_policy.id
     display_name = azuread_conditional_access_policy.test_report_only_policy.display_name
     state        = azuread_conditional_access_policy.test_report_only_policy.state
-    conditions   = {
-      users_included    = azuread_conditional_access_policy.test_report_only_policy.conditions[0].users[0].included_users
-      apps_included     = azuread_conditional_access_policy.test_report_only_policy.conditions[0].applications[0].included_applications
-      client_app_types  = azuread_conditional_access_policy.test_report_only_policy.conditions[0].client_app_types
+    conditions = {
+      users_included   = azuread_conditional_access_policy.test_report_only_policy.conditions[0].users[0].included_users
+      apps_included    = azuread_conditional_access_policy.test_report_only_policy.conditions[0].applications[0].included_applications
+      client_app_types = azuread_conditional_access_policy.test_report_only_policy.conditions[0].client_app_types
     }
     grant_controls = {
       operator          = azuread_conditional_access_policy.test_report_only_policy.grant_controls[0].operator
@@ -266,10 +266,10 @@ output "test_block_legacy_auth_policy" {
     id           = azuread_conditional_access_policy.test_block_legacy_auth.id
     display_name = azuread_conditional_access_policy.test_block_legacy_auth.display_name
     state        = azuread_conditional_access_policy.test_block_legacy_auth.state
-    conditions   = {
-      users_included    = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].users[0].included_users
-      apps_included     = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].applications[0].included_applications
-      client_app_types  = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].client_app_types
+    conditions = {
+      users_included   = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].users[0].included_users
+      apps_included    = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].applications[0].included_applications
+      client_app_types = azuread_conditional_access_policy.test_block_legacy_auth.conditions[0].client_app_types
     }
     grant_controls = {
       operator          = azuread_conditional_access_policy.test_block_legacy_auth.grant_controls[0].operator
@@ -280,9 +280,9 @@ output "test_block_legacy_auth_policy" {
 
 output "test_policy_user" {
   value = {
-    id                    = azuread_user.test_policy_user.id
-    object_id            = azuread_user.test_policy_user.object_id
-    user_principal_name  = azuread_user.test_policy_user.user_principal_name
-    display_name         = azuread_user.test_policy_user.display_name
+    id                  = azuread_user.test_policy_user.id
+    object_id           = azuread_user.test_policy_user.object_id
+    user_principal_name = azuread_user.test_policy_user.user_principal_name
+    display_name        = azuread_user.test_policy_user.display_name
   }
 }

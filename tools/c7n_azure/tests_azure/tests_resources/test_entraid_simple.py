@@ -4,15 +4,12 @@
 
 import unittest
 import sys
-import os
 from unittest.mock import Mock, patch
 
 try:
     from c7n_azure.resources.entraid_user import EntraIDUser
     from c7n_azure.resources.entraid_group import EntraIDGroup
     from c7n_azure.resources.entraid_organization import EntraIDOrganization
-    from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
-    from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
     from c7n.config import Config
     from c7n.policy import Policy
 except ImportError as e:
@@ -22,13 +19,13 @@ except ImportError as e:
 
 class EntraIDUserTest(unittest.TestCase):
     """Test EntraID User resource functionality"""
-    
+
     def load_policy(self, policy_data, validate=False):
         """Helper method to load a policy"""
         config = Config.empty()
         policy = Policy(policy_data, config, session_factory=None)
         return policy
-    
+
     def test_entraid_user_schema_validate(self):
         """Test that the EntraID user resource schema validates correctly"""
         policy_data = {
@@ -56,7 +53,7 @@ class EntraIDUserTest(unittest.TestCase):
         """Test user resource augmentation with computed fields"""
         mock_client = Mock()
         mock_session.return_value.get_session_for_resource.return_value = mock_client
-        
+
         # Sample user data
         users = [
             {
@@ -78,21 +75,21 @@ class EntraIDUserTest(unittest.TestCase):
                 'jobTitle': 'User'
             }
         ]
-        
+
         policy_data = {
             'name': 'test-augment',
             'resource': 'azure.entraid-user'
         }
         policy = self.load_policy(policy_data)
-        
+
         resource_mgr = policy.resource_manager
         augmented = resource_mgr.augment(users)
-        
+
         # Check augmented fields
         self.assertIn('c7n:LastSignInDays', augmented[0])
         self.assertIn('c7n:IsHighPrivileged', augmented[0])
         self.assertIn('c7n:PasswordAge', augmented[0])
-        
+
         # Admin user should be flagged as high privileged
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
@@ -103,21 +100,21 @@ class EntraIDUserTest(unittest.TestCase):
         # Mock the session and Graph API responses
         mock_client = Mock()
         mock_session.return_value.get_session_for_resource.return_value = mock_client
-        
+
         users = [
             {
                 'objectId': 'user1',
                 'strongAuthenticationDetail': {'methods': ['PhoneAuth']}
             },
             {
-                'objectId': 'user2', 
+                'objectId': 'user2',
                 'strongAuthenticationDetail': {'methods': []}
             },
             {
                 'objectId': 'user3'
             }
         ]
-        
+
         policy_data = {
             'name': 'test-mfa-filter',
             'resource': 'azure.entraid-user',
@@ -125,21 +122,26 @@ class EntraIDUserTest(unittest.TestCase):
                 {'type': 'mfa-enabled', 'value': True}
             ]
         }
-        
+
         policy = self.load_policy(policy_data)
         resource_mgr = policy.resource_manager
-        
+
         # Mock the Graph API responses for MFA status
         def mock_make_graph_request(endpoint):
             if 'user1/authentication/methods' in endpoint:
-                return {'value': [{'@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'}]}
+                return {
+                    'value': [{
+                        '@odata.type':
+                        '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
+                    }]
+                }
             else:
                 return {'value': []}
-        
+
         resource_mgr.make_graph_request = mock_make_graph_request
-        
+
         filtered = resource_mgr.filter_resources(users)
-        
+
         # Only user1 has MFA enabled
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['objectId'], 'user1')
@@ -160,7 +162,7 @@ class EntraIDUserTest(unittest.TestCase):
                 'c7n:LastSignInDays': 999  # Never signed in
             }
         ]
-        
+
         policy_data = {
             'name': 'test-signin-filter',
             'resource': 'azure.entraid-user',
@@ -168,11 +170,11 @@ class EntraIDUserTest(unittest.TestCase):
                 {'type': 'last-sign-in', 'days': 90, 'op': 'greater-than'}
             ]
         }
-        
+
         policy = self.load_policy(policy_data)
         resource_mgr = policy.resource_manager
         filtered = resource_mgr.filter_resources(users)
-        
+
         # Should match user1 and user3 (>90 days)
         self.assertEqual(len(filtered), 2)
         self.assertEqual(set(u['objectId'] for u in filtered), {'user1', 'user3'})
@@ -180,13 +182,13 @@ class EntraIDUserTest(unittest.TestCase):
 
 class EntraIDGroupTest(unittest.TestCase):
     """Test EntraID Group resource functionality"""
-    
+
     def load_policy(self, policy_data, validate=False):
         """Helper method to load a policy"""
         config = Config.empty()
         policy = Policy(policy_data, config, session_factory=None)
         return policy
-    
+
     def test_entraid_group_schema_validate(self):
         """Test that the EntraID group resource schema validates correctly"""
         policy_data = {
@@ -208,11 +210,11 @@ class EntraIDGroupTest(unittest.TestCase):
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Group.Read.All', resource_type.permissions)
 
-    @patch('c7n_azure.resources.entraid_group.local_session')
+    @patch('c7n_azure.graph_utils.local_session')
     def test_entraid_group_augment(self, mock_session):
         """Test group resource augmentation with computed fields"""
         mock_session.return_value.get_session_for_resource.return_value = Mock()
-        
+
         # Sample group data
         groups = [
             {
@@ -232,22 +234,22 @@ class EntraIDGroupTest(unittest.TestCase):
                 'groupTypes': ['Unified']
             }
         ]
-        
+
         policy_data = {
             'name': 'test-augment',
             'resource': 'azure.entraid-group'
         }
-        
+
         policy = self.load_policy(policy_data)
         resource_mgr = policy.resource_manager
         augmented = resource_mgr.augment(groups)
-        
+
         # Check augmented fields
         self.assertIn('c7n:IsSecurityGroup', augmented[0])
         self.assertIn('c7n:IsDistributionGroup', augmented[0])
         self.assertIn('c7n:IsDynamicGroup', augmented[0])
         self.assertIn('c7n:IsAdminGroup', augmented[0])
-        
+
         # Admin group should be flagged correctly
         self.assertTrue(augmented[0]['c7n:IsSecurityGroup'])
         self.assertTrue(augmented[0]['c7n:IsAdminGroup'])
@@ -256,13 +258,13 @@ class EntraIDGroupTest(unittest.TestCase):
 
 class EntraIDOrganizationTest(unittest.TestCase):
     """Test EntraID Organization resource functionality"""
-    
+
     def load_policy(self, policy_data, validate=False):
         """Helper method to load a policy"""
         config = Config.empty()
         policy = Policy(policy_data, config, session_factory=None)
         return policy
-    
+
     def test_entraid_organization_schema_validate(self):
         """Test organization resource schema validation"""
         policy_data = {

@@ -6,7 +6,9 @@ import logging
 from c7n.filters import Filter
 from c7n.utils import type_schema
 from c7n_azure.provider import resources
-from c7n_azure.graph_utils import GraphResourceManager, GraphTypeInfo, GraphSource
+from c7n_azure.graph_utils import (
+    GraphResourceManager, GraphTypeInfo, GraphSource, EntraIDDiagnosticSettingsFilter
+)
 
 log = logging.getLogger('custodian.azure.entraid.organization')
 
@@ -14,18 +16,18 @@ log = logging.getLogger('custodian.azure.entraid.organization')
 @resources.register('entraid-organization')
 class EntraIDOrganization(GraphResourceManager):
     """EntraID Organization resource for tenant-level settings.
-    
+
     Provides access to organization-level configuration.
     Permissions: See Graph API Permissions Reference section.
-    
+
     Available filters: value, security-defaults
-    
+
     :example:
-    
+
     Check if security defaults are disabled:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: security-defaults-check
             resource: azure.entraid-organization
@@ -58,7 +60,7 @@ class EntraIDOrganization(GraphResourceManager):
         try:
             response = self.make_graph_request('organization')
             resources = response.get('value', [])
-            
+
             log.debug(f"Retrieved {len(resources)} organization settings from Graph API")
             return resources
         except Exception as e:
@@ -69,13 +71,13 @@ class EntraIDOrganization(GraphResourceManager):
 @EntraIDOrganization.filter_registry.register('security-defaults')
 class SecurityDefaultsFilter(Filter):
     """Filter based on security defaults configuration.
-    
+
     :example:
-    
+
     Find organizations with security defaults disabled:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: security-defaults-disabled
             resource: azure.entraid-organization
@@ -83,7 +85,7 @@ class SecurityDefaultsFilter(Filter):
               - type: security-defaults
                 enabled: false
     """
-    
+
     schema = type_schema('security-defaults', enabled={'type': 'boolean'})
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
@@ -95,3 +97,7 @@ class SecurityDefaultsFilter(Filter):
             if is_enabled == enabled_required:
                 filtered.append(resource)
         return filtered
+
+
+# Register diagnostic settings filter for EntraID organization
+EntraIDOrganization.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)
