@@ -5,7 +5,7 @@ import logging
 import requests
 
 from c7n.filters import Filter
-from c7n.utils import local_session, type_schema
+from c7n.utils import type_schema, local_session  # noqa: F401
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import GraphResourceManager, GraphTypeInfo, GraphSource
 
@@ -459,3 +459,4 @@ class GroupTypeFilter(Filter):
                 filtered.append(resource)
                 
         return filtered
+

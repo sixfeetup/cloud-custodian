@@ -66,3 +66,4 @@ class EntraIDSecurityDefaults(GraphResourceManager):
         except Exception as e:
             log.warning(f"Could not retrieve Security Defaults policy: {e}")
             return []
+

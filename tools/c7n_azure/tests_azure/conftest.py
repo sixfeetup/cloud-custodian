@@ -70,3 +70,4 @@ def test(request):
     """Azure test fixture that provides Cloud Custodian testing utilities"""
     test_utils = AzureTerraformTesting(request)
     return test_utils
+

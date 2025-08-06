@@ -139,7 +139,7 @@ class SecurityDefaultsFilter(Filter):
         for resource in resources:
             security_defaults = resource.get('securityDefaults', {})
             is_enabled = security_defaults.get('isEnabled', False)
-            if is_enabled == enabled_required:
+            if bool(is_enabled) == bool(enabled_required):
                 filtered.append(resource)
         return filtered
 
@@ -246,3 +246,4 @@ class PasswordLockoutThresholdFilter(Filter):
                 continue
                 
         return filtered
+

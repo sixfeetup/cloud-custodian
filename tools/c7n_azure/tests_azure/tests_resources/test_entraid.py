@@ -1077,19 +1077,19 @@ def test_entraid_user_discovery_terraform(test, entraid_user):
     old_password_user = entraid_user.outputs['test_old_password_user']['value']
     
     # Verify test data integrity
-    assert admin_user['account_enabled'] == True
+    assert admin_user['account_enabled']
     assert admin_user['job_title'] == 'Administrator'
     assert admin_user['department'] == 'IT'
     
-    assert disabled_user['account_enabled'] == False
+    assert not disabled_user['account_enabled']
     assert disabled_user['job_title'] == 'User'
     assert disabled_user['department'] == 'HR'
     
-    assert regular_user['account_enabled'] == True
+    assert regular_user['account_enabled']
     assert regular_user['job_title'] == 'Developer'
     assert regular_user['department'] == 'Engineering'
     
-    assert old_password_user['account_enabled'] == True
+    assert old_password_user['account_enabled']
     assert old_password_user['job_title'] == 'Analyst'
     assert old_password_user['department'] == 'Finance'
     
@@ -1265,8 +1265,8 @@ def test_entraid_security_defaults_discovery_terraform(test, entraid_security_de
     assert policy.resource_manager.type == 'entraid-security-defaults'
     
     # Verify test data integrity
-    assert enabled_defaults['is_enabled'] == True
-    assert disabled_defaults['is_enabled'] == False
+    assert enabled_defaults['is_enabled']
+    assert not disabled_defaults['is_enabled']
     assert enabled_defaults['display_name'] == 'Security Defaults'
 
 
@@ -1383,11 +1383,12 @@ def test_entraid_security_defaults_scenarios_terraform(test, entraid_security_de
     risky_scenario = scenarios['disabled_no_ca']
     optimal_scenario = scenarios['disabled_with_ca']
     
-    assert secure_scenario['security_defaults_enabled'] == True
-    assert risky_scenario['security_defaults_enabled'] == False
-    assert optimal_scenario['security_defaults_enabled'] == False
+    assert secure_scenario['security_defaults_enabled']
+    assert not risky_scenario['security_defaults_enabled']
+    assert not optimal_scenario['security_defaults_enabled']
     
     assert optimal_scenario['compliance_score'] > secure_scenario['compliance_score']
     assert secure_scenario['compliance_score'] > risky_scenario['compliance_score']
     
     assert policy is not None
+

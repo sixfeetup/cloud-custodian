@@ -4,9 +4,7 @@
 import logging
 import requests
 import re
-from datetime import datetime
-
-from c7n.utils import local_session, type_schema
+from c7n.utils import local_session
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.query import QueryResourceManager, TypeInfo, TypeMeta, DescribeSource
 
@@ -15,14 +13,14 @@ log = logging.getLogger('custodian.azure.graph')
 
 class GraphSource(DescribeSource):
     """Custom source for Microsoft Graph API resources.
-    
+
     This source integrates with Cloud Custodian's filtering framework while
     using Microsoft Graph API instead of Azure Resource Manager APIs.
     """
-    
+
     def __init__(self, manager):
         super().__init__(manager)
-    
+
     def get_resources(self, query=None):
         """Get resources from Microsoft Graph API."""
         try:
@@ -41,10 +39,10 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'users/{id}': ['User.Read.All'],
     'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
     'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
-    
-    # Identity Protection endpoints  
+
+    # Identity Protection endpoints
     'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
-    
+
     # Group endpoints
     'groups': ['Group.Read.All'],
     'groups/{id}': ['Group.Read.All'],
@@ -52,28 +50,29 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'groups/{id}/members/$count': ['GroupMember.Read.All'],
     'groups/{id}/owners': ['Group.Read.All'],
     'groups/{id}/owners/$count': ['Group.Read.All'],
-    
+
     # Organization endpoints
     'organization': ['Organization.Read.All'],
-    
+
     # Policy endpoints (require beta API)
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
-    
+
     # Directory Settings endpoints (beta API)
     'settings': ['Directory.Read.All'],
     'settings/{id}': ['Directory.ReadWrite.All'],
     'directorySettingTemplates': ['Directory.Read.All'],
 }
 
+
 def get_required_permissions_for_endpoint(endpoint, method='GET'):
     """Get the minimum required permissions for a Graph API endpoint."""
     # Normalize endpoint by replacing specific IDs with {id} placeholder
     normalized_endpoint = endpoint
-    
+
     # Replace UUIDs and specific IDs with {id} placeholder for lookup
     normalized_endpoint = re.sub(r'/[0-9a-fA-F-]{8,}', '/{id}', normalized_endpoint)
-    
+
     # For write operations, we need ReadWrite permissions
     if method in ['PATCH', 'POST', 'PUT', 'DELETE']:
         if 'users' in normalized_endpoint:
@@ -82,16 +81,16 @@ def get_required_permissions_for_endpoint(endpoint, method='GET'):
             return ['Group.ReadWrite.All']
         elif 'authentication' in normalized_endpoint:
             return ['UserAuthenticationMethod.ReadWrite.All']
-    
+
     # Check for exact match first
     if normalized_endpoint in GRAPH_ENDPOINT_PERMISSIONS:
         return GRAPH_ENDPOINT_PERMISSIONS[normalized_endpoint]
-    
+
     # Check for pattern matches
     for pattern, permissions in GRAPH_ENDPOINT_PERMISSIONS.items():
         if pattern in normalized_endpoint:
             return permissions
-    
+
     # Fail-fast for unmapped endpoints rather than using overprivileged .default
     log.error(f"No permissions mapping found for endpoint: {endpoint}. "
               f"This endpoint must be explicitly mapped in GRAPH_ENDPOINT_PERMISSIONS "
@@ -116,10 +115,10 @@ class GraphTypeInfo(TypeInfo, metaclass=TypeMeta):
 
 class GraphResourceManager(QueryResourceManager):
     """Base class for Microsoft Graph API resources.
-    
+
     Provides common Graph API client functionality for all EntraID resources.
     """
-    
+
     def get_client(self):
         """Get Microsoft Graph client session"""
         session = local_session(self.session_factory)

@@ -391,3 +391,4 @@ class Session:
             return self.cloud_endpoints.endpoints.microsoft_graph_resource_id
         else:
             return getattr(self.cloud_endpoints.endpoints, endpoint)
+

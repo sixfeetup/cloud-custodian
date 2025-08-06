@@ -3,8 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import unittest
-import sys
-import os
 from unittest.mock import Mock, patch
 
 try:
@@ -300,3 +298,4 @@ class EntraIDOrganizationTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+

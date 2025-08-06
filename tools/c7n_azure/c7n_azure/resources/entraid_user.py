@@ -333,7 +333,7 @@ class MFAEnabledFilter(Filter):
                 log.warning(f"Could not determine MFA status for user {resource.get('displayName', user_id)}")
                 continue
                 
-            if has_mfa == mfa_enabled:
+            if bool(has_mfa) == bool(mfa_enabled):
                 filtered.append(resource)
                 
         return filtered
@@ -670,3 +670,4 @@ class RequireMFAAction(AzureBaseAction):
                 self.log.error(f"Failed to check MFA status for user {resource.get('displayName', 'Unknown')}: {e}")
         except Exception as e:
             self.log.error(f"Failed to process MFA requirement for user {resource.get('displayName', 'Unknown')}: {e}")
+
