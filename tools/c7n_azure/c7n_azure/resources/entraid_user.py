@@ -55,7 +55,7 @@ class EntraIDUser(GraphResourceManager):
         enum_spec = ('users', 'list', None)
         detail_spec = ('users', 'get', 'id')
         id = 'id'
-        name = 'displayName' 
+        name = 'displayName'
         date = 'createdDateTime'
         default_report_fields = (
             'displayName',
@@ -67,7 +67,10 @@ class EntraIDUser(GraphResourceManager):
             'lastSignInDateTime',
             'id'
         )
-        permissions = ('User.Read.All', 'UserAuthenticationMethod.Read.All', 'IdentityRiskyUser.Read.All', 'GroupMember.Read.All')
+        permissions = (
+            'User.Read.All', 'UserAuthenticationMethod.Read.All',
+            'IdentityRiskyUser.Read.All', 'GroupMember.Read.All'
+        )
 
     def make_graph_request(self, endpoint, method='GET', data=None):
         """Make a request to Microsoft Graph API with minimum required permissions."""
@@ -83,8 +86,9 @@ class EntraIDUser(GraphResourceManager):
                 raise
             
             # Request token for Microsoft Graph API
-            # Note: Individual permissions like User.Read.All are enforced at the app registration level
-            # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
+            # Note: Individual permissions like User.Read.All are enforced
+            # at the app registration level. The scope for Microsoft Graph API
+            # should always be https://graph.microsoft.com/.default
             scope = 'https://graph.microsoft.com/.default'
             
             token = session.credentials.get_token(scope)
@@ -565,7 +569,9 @@ class DisableUserAction(AzureBaseAction):
             # Make Graph API PATCH request to disable user
             # Use specific permission for user modification
             self.graph_session._initialize_session()
-            token = self.graph_session.credentials.get_token('https://graph.microsoft.com/User.ReadWrite.All')
+            token = self.graph_session.credentials.get_token(
+                'https://graph.microsoft.com/User.ReadWrite.All'
+            )
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -585,8 +591,11 @@ class DisableUserAction(AzureBaseAction):
             
         except requests.exceptions.RequestException as e:
             if "403" in str(e) or "Insufficient privileges" in str(e):
-                self.log.error(f"Insufficient privileges to disable user {resource.get('displayName', 'Unknown')}. "
-                              "Required permission: User.ReadWrite.All")
+                self.log.error(
+                    f"Insufficient privileges to disable user "
+                    f"{resource.get('displayName', 'Unknown')}. "
+                    "Required permission: User.ReadWrite.All"
+                )
             else:
                 self.log.error(f"Failed to disable user {resource.get('displayName', 'Unknown')}: {e}")
         except Exception as e:
@@ -636,7 +645,9 @@ class RequireMFAAction(AzureBaseAction):
             # Check if user has MFA methods configured using v1.0 API
             # Use specific permission for reading authentication methods
             self.graph_session._initialize_session()
-            token = self.graph_session.credentials.get_token('https://graph.microsoft.com/UserAuthenticationMethod.Read.All')
+            token = self.graph_session.credentials.get_token(
+                'https://graph.microsoft.com/UserAuthenticationMethod.Read.All'
+            )
             
             headers = {
                 'Authorization': f'Bearer {token.token}',
@@ -644,7 +655,9 @@ class RequireMFAAction(AzureBaseAction):
             }
             
             # Check user's authentication methods
-            auth_methods_url = f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
+            auth_methods_url = (
+                f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
+            )
             auth_response = requests.get(auth_methods_url, headers=headers)
             auth_response.raise_for_status()
             
@@ -659,15 +672,26 @@ class RequireMFAAction(AzureBaseAction):
             if mfa_methods:
                 self.log.info(f"User {display_name} ({user_id}) already has {len(mfa_methods)} MFA method(s) configured")
             else:
-                self.log.warning(f"User {display_name} ({user_id}) has no MFA methods configured. "
-                               f"Consider creating a Conditional Access policy to enforce MFA registration.")
+                self.log.warning(
+                    f"User {display_name} ({user_id}) has no MFA methods configured. "
+                    f"Consider creating a Conditional Access policy to enforce MFA registration."
+                )
             
         except requests.exceptions.RequestException as e:
             if "403" in str(e) or "Insufficient privileges" in str(e):
-                self.log.error(f"Insufficient privileges to check MFA for user {resource.get('displayName', 'Unknown')}. "
-                              "Required permission: UserAuthenticationMethod.Read.All")
+                self.log.error(
+                    f"Insufficient privileges to check MFA for user "
+                    f"{resource.get('displayName', 'Unknown')}. "
+                    "Required permission: UserAuthenticationMethod.Read.All"
+                )
             else:
-                self.log.error(f"Failed to check MFA status for user {resource.get('displayName', 'Unknown')}: {e}")
+                self.log.error(
+                    f"Failed to check MFA status for user "
+                    f"{resource.get('displayName', 'Unknown')}: {e}"
+                )
         except Exception as e:
-            self.log.error(f"Failed to process MFA requirement for user {resource.get('displayName', 'Unknown')}: {e}")
+            self.log.error(
+                f"Failed to process MFA requirement for user "
+                f"{resource.get('displayName', 'Unknown')}: {e}"
+            )
 

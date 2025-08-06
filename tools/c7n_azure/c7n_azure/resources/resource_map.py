@@ -6,7 +6,9 @@ ResourceMap = {
     "azure.afd-custom-domain": "c7n_azure.resources.afd_custom_domain.AfdCustomDomain",
     "azure.aks": "c7n_azure.resources.k8s_service.KubernetesService",
     "azure.app-insights": "c7n_azure.resources.appinsights.AzureAppInsights",
-    "azure.app-service-environment": "c7n_azure.resources.app_service_environment.AppServiceEnvironment",  # noqa
+    "azure.app-service-environment": (
+        "c7n_azure.resources.app_service_environment.AppServiceEnvironment"
+    ),
     "azure.automation-account": "c7n_azure.resources.automation_account.AutomationAccount",
     "azure.open-shift": "c7n_azure.resources.open_shift.OpenShiftService",
     "azure.api-management": "c7n_azure.resources.apimanagement.ApiManagement",
@@ -27,14 +29,18 @@ ResourceMap = {
     "azure.cosmosdb": "c7n_azure.resources.cosmos_db.CosmosDB",
     "azure.cosmosdb-collection": "c7n_azure.resources.cosmos_db.CosmosDBCollection",
     "azure.cosmosdb-database": "c7n_azure.resources.cosmos_db.CosmosDBDatabase",
-    "azure.cost-management-export": "c7n_azure.resources.cost_management_export.CostManagementExport",  # noqa
+    "azure.cost-management-export": (
+        "c7n_azure.resources.cost_management_export.CostManagementExport"
+    ),
     "azure.databricks": "c7n_azure.resources.databricks.Databricks",
     "azure.datafactory": "c7n_azure.resources.data_factory.DataFactory",
     "azure.datalake": "c7n_azure.resources.datalake_store.DataLakeStore",
     "azure.datalake-analytics": "c7n_azure.resources.datalake_analytics.DataLakeAnalytics",
     "azure.defender-alert": "c7n_azure.resources.defender.DefenderAlertSettings",
     "azure.defender-assessment": "c7n_azure.resources.defender.DefenderAssessment",
-    "azure.defender-autoprovisioning": "c7n_azure.resources.defender.DefenderAutoProvisioningSetting",  # noqa
+    "azure.defender-autoprovisioning": (
+        "c7n_azure.resources.defender.DefenderAutoProvisioningSetting"
+    ),
     "azure.defender-contact": "c7n_azure.resources.defender.DefenderSecurityContact",
     "azure.defender-jit-policy": "c7n_azure.resources.defender.DefenderJitPolicy",
     "azure.defender-pricing": "c7n_azure.resources.defender.DefenderPricing",
@@ -59,13 +65,17 @@ ResourceMap = {
     "azure.kusto": "c7n_azure.resources.kusto.Kusto",
     "azure.loadbalancer": "c7n_azure.resources.load_balancer.LoadBalancer",
     "azure.logic-app-workflow": "c7n_azure.resources.logic_app.LogicAppWorkflow",
-    "azure.machine-learning-workspace": "c7n_azure.resources.machine_learning_workspace.MachineLearningWorkspace", # noqa
+    "azure.machine-learning-workspace": (
+        "c7n_azure.resources.machine_learning_workspace.MachineLearningWorkspace"
+    ),
     "azure.mariadb": "c7n_azure.resources.mariadb.MariaDB",
     "azure.monitor-log-profile": "c7n_azure.resources.monitor_logprofile.MonitorLogprofile",
     "azure.mariadb-server": "c7n_azure.resources.mariadb_server.MariaDBServer",
     "azure.mysql": "c7n_azure.resources.mysql.MySQL",
     "azure.mysql-flexibleserver": "c7n_azure.resources.mysql_flexibleserver.MySQLFlexibleServer",
-    "azure.postgresql-flexibleserver": "c7n_azure.resources.postgresql_flexibleserver.PostgreSQLFlexibleServer",  # noqa
+    "azure.postgresql-flexibleserver": (
+        "c7n_azure.resources.postgresql_flexibleserver.PostgreSQLFlexibleServer"
+    ),
     "azure.networkinterface": "c7n_azure.resources.network_interface.NetworkInterface",
     "azure.networksecuritygroup": "c7n_azure.resources.network_security_group.NetworkSecurityGroup",
     "azure.networkwatcher": "c7n_azure.resources.network_watcher.NetworkWatcher",
@@ -82,10 +92,16 @@ ResourceMap = {
     "azure.routetable": "c7n_azure.resources.route_table.RouteTable",
     "azure.search": "c7n_azure.resources.search.SearchService",
     "azure.servicebus-namespace": "c7n_azure.resources.servicebus_namespace.ServiceBusNamespace",
-    "azure.servicebus-namespace-networkrules": "c7n_azure.resources.servicebus_namespace_networkrules.ServiceBusNamespaceNetworkrules", # noqa
-    "azure.servicebus-namespace-authrules": "c7n_azure.resources.servicebus_namespace_authrules.ServiceBusNamespaceAuthRules", # noqa
+    "azure.servicebus-namespace-networkrules": (
+        "c7n_azure.resources.servicebus_namespace_networkrules.ServiceBusNamespaceNetworkrules"
+    ),
+    "azure.servicebus-namespace-authrules": (
+        "c7n_azure.resources.servicebus_namespace_authrules.ServiceBusNamespaceAuthRules"
+    ),
     "azure.service-fabric-cluster": "c7n_azure.resources.service_fabric.ServiceFabricCluster",
-    "azure.service-fabric-cluster-managed": "c7n_azure.resources.service_fabric.ServiceFabricClusterManaged",  # noqa
+    "azure.service-fabric-cluster-managed": (
+        "c7n_azure.resources.service_fabric.ServiceFabricClusterManaged"
+    ),
     "azure.session-host": "c7n_azure.resources.session_host.SessionHost",
     "azure.signalr": "c7n_azure.resources.signalr.Signalr",
     "azure.snapshot": "c7n_azure.resources.snapshot.Snapshot",
@@ -110,7 +126,8 @@ ResourceMap = {
     "azure.entraid-user": "c7n_azure.resources.entraid.EntraIDUser",
     "azure.entraid-group": "c7n_azure.resources.entraid.EntraIDGroup",
     "azure.entraid-organization": "c7n_azure.resources.entraid.EntraIDOrganization",
-    "azure.entraid-conditional-access-policy": "c7n_azure.resources.entraid.EntraIDConditionalAccessPolicy",
+    "azure.entraid-conditional-access-policy": (
+        "c7n_azure.resources.entraid.EntraIDConditionalAccessPolicy"
+    ),
     "azure.entraid-security-defaults": "c7n_azure.resources.entraid.EntraIDSecurityDefaults",
 }
-

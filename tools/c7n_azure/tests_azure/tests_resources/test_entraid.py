@@ -724,7 +724,9 @@ class EntraIDOrganizationTest(BaseTest):
 
         # Verify API calls were made
         self.assertEqual(mock_graph_request.call_count, 2)
-        mock_graph_request.assert_any_call("directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'")
+        mock_graph_request.assert_any_call(
+            "directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'"
+        )
         mock_graph_request.assert_any_call('settings')
 
     @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
@@ -1067,7 +1069,9 @@ class EntraIDSecurityDefaultsTest(BaseTest):
 def test_entraid_user_discovery_terraform(test, entraid_user):
     """Test that Cloud Custodian can discover users provisioned by Terraform"""
     # Verify terraform fixtures loaded successfully
-    assert len(entraid_user.outputs) == 5, f"Expected 5 total outputs (4 users + 1 group), got {len(entraid_user.outputs)}"
+    assert len(entraid_user.outputs) == 5, (
+        f"Expected 5 total outputs (4 users + 1 group), got {len(entraid_user.outputs)}"
+    )
     assert 'azuread_user' in entraid_user.resources, "azuread_user resources not found"
     
     # Get terraform-provisioned user data
@@ -1165,9 +1169,6 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
     
     assert policy is not None
 
-
-
-
 @terraform('entraid_organization')
 @pytest.mark.functional
 def test_entraid_organization_discovery_terraform(test, entraid_organization):
@@ -1240,12 +1241,6 @@ def test_entraid_organization_compliance_terraform(test, entraid_organization):
     assert 'controls' in nist_compliance
     
     assert policy is not None
-
-
-
-
-
-
 
 
 @terraform('entraid_security_defaults')

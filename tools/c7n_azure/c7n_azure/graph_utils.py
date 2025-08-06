@@ -129,26 +129,24 @@ class GraphResourceManager(QueryResourceManager):
         try:
             session = self.get_client()
             session._initialize_session()
-            
             # Get specific permissions for this endpoint instead of using .default
             try:
-                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-            except ValueError as e:
+                get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError:
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
-            
             # Request token for Microsoft Graph API
             # Note: Individual permissions like User.Read.All are enforced at the app registration level
             # The scope for Microsoft Graph API should always be https://graph.microsoft.com/.default
             scope = 'https://graph.microsoft.com/.default'
-            
+
             token = session.credentials.get_token(scope)
-            
+
             headers = {
                 'Authorization': f'Bearer {token.token}',
                 'Content-Type': 'application/json'
             }
-            
+
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
             response = requests.get(url, headers=headers)
             response.raise_for_status()

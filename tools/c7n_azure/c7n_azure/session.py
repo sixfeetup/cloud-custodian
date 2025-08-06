@@ -70,8 +70,10 @@ class AzureCredential:
                             keyvault_secret_id)
                     ))
         except HTTPError as e:
-            e.message = 'Failed to retrieve SP credential ' \
-                        'from Key Vault with client id: {0}'.format(keyvault_client_id)
+            e.message = (
+                f'Failed to retrieve SP credential from Key Vault '
+                f'with client id: {keyvault_client_id}'
+            )
             raise
 
         self._credential = None
@@ -167,7 +169,8 @@ class AzureCredential:
 class Session:
 
     def __init__(self, subscription_id=None, authorization_file=None,
-                 cloud_endpoints=None, resource_endpoint_type=constants.DEFAULT_AUTH_ENDPOINT):
+                 cloud_endpoints=None,
+                 resource_endpoint_type=constants.DEFAULT_AUTH_ENDPOINT):
         """
         :param subscription_id: If provided overrides environment variables.
         :param authorization_file: Path to file populated from 'get_functions_auth_string'
@@ -237,13 +240,15 @@ class Session:
         legacy = False
 
         if 'credentials' in klass_parameters and 'tenant_id' in klass_parameters:
-            client = klass(credentials=self.credentials.legacy_credentials(self.resource_endpoint),
-                           tenant_id=self.credentials.tenant_id,
+            client = klass(
+                credentials=self.credentials.legacy_credentials(self.resource_endpoint),
+                tenant_id=self.credentials.tenant_id,
                            base_url=self.resource_endpoint)
             legacy = True
         elif 'credentials' in klass_parameters:
-            client = klass(credentials=self.credentials.legacy_credentials(self.resource_endpoint),
-                           subscription_id=self.credentials.subscription_id,
+            client = klass(
+                credentials=self.credentials.legacy_credentials(self.resource_endpoint),
+                subscription_id=self.credentials.subscription_id,
                            base_url=self.cloud_endpoints.endpoints.resource_manager)
             legacy = True
         else:
@@ -361,8 +366,10 @@ class Session:
 
         required_params = ['client_id', 'client_secret', 'tenant_id']
 
-        function_auth_params = {k: v for k, v in self.credentials.auth_params.items()
-                                if k in required_params and v is not None}
+        function_auth_params = {
+            k: v for k, v in self.credentials.auth_params.items()
+            if k in required_params and v is not None
+        }
         function_auth_params['subscription_id'] = target_subscription_id
 
         # Use dedicated function env vars if available
@@ -374,8 +381,9 @@ class Session:
         # Verify SP authentication parameters
         if any(k not in function_auth_params.keys() for k in required_params):
             raise NotImplementedError(
-                "Service Principal credentials are the only "
-                "supported auth mechanism for deploying functions.")
+                "Service Principal credentials are the only supported auth mechanism "
+                "for deploying functions."
+            )
 
         return json.dumps(function_auth_params, indent=2)
 
@@ -391,4 +399,3 @@ class Session:
             return self.cloud_endpoints.endpoints.microsoft_graph_resource_id
         else:
             return getattr(self.cloud_endpoints.endpoints, endpoint)
-

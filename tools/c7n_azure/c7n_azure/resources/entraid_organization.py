@@ -171,7 +171,9 @@ class PasswordLockoutThresholdFilter(Filter):
         """Get the Password Rule Settings template ID dynamically."""
         try:
             # Query directory setting templates by name
-            endpoint = "directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'"
+            endpoint = (
+                "directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'"
+            )
             response = self.manager.make_graph_request(endpoint)
             templates = response.get('value', [])
             
@@ -244,6 +246,5 @@ class PasswordLockoutThresholdFilter(Filter):
             except Exception as e:
                 log.error(f"Error checking password lockout threshold: {e}")
                 continue
-                
-        return filtered
 
+        return filtered

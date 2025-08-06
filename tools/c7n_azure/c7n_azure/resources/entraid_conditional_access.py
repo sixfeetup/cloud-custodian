@@ -69,8 +69,8 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
 
             # Get specific permissions for this endpoint instead of using .default
             try:
-                required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-            except ValueError as e:
+                get_required_permissions_for_endpoint(endpoint, method)
+            except ValueError:
                 log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                 raise
 
@@ -140,7 +140,6 @@ class AdminMFARequiredFilter(Filter):
             conditions = resource.get('conditions', {})
             users = conditions.get('users', {})
             roles = users.get('includeRoles', [])
-            
             grant_controls = resource.get('grantControls', {})
             built_in_controls = grant_controls.get('builtInControls', [])
 

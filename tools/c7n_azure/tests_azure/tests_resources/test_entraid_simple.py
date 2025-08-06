@@ -130,7 +130,11 @@ class EntraIDUserTest(unittest.TestCase):
         # Mock the Graph API responses for MFA status
         def mock_make_graph_request(endpoint):
             if 'user1/authentication/methods' in endpoint:
-                return {'value': [{'@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'}]}
+                return {
+                    'value': [{
+                        '@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
+                    }]
+                }
             else:
                 return {'value': []}
         
@@ -173,7 +177,9 @@ class EntraIDUserTest(unittest.TestCase):
         
         # Should match user1 and user3 (>90 days)
         self.assertEqual(len(filtered), 2)
-        self.assertEqual(set(u['objectId'] for u in filtered), {'user1', 'user3'})
+        self.assertEqual(
+            set(u['objectId'] for u in filtered), {'user1', 'user3'}
+        )
 
 
 class EntraIDGroupTest(unittest.TestCase):
@@ -298,4 +304,3 @@ class EntraIDOrganizationTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
-
