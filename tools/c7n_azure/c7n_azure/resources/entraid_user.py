@@ -364,7 +364,6 @@ class MFAEnabledFilter(Filter):
                 )
                 continue
 
-
             if has_mfa == mfa_enabled:
 
                 filtered.append(resource)
@@ -709,10 +708,11 @@ class RequireMFAAction(AzureBaseAction):
             auth_methods_url = (
                 f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
             )
+            import requests
+            response = requests.get(auth_methods_url, headers=headers, timeout=30)
+            response.raise_for_status()
 
-            auth_response.raise_for_status()
-
-            methods = auth_response.json().get('value', [])
+            methods = response.json().get('value', [])
             mfa_methods = [m for m in methods if m.get('@odata.type') in [
                 '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod',
                 '#microsoft.graph.phoneAuthenticationMethod',

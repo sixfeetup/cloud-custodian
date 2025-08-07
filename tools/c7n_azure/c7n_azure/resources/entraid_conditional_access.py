@@ -75,7 +75,6 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
@@ -151,7 +150,7 @@ class AdminMFARequiredFilter(Filter):
                 'Privileged Role Administrator',
                 'User Administrator'
             ]
-            
+
             has_admin_roles = any(role in admin_roles for role in roles)
             requires_mfa = 'mfa' in [control.lower() for control in built_in_controls]
 
