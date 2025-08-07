@@ -150,7 +150,7 @@ class AdminMFARequiredFilter(Filter):
                 'Privileged Role Administrator',
                 'User Administrator'
             ]
-            
+
             has_admin_roles = any(role in admin_roles for role in roles)
             requires_mfa = 'mfa' in [control.lower() for control in built_in_controls]
 

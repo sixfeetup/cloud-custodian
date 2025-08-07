@@ -704,11 +704,10 @@ class RequireMFAAction(AzureBaseAction):
                 'Content-Type': 'application/json'
             }
 
-            # Check user's authentication methods  
+            # Check user's authentication methods
             auth_methods_url = (
                 f'https://graph.microsoft.com/v1.0/users/{user_id}/authentication/methods'
             )
-            
             import requests
             response = requests.get(auth_methods_url, headers=headers, timeout=30)
             response.raise_for_status()
