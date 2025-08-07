@@ -36,11 +36,11 @@ class EntraIDOrganization(GraphResourceManager):
             filters:
               - type: security-defaults
                 enabled: false
-    
+
     Check if password lockout threshold exceeds 10 attempts:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: lockout-threshold-compliance
             resource: azure.entraid-organization
@@ -75,22 +75,18 @@ class EntraIDOrganization(GraphResourceManager):
             try:
                 session = self.get_client()
                 session._initialize_session()
-                
                 from c7n_azure.graph_utils import get_required_permissions_for_endpoint
                 try:
-                    required_permissions = get_required_permissions_for_endpoint(endpoint, method)
-                except ValueError as e:
+                    get_required_permissions_for_endpoint(endpoint, method)
+                except ValueError:
                     log.error(f"Cannot make Graph API request to unmapped endpoint: {endpoint}")
                     raise
-                
                 scope = 'https://graph.microsoft.com/.default'
                 token = session.credentials.get_token(scope)
-                
                 headers = {
                     'Authorization': f'Bearer {token.token}',
                     'Content-Type': 'application/json'
                 }
-                
                 # Use beta API for directory settings
                 url = f'https://graph.microsoft.com/beta/{endpoint}'
                 response = requests.get(url, headers=headers)
@@ -150,16 +146,16 @@ class SecurityDefaultsFilter(Filter):
 @EntraIDOrganization.filter_registry.register('password-lockout-threshold')
 class PasswordLockoutThresholdFilter(Filter):
     """Filter based on password lockout threshold configuration.
-    
+
     Checks the account lockout threshold setting from Directory Settings.
     Requires Microsoft Graph beta API and Directory.Read.All permission.
-    
+
     :example:
-    
+
     Find organizations where lockout threshold is greater than 10:
-    
+
     .. code-block:: yaml
-    
+
         policies:
           - name: lockout-threshold-too-high
             resource: azure.entraid-organization
@@ -167,7 +163,7 @@ class PasswordLockoutThresholdFilter(Filter):
               - type: password-lockout-threshold
                 max_threshold: 10
     """
-    
+
     schema = type_schema('password-lockout-threshold', max_threshold={'type': 'integer'})
 
     def _get_password_rule_template_id(self):
@@ -177,32 +173,33 @@ class PasswordLockoutThresholdFilter(Filter):
             endpoint = "directorySettingTemplates"
             response = self.manager.make_graph_request(endpoint)
             templates = response.get('value', [])
-            
+
             # Search for password-related template by displayName
             password_template = None
             for template in templates:
                 display_name = template.get('displayName', '')
                 # Look for common password policy template names
-                if any(keyword in display_name.lower() for keyword in 
+                if any(keyword in display_name.lower() for keyword in
                        ['password', 'lockout', 'authentication']):
                     password_template = template
                     log.debug(f"Found password template: {display_name}")
                     break
-            
+
             if not password_template:
                 # Log available templates for debugging
                 template_names = [t.get('displayName', 'Unknown') for t in templates]
-                log.error(f"No password-related template found. Available templates: {template_names}")
+                log.error(
+                    f"No password-related template found. Available templates: {template_names}")
                 return None
-                
+
             template_id = password_template.get('id')
             if not template_id:
                 log.error("Password template ID not found")
                 return None
-                
+
             log.debug(f"Found password template ID: {template_id}")
             return template_id
-            
+
         except Exception as e:
             log.error(f"Error retrieving password template: {e}")
             return None
@@ -210,34 +207,34 @@ class PasswordLockoutThresholdFilter(Filter):
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         max_threshold = self.data.get('max_threshold', 10)
         filtered = []
-        
+
         # Get the Password Rule Settings template ID dynamically
         template_id = self._get_password_rule_template_id()
         if not template_id:
             log.warning("Cannot proceed without Password Rule Settings template ID")
             return filtered
-        
+
         for resource in resources:
             try:
                 # Query directory settings
                 settings_response = self.manager.make_graph_request('settings')
                 settings_list = settings_response.get('value', [])
-                
+
                 # Find Password Rule Settings by template ID
                 password_settings = None
                 for setting in settings_list:
                     if setting.get('templateId') == template_id:
                         password_settings = setting
                         break
-                
+
                 if not password_settings:
                     log.warning("Password Rule Settings not found in directory settings")
                     continue
-                
+
                 # Extract LockoutThreshold from settings values
                 lockout_threshold = None
                 values = password_settings.get('values', [])
-                
+
                 for value in values:
                     if value.get('name') == 'LockoutThreshold':
                         try:
@@ -246,22 +243,23 @@ class PasswordLockoutThresholdFilter(Filter):
                             log.warning(f"Invalid LockoutThreshold value: {value.get('value')}")
                             continue
                         break
-                
+
                 if lockout_threshold is None:
                     log.warning("LockoutThreshold not found in Password Rule Settings")
                     continue
-                
+
                 # Apply filter logic - include if threshold exceeds max_threshold
                 if lockout_threshold > max_threshold:
                     # Add lockout threshold info to resource for reporting
                     resource['lockoutThreshold'] = lockout_threshold
                     filtered.append(resource)
-                    
+
             except Exception as e:
                 log.error(f"Error checking password lockout threshold: {e}")
                 continue
 
         return filtered
+
 
 # Register diagnostic settings filter for EntraID organization
 EntraIDOrganization.filter_registry.register('diagnostic-settings', EntraIDDiagnosticSettingsFilter)

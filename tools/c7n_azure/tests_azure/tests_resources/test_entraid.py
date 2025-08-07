@@ -1379,7 +1379,6 @@ def test_entraid_security_defaults_scenarios_terraform(test, entraid_security_de
     risky_scenario = scenarios['disabled_no_ca']
     optimal_scenario = scenarios['disabled_with_ca']
 
-
     assert secure_scenario['security_defaults_enabled'] is True
     assert risky_scenario['security_defaults_enabled'] is False
     assert optimal_scenario['security_defaults_enabled'] is False
@@ -1388,4 +1387,3 @@ def test_entraid_security_defaults_scenarios_terraform(test, entraid_security_de
     assert secure_scenario['compliance_score'] > risky_scenario['compliance_score']
 
     assert policy is not None
-

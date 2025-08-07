@@ -42,7 +42,6 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'users/{id}': ['User.Read.All'],
     'users/{id}/authentication/methods': ['UserAuthenticationMethod.Read.All'],
     'users/{id}/transitiveMemberOf': ['GroupMember.Read.All'],
-  
     # Identity Protection endpoints
     'identityProtection/riskyUsers/{id}': ['IdentityRiskyUser.Read.All'],
 
@@ -127,7 +126,6 @@ class GraphResourceManager(QueryResourceManager):
     Provides common Graph API client functionality for all EntraID resources.
     """
 
-
     def get_client(self):
         """Get Microsoft Graph client session"""
         session = local_session(self.session_factory)
@@ -139,7 +137,6 @@ class GraphResourceManager(QueryResourceManager):
         try:
             session = self.get_client()
             session._initialize_session()
-            
             # Get specific permissions for this endpoint instead of using .default
             try:
                 get_required_permissions_for_endpoint(endpoint, method)

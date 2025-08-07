@@ -268,7 +268,6 @@ class MemberCountFilter(Filter):
         op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
     )
 
-
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         count_threshold = self.data.get('count', 0)
         op = self.data.get('op', 'greater-than')
@@ -333,7 +332,6 @@ class OwnerCountFilter(Filter):
         count={'type': 'number'},
         op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
     )
-
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         count_threshold = self.data.get('count', 0)
@@ -512,7 +510,6 @@ class GroupTypeFilter(Filter):
 
             if should_include:
                 filtered.append(resource)
-
 
         return filtered
 

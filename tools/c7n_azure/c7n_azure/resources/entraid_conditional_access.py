@@ -75,7 +75,6 @@ class EntraIDConditionalAccessPolicy(GraphResourceManager):
                 raise
 
             # Request token for Microsoft Graph API
-            
             scope = 'https://graph.microsoft.com/.default'
 
             token = session.credentials.get_token(scope)
