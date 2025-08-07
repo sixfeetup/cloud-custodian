@@ -173,27 +173,38 @@ class PasswordLockoutThresholdFilter(Filter):
     def _get_password_rule_template_id(self):
         """Get the Password Rule Settings template ID dynamically."""
         try:
-            # Query directory setting templates by name
-            endpoint = (
-                "directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'"
-            )
+            # Query all directory setting templates first
+            endpoint = "directorySettingTemplates"
             response = self.manager.make_graph_request(endpoint)
             templates = response.get('value', [])
             
-            if not templates:
-                log.error("Password Rule Settings template not found")
+            # Search for password-related template by displayName
+            password_template = None
+            for template in templates:
+                display_name = template.get('displayName', '')
+                # Look for common password policy template names
+                if any(keyword in display_name.lower() for keyword in 
+                       ['password', 'lockout', 'authentication']):
+                    password_template = template
+                    log.debug(f"Found password template: {display_name}")
+                    break
+            
+            if not password_template:
+                # Log available templates for debugging
+                template_names = [t.get('displayName', 'Unknown') for t in templates]
+                log.error(f"No password-related template found. Available templates: {template_names}")
                 return None
                 
-            template_id = templates[0].get('id')
+            template_id = password_template.get('id')
             if not template_id:
-                log.error("Password Rule Settings template ID not found")
+                log.error("Password template ID not found")
                 return None
                 
-            log.debug(f"Found Password Rule Settings template ID: {template_id}")
+            log.debug(f"Found password template ID: {template_id}")
             return template_id
             
         except Exception as e:
-            log.error(f"Error retrieving Password Rule Settings template: {e}")
+            log.error(f"Error retrieving password template: {e}")
             return None
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
