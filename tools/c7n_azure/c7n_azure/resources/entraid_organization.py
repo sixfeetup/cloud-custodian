@@ -89,7 +89,7 @@ class EntraIDOrganization(GraphResourceManager):
                 }
                 # Use beta API for directory settings
                 url = f'https://graph.microsoft.com/beta/{endpoint}'
-                response = requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, timeout=30)
                 response.raise_for_status()
                 return response.json()
             except Exception as e:
