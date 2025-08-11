@@ -130,4 +130,7 @@ ResourceMap = {
         "c7n_azure.resources.entraid.EntraIDConditionalAccessPolicy"
     ),
     "azure.entraid-security-defaults": "c7n_azure.resources.entraid.EntraIDSecurityDefaults",
+    "azure.entraid-named-location": (
+        "c7n_azure.resources.entraid_named_locations.EntraIDNamedLocation"
+    ),
 }
