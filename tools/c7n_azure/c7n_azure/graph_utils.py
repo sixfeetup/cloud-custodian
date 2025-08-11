@@ -59,6 +59,9 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     # Policy endpoints (require beta API)
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
+    
+    # Authorization Policy endpoints
+    'policies/authorizationPolicy': ['Policy.Read.All'],
 
     # Directory Settings endpoints (beta API)
     'settings': ['Directory.Read.All'],
