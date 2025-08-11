@@ -234,12 +234,12 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
             filtered_settings = super(EntraIDDiagnosticSettingsFilter, self).process(
                 tenant_diagnostic_settings, event=None)
 
-            # If diagnostic settings match the filter criteria, return all resources
-            # since EntraID diagnostic settings apply to the entire tenant
+            # If diagnostic settings match the filter criteria, return empty (compliant)
+            # If no match, return all resources (non-compliant) since EntraID diagnostic settings apply to the entire tenant
             if filtered_settings:
-                return resources
-            else:
                 return []
+            else:
+                return resources
 
         except Exception as e:
             self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
