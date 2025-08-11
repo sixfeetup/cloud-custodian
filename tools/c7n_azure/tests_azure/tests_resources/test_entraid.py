@@ -1220,7 +1220,7 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
     def test_cis_compliance_scenario(self):
         """Test CIS-B-MAF-4.0.0-6.14 compliance scenario"""
         # Test the specific CIS control: 'Users can register applications' is set to 'No'
-        
+
         # Compliant scenario - users cannot create apps
         compliant_policy = {
             'id': 'authorizationPolicy',
@@ -1234,7 +1234,7 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
             }
         }
 
-        # Non-compliant scenario - users can create apps  
+        # Non-compliant scenario - users can create apps
         non_compliant_policy = {
             'id': 'authorizationPolicy',
             'displayName': 'Authorization Policy',

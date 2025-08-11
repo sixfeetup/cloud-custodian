@@ -77,7 +77,7 @@ class EntraIDAuthorizationPolicy(GraphResourceManager):
         try:
             # The authorization policy endpoint returns a single object, not a collection
             response = self.make_graph_request('policies/authorizationPolicy')
-            
+
             # Wrap single policy in a list for consistent processing
             if response:
                 resources = [response]
@@ -86,7 +86,7 @@ class EntraIDAuthorizationPolicy(GraphResourceManager):
             else:
                 log.warning("No authorization policy data received from Graph API")
                 return []
-                
+
         except Exception as e:
             log.error(f"Error retrieving authorization policy: {e}")
             if "Insufficient privileges" in str(e) or "403" in str(e):
@@ -142,11 +142,11 @@ class AllowedToCreateAppsFilter(Filter):
         for resource in resources:
             default_user_permissions = resource.get('defaultUserRolePermissions', {})
             allowed_to_create_apps = default_user_permissions.get('allowedToCreateApps', True)
-            
+
             # Convert to boolean to handle various data types
             allowed_to_create_apps = bool(allowed_to_create_apps)
             expected_value = bool(expected_value)
-            
+
             if allowed_to_create_apps == expected_value:
                 # Add computed field for easier reporting
                 resource['c7n:AllowedToCreateApps'] = allowed_to_create_apps
