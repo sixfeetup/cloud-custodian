@@ -139,32 +139,38 @@ class SSPRMethodsRequiredFilter(Filter):
                 # Look for SSPR configuration within the authentication methods policy
                 # The exact structure may vary based on Microsoft Graph API evolution
                 sspr_config = None
-                
                 # Try to find SSPR settings in various possible locations
                 if 'authenticationMethodConfigurations' in resource:
                     configurations = resource['authenticationMethodConfigurations']
                     for config in configurations:
-                        if config.get('@odata.type') == '#microsoft.graph.passwordAuthenticationMethod':
+                        odata_type = '#microsoft.graph.passwordAuthenticationMethod'
+                        if config.get('@odata.type') == odata_type:
                             sspr_config = config
                             break
-                
+
                 # Also check for system-wide SSPR settings
                 if not sspr_config and 'passwordResetPolicy' in resource:
                     sspr_config = resource['passwordResetPolicy']
-                
                 # Check for legacy SSPR settings during migration
                 if not sspr_config and 'legacySspr' in resource:
                     sspr_config = resource['legacySspr']
 
                 if not sspr_config:
-                    log.warning(f"SSPR configuration not found in authentication methods policy: {resource.get('id', 'unknown')}")
+                    policy_id = resource.get('id', 'unknown')
+                    log.warning(
+                        f"SSPR configuration not found in authentication methods policy: {policy_id}"
+                    )
                     continue
 
                 # Extract the number of methods required for password reset
                 methods_required = None
-                
+
                 # Try different possible property names based on API evolution
-                for prop_name in ['numberOfMethodsRequired', 'methodsRequired', 'requiredMethods', 'minimumMethodsRequired']:
+                prop_names = [
+                    'numberOfMethodsRequired', 'methodsRequired',
+                    'requiredMethods', 'minimumMethodsRequired'
+                ]
+                for prop_name in prop_names:
                     if prop_name in sspr_config:
                         try:
                             methods_required = int(sspr_config[prop_name])
@@ -173,7 +179,10 @@ class SSPRMethodsRequiredFilter(Filter):
                             continue
 
                 if methods_required is None:
-                    log.warning(f"Could not determine SSPR methods required from policy: {resource.get('id', 'unknown')}")
+                    policy_id = resource.get('id', 'unknown')
+                    log.warning(
+                        f"Could not determine SSPR methods required from policy: {policy_id}"
+                    )
                     continue
 
                 # Apply comparison operator
