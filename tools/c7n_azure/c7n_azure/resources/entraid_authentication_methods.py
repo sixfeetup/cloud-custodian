@@ -158,7 +158,8 @@ class SSPRMethodsRequiredFilter(Filter):
                 if not sspr_config:
                     policy_id = resource.get('id', 'unknown')
                     log.warning(
-                        f"SSPR configuration not found in authentication methods policy: {policy_id}"
+                        f"SSPR configuration not found in authentication methods policy: "
+                        f"{policy_id}"
                     )
                     continue
 
