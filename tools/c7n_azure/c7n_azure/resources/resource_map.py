@@ -130,4 +130,7 @@ ResourceMap = {
         "c7n_azure.resources.entraid.EntraIDConditionalAccessPolicy"
     ),
     "azure.entraid-security-defaults": "c7n_azure.resources.entraid.EntraIDSecurityDefaults",
+    "azure.entraid-authentication-methods-policy": (
+        "c7n_azure.resources.entraid.EntraIDAuthenticationMethodsPolicy"
+    ),
 }
