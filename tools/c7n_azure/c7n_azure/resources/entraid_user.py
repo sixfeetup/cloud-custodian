@@ -25,7 +25,7 @@ class EntraIDUser(GraphResourceManager):
     Supports filtering by user properties, authentication methods, group memberships,
     and security settings. See Common EntraID Examples section for additional patterns.
 
-    Available filters: value, mfa-enabled, risk-level, last-sign-in, group-membership, password-age
+    Available filters: value, auth-methods, risk-level, last-sign-in, group-membership, password-age
     Available actions: disable, require-mfa
 
     Permissions: See Graph API Permissions Reference section.
@@ -210,9 +210,10 @@ class EntraIDUser(GraphResourceManager):
         except Exception:
             return 0
 
-    def check_user_mfa_status(self, user_id):
-        """Check if user has MFA enabled by querying authentication methods.
+    def get_user_auth_methods(self, user_id):
+        """Get user's authentication methods from Graph API.
 
+        Returns the full list of authentication methods for the user.
         Required permission: UserAuthenticationMethod.Read.All
         """
         try:
@@ -221,20 +222,7 @@ class EntraIDUser(GraphResourceManager):
             response = self.make_graph_request(endpoint)
 
             methods = response.get('value', [])
-
-            # Check for MFA-capable authentication methods
-            mfa_methods = [
-                '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod',
-                '#microsoft.graph.phoneAuthenticationMethod',
-                '#microsoft.graph.fido2AuthenticationMethod',
-                '#microsoft.graph.windowsHelloForBusinessAuthenticationMethod',
-                '#microsoft.graph.temporaryAccessPassAuthenticationMethod'
-            ]
-
-            # Check if user has any MFA methods configured
-            has_mfa = any(method.get('@odata.type') in mfa_methods for method in methods)
-
-            return has_mfa
+            return methods
 
         except requests.exceptions.RequestException as e:
             if "403" in str(e) or "Insufficient privileges" in str(e):
@@ -242,9 +230,9 @@ class EntraIDUser(GraphResourceManager):
                     f"Insufficient privileges to read authentication methods for user {user_id}. "
                     "Required permission: UserAuthenticationMethod.Read.All"
                 )
-                return None  # Unknown MFA status
+                return None  # Unknown auth methods
             else:
-                log.error(f"Error checking MFA status for user {user_id}: {e}")
+                log.error(f"Error getting authentication methods for user {user_id}: {e}")
                 return None
 
     def check_user_risk_level(self, user_id):
@@ -323,25 +311,39 @@ class EntraIDUser(GraphResourceManager):
                 return None
 
 
-@EntraIDUser.filter_registry.register('mfa-enabled')
-class MFAEnabledFilter(Filter):
-    """Filter users by MFA enablement status.
+@EntraIDUser.filter_registry.register('auth-methods')
+class AuthMethodsFilter(Filter):
+    """Filter users by authentication methods.
+
+    Returns users with their authentication methods populated in the
+    'c7n:AuthMethods' field for use with value filters or other processing.
 
     Requires: UserAuthenticationMethod.Read.All
 
     :example:
 
+    Get all users with their authentication methods:
+
     .. code-block:: yaml
 
         filters:
-          - type: mfa-enabled
-            value: false
+          - type: auth-methods
+
+    Then use with value filter to check specific auth method types:
+
+    .. code-block:: yaml
+
+        filters:
+          - type: auth-methods
+          - type: value
+            key: 'c7n:AuthMethods[*]."@odata.type"'
+            op: contains
+            value: '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
     """
 
-    schema = type_schema('mfa-enabled', value={'type': 'boolean'})
+    schema = type_schema('auth-methods')
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
-        mfa_enabled = self.data.get('value', True)
         filtered = []
 
         for resource in resources:
@@ -352,21 +354,21 @@ class MFAEnabledFilter(Filter):
                 )
                 continue
 
-            # Check actual MFA status via Graph API
-            has_mfa = self.manager.check_user_mfa_status(user_id)
+            # Get user's authentication methods from Graph API
+            auth_methods = self.manager.get_user_auth_methods(user_id)
 
-            if has_mfa is None:
-                # Unknown MFA status (permission error or API failure)
+            if auth_methods is None:
+                # Unknown auth methods (permission error or API failure)
                 # Skip this user to avoid false results
                 log.warning(
-                    f"Could not determine MFA status for user "
+                    f"Could not determine authentication methods for user "
                     f"{resource.get('displayName', user_id)}"
                 )
                 continue
 
-            if has_mfa == mfa_enabled:
-
-                filtered.append(resource)
+            # Add auth methods to user resource for filtering
+            resource['c7n:AuthMethods'] = auth_methods
+            filtered.append(resource)
 
         return filtered
 
