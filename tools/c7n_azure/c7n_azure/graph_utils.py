@@ -224,8 +224,12 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
 
                 if not tenant_diagnostic_settings:
                     tenant_diagnostic_settings = [{}]
-            except Exception as e:
-                self.log.warning(f"Failed to retrieve EntraID diagnostic settings: {e}")
+            except requests.exceptions.HTTPError as e:
+                errmsg = f"Failed to retrieve EntraID diagnostic settings: {e}."
+                if response.status_code == 403:
+                    errmsg += " Ensure service principal has " \
+                        "'Microsoft.AADIAM/diagnosticSettings/read' permission."
+                self.log.error(errmsg)
                 # If no settings available, use empty list so absent operator can function
                 tenant_diagnostic_settings = [{}]
 
