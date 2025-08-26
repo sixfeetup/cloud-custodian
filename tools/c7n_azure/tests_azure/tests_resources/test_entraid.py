@@ -2067,7 +2067,8 @@ def test_entraid_named_location_discovery_terraform(test, entraid_named_location
 
     # Verify IP-based named locations (updated for Azure AD deletion restrictions)
     assert 'C7N Test - Corporate IP Ranges' in corporate_ips['display_name']
-    assert corporate_ips['ip']['trusted'] is False  # Changed to false to avoid Azure AD deletion restrictions
+    # Changed to false to avoid Azure AD deletion restrictions
+    assert corporate_ips['ip']['trusted'] is False
     assert len(corporate_ips['ip']['ip_ranges_or_fqdns']) == 3
     assert '192.168.1.0/24' in corporate_ips['ip']['ip_ranges_or_fqdns']
 
@@ -2076,7 +2077,8 @@ def test_entraid_named_location_discovery_terraform(test, entraid_named_location
     assert len(external_ips['ip']['ip_ranges_or_fqdns']) == 2
 
     assert 'C7N Test - Single IP' in single_ip['display_name']  # Display name also changed
-    assert single_ip['ip']['trusted'] is False  # Changed to false to avoid Azure AD deletion restrictions
+    # Changed to false to avoid Azure AD deletion restrictions
+    assert single_ip['ip']['trusted'] is False
     assert '192.168.1.100/32' in single_ip['ip']['ip_ranges_or_fqdns']
 
     # Verify country-based named locations
@@ -2172,7 +2174,7 @@ def test_entraid_named_location_ip_range_filter_terraform(test, entraid_named_lo
     # Verify test data integrity for trust settings (all changed to untrusted for Azure limitations)
     assert corporate_ips['ip']['trusted'] is False  # All IP locations now untrusted
     assert single_ip['ip']['trusted'] is False  # All IP locations now untrusted
-    
+
     # Verify test data contains expected IP ranges counts
     assert len(corporate_ips['ip']['ip_ranges_or_fqdns']) == 3
     assert len(single_ip['ip']['ip_ranges_or_fqdns']) == 1

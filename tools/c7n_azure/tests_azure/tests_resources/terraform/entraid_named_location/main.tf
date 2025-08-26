@@ -34,7 +34,7 @@ resource "azuread_named_location" "test_corporate_ips" {
       "10.0.0.0/16",
       "172.16.0.0/12"
     ]
-    trusted = false  # Changed to false to avoid Azure AD deletion restrictions
+    trusted = false # Changed to false to avoid Azure AD deletion restrictions
   }
 }
 
@@ -59,7 +59,7 @@ resource "azuread_named_location" "test_single_ip" {
     ip_ranges = [
       "192.168.1.100/32"
     ]
-    trusted = false  # Changed to false to avoid Azure AD deletion restrictions
+    trusted = false # Changed to false to avoid Azure AD deletion restrictions
   }
 }
 
@@ -114,7 +114,7 @@ resource "azuread_named_location" "test_mixed_ranges" {
       "172.20.0.0/16",
       "203.0.114.0/24"
     ]
-    trusted = false  # Changed to false to avoid Azure AD deletion restrictions
+    trusted = false # Changed to false to avoid Azure AD deletion restrictions
   }
 }
 
@@ -126,7 +126,7 @@ output "test_corporate_ips" {
     display_name = azuread_named_location.test_corporate_ips.display_name
     ip = {
       ip_ranges_or_fqdns = azuread_named_location.test_corporate_ips.ip[0].ip_ranges
-      trusted           = azuread_named_location.test_corporate_ips.ip[0].trusted
+      trusted            = azuread_named_location.test_corporate_ips.ip[0].trusted
     }
   }
 }
@@ -138,7 +138,7 @@ output "test_external_ips" {
     display_name = azuread_named_location.test_external_ips.display_name
     ip = {
       ip_ranges_or_fqdns = azuread_named_location.test_external_ips.ip[0].ip_ranges
-      trusted           = azuread_named_location.test_external_ips.ip[0].trusted
+      trusted            = azuread_named_location.test_external_ips.ip[0].trusted
     }
   }
 }
@@ -150,7 +150,7 @@ output "test_single_ip" {
     display_name = azuread_named_location.test_single_ip.display_name
     ip = {
       ip_ranges_or_fqdns = azuread_named_location.test_single_ip.ip[0].ip_ranges
-      trusted           = azuread_named_location.test_single_ip.ip[0].trusted
+      trusted            = azuread_named_location.test_single_ip.ip[0].trusted
     }
   }
 }
@@ -198,7 +198,7 @@ output "test_mixed_ranges" {
     display_name = azuread_named_location.test_mixed_ranges.display_name
     ip = {
       ip_ranges_or_fqdns = azuread_named_location.test_mixed_ranges.ip[0].ip_ranges
-      trusted           = azuread_named_location.test_mixed_ranges.ip[0].trusted
+      trusted            = azuread_named_location.test_mixed_ranges.ip[0].trusted
     }
   }
 }
