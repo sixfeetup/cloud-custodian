@@ -715,9 +715,7 @@ class EntraIDOrganizationTest(BaseTest):
 
         # Verify API calls were made
         self.assertEqual(mock_graph_request.call_count, 2)
-        mock_graph_request.assert_any_call(
-            "directorySettingTemplates?$filter=displayName eq 'Password Rule Settings'"
-        )
+        mock_graph_request.assert_any_call('directorySettingTemplates')
         mock_graph_request.assert_any_call('settings')
 
     @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
