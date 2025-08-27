@@ -133,4 +133,7 @@ ResourceMap = {
     "azure.entraid-authentication-methods-policy": (
         "c7n_azure.resources.entraid.EntraIDAuthenticationMethodsPolicy"
     ),
+    "azure.entraid-named-location": (
+        "c7n_azure.resources.entraid_named_locations.EntraIDNamedLocation"
+    ),
 }

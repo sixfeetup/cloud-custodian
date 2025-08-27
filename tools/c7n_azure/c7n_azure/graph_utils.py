@@ -58,6 +58,8 @@ GRAPH_ENDPOINT_PERMISSIONS = {
 
     # Policy endpoints (require beta API)
     'identity/conditionalAccess/policies': ['Policy.Read.All'],
+    'identity/conditionalAccess/namedLocations': ['Policy.Read.All'],
+    'identity/conditionalAccess/namedLocations/{id}': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
     'policies/authenticationMethodsPolicy': ['Policy.Read.AuthenticationMethod'],
 
