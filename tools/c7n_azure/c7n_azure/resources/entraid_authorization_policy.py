@@ -3,8 +3,6 @@
 
 import logging
 
-from c7n.filters import Filter
-from c7n.utils import type_schema
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import (
     GraphResourceManager, GraphTypeInfo, GraphSource, EntraIDDiagnosticSettingsFilter
@@ -95,64 +93,6 @@ class EntraIDAuthorizationPolicy(GraphResourceManager):
                     "Required permissions: Policy.Read.All"
                 )
             return []
-
-
-@EntraIDAuthorizationPolicy.filter_registry.register('allowed-to-create-apps')
-class AllowedToCreateAppsFilter(Filter):
-    """Filter based on whether users are allowed to create applications.
-
-    This filter checks the defaultUserRolePermissions.allowedToCreateApps setting
-    in the authorization policy, which controls whether regular users can register
-    applications in the tenant.
-
-    This is particularly useful for CIS compliance checks like:
-    CIS-B-MAF-4.0.0-6.14 'Users can register applications' is set to 'No'
-
-    :example:
-
-    Find if users can register applications (should be false for CIS compliance):
-
-    .. code-block:: yaml
-
-        policies:
-          - name: cis-users-cannot-register-apps
-            resource: azure.entraid-authorization-policy
-            filters:
-              - type: allowed-to-create-apps
-                value: false
-
-    Find if users can register applications (non-compliant):
-
-    .. code-block:: yaml
-
-        policies:
-          - name: users-can-register-apps-violation
-            resource: azure.entraid-authorization-policy
-            filters:
-              - type: allowed-to-create-apps
-                value: true
-    """
-
-    schema = type_schema('allowed-to-create-apps', value={'type': 'boolean'})
-
-    def process(self, resources, event=None):  # pylint: disable=unused-argument
-        expected_value = self.data.get('value', False)
-        filtered = []
-
-        for resource in resources:
-            default_user_permissions = resource.get('defaultUserRolePermissions', {})
-            allowed_to_create_apps = default_user_permissions.get('allowedToCreateApps', True)
-
-            # Convert to boolean to handle various data types
-            allowed_to_create_apps = bool(allowed_to_create_apps)
-            expected_value = bool(expected_value)
-
-            if allowed_to_create_apps == expected_value:
-                # Add computed field for easier reporting
-                resource['c7n:AllowedToCreateApps'] = allowed_to_create_apps
-                filtered.append(resource)
-
-        return filtered
 
 
 # Register diagnostic settings filter for EntraID authorization policy

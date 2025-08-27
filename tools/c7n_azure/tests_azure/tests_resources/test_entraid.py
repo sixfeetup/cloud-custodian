@@ -1715,7 +1715,9 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
                 'name': 'test-authorization-policy',
                 'resource': 'azure.entraid-authorization-policy',
                 'filters': [
-                    {'type': 'allowed-to-create-apps', 'value': False}
+                    {'type': 'value',
+                     'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                     'value': False}
                 ]
             }, validate=True)
             self.assertTrue(p)
@@ -1757,119 +1759,6 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
         self.assertEqual(resources[0]['id'], 'authorizationPolicy')
         self.assertIn('defaultUserRolePermissions', resources[0])
 
-    def test_allowed_to_create_apps_filter_compliant(self):
-        """Test allowed-to-create-apps filter for CIS compliance (allowedToCreateApps = False)"""
-        auth_policies = [
-            {
-                'id': 'authorizationPolicy',
-                'displayName': 'Authorization Policy',
-                'defaultUserRolePermissions': {
-                    'allowedToCreateApps': False,  # Compliant - users cannot create apps
-                    'allowedToCreateSecurityGroups': True,
-                    'allowedToReadOtherUsers': True
-                }
-            }
-        ]
-
-        policy = self.load_policy({
-            'name': 'test-cis-users-cannot-register-apps',
-            'resource': 'azure.entraid-authorization-policy',
-            'filters': [
-                {'type': 'allowed-to-create-apps', 'value': False}
-            ]
-        })
-
-        resource_mgr = policy.resource_manager
-        filtered = resource_mgr.filter_resources(auth_policies)
-
-        # Should match the compliant policy
-        self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['id'], 'authorizationPolicy')
-        self.assertFalse(filtered[0]['c7n:AllowedToCreateApps'])
-
-    def test_allowed_to_create_apps_filter_non_compliant(self):
-        """Test allowed-to-create-apps filter for non-compliance (allowedToCreateApps = True)"""
-        auth_policies = [
-            {
-                'id': 'authorizationPolicy',
-                'displayName': 'Authorization Policy',
-                'defaultUserRolePermissions': {
-                    'allowedToCreateApps': True,  # Non-compliant - users can create apps
-                    'allowedToCreateSecurityGroups': True,
-                    'allowedToReadOtherUsers': True
-                }
-            }
-        ]
-
-        policy = self.load_policy({
-            'name': 'test-users-can-register-apps-violation',
-            'resource': 'azure.entraid-authorization-policy',
-            'filters': [
-                {'type': 'allowed-to-create-apps', 'value': True}
-            ]
-        })
-
-        resource_mgr = policy.resource_manager
-        filtered = resource_mgr.filter_resources(auth_policies)
-
-        # Should match the non-compliant policy
-        self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['id'], 'authorizationPolicy')
-        self.assertTrue(filtered[0]['c7n:AllowedToCreateApps'])
-
-    def test_allowed_to_create_apps_filter_no_match(self):
-        """Test allowed-to-create-apps filter when no policies match"""
-        auth_policies = [
-            {
-                'id': 'authorizationPolicy',
-                'displayName': 'Authorization Policy',
-                'defaultUserRolePermissions': {
-                    'allowedToCreateApps': True,  # Does not match filter value (False)
-                    'allowedToCreateSecurityGroups': True,
-                    'allowedToReadOtherUsers': True
-                }
-            }
-        ]
-
-        policy = self.load_policy({
-            'name': 'test-no-match',
-            'resource': 'azure.entraid-authorization-policy',
-            'filters': [
-                {'type': 'allowed-to-create-apps', 'value': False}
-            ]
-        })
-
-        resource_mgr = policy.resource_manager
-        filtered = resource_mgr.filter_resources(auth_policies)
-
-        # Should not match any policies
-        self.assertEqual(len(filtered), 0)
-
-    def test_allowed_to_create_apps_filter_missing_permissions(self):
-        """Test allowed-to-create-apps filter with missing defaultUserRolePermissions"""
-        auth_policies = [
-            {
-                'id': 'authorizationPolicy',
-                'displayName': 'Authorization Policy',
-                # Missing defaultUserRolePermissions
-            }
-        ]
-
-        policy = self.load_policy({
-            'name': 'test-missing-permissions',
-            'resource': 'azure.entraid-authorization-policy',
-            'filters': [
-                {'type': 'allowed-to-create-apps', 'value': True}
-            ]
-        })
-
-        resource_mgr = policy.resource_manager
-        filtered = resource_mgr.filter_resources(auth_policies)
-
-        # Should match (defaults to True when missing)
-        self.assertEqual(len(filtered), 1)
-        self.assertTrue(filtered[0]['c7n:AllowedToCreateApps'])
-
     def test_cis_compliance_scenario(self):
         """Test CIS-B-MAF-4.0.0-6.14 compliance scenario"""
         # Test the specific CIS control: 'Users can register applications' is set to 'No'
@@ -1905,7 +1794,9 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
             'name': 'cis-b-maf-4-0-0-6-14-users-register-applications',
             'resource': 'azure.entraid-authorization-policy',
             'filters': [
-                {'type': 'allowed-to-create-apps', 'value': False}
+                {'type': 'value',
+                 'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                 'value': False}
             ]
         })
 
@@ -1914,7 +1805,7 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
         # Test compliant scenario
         compliant_filtered = resource_mgr.filter_resources([compliant_policy])
         self.assertEqual(len(compliant_filtered), 1)
-        self.assertFalse(compliant_filtered[0]['c7n:AllowedToCreateApps'])
+        self.assertFalse(compliant_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
 
         # Test non-compliant scenario
         non_compliant_filtered = resource_mgr.filter_resources([non_compliant_policy])
@@ -1925,14 +1816,16 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
             'name': 'cis-violation-users-can-register-apps',
             'resource': 'azure.entraid-authorization-policy',
             'filters': [
-                {'type': 'allowed-to-create-apps', 'value': True}
+                {'type': 'value',
+                 'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                 'value': True}
             ]
         })
 
         violation_mgr = violation_policy.resource_manager
         violation_filtered = violation_mgr.filter_resources([non_compliant_policy])
         self.assertEqual(len(violation_filtered), 1)
-        self.assertTrue(violation_filtered[0]['c7n:AllowedToCreateApps'])
+        self.assertTrue(violation_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
 
 
 # Terraform-based integration tests
