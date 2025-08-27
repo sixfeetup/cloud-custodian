@@ -45,7 +45,6 @@ class TerraformAzureRewriteHooks:
         tfstate.update(
             re.sub(
                 azure_guid_pattern,
-                r'\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b',
                 '00000000-0000-0000-0000-000000000000',
                 str(tfstate)
             )
