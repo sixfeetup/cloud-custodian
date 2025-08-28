@@ -62,6 +62,9 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'identity/conditionalAccess/namedLocations/{id}': ['Policy.Read.All'],
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
 
+    # Authorization Policy endpoints
+    'policies/authorizationPolicy': ['Policy.Read.All'],
+
     # Directory Settings endpoints (beta API)
     'settings': ['Directory.Read.All'],
     'settings/{id}': ['Directory.ReadWrite.All'],
