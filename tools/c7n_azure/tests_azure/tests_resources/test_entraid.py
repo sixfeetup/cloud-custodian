@@ -10,6 +10,7 @@ from c7n_azure.resources.entraid_group import EntraIDGroup
 from c7n_azure.resources.entraid_organization import EntraIDOrganization
 from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
 from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
+from c7n_azure.resources.entraid_authentication_methods import EntraIDAuthenticationMethodsPolicy
 from c7n_azure.resources.entraid_authorization_policy import EntraIDAuthorizationPolicy
 from c7n_azure.resources.entraid_named_locations import EntraIDNamedLocation
 from tests_azure.azure_common import BaseTest
@@ -1826,6 +1827,191 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
         violation_filtered = violation_mgr.filter_resources([non_compliant_policy])
         self.assertEqual(len(violation_filtered), 1)
         self.assertTrue(violation_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
+
+
+class EntraIDAuthenticationMethodsPolicyTest(BaseTest):
+    """Test EntraID Authentication Methods Policy resource functionality"""
+
+    def test_authentication_methods_policy_schema_validate(self):
+        """Test authentication methods policy schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-authentication-methods-policy',
+                'resource': 'azure.entraid-authentication-methods-policy',
+                'filters': [
+                    {'type': 'value', 'key': 'policyMigrationState', 'value': 'migrationComplete'}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_authentication_methods_policy_resource_type(self):
+        """Test authentication methods policy resource type configuration"""
+        resource_type = EntraIDAuthenticationMethodsPolicy.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Policy.Read.AuthenticationMethod', resource_type.permissions)
+
+    def test_sspr_methods_required_filter_schema_validate(self):
+        """Test SSPR methods required filter schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-sspr-methods-required',
+                'resource': 'azure.entraid-authentication-methods-policy',
+                'filters': [
+                    {'type': 'sspr-methods-required', 'min_methods': 2, 'op': 'gte'}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_sspr_methods_required_filter_cis_compliance(self):
+        """Test SSPR methods required filter for CIS 6.5 compliance"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Strong SSPR Policy',
+                'policyMigrationState': 'migrationComplete',
+                'authenticationMethodConfigurations': [
+                    {
+                        '@odata.type': '#microsoft.graph.passwordAuthenticationMethod',
+                        'numberOfMethodsRequired': 2
+                    }
+                ]
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Weak SSPR Policy',
+                'policyMigrationState': 'migrationComplete',
+                'authenticationMethodConfigurations': [
+                    {
+                        '@odata.type': '#microsoft.graph.passwordAuthenticationMethod',
+                        'numberOfMethodsRequired': 1
+                    }
+                ]
+            }
+        ]
+
+        # Test CIS 6.5 compliance - requires 2 methods
+        policy = self.load_policy({
+            'name': 'test-cis-sspr-compliance',
+            'resource': 'azure.entraid-authentication-methods-policy',
+            'filters': [
+                {'type': 'sspr-methods-required', 'min_methods': 2, 'op': 'gte'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # Only policy1 should match CIS requirement (requires >= 2 methods)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'policy1')
+        self.assertEqual(filtered[0]['sspr_methods_required'], 2)
+
+    def test_sspr_methods_required_filter_non_compliant(self):
+        """Test SSPR methods required filter to find non-compliant policies"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Strong SSPR Policy',
+                'policyMigrationState': 'migrationComplete',
+                'authenticationMethodConfigurations': [
+                    {
+                        '@odata.type': '#microsoft.graph.passwordAuthenticationMethod',
+                        'numberOfMethodsRequired': 2
+                    }
+                ]
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Weak SSPR Policy',
+                'policyMigrationState': 'migrationComplete',
+                'authenticationMethodConfigurations': [
+                    {
+                        '@odata.type': '#microsoft.graph.passwordAuthenticationMethod',
+                        'numberOfMethodsRequired': 1
+                    }
+                ]
+            }
+        ]
+
+        # Test to find non-compliant policies (< 2 methods required)
+        policy = self.load_policy({
+            'name': 'test-sspr-non-compliant',
+            'resource': 'azure.entraid-authentication-methods-policy',
+            'filters': [
+                {'type': 'sspr-methods-required', 'min_methods': 2, 'op': 'lt'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # Only policy2 should match (requires < 2 methods)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'policy2')
+        self.assertEqual(filtered[0]['sspr_methods_required'], 1)
+
+    def test_sspr_methods_required_filter_alternative_config_locations(self):
+        """Test SSPR methods required filter with different configuration locations"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Policy with passwordResetPolicy',
+                'policyMigrationState': 'migrationComplete',
+                'passwordResetPolicy': {
+                    'methodsRequired': 2
+                }
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Policy with legacySspr',
+                'policyMigrationState': 'migrationInProgress',
+                'legacySspr': {
+                    'requiredMethods': 1
+                }
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-sspr-alternative-config',
+            'resource': 'azure.entraid-authentication-methods-policy',
+            'filters': [
+                {'type': 'sspr-methods-required', 'min_methods': 2, 'op': 'eq'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # Only policy1 should match (requires exactly 2 methods)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'policy1')
+        self.assertEqual(filtered[0]['sspr_methods_required'], 2)
+
+    def test_sspr_methods_required_filter_no_config_found(self):
+        """Test SSPR methods required filter when no SSPR config is found"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Policy without SSPR config',
+                'policyMigrationState': 'premigration'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-sspr-no-config',
+            'resource': 'azure.entraid-authentication-methods-policy',
+            'filters': [
+                {'type': 'sspr-methods-required', 'min_methods': 2, 'op': 'gte'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # No policies should match (no SSPR config found)
+        self.assertEqual(len(filtered), 0)
 
 
 # Terraform-based integration tests
