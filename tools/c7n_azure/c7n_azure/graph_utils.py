@@ -63,6 +63,9 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'policies/identitySecurityDefaultsEnforcementPolicy': ['Policy.Read.All'],
     'policies/authenticationMethodsPolicy': ['Policy.Read.AuthenticationMethod'],
 
+    # Authorization Policy endpoints
+    'policies/authorizationPolicy': ['Policy.Read.All'],
+
     # Directory Settings endpoints (beta API)
     'settings': ['Directory.Read.All'],
     'settings/{id}': ['Directory.ReadWrite.All'],
@@ -194,58 +197,58 @@ class EntraIDDiagnosticSettingsFilter(ValueFilter):
 
     def process(self, resources, event=None):
         """Process EntraID resources by checking tenant-level diagnostic settings."""
+
+        # Get tenant-level diagnostic settings
+        session = local_session(self.manager.session_factory)
+        session.client('azure.mgmt.monitor.MonitorManagementClient')
+
+        # EntraID diagnostic settings are tenant-level:
+        # /providers/microsoft.aadiam/diagnosticSettings
+        tenant_diagnostic_settings = []
         try:
-            # Get tenant-level diagnostic settings
-            session = local_session(self.manager.session_factory)
-            session.client('azure.mgmt.monitor.MonitorManagementClient')
+            # List all EntraID diagnostic settings for the tenant
+            # Use the correct EntraID diagnostic settings API endpoint
+            import requests
+            session_token = session.get_credentials()
+            token = session_token.get_token('https://management.azure.com/.default')
 
-            # EntraID diagnostic settings are tenant-level:
-            # /providers/microsoft.aadiam/diagnosticSettings
-            tenant_diagnostic_settings = []
-            try:
-                # List all EntraID diagnostic settings for the tenant
-                # Use the correct EntraID diagnostic settings API endpoint
-                import requests
-                session_token = session.get_credentials()
-                token = session_token.get_token('https://management.azure.com/.default')
+            headers = {
+                'Authorization': f'Bearer {token.token}',
+                'Content-Type': 'application/json'
+            }
 
-                headers = {
-                    'Authorization': f'Bearer {token.token}',
-                    'Content-Type': 'application/json'
-                }
+            # Use the correct EntraID diagnostic settings API endpoint from our research
+            url = ('https://management.azure.com/providers/microsoft.aadiam/'
+                   'diagnosticSettings?api-version=2017-04-01-preview')
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()
 
-                # Use the correct EntraID diagnostic settings API endpoint from our research
-                url = ('https://management.azure.com/providers/microsoft.aadiam/'
-                       'diagnosticSettings?api-version=2017-04-01-preview')
-                response = requests.get(url, headers=headers, timeout=30)
-                response.raise_for_status()
+            data = response.json()
+            tenant_diagnostic_settings = data.get('value', [])
 
-                data = response.json()
-                tenant_diagnostic_settings = data.get('value', [])
-
-                if not tenant_diagnostic_settings:
-                    tenant_diagnostic_settings = [{}]
-            except Exception as e:
-                self.log.warning(f"Failed to retrieve EntraID diagnostic settings: {e}")
-                # If no settings available, use empty list so absent operator can function
-                tenant_diagnostic_settings = [{}]
-
-            # Apply filter to diagnostic settings
             if not tenant_diagnostic_settings:
                 tenant_diagnostic_settings = [{}]
+        except requests.exceptions.HTTPError as e:
+            errmsg = f"Failed to retrieve EntraID diagnostic settings: {e}."
+            if response.status_code == 403:
+                errmsg += " Ensure service principal has " \
+                    "'Microsoft.AADIAM/diagnosticSettings/read' permission."
+            self.log.error(errmsg)
+            # If no settings available, use empty list so absent operator can function
+            raise
 
-            filtered_settings = super(EntraIDDiagnosticSettingsFilter, self).process(
-                tenant_diagnostic_settings, event=None)
+        # Apply filter to diagnostic settings
+        if not tenant_diagnostic_settings:
+            tenant_diagnostic_settings = [{}]
 
-            # If diagnostic settings match the filter criteria, return all resources
-            # since EntraID diagnostic settings apply to the entire tenant
-            if filtered_settings:
-                return resources
-            else:
-                return []
+        filtered_settings = super(EntraIDDiagnosticSettingsFilter, self).process(
+            tenant_diagnostic_settings, event=None)
 
-        except Exception as e:
-            self.log.error(f"Error in EntraID diagnostic settings filter: {e}")
+        # If diagnostic settings match the filter criteria, return all resources
+        # since EntraID diagnostic settings apply to the entire tenant
+        if filtered_settings:
+            return resources
+        else:
             return []
 
 
