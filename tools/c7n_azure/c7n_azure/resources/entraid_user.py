@@ -5,7 +5,7 @@ import logging
 import requests
 from datetime import datetime
 
-from c7n.filters import Filter
+from c7n.filters import Filter, ValueFilter
 from c7n.utils import local_session, type_schema
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
@@ -312,49 +312,32 @@ class EntraIDUser(GraphResourceManager):
 
 
 @EntraIDUser.filter_registry.register('auth-methods')
-class AuthMethodsFilter(Filter):
+class AuthMethodsFilter(ValueFilter):
     """Filter users by authentication methods.
 
-    Returns users with their authentication methods populated in the
-    'c7n:AuthMethods' field for use with value filters or other processing.
+    Filters users based on their registered authentication methods.
 
     Requires: UserAuthenticationMethod.Read.All
 
     :example:
 
-    Get all users with their authentication methods:
-
     .. code-block:: yaml
 
         filters:
           - type: auth-methods
-
-    Then use with value filter to check specific auth method types:
-
-    .. code-block:: yaml
-
-        filters:
-          - type: auth-methods
-          - type: value
-            key: 'c7n:AuthMethods[*]."@odata.type"'
+            key: '[]."@odata.type"'
             op: contains
             value: '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
     """
 
-    schema = type_schema('auth-methods')
+    schema = type_schema('auth-methods', rinherit=ValueFilter.schema)
+    auth_methods_annotation_key = 'c7n:AuthMethods'
+    annotate = False
 
-    def process(self, resources, event=None):  # pylint: disable=unused-argument
-        filtered = []
-
-        for resource in resources:
-            user_id = resource.get('id') or resource.get('objectId')
-            if not user_id:
-                log.warning(
-                    f"Skipping user without ID: {resource.get('displayName', 'Unknown')}"
-                )
-                continue
-
+    def __call__(self, i):
+        if self.auth_methods_annotation_key not in i:
             # Get user's authentication methods from Graph API
+            user_id = i.get('id') or i.get('objectId')
             auth_methods = self.manager.get_user_auth_methods(user_id)
 
             if auth_methods is None:
@@ -362,15 +345,14 @@ class AuthMethodsFilter(Filter):
                 # Skip this user to avoid false results
                 log.warning(
                     f"Could not determine authentication methods for user "
-                    f"{resource.get('displayName', user_id)}"
+                    f"{i.get('displayName', user_id)}"
                 )
-                continue
+                auth_methods = []
 
             # Add auth methods to user resource for filtering
-            resource['c7n:AuthMethods'] = auth_methods
-            filtered.append(resource)
+            i[self.auth_methods_annotation_key] = auth_methods
 
-        return filtered
+        return super().__call__(i[self.auth_methods_annotation_key])
 
 
 @EntraIDUser.filter_registry.register('risk-level')

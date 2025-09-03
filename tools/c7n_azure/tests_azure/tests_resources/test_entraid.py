@@ -143,8 +143,7 @@ client.return_value = mock_client
             'name': 'test-auth-methods-filter',
             'resource': 'azure.entraid-user',
             'filters': [
-                {'type': 'auth-methods'},
-                {'type': 'value', 'key': 'c7n:AuthMethods', 'value': 'present'}
+                {'type': 'auth-methods', 'key': '[]."@odata.type"', 'value': 'not-null'}
             ]
         })
 
@@ -152,7 +151,7 @@ client.return_value = mock_client
         filtered = resource_mgr.filter_resources(users)
 
         # Should have 3 users with auth methods data enriched (including user with empty list)
-        self.assertEqual(len(filtered), 3)
+        self.assertEqual(len(filtered), 2)
 
         # Check that users are enriched with auth methods data
         for user in filtered:
@@ -161,11 +160,9 @@ client.return_value = mock_client
         # Check actual auth methods content
         user1 = next(u for u in filtered if u['id'] == 'user1')
         user2 = next(u for u in filtered if u['id'] == 'user2')
-        user3 = next(u for u in filtered if u['id'] == 'user3')
 
         self.assertEqual(len(user1['c7n:AuthMethods']), 2)  # User1 has 2 methods
         self.assertEqual(len(user2['c7n:AuthMethods']), 1)  # User2 has 1 method
-        self.assertEqual(len(user3['c7n:AuthMethods']), 0)  # User3 has no methods
 
         # Verify the auth methods check was called for each user
         self.assertEqual(mock_auth_methods.call_count, 3)

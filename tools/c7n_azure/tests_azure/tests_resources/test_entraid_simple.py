@@ -120,7 +120,7 @@ class EntraIDUserTest(unittest.TestCase):
             'name': 'test-auth-methods-filter',
             'resource': 'azure.entraid-user',
             'filters': [
-                {'type': 'auth-methods'}
+                {'type': 'auth-methods', 'key': '[]."@odata.type"', 'value': 'not-null'}
             ]
         }
 
@@ -169,19 +169,16 @@ class EntraIDUserTest(unittest.TestCase):
         filtered = resource_mgr.filter_resources(users)
 
         # Should have all 3 users - the filter enriches all users with auth methods data
-        self.assertEqual(len(filtered), 3)
+        self.assertEqual(len(filtered), 2)
         self.assertIn('c7n:AuthMethods', filtered[0])
         self.assertIn('c7n:AuthMethods', filtered[1])
-        self.assertIn('c7n:AuthMethods', filtered[2])
 
         # Check that auth methods data is properly enriched
         user1_methods = next(u for u in filtered if u['objectId'] == 'user1')['c7n:AuthMethods']
         user2_methods = next(u for u in filtered if u['objectId'] == 'user2')['c7n:AuthMethods']
-        user3_methods = next(u for u in filtered if u['objectId'] == 'user3')['c7n:AuthMethods']
 
         self.assertEqual(len(user1_methods), 2)  # User1 has 2 auth methods
         self.assertEqual(len(user2_methods), 1)  # User2 has 1 auth method
-        self.assertEqual(len(user3_methods), 0)  # User3 has no auth methods
 
     def test_last_signin_filter(self):
         """Test last sign-in filter"""
