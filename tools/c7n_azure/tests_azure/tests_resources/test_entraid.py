@@ -85,9 +85,9 @@ client.return_value = mock_client
         self.assertTrue(augmented[0]['c7n:IsHighPrivileged'])
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
-    @patch('c7n_azure.resources.entraid_user.EntraIDUser.check_user_mfa_status')
-    def test_mfa_enabled_filter(self, mock_mfa_check):
-        """Test MFA enabled filter with real Graph API implementation"""
+    @patch('c7n_azure.resources.entraid_user.EntraIDUser.get_user_auth_methods')
+    def test_auth_methods_filter(self, mock_auth_methods):
+        """Test authentication methods filter with real Graph API implementation"""
         users = [
             {
                 'id': 'user1',
@@ -106,34 +106,66 @@ client.return_value = mock_client
             }
         ]
 
-        # Mock MFA status: user1 has MFA, user2 doesn't, user3 unknown
-        def mock_mfa_side_effect(user_id):
+        # Mock authentication methods: user1 has multiple methods, user2 has one, user3 has none
+        def mock_auth_methods_side_effect(user_id):
             if user_id == 'user1':
-                return True
+                return [
+                    {
+                        '@odata.type': (
+                            '#microsoft.graph.'
+                            'microsoftAuthenticatorAuthenticationMethod'
+                        ),
+                        'id': 'method1-id',
+                        'displayName': 'Microsoft Authenticator'
+                    },
+                    {
+                        '@odata.type': '#microsoft.graph.phoneAuthenticationMethod',
+                        'id': 'method2-id',
+                        'phoneNumber': '+1555XXXX123',
+                        'phoneType': 'mobile'
+                    }
+                ]
             elif user_id == 'user2':
-                return False
+                return [
+                    {
+                        '@odata.type': '#microsoft.graph.phoneAuthenticationMethod',
+                        'id': 'method3-id',
+                        'phoneNumber': '+1555XXXX456',
+                        'phoneType': 'mobile'
+                    }
+                ]
             else:
-                return None  # Unknown status
+                return []  # No authentication methods
 
-        mock_mfa_check.side_effect = mock_mfa_side_effect
+        mock_auth_methods.side_effect = mock_auth_methods_side_effect
 
         policy = self.load_policy({
-            'name': 'test-mfa-filter',
+            'name': 'test-auth-methods-filter',
             'resource': 'azure.entraid-user',
             'filters': [
-                {'type': 'mfa-enabled', 'value': True}
+                {'type': 'auth-methods', 'key': '[]."@odata.type"', 'value': 'not-null'}
             ]
         })
 
         resource_mgr = policy.resource_manager
         filtered = resource_mgr.filter_resources(users)
 
-        # Only user1 has MFA enabled (user3 skipped due to unknown status)
-        self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['id'], 'user1')
+        # Should have 3 users with auth methods data enriched (including user with empty list)
+        self.assertEqual(len(filtered), 2)
 
-        # Verify the MFA check was called for each user
-        self.assertEqual(mock_mfa_check.call_count, 3)
+        # Check that users are enriched with auth methods data
+        for user in filtered:
+            self.assertIn('c7n:AuthMethods', user)
+
+        # Check actual auth methods content
+        user1 = next(u for u in filtered if u['id'] == 'user1')
+        user2 = next(u for u in filtered if u['id'] == 'user2')
+
+        self.assertEqual(len(user1['c7n:AuthMethods']), 2)  # User1 has 2 methods
+        self.assertEqual(len(user2['c7n:AuthMethods']), 1)  # User2 has 1 method
+
+        # Verify the auth methods check was called for each user
+        self.assertEqual(mock_auth_methods.call_count, 3)
 
     def test_last_signin_filter(self):
         """Test last sign-in filter"""

@@ -95,8 +95,8 @@ class EntraIDUserTest(unittest.TestCase):
         self.assertFalse(augmented[1]['c7n:IsHighPrivileged'])
 
     @patch('c7n_azure.resources.entraid_user.local_session')
-    def test_mfa_enabled_filter(self, mock_session):
-        """Test MFA enabled filter"""
+    def test_auth_methods_filter(self, mock_session):
+        """Test authentication methods filter"""
         # Mock the session and Graph API responses
         mock_client = Mock()
         mock_session.return_value.get_session_for_resource.return_value = mock_client
@@ -104,37 +104,62 @@ class EntraIDUserTest(unittest.TestCase):
         users = [
             {
                 'objectId': 'user1',
-                'strongAuthenticationDetail': {'methods': ['PhoneAuth']}
+                'id': 'user1'
             },
             {
                 'objectId': 'user2',
-                'strongAuthenticationDetail': {'methods': []}
+                'id': 'user2'
             },
             {
-                'objectId': 'user3'
+                'objectId': 'user3',
+                'id': 'user3'
             }
         ]
 
         policy_data = {
-            'name': 'test-mfa-filter',
+            'name': 'test-auth-methods-filter',
             'resource': 'azure.entraid-user',
             'filters': [
-                {'type': 'mfa-enabled', 'value': True}
+                {'type': 'auth-methods', 'key': '[]."@odata.type"', 'value': 'not-null'}
             ]
         }
 
         policy = self.load_policy(policy_data)
         resource_mgr = policy.resource_manager
 
-        # Mock the Graph API responses for MFA status
+        # Mock the Graph API responses for authentication methods
         def mock_make_graph_request(endpoint):
             if 'user1/authentication/methods' in endpoint:
                 return {
-                    'value': [{
-
-                        '@odata.type':
-                        '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod'
-                    }]
+                    'value': [
+                        {
+                            '@odata.type': (
+                                '#microsoft.graph.'
+                                'microsoftAuthenticatorAuthenticationMethod'
+                            ),
+                            'id': 'method1-id',
+                            'displayName': 'Microsoft Authenticator'
+                        },
+                        {
+                            '@odata.type': (
+                                '#microsoft.graph.phoneAuthenticationMethod'
+                            ),
+                            'id': 'method2-id',
+                            'phoneNumber': '+1555XXXX123',
+                            'phoneType': 'mobile'
+                        }
+                    ]
+                }
+            elif 'user2/authentication/methods' in endpoint:
+                return {
+                    'value': [
+                        {
+                            '@odata.type': '#microsoft.graph.phoneAuthenticationMethod',
+                            'id': 'method3-id',
+                            'phoneNumber': '+1555XXXX456',
+                            'phoneType': 'mobile'
+                        }
+                    ]
                 }
             else:
                 return {'value': []}
@@ -143,9 +168,17 @@ class EntraIDUserTest(unittest.TestCase):
 
         filtered = resource_mgr.filter_resources(users)
 
-        # Only user1 has MFA enabled
-        self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['objectId'], 'user1')
+        # Should have all 3 users - the filter enriches all users with auth methods data
+        self.assertEqual(len(filtered), 2)
+        self.assertIn('c7n:AuthMethods', filtered[0])
+        self.assertIn('c7n:AuthMethods', filtered[1])
+
+        # Check that auth methods data is properly enriched
+        user1_methods = next(u for u in filtered if u['objectId'] == 'user1')['c7n:AuthMethods']
+        user2_methods = next(u for u in filtered if u['objectId'] == 'user2')['c7n:AuthMethods']
+
+        self.assertEqual(len(user1_methods), 2)  # User1 has 2 auth methods
+        self.assertEqual(len(user2_methods), 1)  # User2 has 1 auth method
 
     def test_last_signin_filter(self):
         """Test last sign-in filter"""
