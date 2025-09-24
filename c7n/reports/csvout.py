@@ -135,9 +135,14 @@ def _get_values(record, field_list, tag_map):
             else:
                 value = str(len(value))
         else:
-            value = jmespath_search(field, record)
-            if value is None:
-                value = ''
+            if field.startswith('@'):
+                # Fields starting with @ are JMESPath special characters, use direct access
+                value = record.get(field, '')
+            else:
+                # Use JMESPath for normal field access (supports dot notation, etc.)
+                value = jmespath_search(field, record)
+                if value is None:
+                    value = ''
             if not isinstance(value, str):
                 value = str(value)
         vals.append(value)

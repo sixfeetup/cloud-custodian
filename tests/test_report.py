@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from c7n.reports.csvout import Formatter, strip_output_path
+from c7n.reports.csvout import Formatter, strip_output_path, _get_values
 from .common import BaseTest, load_data
 
 
@@ -164,3 +164,60 @@ class TestMultiReport(BaseTest):
             strip_output_path(p, policy_name) == f"logs/{policy_name}"
             for p in output_paths
         ))
+
+
+class TestGetValues(BaseTest):
+
+    def test_get_values_with_at_fields(self):
+        """Test _get_values handles fields starting with @ (like @odata.type) correctly."""
+        record = {
+            'id': 'test-id',
+            'displayName': 'Test Location',
+            '@odata.type': '#microsoft.graph.ipNamedLocation',
+            'nested': {'field': 'nested-value'}
+        }
+        tag_map = {}
+
+        # Test @ field extraction
+        fields = ['@odata.type']
+        result = _get_values(record, fields, tag_map)
+        self.assertEqual(result, ['#microsoft.graph.ipNamedLocation'])
+
+        # Test mixed fields (@ field and regular fields)
+        fields = ['id', '@odata.type', 'displayName']
+        result = _get_values(record, fields, tag_map)
+        self.assertEqual(result, ['test-id', '#microsoft.graph.ipNamedLocation', 'Test Location'])
+
+        # Test @ field that doesn't exist in record
+        fields = ['@missing.field']
+        result = _get_values(record, fields, tag_map)
+        self.assertEqual(result, [''])
+
+        # Test normal JMESPath still works
+        fields = ['nested.field']
+        result = _get_values(record, fields, tag_map)
+        self.assertEqual(result, ['nested-value'])
+
+    def test_formatter_with_at_fields(self):
+        """Test Formatter end-to-end with @ fields like @odata.type."""
+        # Create a fake resource type similar to Azure EntraID Named Location
+        class FakeNamedLocationResource:
+            class TypeInfo:
+                id = 'id'
+                name = 'displayName'
+                date = 'createdDateTime'
+                default_report_fields = ('displayName', 'createdDateTime', '@odata.type', 'id')
+
+        formatter = Formatter(resource_type=FakeNamedLocationResource.TypeInfo)
+
+        # Test record with @odata.type field
+        records = [{
+            'id': 'location-1',
+            'displayName': 'Corporate IP Ranges',
+            'createdDateTime': '2023-01-01T00:00:00Z',
+            '@odata.type': '#microsoft.graph.ipNamedLocation'
+        }]
+
+        result = formatter.to_csv(records)
+        expected = [['Corporate IP Ranges', '2023-01-01T00:00:00Z', '#microsoft.graph.ipNamedLocation', 'location-1']]
+        self.assertEqual(result, expected)
