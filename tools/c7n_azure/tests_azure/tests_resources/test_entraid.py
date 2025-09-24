@@ -10,6 +10,7 @@ from pytest_terraform import terraform
 from c7n_azure.resources.entraid_user import (
     EntraIDUser
 )
+from c7n_azure.resources.entraid_group import EntraIDGroup
 from tests_azure.azure_common import BaseTest
 
 
@@ -844,6 +845,226 @@ client.return_value = mock_client
 
         # Should not raise exception, just log error
         action._process_resource(user)
+
+
+class EntraIDGroupTest(BaseTest):
+    """Test EntraID Group resource functionality"""
+
+    def test_entraid_group_schema_validate(self):
+        """Test that the EntraID group resource schema validates correctly"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-entraid-group',
+                'resource': 'azure.entraid-group',
+                'filters': [
+                    {'type': 'value', 'key': 'securityEnabled', 'value': True}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_entraid_group_resource_type(self):
+        """Test EntraID group resource type configuration"""
+        resource_type = EntraIDGroup.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertEqual(resource_type.name, 'displayName')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Group.Read.All', resource_type.permissions)
+
+    def test_entraid_group_augment(self):
+        """Test group resource augmentation with computed fields"""
+
+        # Sample group data
+        groups = [
+            {
+                'id': 'group1-id',
+                'displayName': 'Global Administrators',
+                'description': 'Admin group',
+                'securityEnabled': True,
+                'mailEnabled': False,
+                'groupTypes': []
+            },
+            {
+                'id': 'group2-id',
+                'displayName': 'All Users Distribution',
+                'description': 'Distribution list',
+                'securityEnabled': False,
+                'mailEnabled': True,
+                'groupTypes': ['Unified']
+            },
+            {
+                'id': 'group3-id',
+                'displayName': 'Dynamic Security Group',
+                'description': 'Dynamic membership',
+                'securityEnabled': True,
+                'mailEnabled': False,
+                'groupTypes': ['DynamicMembership']
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-augment',
+            'resource': 'azure.entraid-group'
+        })
+
+        resource_mgr = policy.resource_manager
+        augmented = resource_mgr.augment(groups)
+
+        # Check augmented fields
+        self.assertIn('c7n:IsSecurityGroup', augmented[0])
+        self.assertIn('c7n:IsDistributionGroup', augmented[0])
+        self.assertIn('c7n:IsDynamicGroup', augmented[0])
+        self.assertIn('c7n:IsAdminGroup', augmented[0])
+
+        # Admin group should be flagged correctly
+        self.assertTrue(augmented[0]['c7n:IsSecurityGroup'])
+        self.assertTrue(augmented[0]['c7n:IsAdminGroup'])
+        self.assertFalse(augmented[0]['c7n:IsDistributionGroup'])
+
+        # Distribution group should be flagged correctly
+        self.assertFalse(augmented[1]['c7n:IsSecurityGroup'])
+        self.assertTrue(augmented[1]['c7n:IsDistributionGroup'])
+        self.assertFalse(augmented[1]['c7n:IsAdminGroup'])
+
+        # Dynamic group should be flagged correctly
+        self.assertTrue(augmented[2]['c7n:IsSecurityGroup'])
+        self.assertTrue(augmented[2]['c7n:IsDynamicGroup'])
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter(self, mock_member_count):
+        """Test member count filter with real Graph API implementation"""
+        groups = [
+            {
+                'id': 'group1',
+                'displayName': 'Small Group'
+            },
+            {
+                'id': 'group2',
+                'displayName': 'Large Group'
+            },
+            {
+                'id': 'group3',
+                'displayName': 'Empty Group'
+            }
+        ]
+
+        # Mock member counts: group1=2, group2=5, group3=0
+        def mock_count_side_effect(group_id):
+            if group_id == 'group1':
+                return 2
+            elif group_id == 'group2':
+                return 5
+            elif group_id == 'group3':
+                return 0
+            else:
+                return None
+
+        mock_member_count.side_effect = mock_count_side_effect
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 3, 'op': 'greater-than'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(groups)
+
+        # Only group2 has >3 members
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'group2')
+
+        # Verify the member count check was called
+        self.assertEqual(mock_member_count.call_count, 3)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter(self, mock_owner_count):
+        """Test owner count filter with real Graph API implementation"""
+        groups = [
+            {
+                'id': 'group1',
+                'displayName': 'Owned Group'
+            },
+            {
+                'id': 'group2',
+                'displayName': 'Orphaned Group'
+            }
+        ]
+
+        # Mock owner counts: group1=1, group2=0
+        def mock_count_side_effect(group_id):
+            if group_id == 'group1':
+                return 1
+            elif group_id == 'group2':
+                return 0
+            else:
+                return None
+
+        mock_owner_count.side_effect = mock_count_side_effect
+
+        policy = self.load_policy({
+            'name': 'test-owner-count',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 0, 'op': 'equal'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(groups)
+
+        # Only group2 has no owners
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'group2')
+
+        # Verify the owner count check was called
+        self.assertEqual(mock_owner_count.call_count, 2)
+
+    def test_group_type_filter(self):
+        """Test group type filter"""
+        groups = [
+            {
+                'id': 'group1',
+                'displayName': 'Security Group',
+                'c7n:IsSecurityGroup': True,
+                'c7n:IsDistributionGroup': False,
+                'c7n:IsDynamicGroup': False,
+                'c7n:IsAdminGroup': False
+            },
+            {
+                'id': 'group2',
+                'displayName': 'Distribution Group',
+                'c7n:IsSecurityGroup': False,
+                'c7n:IsDistributionGroup': True,
+                'c7n:IsDynamicGroup': False,
+                'c7n:IsAdminGroup': False
+            },
+            {
+                'id': 'group3',
+                'displayName': 'Admin Group',
+                'c7n:IsSecurityGroup': True,
+                'c7n:IsDistributionGroup': False,
+                'c7n:IsDynamicGroup': False,
+                'c7n:IsAdminGroup': True
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-group-type',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'group-type', 'group-type': 'admin'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(groups)
+
+        # Only group3 is an admin group
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'group3')
 
 
 # Terraform-based integration tests
