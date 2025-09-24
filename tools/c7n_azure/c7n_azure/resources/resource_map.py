@@ -114,4 +114,5 @@ ResourceMap = {
     "azure.entraid-conditional-access-policy": "c7n_azure.resources.entraid.EntraIDConditionalAccessPolicy", # noqa
     "azure.entraid-security-defaults": "c7n_azure.resources.entraid.EntraIDSecurityDefaults",
     "azure.entraid-authorization-policy": "c7n_azure.resources.entraid.EntraIDAuthorizationPolicy",
+    "azure.entraid-named-location": "c7n_azure.resources.entraid_named_locations.EntraIDNamedLocation", # noqa
 }
