@@ -157,9 +157,6 @@ class UpgradeAvailable(Filter):
             except client.exceptions.NotFoundException:
                 # Cluster not found, skip
                 continue
-            except Exception:
-                # Other errors, skip this resource
-                continue
 
             current_version = r.get('KafkaVersion')
             if not current_version:
