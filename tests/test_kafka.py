@@ -185,7 +185,11 @@ class KafkaTest(BaseTest):
 
         # Verify that target version is higher than current
         from c7n.vendored.distutils.version import LooseVersion
-        current_version = cluster.get("Provisioned", {}).get("CurrentBrokerSoftwareInfo", {}).get('KafkaVersion')
+        current_version = (
+            cluster.get("Provisioned", {})
+            .get("CurrentBrokerSoftwareInfo", {})
+            .get('KafkaVersion')
+        )
         target_version = cluster.get('c7n:kafka-target-version')
 
         self.assertIsNotNone(current_version)
