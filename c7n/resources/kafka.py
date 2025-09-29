@@ -158,7 +158,11 @@ class UpgradeAvailable(Filter):
                 # Cluster not found, skip
                 continue
 
-            current_version = r.get('KafkaVersion')
+            current_version = (
+                r.get("Provisioned", {})
+                .get("CurrentBrokerSoftwareInfo", {})
+                .get('KafkaVersion')
+            )
             if not current_version:
                 # No current version info, can't determine upgrades
                 if not check_upgrade_extant:

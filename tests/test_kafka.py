@@ -185,7 +185,7 @@ class KafkaTest(BaseTest):
 
         # Verify that target version is higher than current
         from c7n.vendored.distutils.version import LooseVersion
-        current_version = cluster.get('KafkaVersion')
+        current_version = cluster.get("Provisioned", {}).get("CurrentBrokerSoftwareInfo", {}).get('KafkaVersion')
         target_version = cluster.get('c7n:kafka-target-version')
 
         self.assertIsNotNone(current_version)
@@ -203,8 +203,11 @@ class KafkaTest(BaseTest):
         }, session_factory=session_factory)
 
         resources = p.run()
-        # This should return clusters that don't have upgrades available
-        self.assertGreaterEqual(len(resources), 0)
+        # Cluster should be here, but with no upgrade versions.
+        self.assertEqual(len(resources), 1)
+
+        cluster = resources[0]
+        self.assertNotIn('c7n:kafka-upgrade-versions', cluster)
 
     def test_kafka_upgrade_available_major_versions(self):
         session_factory = self.replay_flight_data('test_kafka_upgrade_available_major')
@@ -217,8 +220,12 @@ class KafkaTest(BaseTest):
         }, session_factory=session_factory)
 
         resources = p.run()
-        # This should return clusters that have major version upgrades available
-        self.assertGreaterEqual(len(resources), 0)
+        # This should return clusters that have minor version upgrades available
+        self.assertEqual(len(resources), 1)
+
+        cluster = resources[0]
+        self.assertIn('c7n:kafka-upgrade-versions', cluster)
+        self.assertIn('c7n:kafka-target-version', cluster)
 
 
 class TestKafkaClusterConfiguration(BaseTest):
