@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from c7n.resources.elasticache import _cluster_eligible_for_snapshot
+from c7n.resources.elasticache import _cluster_eligible_for_snapshot, _parse_engine_version
 
 from .common import BaseTest
 
@@ -19,6 +19,18 @@ class TestElastiCacheCluster(BaseTest):
         self.assertFalse(
             _cluster_eligible_for_snapshot(
                 {'Engine': 'memcached', 'CacheNodeType': 'cache.t2.medium'}))
+
+    def test_parse_engine_version(self):
+        # Test the version parsing function
+        self.assertEqual(_parse_engine_version("redis-7.0"), ("redis", "7.0"))
+        self.assertEqual(_parse_engine_version("memcached-1.6.12"), ("memcached", "1.6.12"))
+        self.assertEqual(_parse_engine_version("valkey-7.2"), ("valkey", "7.2"))
+
+        # Test edge cases
+        self.assertEqual(_parse_engine_version(""), (None, None))
+        self.assertEqual(_parse_engine_version("invalid"), (None, None))
+        self.assertEqual(_parse_engine_version("redis"), (None, None))
+        self.assertEqual(_parse_engine_version(None), (None, None))
 
     def test_elasticache_security_group(self):
         session_factory = self.replay_flight_data("test_elasticache_security_group")
