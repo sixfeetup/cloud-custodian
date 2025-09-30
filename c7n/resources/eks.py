@@ -188,11 +188,19 @@ class UpgradeAvailable(Filter):
                     available_versions.append(version_info)
 
             # Check if upgrades are available
-            has_upgrades = self._has_upgrade_options(current_version, available_versions, check_major)
+            has_upgrades = self._has_upgrade_options(
+                current_version,
+                available_versions,
+                check_major,
+            )
 
             if check_upgrade_extant == has_upgrades:
                 # Add available upgrade information to the resource
-                upgrade_versions = self._get_upgrade_versions(current_version, available_versions, check_major)
+                upgrade_versions = self._get_upgrade_versions(
+                    current_version,
+                    available_versions,
+                    check_major,
+                )
                 r['c7n:AvailableVersions'] = available_versions
                 r['c7n:UpgradeVersions'] = upgrade_versions
                 r['c7n:HasUpgrades'] = has_upgrades
@@ -236,11 +244,19 @@ class UpgradeAvailable(Filter):
         """Determine if available version is an upgrade from current"""
         if check_major:
             # Allow major version upgrades
-            return (available['major'] > current['major'] or
-                    (available['major'] == current['major'] and available['minor'] > current['minor']))
+            return (
+                available['major'] > current['major'] or
+                (
+                    available['major'] == current['major'] and
+                    available['minor'] > current['minor']
+                )
+            )
         else:
             # Only minor version upgrades within same major version
-            return (available['major'] == current['major'] and available['minor'] > current['minor'])
+            return (
+                available['major'] == current['major'] and
+                available['minor'] > current['minor']
+            )
 
     def _get_upgrade_versions(self, current_version, available_versions, check_major):
         """Get list of upgrade versions available"""
