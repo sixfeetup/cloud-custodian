@@ -224,18 +224,31 @@ class UpgradeAvailable(Filter):
 
         for resource in resources:
             resource_engine = resource.get('Engine', '').lower()
+            resource_version = resource.get('EngineVersion', '')
+            resource_major_version, _ = resource_version.split('.', 1)
             has_upgrade_available = False
 
             # Check if any available upgrades match this resource's engine
             for engine, version in available_upgrades:
                 if engine == resource_engine:
-                    has_upgrade_available = True
-                    break
+                    # Only in the case of the same engine can we use
+                    # `check_major` here.
+                    if check_major:
+                        has_upgrade_available = True
+                        break
+
+                    # If we're here, we're only looking for minor upgrades.
+                    # Ensure the major versions match.
+                    major, _ = version.split('.', 1)
+
+                    if resource_major_version == major:
+                        has_upgrade_available = True
+                        break
 
             # Apply filter logic based on 'value' parameter
-            if check_upgrade_extant and has_upgrade_available:
+            if check_upgrade_extant:
                 results.append(resource)
-            elif not check_upgrade_extant and not has_upgrade_available:
+            elif has_upgrade_available:
                 results.append(resource)
 
         return results
@@ -623,6 +636,9 @@ def _parse_engine_version(engine_version):
     """
     if not engine_version or '-' not in engine_version:
         return None, None
+
+    # Handle the strange `and onwards` verbiage.
+    engine_version = engine_version.replace('and onwards', '').strip()
 
     parts = engine_version.split('-', 1)
     if len(parts) == 2:

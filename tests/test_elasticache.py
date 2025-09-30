@@ -31,6 +31,7 @@ class TestElastiCacheCluster(BaseTest):
         self.assertEqual(_parse_engine_version("invalid"), (None, None))
         self.assertEqual(_parse_engine_version("redis"), (None, None))
         self.assertEqual(_parse_engine_version(None), (None, None))
+        self.assertEqual(_parse_engine_version("redis-7.0 and onwards"), ("redis", "7.0"))
 
     def test_elasticache_security_group(self):
         session_factory = self.replay_flight_data("test_elasticache_security_group")
@@ -111,6 +112,46 @@ class TestElastiCacheCluster(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 3)
+
+    def test_elasticache_upgrade_available_filter(self):
+        session_factory = self.replay_flight_data("test_elasticache_upgrade_available")
+        p = self.load_policy(
+            {
+                "name": "elasticache-upgrade-available-filter",
+                "resource": "cache-cluster",
+                "filters": [
+                    {
+                        "type": "upgrade-available",
+                        "major": False,
+                    }
+                ],
+            },
+            session_factory=session_factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 3)
+
+    def test_elasticache_upgrade_available_filter_none(self):
+        session_factory = self.replay_flight_data(
+            "test_elasticache_upgrade_available_none"
+        )
+        p = self.load_policy(
+            {
+                "name": "elasticache-upgrade-available-filter",
+                "resource": "cache-cluster",
+                "filters": [
+                    {
+                        "type": "upgrade-available",
+                        "major": False,
+                        # Don't include extant either.
+                        "value": False,
+                    }
+                ],
+            },
+            session_factory=session_factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 0)
 
     def test_elasticache_sharded_snapshot_copy_tags(self):
         factory = self.replay_flight_data("test_elasticache_sharded_copy_cluster_tags")
