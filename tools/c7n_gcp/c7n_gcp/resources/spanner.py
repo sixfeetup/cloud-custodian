@@ -44,6 +44,11 @@ class SpannerInstance(QueryResourceManager):
                         },
                         'field_mask': ', '.join(['labels'])}}
 
+        @staticmethod
+        def get_metric_resource_name(resource):
+            # Extract instance name from the full resource name
+            return resource["name"].split("/")[-1]
+
 
 @resources.register('spanner-backup')
 class SpannerInstanceBackup(ChildResourceManager):
@@ -72,6 +77,10 @@ class SpannerInstanceBackup(ChildResourceManager):
                 parent_instance['displayName'],
             )
         }
+
+    @staticmethod
+    def get_metric_resource_name(resource):
+        return resource["name"].split("/")[-1]
 
 
 @SpannerInstanceBackup.filter_registry.register('time-range')
@@ -218,6 +227,10 @@ class SpannerDatabaseInstance(ChildResourceManager):
                 'get', {
                     'name': resource_info['resourceName']}
             )
+
+        @staticmethod
+        def get_metric_resource_name(resource):
+            return resource["name"].split("/")[-1]
 
 
 @SpannerDatabaseInstance.filter_registry.register('iam-policy')
