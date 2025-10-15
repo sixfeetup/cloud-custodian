@@ -132,60 +132,6 @@ class TestGCPMetricsFilter(BaseTest):
         # This should be filtering out the resource, & not erroring..
         self.assertEqual(len(resources), 0)
 
-    def test_get_metric_resource_name_spanner_backup(self):
-        # The `GCPMetricsFilter` made some assumptions about a method that
-        # wasn't previously universally present: `get_metric_resource_name`.
-        session_factory = self.replay_flight_data("filter-metrics-resource-name")
-        p = self.load_policy(
-            {
-                "name": "test-metrics-resource-name",
-                "resource": "gcp.spanner-backup",
-                "filters": [
-                    {
-                        "type": "metrics",
-                        "name": "spanner.googleapis.com/instance/cpu/utilization",
-                        "metric-key": "a-test-key",
-                        "days": 14,
-                        "op": "lte",
-                        "value": 0.05,
-                        "aligner": "ALIGN_MEAN",
-                    },
-                ],
-            },
-            session_factory=session_factory,
-        )
-
-        resources = p.run()
-        # This should be filtering out the resource, & not erroring..
-        self.assertEqual(len(resources), 0)
-
-    def test_get_metric_resource_name_spanner_database_instance(self):
-        # The `GCPMetricsFilter` made some assumptions about a method that
-        # wasn't previously universally present: `get_metric_resource_name`.
-        session_factory = self.replay_flight_data("filter-metrics-resource-name")
-        p = self.load_policy(
-            {
-                "name": "test-metrics-resource-name",
-                "resource": "gcp.spanner-database-instance",
-                "filters": [
-                    {
-                        "type": "metrics",
-                        "name": "spanner.googleapis.com/instance/cpu/utilization",
-                        "metric-key": "a-test-key",
-                        "days": 14,
-                        "op": "lte",
-                        "value": 0.05,
-                        "aligner": "ALIGN_MEAN",
-                    },
-                ],
-            },
-            session_factory=session_factory,
-        )
-
-        resources = p.run()
-        # This should be filtering out the resource, & not erroring..
-        self.assertEqual(len(resources), 0)
-
 
 class TestSecurityComandCenterFindingsFilter(BaseTest):
 
