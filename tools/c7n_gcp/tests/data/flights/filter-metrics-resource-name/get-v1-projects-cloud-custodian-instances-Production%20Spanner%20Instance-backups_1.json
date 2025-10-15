@@ -1,0 +1,36 @@
+{
+  "headers": {},
+  "body": {
+    "instances": [
+      {
+        "name": "projects/my-test-project/instances/test-spanner-instance",
+        "displayName": "test-spanner-instance",
+        "config": "projects/my-test-project/instanceConfigs/regional-us-central1",
+        "nodeCount": 2,
+        "state": "READY",
+        "labels": {
+          "environment": "production",
+          "team": "backend"
+        },
+        "createTime": "2025-01-15T10:30:00.000Z",
+        "updateTime": "2025-01-15T14:20:15.500Z",
+        "backups": [
+          {
+            "name": "projects/my-test-project/instances/test-spanner-instance/backups/daily-backup-20250115",
+            "database": "projects/my-test-project/instances/test-spanner-instance/databases/test-database",
+            "expireTime": "2025-02-15T10:30:00Z",
+            "createTime": "2025-01-15T10:30:00.123456Z",
+            "versionTime": "2025-01-15T10:30:00.123456Z",
+            "state": "READY",
+            "sizeBytes": "1024000000",
+            "encryptionInfo": {
+              "encryptionType": "GOOGLE_DEFAULT_ENCRYPTION"
+            },
+            "databaseDialect": "GOOGLE_STANDARD_SQL",
+            "maxExpireTime": "2026-01-15T10:30:00.123456Z"
+          }
+        ]
+      }
+    ]
+  }
+}
