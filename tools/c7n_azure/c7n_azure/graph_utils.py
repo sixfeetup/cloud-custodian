@@ -137,7 +137,7 @@ class GraphResourceManager(QueryResourceManager):
         # Default to Microsoft Graph session for Graph operations
         return session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
 
-    def make_graph_request(self, endpoint, method='GET'):
+    def make_graph_request(self, endpoint, method='GET', data=None):
         """Make a request to Microsoft Graph API with minimum required permissions."""
         try:
             session = self.get_client()
@@ -164,7 +164,14 @@ class GraphResourceManager(QueryResourceManager):
             }
 
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
-            response = requests.get(url, headers=headers, timeout=30)
+
+            if method == 'GET':
+                response = requests.get(url, headers=headers, timeout=30)
+            elif method == 'PATCH':
+                response = requests.patch(url, headers=headers, json=data, timeout=30)
+            else:
+                response = requests.request(method, url, headers=headers, json=data, timeout=30)
+
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:

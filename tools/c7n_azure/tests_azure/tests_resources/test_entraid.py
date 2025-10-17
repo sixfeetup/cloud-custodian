@@ -3,14 +3,26 @@
 
 from unittest.mock import Mock, patch
 import pytest
+import requests
+from datetime import datetime, timezone
 from pytest_terraform import terraform
 
-from c7n_azure.resources.entraid_user import EntraIDUser
+from c7n_azure.resources.entraid_user import (
+    EntraIDUser
+)
 from tests_azure.azure_common import BaseTest
 
 
 class EntraIDUserTest(BaseTest):
     """Test EntraID User resource functionality"""
+
+    def setUp(self):
+        super().setUp()
+        self.policy = self.load_policy({
+            'name': 'test-entraid-user',
+            'resource': 'azure.entraid-user'
+        })
+        self.manager = self.policy.resource_manager
 
     def test_entraid_user_schema_validate(self):
         """Test that the EntraID user resource schema validates correctly"""
@@ -402,6 +414,436 @@ client.return_value = mock_client
         action = resource_mgr.actions[0]
         self.assertEqual(action.type, 'disable')
         self.assertIn('User.ReadWrite.All', action.permissions)
+
+    def test_calculate_last_signin_days_with_valid_date(self):
+        """Test _calculate_last_signin_days with valid sign-in date"""
+        user = {
+            'signInActivity': {
+                'lastSignInDateTime': '2023-01-01T12:00:00Z'
+            }
+        }
+
+        with patch('c7n_azure.resources.entraid_user.datetime') as mock_datetime:
+            mock_now = datetime(2023, 4, 1, 12, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = mock_now
+            mock_datetime.fromisoformat.return_value = \
+                datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+            days = self.manager._calculate_last_signin_days(user)
+            self.assertEqual(days, 90)  # Approximately 90 days between Jan 1 and April 1
+
+    def test_calculate_last_signin_days_never_signed_in(self):
+        """Test _calculate_last_signin_days when user never signed in"""
+        user = {}  # No signInActivity
+
+        days = self.manager._calculate_last_signin_days(user)
+        self.assertEqual(days, 999)
+
+    def test_calculate_last_signin_days_invalid_date(self):
+        """Test _calculate_last_signin_days with invalid date format"""
+        user = {
+            'signInActivity': {
+                'lastSignInDateTime': 'invalid-date'
+            }
+        }
+
+        days = self.manager._calculate_last_signin_days(user)
+        self.assertEqual(days, 999)
+
+    def test_is_high_privileged_user_admin_email(self):
+        """Test _is_high_privileged_user with admin email"""
+        user = {
+            'userPrincipalName': 'testadmin@contoso.com',
+            'displayName': 'Test User',
+            'jobTitle': 'User'
+        }
+
+        result = self.manager._is_high_privileged_user(user)
+        self.assertFalse(result)  # Only checks for 'admin@' ending
+
+    def test_is_high_privileged_user_admin_display_name(self):
+        """Test _is_high_privileged_user with admin in display name"""
+        user = {
+            'userPrincipalName': 'test@contoso.com',
+            'displayName': 'Admin User',
+            'jobTitle': 'User'
+        }
+
+        result = self.manager._is_high_privileged_user(user)
+        self.assertTrue(result)
+
+    def test_is_high_privileged_user_administrator_title(self):
+        """Test _is_high_privileged_user with administrator job title"""
+        user = {
+            'userPrincipalName': 'test@contoso.com',
+            'displayName': 'Test User',
+            'jobTitle': 'System Administrator'
+        }
+
+        result = self.manager._is_high_privileged_user(user)
+        self.assertTrue(result)
+
+    def test_is_high_privileged_user_regular_user(self):
+        """Test _is_high_privileged_user with regular user"""
+        user = {
+            'userPrincipalName': 'test@contoso.com',
+            'displayName': 'Test User',
+            'jobTitle': 'Developer'
+        }
+
+        result = self.manager._is_high_privileged_user(user)
+        self.assertFalse(result)
+
+    def test_calculate_password_age_with_valid_date(self):
+        """Test _calculate_password_age with valid password change date"""
+        user = {
+            'lastPasswordChangeDateTime': '2023-01-01T12:00:00Z'
+        }
+
+        with patch('c7n_azure.resources.entraid_user.datetime') as mock_datetime:
+            mock_now = datetime(2023, 4, 1, 12, 0, 0, tzinfo=timezone.utc)
+            mock_datetime.now.return_value = mock_now
+            mock_datetime.fromisoformat.return_value = \
+                datetime(2023, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
+
+            age = self.manager._calculate_password_age(user)
+            self.assertEqual(age, 90)  # Approximately 90 days
+
+    def test_calculate_password_age_no_date(self):
+        """Test _calculate_password_age when no password change date"""
+        user = {}  # No lastPasswordChangeDateTime
+
+        age = self.manager._calculate_password_age(user)
+        self.assertEqual(age, 0)
+
+    def test_calculate_password_age_invalid_date(self):
+        """Test _calculate_password_age with invalid date format"""
+        user = {
+            'lastPasswordChangeDateTime': 'invalid-date'
+        }
+
+        age = self.manager._calculate_password_age(user)
+        self.assertEqual(age, 0)
+
+    def test_get_graph_resources_success(self):
+        """Test get_graph_resources successful API call"""
+        mock_response = {
+            'value': [
+                {
+                    'id': 'user1',
+                    'displayName': 'Test User',
+                    'userPrincipalName': 'test@example.com',
+                    'accountEnabled': True,
+                    'userType': 'Member'
+                }
+            ]
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_response):
+            with patch.object(self.manager, 'augment') as mock_augment:
+                mock_augment.return_value = mock_response['value']
+
+                resources = self.manager.get_graph_resources()
+
+                self.assertEqual(len(resources), 1)
+                self.assertEqual(resources[0]['id'], 'user1')
+                mock_augment.assert_called_once()
+
+    def test_get_graph_resources_error_handling(self):
+        """Test get_graph_resources error handling"""
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=Exception("API Error")):
+            resources = self.manager.get_graph_resources()
+
+            # Should return empty list on error
+            self.assertEqual(resources, [])
+
+    def test_get_graph_resources_permission_error(self):
+        """Test get_graph_resources with insufficient privileges"""
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=requests.exceptions.HTTPError("403 Insufficient privileges")):
+            resources = self.manager.get_graph_resources()
+
+            # Should return empty list on permission error
+            self.assertEqual(resources, [])
+
+    def test_augment_exception_handling(self):
+        """Test augment method exception handling"""
+        users = [
+            {
+                'id': 'user1',
+                'displayName': 'Test User'
+            }
+        ]
+
+        with patch.object(self.manager, '_calculate_last_signin_days',
+                         side_effect=Exception("Calculation error")):
+            # Should not raise exception, just log warning
+            result = self.manager.augment(users)
+
+            # Should return original users even with augmentation error
+            self.assertEqual(result, users)
+
+    def test_get_user_auth_methods_success(self):
+        """Test get_user_auth_methods successful call"""
+        mock_response = {
+            'value': [
+                {
+                    '@odata.type': '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod',
+                    'id': 'method1'
+                }
+            ]
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_response):
+            result = self.manager.get_user_auth_methods('user1')
+
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['@odata.type'],
+                           '#microsoft.graph.microsoftAuthenticatorAuthenticationMethod')
+
+    def test_get_user_auth_methods_permission_error(self):
+        """Test get_user_auth_methods with permission error"""
+        with patch.object(
+                self.manager, 'make_graph_request',
+                side_effect=requests.exceptions.RequestException("403 Insufficient privileges")
+        ):
+            result = self.manager.get_user_auth_methods('user1')
+
+            self.assertIsNone(result)
+
+    def test_get_user_auth_methods_other_error(self):
+        """Test get_user_auth_methods with other API error"""
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=requests.exceptions.RequestException("500 Server Error")):
+            result = self.manager.get_user_auth_methods('user1')
+
+            self.assertIsNone(result)
+
+    def test_check_user_risk_level_success(self):
+        """Test check_user_risk_level successful call"""
+        mock_response = {
+            'riskLevel': 'medium'
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_response):
+            result = self.manager.check_user_risk_level('user1')
+
+            self.assertEqual(result, 'medium')
+
+    def test_check_user_risk_level_not_found(self):
+        """Test check_user_risk_level when user not in risky users"""
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=requests.exceptions.RequestException("404")):
+            result = self.manager.check_user_risk_level('user1')
+
+            self.assertEqual(result, 'none')
+
+    def test_check_user_risk_level_permission_error(self):
+        """Test check_user_risk_level with permission error"""
+        with patch.object(
+                self.manager, 'make_graph_request',
+                side_effect=requests.exceptions.RequestException("403 Insufficient privileges")
+        ):
+            result = self.manager.check_user_risk_level('user1')
+
+            self.assertIsNone(result)
+
+    def test_check_user_risk_level_hidden_mapping(self):
+        """Test check_user_risk_level with hidden risk level mapping"""
+        mock_response = {
+            'riskLevel': 'hidden'
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_response):
+            result = self.manager.check_user_risk_level('user1')
+
+            self.assertEqual(result, 'none')  # hidden maps to none
+
+    def test_get_user_group_memberships_success(self):
+        """Test get_user_group_memberships successful call"""
+        mock_response = {
+            'value': [
+                {
+                    '@odata.type': '#microsoft.graph.group',
+                    'id': 'group1',
+                    'displayName': 'Test Group',
+                    'mail': 'test@example.com'
+                },
+                {
+                    '@odata.type': '#microsoft.graph.directoryRole',  # Should be filtered out
+                    'id': 'role1',
+                    'displayName': 'Directory Role'
+                }
+            ]
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_response):
+            result = self.manager.get_user_group_memberships('user1')
+
+            # Should only include actual groups, not directory roles
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0]['displayName'], 'Test Group')
+
+    def test_get_user_group_memberships_permission_error(self):
+        """Test get_user_group_memberships with permission error"""
+        with patch.object(
+                self.manager, 'make_graph_request',
+                side_effect=requests.exceptions.RequestException("403 Insufficient privileges")
+        ):
+            result = self.manager.get_user_group_memberships('user1')
+
+            self.assertIsNone(result)
+
+    def test_risk_level_filter_no_user_id(self):
+        """Test RiskLevelFilter with user missing ID"""
+        resources = [
+            {
+                'displayName': 'User without ID'
+                # Missing 'id' field
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-risk-filter',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {'type': 'risk-level', 'value': 'high'}
+            ]
+        })
+
+        filter_instance = policy.resource_manager.filters[0]
+        result = filter_instance.process(resources)
+
+        # Should skip users without ID
+        self.assertEqual(len(result), 0)
+
+    def test_group_membership_filter_no_user_id(self):
+        """Test GroupMembershipFilter with user missing ID"""
+        resources = [
+            {
+                'displayName': 'User without ID'
+                # Missing 'id' field
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-group-filter',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {
+                    'type': 'group-membership',
+                    'groups': ['Test Group'],
+                    'match': 'any'
+                }
+            ]
+        })
+
+        filter_instance = policy.resource_manager.filters[0]
+        result = filter_instance.process(resources)
+
+        # Should skip users without ID
+        self.assertEqual(len(result), 0)
+
+    def test_group_membership_filter_empty_groups(self):
+        """Test GroupMembershipFilter with empty groups list"""
+        resources = [
+            {
+                'id': 'user1',
+                'displayName': 'Test User'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-empty-groups',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {
+                    'type': 'group-membership',
+                    'groups': [],  # Empty groups list
+                    'match': 'any'
+                }
+            ]
+        })
+
+        filter_instance = policy.resource_manager.filters[0]
+        result = filter_instance.process(resources)
+
+        # Should return all resources when no groups specified
+        self.assertEqual(len(result), 1)
+
+    def test_group_membership_filter_match_all(self):
+        """Test GroupMembershipFilter with 'all' match type"""
+        resources = [
+            {
+                'id': 'user1',
+                'displayName': 'Test User'
+            }
+        ]
+
+        mock_groups = [
+            {'displayName': 'Group1'},
+            {'displayName': 'Group2'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-match-all',
+            'resource': 'azure.entraid-user',
+            'filters': [
+                {
+                    'type': 'group-membership',
+                    'groups': ['Group1', 'Group2'],
+                    'match': 'all'
+                }
+            ]
+        })
+
+        filter_instance = policy.resource_manager.filters[0]
+
+        with patch.object(policy.resource_manager, 'get_user_group_memberships',
+                         return_value=mock_groups):
+            result = filter_instance.process(resources)
+
+            # Should match user who has both groups
+            self.assertEqual(len(result), 1)
+
+    def test_disable_user_action_no_user_id(self):
+        """Test DisableUserAction with user missing ID"""
+        policy = self.load_policy({
+            'name': 'test-disable',
+            'resource': 'azure.entraid-user',
+            'actions': [{'type': 'disable'}]
+        })
+
+        action = policy.resource_manager.actions[0]
+        action._prepare_processing()
+
+        user = {
+            'displayName': 'User without ID'
+            # Missing 'id' field
+        }
+
+        # Should not raise exception, just log error
+        action._process_resource(user)
+
+    def test_require_mfa_action_no_user_id(self):
+        """Test RequireMFAAction with user missing ID"""
+        policy = self.load_policy({
+            'name': 'test-mfa',
+            'resource': 'azure.entraid-user',
+            'actions': [{'type': 'require-mfa'}]
+        })
+
+        action = policy.resource_manager.actions[0]
+        action._prepare_processing()
+
+        user = {
+            'displayName': 'User without ID'
+            # Missing 'id' field
+        }
+
+        # Should not raise exception, just log error
+        action._process_resource(user)
 
 
 # Terraform-based integration tests
