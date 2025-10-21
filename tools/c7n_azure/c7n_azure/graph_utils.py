@@ -21,9 +21,6 @@ class GraphSource(DescribeSource):
     using Microsoft Graph API instead of Azure Resource Manager APIs.
     """
 
-    def __init__(self, manager):
-        super().__init__(manager)
-
     def get_resources(self, query=None):
         """Get resources from Microsoft Graph API."""
         try:
