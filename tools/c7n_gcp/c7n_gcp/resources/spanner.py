@@ -69,11 +69,7 @@ class SpannerInstanceBackup(ChildResourceManager):
         default_report_fields = ['name', 'expireTime']
         permissions = ('spanner.backups.list',)
         asset_type = 'spanner.googleapis.com/Backup'
-
-        @staticmethod
-        def get_metric_resource_name(resource):
-            # See: https://cloud.google.com/monitoring/api/resources
-            raise NotImplementedError("GCP does not support metrics for this resource type.")
+        allow_metrics_filters = False
 
     def _get_child_enum_args(self, parent_instance):
         return {
@@ -221,6 +217,7 @@ class SpannerDatabaseInstance(ChildResourceManager):
         asset_type = "spanner.googleapis.com/Database"
         urn_component = "database"
         urn_id_segments = (3, 5)
+        allow_metrics_filters = False
 
         @staticmethod
         def get(client, resource_info):
@@ -228,11 +225,6 @@ class SpannerDatabaseInstance(ChildResourceManager):
                 'get', {
                     'name': resource_info['resourceName']}
             )
-
-        @staticmethod
-        def get_metric_resource_name(resource):
-            # See: https://cloud.google.com/monitoring/api/resources
-            raise NotImplementedError("GCP does not support metrics for this resource type.")
 
 
 @SpannerDatabaseInstance.filter_registry.register('iam-policy')
