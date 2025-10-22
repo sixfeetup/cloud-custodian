@@ -1,9 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 import requests
-import logging
 
 from tests_azure.azure_common import BaseTest
 
@@ -534,7 +533,8 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
 
                 # Verify success log message was called with expected content
                 mock_log.info.assert_called_once_with(
-                    "User Filtering Test User (test-filtering-user) already has 4 MFA method(s) configured"
+                    "User Filtering Test User (test-filtering-user) already has "
+                    "4 MFA method(s) configured"
                 )
 
     def test_require_mfa_action_with_object_id_fallback(self):
