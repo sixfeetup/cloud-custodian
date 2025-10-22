@@ -1,8 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
 import requests
+import logging
 
 from tests_azure.azure_common import BaseTest
 
@@ -56,9 +57,14 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             # Prepare and process resource
             action._prepare_processing()
 
-            # Capture log output
-            with self.assertLogs(level='INFO') as log_capture:
+            # Mock the action's logger to capture log calls
+            with patch.object(action, 'log') as mock_log:
                 action._process_resource(user_resource)
+
+                # Verify success log message was called
+                mock_log.info.assert_called_once_with(
+                    "Successfully disabled user Test User (test-user-123)"
+                )
 
             # Verify API call was made correctly
             mock_patch.assert_called_once()
@@ -85,10 +91,6 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             # Check timeout
             timeout = call_args[1]['timeout']
             self.assertEqual(timeout, 30)
-
-            # Verify success log message
-            self.assertIn('Successfully disabled user Test User (test-user-123)',
-                         log_capture.output[0])
 
             # Verify token was requested with correct scope
             mock_credentials.get_token.assert_called_once_with(
@@ -304,9 +306,14 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
 
             action._prepare_processing()
 
-            # Capture log output to verify MFA detection
-            with self.assertLogs(level='INFO') as log_capture:
+            # Mock the action's logger to capture log calls
+            with patch.object(action, 'log') as mock_log:
                 action._process_resource(user_resource)
+
+                # Verify success log message was called with expected content
+                mock_log.info.assert_called_once_with(
+                    "User MFA User (test-user-456) already has 2 MFA method(s) configured"
+                )
 
             # Verify API call was made correctly
             mock_get.assert_called_once()
@@ -333,9 +340,6 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             mock_credentials.get_token.assert_called_once_with(
                 'https://graph.microsoft.com/UserAuthenticationMethod.Read.All'
             )
-
-            # Verify success log message about MFA methods found
-            self.assertIn('2 MFA method(s) configured', log_capture.output[0])
 
     def test_require_mfa_action_success_without_mfa_methods(self):
         """Test RequireMFAAction._process_resource when user has no MFA methods."""
@@ -524,14 +528,14 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
 
             action._prepare_processing()
 
-            # Capture log output to verify MFA filtering logic
-            with self.assertLogs(level='INFO') as log_capture:
+            # Mock the action's logger to capture log calls
+            with patch.object(action, 'log') as mock_log:
                 action._process_resource(user_resource)
 
-            # Should count 4 MFA methods (excludes password and email)
-            # microsoftAuthenticator, phone, fido2, windowsHelloForBusiness
-            # Verify that the action logged info about MFA methods found
-            self.assertIn('4 MFA method(s) configured', log_capture.output[0])
+                # Verify success log message was called with expected content
+                mock_log.info.assert_called_once_with(
+                    "User Filtering Test User (test-filtering-user) already has 4 MFA method(s) configured"
+                )
 
     def test_require_mfa_action_with_object_id_fallback(self):
         """Test RequireMFAAction._process_resource basic functionality."""
