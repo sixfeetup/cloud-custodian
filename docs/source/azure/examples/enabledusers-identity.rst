@@ -1,5 +1,5 @@
 Entra ID - Enabled Users
-======================
+========================
 
 Find all user accounts that are currently enabled.
 

@@ -1,5 +1,5 @@
 Entra ID - Enabled Member Users
-==============================
+===============================
 
 Find users who are both enabled and classified as internal member users.
 

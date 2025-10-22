@@ -1,5 +1,5 @@
 Entra ID - Users by Department
-=============================
+==============================
 
 Find users in the IT department by filtering on the department field.
 

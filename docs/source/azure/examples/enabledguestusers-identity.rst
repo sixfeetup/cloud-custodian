@@ -1,5 +1,5 @@
 Entra ID - Enabled Guest Users
-=============================
+==============================
 
 Find users who are both enabled and classified as guest users.
 

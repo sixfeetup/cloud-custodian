@@ -1,5 +1,5 @@
 Entra ID - Administrative Users by Job Title
-===========================================
+============================================
 
 Find users with job titles containing "Admin" using regex matching.
 

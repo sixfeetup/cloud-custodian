@@ -1,5 +1,5 @@
 Entra ID - Comprehensive User Security Audit
-==========================================
+============================================
 
 Find enabled guest users for security review according to CIS Azure 1.2.
 

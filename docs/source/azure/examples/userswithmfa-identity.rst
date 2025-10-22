@@ -1,5 +1,5 @@
 Entra ID - Users with MFA
-=======================
+=========================
 
 Find users who have multi-factor authentication (MFA) enabled.
 

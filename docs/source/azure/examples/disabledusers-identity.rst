@@ -1,5 +1,5 @@
 Entra ID - Disabled Users
-=======================
+=========================
 
 Find all user accounts that have been disabled.
 

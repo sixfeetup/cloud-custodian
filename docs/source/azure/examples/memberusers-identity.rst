@@ -1,5 +1,5 @@
 Entra ID - Member Users
-=====================
+=======================
 
 Find all users classified as internal member users.
 
