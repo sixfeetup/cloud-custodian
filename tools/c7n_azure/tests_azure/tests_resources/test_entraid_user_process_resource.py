@@ -57,7 +57,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='INFO') as log_capture:
+            with self.assertLogs(level='INFO') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify API call was made correctly
@@ -119,7 +119,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as log_capture:
+            with self.assertLogs(level='ERROR') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify error was logged
@@ -165,7 +165,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as log_capture:
+            with self.assertLogs(level='ERROR') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify specific permission error log message
@@ -210,7 +210,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as log_capture:
+            with self.assertLogs(level='ERROR') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify general error log message
@@ -247,7 +247,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as log_capture:
+            with self.assertLogs(level='ERROR') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify general exception log message
@@ -305,7 +305,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output to verify MFA detection
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='INFO') as log_capture:
+            with self.assertLogs(level='INFO') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify API call was made correctly
@@ -383,7 +383,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output to verify warning about no MFA methods
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='WARNING') as log_capture:
+            with self.assertLogs(level='WARNING') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify API call was made
@@ -422,7 +422,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as log_capture:
+            with self.assertLogs(level='ERROR') as log_capture:
                 action._process_resource(user_resource)
 
             # Verify error was logged
@@ -525,7 +525,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             action._prepare_processing()
 
             # Capture log output to verify MFA filtering logic
-            with self.assertLogs('custodian.azure.AzureBaseAction', level='INFO') as log_capture:
+            with self.assertLogs(level='INFO') as log_capture:
                 action._process_resource(user_resource)
 
             # Should count 4 MFA methods (excludes password and email)
