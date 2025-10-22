@@ -12,7 +12,7 @@ from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import (
     GraphResourceManager, GraphTypeInfo, GraphSource,
-    get_required_permissions_for_endpoint, EntraIDDiagnosticSettingsFilter
+    EntraIDDiagnosticSettingsFilter
 )
 
 log = logging.getLogger('custodian.azure.entraid.user')

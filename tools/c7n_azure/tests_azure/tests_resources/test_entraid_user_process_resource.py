@@ -440,7 +440,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             'actions': [{'type': 'require-mfa'}]
         })
         action = policy.resource_manager.actions[0]
-        
+
         # Test basic coverage - method handles missing ID
         with patch.object(action, 'log') as mock_log:
             action._process_resource({'displayName': 'test'})
@@ -454,7 +454,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             'actions': [{'type': 'require-mfa'}]
         })
         action = policy.resource_manager.actions[0]
-        
+
         # Test basic coverage - method handles missing ID
         with patch.object(action, 'log') as mock_log:
             action._process_resource({'displayName': 'test'})
@@ -541,7 +541,7 @@ class TestEntraIDUserProcessResourceMethods(BaseTest):
             'actions': [{'type': 'require-mfa'}]
         })
         action = policy.resource_manager.actions[0]
-        
+
         # Test basic coverage - method handles missing ID
         with patch.object(action, 'log') as mock_log:
             action._process_resource({'displayName': 'test'})
