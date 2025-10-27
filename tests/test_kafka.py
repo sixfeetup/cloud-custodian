@@ -230,6 +230,26 @@ class KafkaTest(BaseTest):
         cluster = resources[0]
         self.assertIn('c7n:kafka-upgrade-versions', cluster)
         self.assertIn('c7n:kafka-target-version', cluster)
+    def test_kafka_cluster_cross_account_filter(self):
+        session_factory = self.replay_flight_data('test_kafka_cluster_cross_account_filter')
+        p = self.load_policy(
+            {
+                'name': 'kafka-cross-account-filter',
+                'resource': 'kafka',
+                'filters': [
+                    {
+                        'type': 'cross-account'
+                    }
+                ]
+            },
+            session_factory=session_factory,
+            config={'region': 'us-east-1'}
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(
+            resources[0]['CrossAccountViolations'][0]['Resource'],
+            'arn:aws:kafka:us-east-1:644160558196:cluster/demo-cluster-1/b12690b6-7337-464f-b334-628d5575a4b0-21')
 
 
 class TestKafkaClusterConfiguration(BaseTest):
