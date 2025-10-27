@@ -150,13 +150,9 @@ class UpgradeAvailable(Filter):
 
         for r in resources:
             # Get compatible versions for this cluster
-            try:
-                response = client.get_compatible_kafka_versions(
-                    ClusterArn=r["ClusterArn"]
-                )
-            except client.exceptions.NotFoundException:
-                # Cluster not found, skip
-                continue
+            response = client.get_compatible_kafka_versions(
+                ClusterArn=r["ClusterArn"]
+            )
 
             current_version = (
                 r.get("Provisioned", {})
