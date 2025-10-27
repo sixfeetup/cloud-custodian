@@ -230,6 +230,7 @@ class KafkaTest(BaseTest):
         cluster = resources[0]
         self.assertIn('c7n:kafka-upgrade-versions', cluster)
         self.assertIn('c7n:kafka-target-version', cluster)
+
     def test_kafka_cluster_cross_account_filter(self):
         session_factory = self.replay_flight_data('test_kafka_cluster_cross_account_filter')
         p = self.load_policy(
