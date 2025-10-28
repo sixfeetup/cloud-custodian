@@ -10,6 +10,7 @@ from dateutil.parser import parse
 from c7n.actions import (
     ActionRegistry, BaseAction, ModifyVpcSecurityGroupsAction)
 from c7n.filters import FilterRegistry, AgeFilter, Filter
+from c7n.filters.core import ComparableVersion
 import c7n.filters.vpc as net_filters
 from c7n.filters.kms import KmsRelatedFilter
 from c7n.manager import resources
@@ -201,7 +202,9 @@ class UpgradeAvailable(Filter):
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client('elasticache')
+        # If `major` is `True`, we should include major version upgrades if found.
         check_major = self.data.get('major', False)
+        # If `value` is `True`, we should include even matching upgrade versions.
         check_upgrade_extant = self.data.get('value', True)
         results = []
 
@@ -211,45 +214,59 @@ class UpgradeAvailable(Filter):
             ServiceUpdateStatus=['available']
         )
 
-        # Build a set of available upgrades: (engine, version) tuples
-        available_upgrades = set()
+        # Build a mapping of available upgrades:
+        # {
+        #   engine: {
+        #     full_version: ComparableVersion,
+        #   }
+        # }
+        available_upgrades = {}
+
         for page in page_iterator:
             for service_update in page['ServiceUpdates']:
-                engine = service_update.get('Engine', '').lower()
+                engine_name = service_update.get('Engine', '').lower()
                 engine_version = service_update.get('EngineVersion', '')
-                engine_name, version = _parse_engine_version(engine_version)
+                _, version = _parse_engine_version(engine_version)
 
                 if engine_name and version:
-                    available_upgrades.add((engine_name, version))
+                    available_upgrades.setdefault(engine_name, {})
+                    # Process the version information once, rather than N-times below.
+                    cversion = ComparableVersion(version)
+                    available_upgrades[engine_name].setdefault(version, cversion)
 
         for resource in resources:
             resource_engine = resource.get('Engine', '').lower()
             resource_version = resource.get('EngineVersion', '')
-            resource_major_version, _ = resource_version.split('.', 1)
-            has_upgrade_available = False
+            resource_version_info = ComparableVersion(resource_version)
 
             # Check if any available upgrades match this resource's engine
-            for engine, version in available_upgrades:
-                if engine == resource_engine:
-                    # Only in the case of the same engine can we use
-                    # `check_major` here.
-                    if check_major:
-                        has_upgrade_available = True
-                        break
+            for engine_name, engine_versions in available_upgrades.items():
+                if engine_name != resource_engine:
+                    continue
 
-                    # If we're here, we're only looking for minor upgrades.
-                    # Ensure the major versions match.
-                    major, _ = version.split('.', 1)
+                # Check the major version.
+                for full_version, upgrade_version in engine_versions.items():
+                    if upgrade_version < resource_version_info:
+                        # The resource is newer that the upgrade. Skip.
+                        continue
 
-                    if resource_major_version == major:
-                        has_upgrade_available = True
-                        break
+                    # The upgrade either matches or is higher. Check the filter
+                    # settings if we should include it.
+                    if upgrade_version == resource_version_info:
+                        if not check_upgrade_extant:
+                            continue
 
-            # Apply filter logic based on 'value' parameter
-            if check_upgrade_extant:
-                results.append(resource)
-            elif has_upgrade_available:
-                results.append(resource)
+                        results.append(resource)
+
+                    # The parsed upgrade version is greater than resource version.
+                    # Check the major version, as well as the filter settings, to
+                    # see if we should include it.
+                    if upgrade_version.version[0] == resource_version_info.version[0]:
+                        results.append(resource)
+                    elif check_major:
+                        # It's a larger major version, but we're supposed to
+                        # include it.
+                        results.append(resource)
 
         return results
 

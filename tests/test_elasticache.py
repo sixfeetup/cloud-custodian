@@ -122,14 +122,40 @@ class TestElastiCacheCluster(BaseTest):
                 "filters": [
                     {
                         "type": "upgrade-available",
+                        # Do NOT include major releases.
                         "major": False,
+                        # Do NOT include matching minor releases.
+                        "value": False,
                     }
                 ],
             },
             session_factory=session_factory,
         )
         resources = p.run()
-        self.assertEqual(len(resources), 3)
+        # Of the three resources, only one should come back here.
+        # One resource should be excluded, due to being behind in major versions.
+        # One resource should be excluded, due to being the latest release.
+        self.assertEqual(len(resources), 1)
+
+    def test_elasticache_upgrade_available_filter_include_major(self):
+        session_factory = self.replay_flight_data("test_elasticache_upgrade_available")
+        p = self.load_policy(
+            {
+                "name": "elasticache-upgrade-available-filter",
+                "resource": "cache-cluster",
+                "filters": [
+                    {
+                        "type": "upgrade-available",
+                        "major": True,
+                        # Do NOT include matching minor releases.
+                        "value": False,
+                    }
+                ],
+            },
+            session_factory=session_factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 2)
 
     def test_elasticache_upgrade_available_filter_none(self):
         session_factory = self.replay_flight_data(

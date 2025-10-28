@@ -75,7 +75,7 @@
           }
         ],
         "CacheSubnetGroupName": "msg",
-        "EngineVersion": "3.2.4",
+        "EngineVersion": "7.0",
         "PendingModifiedValues": {},
         "PreferredMaintenanceWindow": "fri:10:00-fri:11:00",
         "CacheNodeType": "cache.r3.large"
@@ -114,7 +114,7 @@
           }
         ],
         "CacheSubnetGroupName": "msg",
-        "EngineVersion": "3.2.4",
+        "EngineVersion": "7.1",
         "PendingModifiedValues": {},
         "PreferredMaintenanceWindow": "fri:10:00-fri:11:00",
         "CacheNodeType": "cache.r3.large"
