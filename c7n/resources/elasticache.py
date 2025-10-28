@@ -641,9 +641,7 @@ def _parse_engine_version(engine_version):
     engine_version = engine_version.replace('and onwards', '').strip()
 
     parts = engine_version.split('-', 1)
-    if len(parts) == 2:
-        return parts[0].lower(), parts[1]
-    return None, None
+    return parts[0].lower(), parts[1]
 
 
 def _cluster_eligible_for_snapshot(cluster):
