@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from socket import has_ipv6
 import c7n.filters.vpc as net_filters
 from c7n.actions import Action
 from c7n.filters.core import ComparableVersion
