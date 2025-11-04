@@ -121,8 +121,8 @@ class KMSTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         # Check that LastRotation data was added to the resource
-        self.assertIn("LastRotation", resources[0])
-        self.assertIn("RotationDate", resources[0]["LastRotation"])
+        self.assertIn("c7n:LastRotation", resources[0])
+        self.assertIn("RotationDate", resources[0]["c7n:LastRotation"])
 
     def test_last_rotation_no_rotations(self):
         session_factory = self.replay_flight_data("test_kms_last_rotation_none")

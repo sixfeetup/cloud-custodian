@@ -475,6 +475,9 @@ class LastRotation(ValueFilter):
 
             # Collect all rotations for this key
             rotations = []
+            # Assume no rotations unless we find them.
+            most_recent_rotation = None
+
             for page in page_iterator:
                 rotations.extend(page.get('Rotations', []))
 
@@ -482,16 +485,12 @@ class LastRotation(ValueFilter):
             if rotations:
                 # Sort by RotationDate descending to get the most recent
                 most_recent_rotation = max(rotations, key=lambda x: x.get('RotationDate', 0))
-                r['LastRotation'] = most_recent_rotation
 
-                # Apply the filter based on the configured key
-                if self.match(most_recent_rotation):
-                    results.append(r)
-            else:
-                # No rotations found - key may never have been rotated
-                # Only include if we're filtering for keys without rotations
-                if self.match(None):
-                    results.append(r)
+            if self.match(most_recent_rotation):
+                # Either we found a rotation date or we're filtering for keys
+                # without a rotation (the match on `None`).
+                r['c7n:LastRotation'] = most_recent_rotation
+                results.append(r)
 
         return results
 
