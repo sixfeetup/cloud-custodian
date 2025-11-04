@@ -469,6 +469,11 @@ class LastRotation(ValueFilter):
         results = []
 
         for r in resources:
+            if 'c7n:LastRotation' in r:
+                # We've already got a last-rotation on the resource. Skip the
+                # API call.
+                continue
+
             # Get the paginator for list_key_rotations
             paginator = client.get_paginator('list_key_rotations')
             page_iterator = paginator.paginate(KeyId=r['KeyId'])
