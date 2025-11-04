@@ -27,7 +27,7 @@
         "AdvancedOptions": {
           "rest.action.multi.allow_explicit_index": "true"
         },
-        "ElasticsearchVersion": "7.6",
+        "ElasticsearchVersion": "5.3",
         "ARN": "arn:aws:es:us-east-1:644160558196:domain/test-es",
         "DomainEndpointOptions": {
           "EnforceHTTPS": false,

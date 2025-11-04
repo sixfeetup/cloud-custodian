@@ -368,25 +368,33 @@ class UpgradeAvailable(Filter):
             if not response:
                 continue
 
-            compatible_versions = response.get('CompatibleElasticsearchVersions', [])
+            compatible_versions = response.get('CompatibleVersions', [])
 
             # Find upgrades for the current domain version
-            available_upgrades = []
+            available_upgrades = set([])
+
             for version_map in compatible_versions:
                 source_version = version_map.get('SourceVersion')
                 target_versions = version_map.get('TargetVersions', [])
 
-                # If this doesn't match our current domain version, skip.
-                if source_version != current_version:
-                    continue
-
                 source_engine, sversion_str, sversion = parse_es_version(source_version)
 
+                # If this doesn't match our current domain version, skip.
+                if (
+                    sversion_str != current_version and
+                    not check_major
+                ):
+                    continue
+
                 for target in target_versions:
-                    target_engine, tversion_str, tversion = parse_es_version(target)
+                    target_engine, _, tversion = parse_es_version(target)
 
                     if not target_engine or not source_engine:
                         # If anything can't be parsed, skip.
+                        continue
+
+                    if target_engine.lower() != source_engine.lower():
+                        # If the engines don't match, skip.
                         continue
 
                     # Check the major version.
@@ -396,16 +404,16 @@ class UpgradeAvailable(Filter):
                     elif tversion.version[0] == sversion.version[0]:
                         if tversion > sversion:
                             # It's a minor upgrade. We always want this.
-                            available_upgrades.append(target)
+                            available_upgrades.add(target)
                     else:
                         # It's a major version upgrade. Check the filter.
                         if check_major:
-                            available_upgrades.append(target)
+                            available_upgrades.add(target)
 
-                    available_upgrades.append(target)
+                    available_upgrades.add(target)
 
             # Annotate the resource with available upgrades
-            r['c7n:AvailableUpgrades'] = available_upgrades
+            r['c7n:AvailableUpgrades'] = sorted(list(available_upgrades))
 
             # Decide whether to include this resource based on value filter
             has_upgrades = len(available_upgrades) > 0

@@ -14,8 +14,12 @@
     },
     "CompatibleVersions": [
       {
-        "SourceVersion": "ElasticSeach_7.6",
-        "TargetVersions": ["ElasticSeach_7.7", "OpenSearch_1.0"]
+        "SourceVersion": "ElasticSeach_7.5",
+        "TargetVersions": [
+          "ElasticSeach_7.6",
+          "ElasticSeach_7.7",
+          "OpenSearch_1.0"
+        ]
       }
     ]
   }

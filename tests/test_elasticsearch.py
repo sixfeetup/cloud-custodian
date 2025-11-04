@@ -3,11 +3,13 @@
 import json
 from unittest.mock import patch
 
+import pytest
+from pytest_terraform import terraform
+
 from c7n.exceptions import PolicyValidationError
 from c7n.filters.core import ComparableVersion
 from c7n.resources.aws import shape_validate
-import pytest
-from pytest_terraform import terraform
+from c7n.resources.elasticsearch import parse_es_version
 
 from .common import BaseTest
 
@@ -99,9 +101,7 @@ class ElasticSearch(BaseTest):
             ],
         )
 
-    def test_upgrade_available_filter_with_upgrades(self):
-        from c7n.resources.elasticsearch import parse_es_version
-
+    def test_parse_es_version(self):
         # Test the version parsing function
         self.assertEqual(
             parse_es_version("Elasticsearch_7.4"),
@@ -113,6 +113,7 @@ class ElasticSearch(BaseTest):
         )
         self.assertEqual(parse_es_version("invalid"), (None, None, None))
 
+    def test_upgrade_available_filter_with_upgrades(self):
         factory = self.replay_flight_data("test_elasticsearch_upgrade_available")
         p = self.load_policy(
             {
@@ -129,13 +130,40 @@ class ElasticSearch(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        self.assertTrue(len(resources) >= 0)  # May be empty if no domains have upgrades
+        self.assertEqual(len(resources), 1)
 
         # If resources were found, they should have the upgrade annotation
-        for r in resources:
-            self.assertIn('c7n:AvailableUpgrades', r)
-            self.assertIsInstance(r['c7n:AvailableUpgrades'], list)
-            self.assertGreater(len(r['c7n:AvailableUpgrades']), 0)
+        self.assertIn('c7n:AvailableUpgrades', resources[0])
+        self.assertEqual(
+            sorted(resources[0]['c7n:AvailableUpgrades']),
+            sorted(['ElasticSeach_7.7']),
+        )
+
+    def test_upgrade_available_filter_with_major_upgrades(self):
+        factory = self.replay_flight_data("test_elasticsearch_upgrade_available_major")
+        p = self.load_policy(
+            {
+                "name": "es-upgrade-available",
+                "resource": "elasticsearch",
+                "filters": [
+                    {
+                        "type": "upgrade-available",
+                        "value": True,  # Only domains with upgrades available
+                        "major": True  # Only minor version upgrades
+                    }
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # If resources were found, they should have the upgrade annotation
+        self.assertIn('c7n:AvailableUpgrades', resources[0])
+        self.assertEqual(
+            sorted(resources[0]['c7n:AvailableUpgrades']),
+            sorted(['ElasticSeach_7.6', 'ElasticSeach_7.7']),
+        )
 
     def test_upgrade_available_filter_no_upgrades(self):
         factory = self.replay_flight_data("test_elasticsearch_upgrade_available_none")
