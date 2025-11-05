@@ -297,7 +297,7 @@ class AccountTests(BaseTest):
              'IgnorePublicAcls': False,
              'RestrictPublicBuckets': False})
 
-    def test_block_public_access_enabled(self):
+    def test_ami_block_public_access_enabled(self):
         factory = self.replay_flight_data('test_ami_block_public_access_enabled')
         p = self.load_policy({
             'name': 'ami-check-block-enabled',
@@ -308,10 +308,10 @@ class AccountTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        # Should return AMIs when account has blocking enabled
+        # Should return the active account when blocking is enabled
         self.assertEqual(len(resources), 1)
 
-    def test_block_public_access_disabled(self):
+    def test_ami_block_public_access_disabled(self):
         factory = self.replay_flight_data('test_ami_block_public_access_disabled')
         p = self.load_policy({
             'name': 'ami-check-block-disabled',
@@ -322,10 +322,10 @@ class AccountTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        # Should return AMIs when account has blocking disabled
+        # Should return the active account when blocking is disabled
         self.assertEqual(len(resources), 1)
 
-    def test_block_public_access_mismatch(self):
+    def test_ami_block_public_access_mismatch(self):
         factory = self.replay_flight_data('test_ami_block_public_access_enabled')
         p = self.load_policy({
             'name': 'ami-check-block-mismatch',
@@ -336,7 +336,7 @@ class AccountTests(BaseTest):
             }]},
             session_factory=factory)
         resources = p.run()
-        # Should return no AMIs when account state doesn't match filter
+        # Shouldn't match when account state doesn't match filter
         self.assertEqual(len(resources), 0)
 
     def test_cloudtrail_enabled(self):
