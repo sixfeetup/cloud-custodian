@@ -49,11 +49,11 @@ def cli():
     help="Use a jmespath expression to filter json output",
 )
 @click.option(
-    "--quiet-hcl-errors",
+    "--stop-on-hcl-errors",
     is_flag=True,
-    help="Allow HCL errors to quietly pass",
+    help="Fail/stop if there are errors present in the HCL",
 )
-def dump(directory, var_file, output_file, terraform_workspace, output_query, quiet_hcl_errors):
+def dump(directory, var_file, output_file, terraform_workspace, output_query, stop_on_hcl_errors):
     """Dump the parsed resource graph or subset"""
     config = get_config(
         directory,
@@ -62,7 +62,7 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, qu
         var_file=var_file,
         terraform_workspace=terraform_workspace,
         output_query=output_query,
-        quiet_hcl_errors=quiet_hcl_errors,
+        stop_on_hcl_errors=stop_on_hcl_errors,
     )
     reporter = get_reporter(config)
     config["reporter"] = reporter
@@ -72,7 +72,7 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, qu
         config.source_dir,
         config.var_files,
         workspace=terraform_workspace,
-        quiet_hcl_errors=quiet_hcl_errors,
+        stop_on_hcl_errors=stop_on_hcl_errors,
     )
     reporter.on_execution_started([], graph)
     reporter.on_execution_ended()
@@ -114,9 +114,9 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, qu
 )
 @click.option("--summary", default="policy", type=click.Choice(summary_options.keys()))
 @click.option(
-    "--quiet-hcl-errors",
+    "--stop-on-hcl-errors",
     is_flag=True,
-    help="Allow HCL errors to quietly pass",
+    help="Fail/stop if there are errors present in the HCL",
 )
 def run(
     format,
@@ -130,7 +130,7 @@ def run(
     summary,
     filters,
     warn_on,
-    quiet_hcl_errors,
+    stop_on_hcl_errors,
     reporter=None,
 ):
     """evaluate policies against IaC sources.
@@ -151,7 +151,7 @@ def run(
         summary=summary,
         warn_on=warn_on,
         filters=filters,
-        quiet_hcl_errors=quiet_hcl_errors,
+        stop_on_hcl_errors=stop_on_hcl_errors,
     )
     policies = config.exec_filter.filter_policies(load_policies(policy_dir, config))
     if not policies:
