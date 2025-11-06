@@ -9,6 +9,7 @@ import boto3
 import moto
 import pytest
 from dateutil.tz import tzutc
+from freezegun import freeze_time
 
 from c7n.resources.aws import shape_validate
 from .common import BaseTest, functional
@@ -145,27 +146,39 @@ class KMSTest(BaseTest):
         self.assertGreaterEqual(len(resources), 0)
 
     def test_last_rotation_exception_handling(self):
-        """Test that UnsupportedOperationException is handled gracefully"""
-        session_factory = self.replay_flight_data("test_kms_last_rotation_unsupported")
+        """Test that exceptions are handled gracefully"""
+        session_factory = self.replay_flight_data("test_kms_last_rotation_exception_handling")
         p = self.load_policy(
             {
-                "name": "kms-last-rotation-unsupported",
+                "name": "kms-last-rotation-exception-handling",
                 "resource": "kms-key",
                 "filters": [
                     {
-                        "type": "last-rotation",
-                        "key": "RotationDate",
-                        "value": 30,
-                        "value_type": "age",
-                        "op": "gte",
+                        "or": [
+                            {
+                                "type": "last-rotation",
+                                "key": "RotationDate",
+                                "value": "empty"
+                            },
+                            {
+                                "type": "last-rotation",
+                                "key": "RotationDate",
+                                "value": 30,
+                                "value_type": "age",
+                                "op": "gte",
+                            }
+
+                        ]
                     }
                 ],
             },
             session_factory=session_factory,
         )
-        # Should not raise an exception even if some keys don't support rotation
-        resources = p.run()
-        self.assertEqual(len(resources), 0)
+        log = self.capture_logging("custodian.filters")
+        with freeze_time("2025-11-06T00:00:00+00:00"):
+            resources = p.run()
+        self.assertIn("AccessDenied", log.getvalue())
+        self.assertEqual(len(resources), 2)
 
     def test_key_rotation_exception_unsupportedopp(self):
         region = "us-west-2"
