@@ -220,7 +220,7 @@ def get_config(
     filters=None,
     warn_on=None,
     format="terraform",
-    quiet_hcl_errors=False,
+    stop_on_hcl_errors=False,
 ):
     config = Config.empty(
         source_dir=directory and Path(directory),
@@ -234,7 +234,7 @@ def get_config(
         filters=filters,
         warn_on=warn_on,
         format=format,
-        quiet_hcl_errors=quiet_hcl_errors,
+        stop_on_hcl_errors=stop_on_hcl_errors,
     )
     config["exec_filter"] = ExecutionFilter.parse(config.filters)
     config["warn_filter"] = ExecutionFilter.parse(config.warn_on, severity_direction="gte")
