@@ -469,32 +469,40 @@ class LastRotation(ValueFilter):
         results = []
 
         for r in resources:
-            if 'c7n:LastRotation' in r:
-                # We've already got a last-rotation on the resource. Skip the
-                # API call.
-                continue
-
-            # Get the paginator for list_key_rotations
-            paginator = client.get_paginator('list_key_rotations')
-            page_iterator = paginator.paginate(KeyId=r['KeyId'])
-
             # Collect all rotations for this key
             rotations = []
             # Assume no rotations unless we find them.
             most_recent_rotation = None
 
-            for page in page_iterator:
-                rotations.extend(page.get('Rotations', []))
+            if 'c7n:LastRotation' not in r:
+                # If the key is already there, it's cached & we'll skip the API..
+                # If not, we need the API call.
+                # Get the paginator for list_key_rotations
+                paginator = client.get_paginator('list_key_rotations')
+                page_iterator = paginator.paginate(KeyId=r['KeyId'])
+
+                for page in page_iterator:
+                    rotations.extend(page.get('Rotations', []))
 
             # Find the most recent rotation date
             if rotations:
                 # Sort by RotationDate descending to get the most recent
                 most_recent_rotation = max(rotations, key=lambda x: x.get('RotationDate', 0))
 
-            if self.match(most_recent_rotation):
+            # Make sure the annotation is present, but don't blindly overwrite.
+            r.setdefault('c7n:LastRotation', most_recent_rotation)
+
+            if (
+                r['c7n:LastRotation'] is None and
+                most_recent_rotation is not None
+            ):
+                # We have a newer/better rotation value (vs. one that might've
+                # been cached).
+                r['c7n:LastRotation'] = most_recent_rotation
+
+            if self.match(r['c7n:LastRotation']):
                 # Either we found a rotation date or we're filtering for keys
                 # without a rotation (the match on `None`).
-                r['c7n:LastRotation'] = most_recent_rotation
                 results.append(r)
 
         return results
