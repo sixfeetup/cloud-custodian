@@ -124,7 +124,7 @@ class VariableResolver:
         graph_data = tfparse.load_from_path(
             self.source_dir,
             allow_downloads=False,
-            stop_on_hcl_error=stop_on_hcl_errors,
+            stop_on_hcl_error=self.stop_on_hcl_errors,
         )
         for _, variables in TerraformGraph(graph_data, self.source_dir).get_resources_by_type(
             "variable"
