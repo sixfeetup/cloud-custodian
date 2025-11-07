@@ -463,44 +463,30 @@ class LastRotation(ValueFilter):
     schema = type_schema('last-rotation', rinherit=ValueFilter.schema)
     schema_alias = False
     permissions = ('kms:ListKeyRotations',)
+    annotation_key = 'c7n:LastRotation'
+
+    def get_last_rotation(self, paginator, key_id):
+        last_rotation = None
+        page_iterator = paginator.paginate(KeyId=key_id)
+        try:
+            rotations = page_iterator.build_full_result().get('Rotations', [])
+            last_rotation = rotations and max(rotations, key=lambda x: x.get('RotationDate', 0))
+        except ClientError as err:
+            self.log.warning(err)
+        return last_rotation
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client('kms')
         results = []
+        paginator = client.get_paginator('list_key_rotations')
 
         for r in resources:
-            # Collect all rotations for this key
-            rotations = []
-            # Assume no rotations unless we find them.
-            most_recent_rotation = None
-
             if 'c7n:LastRotation' not in r:
                 # If the key is already there, it's cached & we'll skip the API..
                 # If not, we need the API call.
-                # Get the paginator for list_key_rotations
-                paginator = client.get_paginator('list_key_rotations')
-                page_iterator = paginator.paginate(KeyId=r['KeyId'])
+                r[self.annotation_key] = self.get_last_rotation(paginator, r['KeyId'])
 
-                for page in page_iterator:
-                    rotations.extend(page.get('Rotations', []))
-
-            # Find the most recent rotation date
-            if rotations:
-                # Sort by RotationDate descending to get the most recent
-                most_recent_rotation = max(rotations, key=lambda x: x.get('RotationDate', 0))
-
-            # Make sure the annotation is present, but don't blindly overwrite.
-            r.setdefault('c7n:LastRotation', most_recent_rotation)
-
-            if (
-                r['c7n:LastRotation'] is None and
-                most_recent_rotation is not None
-            ):
-                # We have a newer/better rotation value (vs. one that might've
-                # been cached).
-                r['c7n:LastRotation'] = most_recent_rotation
-
-            if self.match(r['c7n:LastRotation']):
+            if self.match(r[self.annotation_key]):
                 # Either we found a rotation date or we're filtering for keys
                 # without a rotation (the match on `None`).
                 results.append(r)
