@@ -624,7 +624,9 @@ class ResolverRuleAssociationsFilter(Filter):
 
         # Get all resolver rule associations
         paginator = client.get_paginator('list_resolver_rule_associations')
-        all_associations = paginator.paginate().build_full_result().get('ResolverRuleAssociations', [])
+        all_associations = paginator.paginate().build_full_result().get(
+            'ResolverRuleAssociations', []
+        )
 
         # Group associations by resolver rule ID
         rule_associations = {}
