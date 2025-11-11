@@ -18,9 +18,12 @@ import enum
 import logging
 
 from azure.core.exceptions import AzureError, ResourceNotFoundError
-from azure.mgmt.sql.models import (BackupLongTermRetentionPolicy,
-                                   BackupShortTermRetentionPolicy,
-                                   DatabaseUpdate, Sku)
+from azure.mgmt.sql.models import (
+    BackupLongTermRetentionPolicy,
+    BackupShortTermRetentionPolicy,
+    DatabaseUpdate,
+    Sku,
+)
 from c7n.filters import Filter
 from c7n.filters.core import PolicyValidationError
 from c7n.utils import get_annotation_prefix, type_schema
