@@ -11,6 +11,7 @@ from c7n_azure.resources.entraid_user import (
     EntraIDUser
 )
 from c7n_azure.resources.entraid_group import EntraIDGroup
+from c7n_azure.resources.entraid_organization import EntraIDOrganization
 from tests_azure.azure_common import BaseTest
 
 
@@ -1067,6 +1068,352 @@ class EntraIDGroupTest(BaseTest):
         self.assertEqual(filtered[0]['id'], 'group3')
 
 
+class EntraIDOrganizationTest(BaseTest):
+    """Test EntraID Organization resource functionality"""
+
+    def test_entraid_organization_schema_validate(self):
+        """Test organization resource schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-organization',
+                'resource': 'azure.entraid-organization',
+                'filters': [
+                    {'type': 'security-defaults', 'enabled': True}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_organization_resource_type(self):
+        """Test organization resource type configuration"""
+        resource_type = EntraIDOrganization.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Organization.Read.All', resource_type.permissions)
+        self.assertIn('Directory.Read.All', resource_type.permissions)
+
+    def test_security_defaults_filter(self):
+        """Test security defaults filter"""
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization',
+                'securityDefaults': {'isEnabled': True}
+            },
+            {
+                'id': 'org2',
+                'displayName': 'Another Organization',
+                'securityDefaults': {'isEnabled': False}
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-security-defaults',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'security-defaults', 'enabled': False}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Only org2 has security defaults disabled
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'org2')
+
+    def test_password_lockout_threshold_schema_validate(self):
+        """Test password lockout threshold filter schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-lockout-threshold',
+                'resource': 'azure.entraid-organization',
+                'filters': [
+                    {'type': 'password-lockout-threshold', 'max_threshold': 10}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_filter(self, mock_graph_request):
+        """Test password lockout threshold filter with mocked API responses"""
+        # Mock API responses for template lookup and settings
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                return {
+                    'value': [{
+                        'id': 'setting1',
+                        'templateId': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'values': [
+                            {'name': 'LockoutThreshold', 'value': '15'},
+                            {'name': 'LockoutDurationInSeconds', 'value': '60'}
+                        ]
+                    }]
+                }
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should filter org1 because threshold (15) > max_threshold (10)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'org1')
+        self.assertEqual(filtered[0]['lockoutThreshold'], 15)
+
+        # Verify API calls were made
+        self.assertEqual(mock_graph_request.call_count, 2)
+        mock_graph_request.assert_any_call('directorySettingTemplates')
+        mock_graph_request.assert_any_call('settings')
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_filter_within_limit(self, mock_graph_request):
+        """Test password lockout threshold filter when threshold is within acceptable limit"""
+        # Mock API responses with threshold within limit
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                return {
+                    'value': [{
+                        'id': 'setting1',
+                        'templateId': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'values': [
+                            {'name': 'LockoutThreshold', 'value': '8'},
+                            {'name': 'LockoutDurationInSeconds', 'value': '60'}
+                        ]
+                    }]
+                }
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-compliant',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should not filter org1 because threshold (8) <= max_threshold (10)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_template_not_found(self, mock_graph_request):
+        """Test password lockout threshold filter when template is not found"""
+        # Mock API response with empty template list
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {'value': []}
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-no-template',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list when template is not found
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_setting_not_found(self, mock_graph_request):
+        """Test password lockout threshold filter when directory setting is not found"""
+        # Mock API responses where template exists but no directory settings
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                return {'value': []}  # No directory settings
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-no-setting',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list when directory setting is not found
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_invalid_value(self, mock_graph_request):
+        """Test password lockout threshold filter with invalid threshold value"""
+        # Mock API responses with invalid threshold value
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                return {
+                    'value': [{
+                        'id': 'setting1',
+                        'templateId': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'values': [
+                            {'name': 'LockoutThreshold', 'value': 'invalid_number'},
+                            {'name': 'LockoutDurationInSeconds', 'value': '60'}
+                        ]
+                    }]
+                }
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-invalid',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list when threshold value is invalid
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_default_max_threshold(self, mock_graph_request):
+        """Test password lockout threshold filter with default max_threshold (10)"""
+        # Mock API responses with threshold above default limit
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                return {
+                    'value': [{
+                        'id': 'setting1',
+                        'templateId': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'values': [
+                            {'name': 'LockoutThreshold', 'value': '12'},
+                            {'name': 'LockoutDurationInSeconds', 'value': '60'}
+                        ]
+                    }]
+                }
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        # Test without specifying max_threshold (should default to 10)
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-default',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold'}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should filter org1 because threshold (12) > default max_threshold (10)
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'org1')
+        self.assertEqual(filtered[0]['lockoutThreshold'], 12)
+
+
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform
 # Following the same pattern as AWS tests
@@ -1176,5 +1523,79 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
     # Verify test data has expected departments
     assert admin_user['department'] == 'IT'
     assert old_password_user['department'] == 'Finance'
+
+    assert policy is not None
+
+
+@terraform('entraid_organization')
+@pytest.mark.functional
+def test_entraid_organization_discovery_terraform(test, entraid_organization):
+    """Test that Cloud Custodian can discover organization provisioned by Terraform"""
+    org_info = entraid_organization.outputs['organization_basic_info']['value']
+
+    # Test basic organization discovery
+    policy = test.load_policy({
+        'name': 'terraform-organization-discovery',
+        'resource': 'azure.entraid-organization'
+    })
+
+    # Verify policy loads correctly
+    assert policy.resource_manager.type == 'entraid-organization'
+
+    # Verify test data structure
+    assert 'id' in org_info
+    assert 'display_name' in org_info
+    assert 'tenant_id' in org_info
+
+
+@terraform('entraid_organization')
+@pytest.mark.functional
+def test_entraid_organization_domains_terraform(test, entraid_organization):
+    """Test organization domains against Terraform-provisioned data"""
+    domains_info = entraid_organization.outputs['organization_domains']['value']
+
+    # Test organization domains discovery
+    policy = test.load_policy({
+        'name': 'terraform-organization-domains',
+        'resource': 'azure.entraid-organization'
+    })
+
+    # Verify domains data structure
+    assert 'domains' in domains_info
+    assert len(domains_info['domains']) > 0
+
+    # Verify domain properties
+    for domain in domains_info['domains']:
+        assert 'domain_name' in domain
+        assert 'is_verified' in domain
+        assert 'is_default' in domain
+        assert 'authentication_type' in domain
+
+    assert policy is not None
+
+
+@terraform('entraid_organization')
+@pytest.mark.functional
+def test_entraid_organization_compliance_terraform(test, entraid_organization):
+    """Test organization compliance data against Terraform-provisioned data"""
+    compliance = entraid_organization.outputs['organization_compliance']['value']
+
+    # Test compliance monitoring
+    policy = test.load_policy({
+        'name': 'terraform-organization-compliance',
+        'resource': 'azure.entraid-organization'
+    })
+
+    # Verify CIS compliance structure
+    assert 'cis_compliance' in compliance
+    cis_compliance = compliance['cis_compliance']
+    assert 'version' in cis_compliance
+    assert 'controls' in cis_compliance
+
+    # Verify NIST compliance structure
+    assert 'nist_compliance' in compliance
+    nist_compliance = compliance['nist_compliance']
+    assert 'framework' in nist_compliance
+    assert 'controls' in nist_compliance
 
     assert policy is not None
