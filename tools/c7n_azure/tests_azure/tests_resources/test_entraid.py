@@ -14,6 +14,7 @@ from c7n_azure.resources.entraid_group import EntraIDGroup
 from c7n_azure.resources.entraid_organization import EntraIDOrganization
 from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
 from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
+from c7n_azure.resources.entraid_authorization_policy import EntraIDAuthorizationPolicy
 from tests_azure.azure_common import BaseTest
 
 
@@ -1521,6 +1522,129 @@ class EntraIDSecurityDefaultsTest(BaseTest):
         self.assertEqual(resource_type.id, 'id')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Policy.Read.All', resource_type.permissions)
+
+
+class EntraIDAuthorizationPolicyTest(BaseTest):
+    """Test EntraID Authorization Policy resource functionality"""
+
+    def test_authorization_policy_schema_validate(self):
+        """Test authorization policy schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-authorization-policy',
+                'resource': 'azure.entraid-authorization-policy',
+                'filters': [
+                    {'type': 'value',
+                     'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                     'value': False}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_authorization_policy_resource_type(self):
+        """Test authorization policy resource type configuration"""
+        resource_type = EntraIDAuthorizationPolicy.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Policy.Read.All', resource_type.permissions)
+
+    @patch('c7n_azure.resources.entraid_authorization_policy.EntraIDAuthorizationPolicy.make_graph_request')
+    def test_authorization_policy_get_resources(self, mock_graph_request):
+        """Test authorization policy resource retrieval"""
+        # Mock the Graph API response
+        mock_graph_request.return_value = {
+            'id': 'authorizationPolicy',
+            'displayName': 'Authorization Policy',
+            'description': 'Used to manage authorization related settings across the company.',
+            'defaultUserRolePermissions': {
+                'allowedToCreateApps': True,
+                'allowedToCreateSecurityGroups': True,
+                'allowedToReadOtherUsers': True,
+                'allowedToCreateTenants': False
+            }
+        }
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-retrieval',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return authorization policy wrapped in a list
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(resources[0]['id'], 'authorizationPolicy')
+        self.assertIn('defaultUserRolePermissions', resources[0])
+
+    def test_cis_compliance_scenario(self):
+        """Test CIS-B-MAF-4.0.0-6.14 compliance scenario"""
+        # Test the specific CIS control: 'Users can register applications' is set to 'No'
+
+        # Compliant scenario - users cannot create apps
+        compliant_policy = {
+            'id': 'authorizationPolicy',
+            'displayName': 'Authorization Policy',
+            'description': 'Used to manage authorization related settings across the company.',
+            'defaultUserRolePermissions': {
+                'allowedToCreateApps': False,  # CIS compliant
+                'allowedToCreateSecurityGroups': False,
+                'allowedToReadOtherUsers': True,
+                'allowedToCreateTenants': False
+            }
+        }
+
+        # Non-compliant scenario - users can create apps
+        non_compliant_policy = {
+            'id': 'authorizationPolicy',
+            'displayName': 'Authorization Policy',
+            'description': 'Used to manage authorization related settings across the company.',
+            'defaultUserRolePermissions': {
+                'allowedToCreateApps': True,  # CIS non-compliant
+                'allowedToCreateSecurityGroups': True,
+                'allowedToReadOtherUsers': True,
+                'allowedToCreateTenants': True
+            }
+        }
+
+        # Policy to check for CIS compliance
+        cis_policy = self.load_policy({
+            'name': 'cis-b-maf-4-0-0-6-14-users-register-applications',
+            'resource': 'azure.entraid-authorization-policy',
+            'filters': [
+                {'type': 'value',
+                 'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                 'value': False}
+            ]
+        })
+
+        resource_mgr = cis_policy.resource_manager
+
+        # Test compliant scenario
+        compliant_filtered = resource_mgr.filter_resources([compliant_policy])
+        self.assertEqual(len(compliant_filtered), 1)
+        self.assertFalse(compliant_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
+
+        # Test non-compliant scenario
+        non_compliant_filtered = resource_mgr.filter_resources([non_compliant_policy])
+        self.assertEqual(len(non_compliant_filtered), 0)  # Should not match
+
+        # Policy to find violations (non-compliant)
+        violation_policy = self.load_policy({
+            'name': 'cis-violation-users-can-register-apps',
+            'resource': 'azure.entraid-authorization-policy',
+            'filters': [
+                {'type': 'value',
+                 'key': 'defaultUserRolePermissions.allowedToCreateApps',
+                 'value': True}
+            ]
+        })
+
+        violation_mgr = violation_policy.resource_manager
+        violation_filtered = violation_mgr.filter_resources([non_compliant_policy])
+        self.assertEqual(len(violation_filtered), 1)
+        self.assertTrue(violation_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
 
 
 # Terraform-based integration tests
