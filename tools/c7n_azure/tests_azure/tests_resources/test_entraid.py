@@ -12,6 +12,7 @@ from c7n_azure.resources.entraid_user import (
 )
 from c7n_azure.resources.entraid_group import EntraIDGroup
 from c7n_azure.resources.entraid_organization import EntraIDOrganization
+from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
 from tests_azure.azure_common import BaseTest
 
 
@@ -2342,6 +2343,89 @@ class EntraIDOrganizationTest(BaseTest):
 
         # Should return empty list when settings API fails
         self.assertEqual(len(filtered), 0)
+
+
+class EntraIDConditionalAccessTest(BaseTest):
+    """Test EntraID Conditional Access Policy resource functionality"""
+
+    def test_conditional_access_schema_validate(self):
+        """Test conditional access policy schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-conditional-access',
+                'resource': 'azure.entraid-conditional-access-policy',
+                'filters': [
+                    {'type': 'value', 'key': 'state', 'value': 'enabled'}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_conditional_access_resource_type(self):
+        """Test conditional access resource type configuration"""
+        resource_type = EntraIDConditionalAccessPolicy.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Policy.Read.All', resource_type.permissions)
+
+    def test_admin_mfa_required_filter(self):
+        """Test admin MFA required filter"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Admin MFA Policy',
+                'state': 'enabled',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['mfa']
+                }
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Admin No MFA Policy',
+                'state': 'enabled',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['block']
+                }
+            },
+            {
+                'id': 'policy3',
+                'displayName': 'User Policy',
+                'state': 'enabled',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['User']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['mfa']
+                }
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-admin-mfa',
+            'resource': 'azure.entraid-conditional-access-policy',
+            'filters': [
+                {'type': 'admin-mfa-required', 'value': True}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # Only policy1 requires MFA for admins
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'policy1')
 
 
 # Terraform-based integration tests

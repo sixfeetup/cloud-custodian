@@ -13,3 +13,4 @@
 from c7n_azure.resources.entraid_user import EntraIDUser  # noqa: F401
 from c7n_azure.resources.entraid_group import EntraIDGroup  # noqa: F401
 from c7n_azure.resources.entraid_organization import EntraIDOrganization  # noqa: F401
+from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy  # noqa: F401
