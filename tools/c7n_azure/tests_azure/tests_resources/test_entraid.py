@@ -13,6 +13,7 @@ from c7n_azure.resources.entraid_user import (
 from c7n_azure.resources.entraid_group import EntraIDGroup
 from c7n_azure.resources.entraid_organization import EntraIDOrganization
 from c7n_azure.resources.entraid_conditional_access import EntraIDConditionalAccessPolicy
+from c7n_azure.resources.entraid_security_defaults import EntraIDSecurityDefaults
 from tests_azure.azure_common import BaseTest
 
 
@@ -2783,6 +2784,30 @@ class EntraIDConditionalAccessTest(BaseTest):
         self.assertEqual(resources, [])
 
 
+class EntraIDSecurityDefaultsTest(BaseTest):
+    """Test EntraID Security Defaults resource functionality"""
+
+    def test_security_defaults_schema_validate(self):
+        """Test security defaults schema validation"""
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-security-defaults',
+                'resource': 'azure.entraid-security-defaults',
+                'filters': [
+                    {'type': 'value', 'key': 'isEnabled', 'value': True}
+                ]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_security_defaults_resource_type(self):
+        """Test security defaults resource type configuration"""
+        resource_type = EntraIDSecurityDefaults.resource_type
+        self.assertEqual(resource_type.service, 'graph')
+        self.assertEqual(resource_type.id, 'id')
+        self.assertTrue(resource_type.global_resource)
+        self.assertIn('Policy.Read.All', resource_type.permissions)
+
+
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform
 # Following the same pattern as AWS tests
@@ -3162,5 +3187,156 @@ def test_entraid_organization_compliance_terraform(test, entraid_organization):
     nist_compliance = compliance['nist_compliance']
     assert 'framework' in nist_compliance
     assert 'controls' in nist_compliance
+
+    assert policy is not None
+
+
+@terraform('entraid_security_defaults')
+@pytest.mark.functional
+def test_entraid_security_defaults_discovery_terraform(test, entraid_security_defaults):
+    """Test that Cloud Custodian can discover security defaults provisioned by Terraform"""
+    enabled_defaults = entraid_security_defaults.outputs['security_defaults_enabled']['value']
+    disabled_defaults = entraid_security_defaults.outputs['security_defaults_disabled']['value']
+
+    # Test basic security defaults discovery
+    policy = test.load_policy({
+        'name': 'terraform-security-defaults-discovery',
+        'resource': 'azure.entraid-security-defaults'
+    })
+
+    # Verify policy loads correctly
+    assert policy.resource_manager.type == 'entraid-security-defaults'
+
+    # Verify test data integrity
+    assert enabled_defaults['is_enabled'] is True
+    assert disabled_defaults['is_enabled'] is False
+
+    assert enabled_defaults['display_name'] == 'Security Defaults'
+
+
+@terraform('entraid_security_defaults')
+@pytest.mark.functional
+def test_entraid_security_defaults_features_terraform(test, entraid_security_defaults):
+    """Test security defaults features against Terraform-provisioned data"""
+    features = entraid_security_defaults.outputs['security_defaults_features']['value']
+
+    # Test security defaults feature analysis
+    policy = test.load_policy({
+        'name': 'terraform-security-defaults-features',
+        'resource': 'azure.entraid-security-defaults',
+        'filters': [
+            {'type': 'value', 'key': 'isEnabled', 'value': True}
+        ]
+    })
+
+    # Verify features structure
+    assert 'enabled_features' in features
+    enabled_features = features['enabled_features']
+
+    # Verify key security features
+    expected_features = [
+        'require_mfa_for_admins',
+        'require_mfa_for_users',
+        'block_legacy_authentication',
+        'protect_privileged_activities'
+    ]
+
+    for feature in expected_features:
+        assert feature in enabled_features
+        assert 'enabled' in enabled_features[feature]
+        assert 'description' in enabled_features[feature]
+
+    # Verify admin MFA feature details
+    mfa_admin_feature = enabled_features['require_mfa_for_admins']
+    assert 'affected_roles' in mfa_admin_feature
+    assert 'Global Administrator' in mfa_admin_feature['affected_roles']
+
+    assert policy is not None
+
+
+@terraform('entraid_security_defaults')
+@pytest.mark.functional
+def test_entraid_security_defaults_compliance_terraform(test, entraid_security_defaults):
+    """Test security defaults compliance against Terraform-provisioned data"""
+    compliance = entraid_security_defaults.outputs['security_defaults_compliance']['value']
+
+    # Test compliance analysis
+    policy = test.load_policy({
+        'name': 'terraform-security-defaults-compliance',
+        'resource': 'azure.entraid-security-defaults'
+    })
+
+    # Verify compliance structure
+    required_sections = [
+        'cis_compliant_controls',
+        'security_improvements',
+        'limitations',
+        'recommendations'
+    ]
+    for section in required_sections:
+        assert section in compliance
+
+    # Verify CIS compliance controls
+    cis_controls = compliance['cis_compliant_controls']
+    assert len(cis_controls) > 0
+
+    for control in cis_controls:
+        assert 'control' in control
+        assert 'title' in control
+        assert 'status' in control
+
+    # Verify security improvements
+    improvements = compliance['security_improvements']
+    assert len(improvements) > 0
+
+    for improvement in improvements:
+        assert 'area' in improvement
+        assert 'improvement' in improvement
+        assert 'risk_reduction' in improvement
+
+    assert policy is not None
+
+
+@terraform('entraid_security_defaults')
+@pytest.mark.functional
+def test_entraid_security_defaults_scenarios_terraform(test, entraid_security_defaults):
+    """Test tenant scenarios against Terraform-provisioned data"""
+    scenarios = entraid_security_defaults.outputs['test_scenarios']['value']
+
+    # Test scenario-based analysis
+    policy = test.load_policy({
+        'name': 'terraform-tenant-scenarios',
+        'resource': 'azure.entraid-security-defaults'
+    })
+
+    # Verify all expected scenarios
+    expected_scenarios = ['new_tenant_secure', 'disabled_no_ca', 'disabled_with_ca']
+    for scenario_name in expected_scenarios:
+        assert scenario_name in scenarios
+
+        scenario = scenarios[scenario_name]
+        required_fields = [
+            'security_defaults_enabled',
+            'conditional_access_policies',
+            'mfa_enforced_users',
+            'legacy_auth_blocked',
+            'compliance_score',
+            'risk_level'
+        ]
+
+        for field in required_fields:
+            assert field in scenario
+
+    # Verify scenario logic
+    secure_scenario = scenarios['new_tenant_secure']
+    risky_scenario = scenarios['disabled_no_ca']
+    optimal_scenario = scenarios['disabled_with_ca']
+
+    assert secure_scenario['security_defaults_enabled'] is True
+    assert risky_scenario['security_defaults_enabled'] is False
+    assert optimal_scenario['security_defaults_enabled'] is False
+
+    assert optimal_scenario['compliance_score'] > secure_scenario['compliance_score']
+    assert secure_scenario['compliance_score'] > risky_scenario['compliance_score']
 
     assert policy is not None
