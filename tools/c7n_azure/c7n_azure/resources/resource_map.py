@@ -111,4 +111,5 @@ ResourceMap = {
     "azure.entraid-user": "c7n_azure.resources.entraid_user.EntraIDUser",
     "azure.entraid-group": "c7n_azure.resources.entraid_group.EntraIDGroup",
     "azure.entraid-organization": "c7n_azure.resources.entraid_organization.EntraIDOrganization",
+    "azure.entraid-conditional-access-policy": "c7n_azure.resources.entraid_conditional_access.EntraIDConditionalAccessPolicy", # noqa
 }
