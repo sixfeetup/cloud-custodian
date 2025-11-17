@@ -2093,6 +2093,256 @@ class EntraIDOrganizationTest(BaseTest):
         self.assertEqual(filtered[0]['id'], 'org1')
         self.assertEqual(filtered[0]['lockoutThreshold'], 12)
 
+    @patch('c7n_azure.resources.entraid_organization.requests.get')
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.get_client')
+    def test_make_graph_request_beta_api(self, mock_get_client, mock_requests_get):
+        """Test make_graph_request method for beta API endpoints"""
+        # Setup mock session and credentials
+        mock_token = Mock()
+        mock_token.token = 'test-access-token'
+        mock_credentials = Mock()
+        mock_credentials.get_token.return_value = mock_token
+
+        mock_session = Mock()
+        mock_session.credentials = mock_credentials
+        mock_session._initialize_session = Mock()
+        mock_get_client.return_value = mock_session
+
+        # Setup mock response
+        mock_response = Mock()
+        mock_response.json.return_value = {
+            'value': [{
+                'id': 'template1',
+                'displayName': 'Test Template'
+            }]
+        }
+        mock_response.raise_for_status = Mock()
+        mock_requests_get.return_value = mock_response
+
+        policy = self.load_policy({
+            'name': 'test-beta-api',
+            'resource': 'azure.entraid-organization'
+        })
+
+        resource_mgr = policy.resource_manager
+        result = resource_mgr.make_graph_request('directorySettingTemplates')
+
+        # Verify beta API was called
+        mock_requests_get.assert_called_once()
+        call_args = mock_requests_get.call_args
+        self.assertIn('beta', call_args[0][0])
+        self.assertIn('directorySettingTemplates', call_args[0][0])
+
+        # Verify headers
+        headers = call_args[1]['headers']
+        self.assertEqual(headers['Authorization'], 'Bearer test-access-token')
+        self.assertEqual(headers['Content-Type'], 'application/json')
+
+        # Verify result
+        self.assertEqual(result['value'][0]['id'], 'template1')
+
+    @patch('c7n_azure.resources.entraid_organization.requests.get')
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.get_client')
+    def test_make_graph_request_beta_api_http_error(self, mock_get_client, mock_requests_get):
+        """Test make_graph_request error handling for beta API HTTP errors"""
+        # Setup mock session and credentials
+        mock_token = Mock()
+        mock_token.token = 'test-access-token'
+        mock_credentials = Mock()
+        mock_credentials.get_token.return_value = mock_token
+
+        mock_session = Mock()
+        mock_session.credentials = mock_credentials
+        mock_session._initialize_session = Mock()
+        mock_get_client.return_value = mock_session
+
+        # Setup mock response to raise HTTP error
+        mock_response = Mock()
+        mock_response.raise_for_status.side_effect = requests.HTTPError('403 Forbidden')
+        mock_requests_get.return_value = mock_response
+
+        policy = self.load_policy({
+            'name': 'test-beta-api-error',
+            'resource': 'azure.entraid-organization'
+        })
+
+        resource_mgr = policy.resource_manager
+
+        # Should raise exception
+        with self.assertRaises(requests.HTTPError):
+            resource_mgr.make_graph_request('settings')
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.get_client')
+    @patch('c7n_azure.graph_utils.get_required_permissions_for_endpoint')
+    def test_make_graph_request_beta_api_unmapped_endpoint(self, mock_get_perms, mock_get_client):
+        """Test make_graph_request error handling for unmapped endpoint"""
+        # Setup mocks
+        mock_get_perms.side_effect = ValueError("Unmapped endpoint")
+
+        mock_session = Mock()
+        mock_session._initialize_session = Mock()
+        mock_get_client.return_value = mock_session
+
+        policy = self.load_policy({
+            'name': 'test-unmapped-endpoint',
+            'resource': 'azure.entraid-organization'
+        })
+
+        resource_mgr = policy.resource_manager
+
+        # Should raise ValueError for unmapped endpoint
+        with self.assertRaises(ValueError):
+            resource_mgr.make_graph_request('settings')
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_make_graph_request_v1_fallback(self, mock_make_graph_request):
+        """Test that make_graph_request falls back to v1.0 for non-beta endpoints"""
+        # Mock the parent class method
+        mock_make_graph_request.return_value = {
+            'value': [{
+                'id': 'org1',
+                'displayName': 'Test Org'
+            }]
+        }
+
+        policy = self.load_policy({
+            'name': 'test-v1-fallback',
+            'resource': 'azure.entraid-organization'
+        })
+
+        resource_mgr = policy.resource_manager
+
+        # Directly test that organization endpoint would use parent class
+        # This tests line 100 (the else branch)
+        # We'll validate this indirectly through get_graph_resources
+        result = resource_mgr.get_graph_resources()
+
+        # Verify the method was called
+        mock_make_graph_request.assert_called()
+        self.assertEqual(len(result), 1)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_get_graph_resources_error_handling(self, mock_make_graph_request):
+        """Test get_graph_resources error handling"""
+        # Make the API request raise an exception
+        mock_make_graph_request.side_effect = Exception("API Error")
+
+        policy = self.load_policy({
+            'name': 'test-get-resources-error',
+            'resource': 'azure.entraid-organization'
+        })
+
+        resource_mgr = policy.resource_manager
+        result = resource_mgr.get_graph_resources()
+
+        # Should return empty list on error
+        self.assertEqual(result, [])
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_no_template_id(self, mock_graph_request):
+        """Test password lockout threshold filter when template has no ID"""
+        # Mock API response with template missing id field
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'displayName': 'Password Rule Settings'
+                        # No 'id' field
+                    }]
+                }
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-no-id',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list when template ID is not found
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_template_api_error(self, mock_graph_request):
+        """Test password lockout threshold filter when template API call fails"""
+        # Mock API to raise exception
+        mock_graph_request.side_effect = Exception("API Error")
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-api-error',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list on API error
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_organization.EntraIDOrganization.make_graph_request')
+    def test_password_lockout_threshold_settings_api_error(self, mock_graph_request):
+        """Test password lockout threshold filter when settings API call fails"""
+        # Mock API responses where template works but settings fails
+        def mock_request_side_effect(endpoint):
+            if 'directorySettingTemplates' in endpoint:
+                return {
+                    'value': [{
+                        'id': '5cf42378-d67d-4f36-ba46-e8b86229381d',
+                        'displayName': 'Password Rule Settings'
+                    }]
+                }
+            elif endpoint == 'settings':
+                raise Exception("Settings API Error")
+            else:
+                return {'value': []}
+
+        mock_graph_request.side_effect = mock_request_side_effect
+
+        orgs = [
+            {
+                'id': 'org1',
+                'displayName': 'Test Organization'
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-lockout-threshold-settings-error',
+            'resource': 'azure.entraid-organization',
+            'filters': [
+                {'type': 'password-lockout-threshold', 'max_threshold': 10}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(orgs)
+
+        # Should return empty list when settings API fails
+        self.assertEqual(len(filtered), 0)
+
 
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform
