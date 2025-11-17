@@ -1066,6 +1066,686 @@ class EntraIDGroupTest(BaseTest):
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['id'], 'group3')
 
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_graph_resources_success(self, mock_request):
+        """Test successful retrieval of groups from Graph API"""
+        mock_request.return_value = {
+            'value': [
+                {
+                    'id': 'group1',
+                    'displayName': 'Test Group 1',
+                    'securityEnabled': True,
+                    'mailEnabled': False,
+                    'groupTypes': []
+                },
+                {
+                    'id': 'group2',
+                    'displayName': 'Admin Group',
+                    'securityEnabled': True,
+                    'mailEnabled': False,
+                    'groupTypes': []
+                }
+            ]
+        }
+
+        policy = self.load_policy({
+            'name': 'test-get-groups',
+            'resource': 'azure.entraid-group'
+        })
+
+        resources = policy.resource_manager.get_graph_resources()
+
+        self.assertEqual(len(resources), 2)
+        self.assertIn('c7n:IsSecurityGroup', resources[0])
+        self.assertTrue(resources[0]['c7n:IsSecurityGroup'])
+        self.assertTrue(resources[1]['c7n:IsAdminGroup'])
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_graph_resources_permission_error(self, mock_request):
+        """Test handling of permission errors when retrieving groups"""
+        mock_request.side_effect = requests.exceptions.RequestException(
+            "403 Forbidden: Insufficient privileges"
+        )
+
+        policy = self.load_policy({
+            'name': 'test-get-groups-error',
+            'resource': 'azure.entraid-group'
+        })
+
+        resources = policy.resource_manager.get_graph_resources()
+
+        # Should return empty list on permission error
+        self.assertEqual(resources, [])
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_graph_resources_generic_error(self, mock_request):
+        """Test handling of generic errors when retrieving groups"""
+        mock_request.side_effect = requests.exceptions.RequestException("Network error")
+
+        policy = self.load_policy({
+            'name': 'test-get-groups-error',
+            'resource': 'azure.entraid-group'
+        })
+
+        resources = policy.resource_manager.get_graph_resources()
+
+        # Should return empty list on error
+        self.assertEqual(resources, [])
+
+    def test_augment_exception_handling(self):
+        """Test exception handling during augmentation"""
+        policy = self.load_policy({
+            'name': 'test-augment-error',
+            'resource': 'azure.entraid-group'
+        })
+
+        # Pass invalid data that will cause augmentation to fail
+        resources = [{'id': 'test', 'displayName': None}]
+
+        # Should handle exception and still return resources
+        result = policy.resource_manager.augment(resources)
+        self.assertEqual(len(result), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_member_count_success(self, mock_request):
+        """Test successful retrieval of group member count"""
+        mock_request.return_value = 42
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_member_count('group-id')
+        self.assertEqual(count, 42)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_member_count_string_response(self, mock_request):
+        """Test member count with string response"""
+        mock_request.return_value = "25"
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_member_count('group-id')
+        self.assertEqual(count, 25)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_member_count_unexpected_format(self, mock_request):
+        """Test member count with unexpected response format"""
+        mock_request.return_value = {'unexpected': 'format'}
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_member_count('group-id')
+        self.assertEqual(count, 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_member_count_permission_error(self, mock_request):
+        """Test member count with permission error"""
+        mock_request.side_effect = requests.exceptions.RequestException("403 Forbidden")
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_member_count('group-id')
+        self.assertIsNone(count)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_member_count_generic_error(self, mock_request):
+        """Test member count with generic error"""
+        mock_request.side_effect = requests.exceptions.RequestException("Network error")
+
+        policy = self.load_policy({
+            'name': 'test-member-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_member_count('group-id')
+        self.assertIsNone(count)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_owner_count_success(self, mock_request):
+        """Test successful retrieval of group owner count"""
+        mock_request.return_value = 3
+
+        policy = self.load_policy({
+            'name': 'test-owner-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_owner_count('group-id')
+        self.assertEqual(count, 3)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_owner_count_unexpected_format(self, mock_request):
+        """Test owner count with unexpected response format"""
+        mock_request.return_value = ['not', 'a', 'number']
+
+        policy = self.load_policy({
+            'name': 'test-owner-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_owner_count('group-id')
+        self.assertEqual(count, 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_owner_count_permission_error(self, mock_request):
+        """Test owner count with permission error"""
+        mock_request.side_effect = requests.exceptions.RequestException("Insufficient privileges")
+
+        policy = self.load_policy({
+            'name': 'test-owner-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_owner_count('group-id')
+        self.assertIsNone(count)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_get_group_owner_count_generic_error(self, mock_request):
+        """Test owner count with generic error"""
+        mock_request.side_effect = requests.exceptions.RequestException("Timeout")
+
+        policy = self.load_policy({
+            'name': 'test-owner-count',
+            'resource': 'azure.entraid-group'
+        })
+
+        count = policy.resource_manager.get_group_owner_count('group-id')
+        self.assertIsNone(count)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_analyze_group_member_types_success(self, mock_request):
+        """Test successful analysis of group member types"""
+        mock_request.return_value = {
+            'value': [
+                {
+                    '@odata.type': '#microsoft.graph.user',
+                    'id': 'user1',
+                    'userType': 'Member',
+                    'userPrincipalName': 'user1@example.com'
+                },
+                {
+                    '@odata.type': '#microsoft.graph.user',
+                    'id': 'user2',
+                    'userType': 'Guest',
+                    'userPrincipalName': 'user2_external#EXT#@example.com'
+                }
+            ]
+        }
+
+        policy = self.load_policy({
+            'name': 'test-member-types',
+            'resource': 'azure.entraid-group'
+        })
+
+        analysis = policy.resource_manager.analyze_group_member_types('group-id')
+
+        self.assertTrue(analysis['has_external_members'])
+        self.assertTrue(analysis['has_guest_members'])
+        self.assertEqual(analysis['total_members'], 2)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_analyze_group_member_types_external_only(self, mock_request):
+        """Test analysis with external members only"""
+        mock_request.return_value = {
+            'value': [
+                {
+                    '@odata.type': '#microsoft.graph.user',
+                    'id': 'user1',
+                    'userType': 'Member',
+                    'userPrincipalName': 'user1_external#EXT#@example.com'
+                }
+            ]
+        }
+
+        policy = self.load_policy({
+            'name': 'test-member-types',
+            'resource': 'azure.entraid-group'
+        })
+
+        analysis = policy.resource_manager.analyze_group_member_types('group-id')
+
+        self.assertTrue(analysis['has_external_members'])
+        self.assertFalse(analysis['has_guest_members'])
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_analyze_group_member_types_permission_error(self, mock_request):
+        """Test member type analysis with permission error"""
+        mock_request.side_effect = requests.exceptions.RequestException("403 Forbidden")
+
+        policy = self.load_policy({
+            'name': 'test-member-types',
+            'resource': 'azure.entraid-group'
+        })
+
+        analysis = policy.resource_manager.analyze_group_member_types('group-id')
+        self.assertIsNone(analysis)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
+    def test_analyze_group_member_types_generic_error(self, mock_request):
+        """Test member type analysis with generic error"""
+        mock_request.side_effect = requests.exceptions.RequestException("Connection error")
+
+        policy = self.load_policy({
+            'name': 'test-member-types',
+            'resource': 'azure.entraid-group'
+        })
+
+        analysis = policy.resource_manager.analyze_group_member_types('group-id')
+        self.assertIsNone(analysis)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter_missing_group_id(self, mock_count):
+        """Test member count filter with missing group ID"""
+        groups = [
+            {'displayName': 'Test Group'}  # No ID
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 10, 'op': 'greater-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter_none_count(self, mock_count):
+        """Test member count filter with None count (permission error)"""
+        mock_count.return_value = None
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Test Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 10, 'op': 'greater-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter_less_than(self, mock_count):
+        """Test member count filter with less-than operator"""
+        mock_count.return_value = 5
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Small Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 10, 'op': 'less-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter_equal(self, mock_count):
+        """Test member count filter with equal operator"""
+        mock_count.return_value = 10
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Exact Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 10, 'op': 'equal'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    def test_member_count_filter_greater_than(self, mock_count):
+        """Test member count filter with greater-than matching"""
+        mock_count.return_value = 150
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Large Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-count', 'count': 100, 'op': 'greater-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter_missing_group_id(self, mock_count):
+        """Test owner count filter with missing group ID"""
+        groups = [
+            {'displayName': 'Test Group'}  # No ID
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-owner-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 0, 'op': 'equal'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter_none_count(self, mock_count):
+        """Test owner count filter with None count (permission error)"""
+        mock_count.return_value = None
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Test Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-owner-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 0, 'op': 'equal'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter_greater_than(self, mock_count):
+        """Test owner count filter with greater-than operator"""
+        mock_count.return_value = 5
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Many Owners Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-owner-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 3, 'op': 'greater-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter_less_than(self, mock_count):
+        """Test owner count filter with less-than operator"""
+        mock_count.return_value = 1
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Few Owners Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-owner-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 2, 'op': 'less-than'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
+    def test_owner_count_filter_equal(self, mock_count):
+        """Test owner count filter with equal operator matching"""
+        mock_count.return_value = 2
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Two Owners Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-owner-count-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'owner-count', 'count': 2, 'op': 'equal'}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_missing_group_id(self, mock_analysis):
+        """Test member types filter with missing group ID"""
+        groups = [
+            {'displayName': 'Test Group'}  # No ID
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_none_analysis(self, mock_analysis):
+        """Test member types filter with None analysis (permission error)"""
+        mock_analysis.return_value = None
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Test Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_include_external(self, mock_analysis):
+        """Test member types filter with include-external"""
+        mock_analysis.return_value = {
+            'has_external_members': True,
+            'has_guest_members': False,
+            'total_members': 5
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'External Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_exclude_external(self, mock_analysis):
+        """Test member types filter with exclude external"""
+        mock_analysis.return_value = {
+            'has_external_members': True,
+            'has_guest_members': False,
+            'total_members': 5
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'External Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': False}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_include_guests(self, mock_analysis):
+        """Test member types filter with include-guests"""
+        mock_analysis.return_value = {
+            'has_external_members': False,
+            'has_guest_members': True,
+            'total_members': 3
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Guest Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-guests': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_exclude_guests(self, mock_analysis):
+        """Test member types filter excluding guest users"""
+        mock_analysis.return_value = {
+            'has_external_members': False,
+            'has_guest_members': True,
+            'total_members': 5
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Guest Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-guests': False}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_no_external_when_required(self, mock_analysis):
+        """Test member types filter when external members are required but not present"""
+        mock_analysis.return_value = {
+            'has_external_members': False,
+            'has_guest_members': False,
+            'total_members': 5
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Internal Only Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_no_guests_when_required(self, mock_analysis):
+        """Test member types filter when guests are required but not present"""
+        mock_analysis.return_value = {
+            'has_external_members': False,
+            'has_guest_members': False,
+            'total_members': 5
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'No Guests Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-guests': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.analyze_group_member_types')
+    def test_member_types_filter_combined(self, mock_analysis):
+        """Test member types filter with combined filters"""
+        mock_analysis.return_value = {
+            'has_external_members': True,
+            'has_guest_members': True,
+            'total_members': 10
+        }
+
+        groups = [
+            {'id': 'group1', 'displayName': 'Mixed Group'}
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-member-types-filter',
+            'resource': 'azure.entraid-group',
+            'filters': [
+                {'type': 'member-types', 'include-external': True, 'include-guests': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(groups)
+        self.assertEqual(len(filtered), 1)
+
 
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform

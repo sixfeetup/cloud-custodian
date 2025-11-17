@@ -79,7 +79,7 @@ class EntraIDGroup(GraphResourceManager):
 
             log.debug(f"Returning {len(resources)} groups after augmentation")
             return resources
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             log.error(f"Error retrieving EntraID groups: {e}")
             if "Insufficient privileges" in str(e) or "403" in str(e):
                 log.error(
