@@ -3232,26 +3232,6 @@ class SpecificIamProfileManagedPolicy(ValueFilter):
 #########################
 
 
-class ListAccessKeys(DescribeSource):
-    """List all Access Keys since list_access_keys requires UserName parameter."""
-
-    def resources(self, query=None):
-        """Enumerate all access keys for all IAM users."""
-        client = local_session(self.manager.session_factory).client('iam')
-        resources = []
-
-        # Get all users first
-        users_paginator = client.get_paginator('list_users')
-        for users_page in users_paginator.paginate():
-            for user in users_page['Users']:
-                # For each user, get their access keys
-                keys_paginator = client.get_paginator('list_access_keys')
-                for keys_page in keys_paginator.paginate(UserName=user['UserName']):
-                    resources.extend(keys_page['AccessKeyMetadata'])
-
-        return resources
-
-
 @resources.register('iam-access-key')
 class AccessKey(ChildResourceManager):
 
@@ -3271,6 +3251,5 @@ class AccessKey(ChildResourceManager):
         # config_id = 'AccessKeyId'
 
     source_mapping = {
-        'describe': ListAccessKeys,
         'config': ConfigSource
     }
