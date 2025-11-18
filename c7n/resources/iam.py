@@ -26,7 +26,13 @@ from c7n.filters import ValueFilter, Filter
 from c7n.filters.multiattr import MultiAttrFilter
 from c7n.filters.iamaccess import CrossAccountAccessFilter
 from c7n.manager import resources
-from c7n.query import ConfigSource, QueryResourceManager, DescribeSource, TypeInfo
+from c7n.query import (
+    ChildResourceManager,
+    ConfigSource,
+    DescribeSource,
+    QueryResourceManager,
+    TypeInfo,
+)
 from c7n.resolver import ValuesFrom
 from c7n.tags import TagActionFilter, TagDelayedAction, Tag, RemoveTag, universal_augment
 from c7n.utils import (
@@ -3247,7 +3253,7 @@ class ListAccessKeys(DescribeSource):
 
 
 @resources.register('iam-access-key')
-class AccessKey(QueryResourceManager):
+class AccessKey(ChildResourceManager):
 
     class resource_type(TypeInfo):
         service = 'iam'
@@ -3259,6 +3265,7 @@ class AccessKey(QueryResourceManager):
         # Denotes this resource type exists across regions
         global_resource = True
         enum_spec = ('list_access_keys', 'AccessKeys', None)
+        parent_spec = ('iam-user', 'UserName', None)
         # No detail spec needed as list_access_keys returns full metadata
         cfn_type = config_type = "AWS::IAM::AccessKey"
         # config_id = 'AccessKeyId'
