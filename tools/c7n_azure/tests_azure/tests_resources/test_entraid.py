@@ -2427,6 +2427,292 @@ class EntraIDConditionalAccessTest(BaseTest):
         self.assertEqual(len(filtered), 1)
         self.assertEqual(filtered[0]['id'], 'policy1')
 
+    def test_admin_mfa_required_filter_false(self):
+        """Test admin MFA required filter with value=False (find policies NOT requiring MFA)"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Admin MFA Policy',
+                'state': 'enabled',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['mfa']
+                }
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Admin No MFA Policy',
+                'state': 'enabled',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['block']
+                }
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-admin-no-mfa',
+            'resource': 'azure.entraid-conditional-access-policy',
+            'filters': [
+                {'type': 'admin-mfa-required', 'value': False}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        filtered = resource_mgr.filter_resources(policies)
+
+        # Only policy2 doesn't require MFA for admins
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['id'], 'policy2')
+
+    def test_admin_mfa_required_filter_multiple_admin_roles(self):
+        """Test filter with multiple admin role types"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Privileged Role Admin MFA',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Privileged Role Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['mfa']
+                }
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'User Admin MFA',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['User Administrator']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['MFA']  # Test case insensitive
+                }
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-admin-roles',
+            'resource': 'azure.entraid-conditional-access-policy',
+            'filters': [
+                {'type': 'admin-mfa-required', 'value': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(policies)
+        self.assertEqual(len(filtered), 2)
+
+    def test_admin_mfa_required_filter_missing_conditions(self):
+        """Test filter with policies missing conditions or grant controls"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'No conditions',
+                # No conditions key
+            },
+            {
+                'id': 'policy2',
+                'displayName': 'Empty conditions',
+                'conditions': {}
+            },
+            {
+                'id': 'policy3',
+                'displayName': 'No users',
+                'conditions': {
+                    'users': {}
+                }
+            },
+            {
+                'id': 'policy4',
+                'displayName': 'No grant controls',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                }
+            },
+            {
+                'id': 'policy5',
+                'displayName': 'Empty grant controls',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Global Administrator']
+                    }
+                },
+                'grantControls': {}
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-missing-data',
+            'resource': 'azure.entraid-conditional-access-policy',
+            'filters': [
+                {'type': 'admin-mfa-required', 'value': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(policies)
+        # None of these should match since they don't have admin roles with MFA
+        self.assertEqual(len(filtered), 0)
+
+    def test_admin_mfa_required_filter_non_admin_roles(self):
+        """Test that non-admin roles are filtered out"""
+        policies = [
+            {
+                'id': 'policy1',
+                'displayName': 'Regular User with MFA',
+                'conditions': {
+                    'users': {
+                        'includeRoles': ['Regular User', 'Guest']
+                    }
+                },
+                'grantControls': {
+                    'builtInControls': ['mfa']
+                }
+            }
+        ]
+
+        policy = self.load_policy({
+            'name': 'test-non-admin',
+            'resource': 'azure.entraid-conditional-access-policy',
+            'filters': [
+                {'type': 'admin-mfa-required', 'value': True}
+            ]
+        })
+
+        filtered = policy.resource_manager.filter_resources(policies)
+        # Should not match since no admin roles
+        self.assertEqual(len(filtered), 0)
+
+    @patch('c7n_azure.resources.entraid_conditional_access.requests.get')
+    @patch('c7n_azure.resources.entraid_conditional_access.get_required_permissions_for_endpoint')
+    def test_make_graph_request_success(self, mock_get_permissions, mock_requests_get):
+        """Test successful Graph API request"""
+        # Setup mocks
+        mock_get_permissions.return_value = ['Policy.Read.All']
+
+        mock_response = Mock()
+        mock_response.json.return_value = {'value': [{'id': 'test'}]}
+        mock_response.raise_for_status = Mock()
+        mock_requests_get.return_value = mock_response
+
+        mock_token = Mock()
+        mock_token.token = 'test-token'
+
+        mock_session = Mock()
+        mock_session._initialize_session = Mock()
+        mock_session.credentials.get_token.return_value = mock_token
+
+        # Create instance and test
+        policy = self.load_policy({
+            'name': 'test-graph-request',
+            'resource': 'azure.entraid-conditional-access-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resource_mgr.get_client = Mock(return_value=mock_session)
+
+        result = resource_mgr.make_graph_request('test/endpoint')
+
+        self.assertEqual(result, {'value': [{'id': 'test'}]})
+        mock_requests_get.assert_called_once()
+        call_args = mock_requests_get.call_args
+        self.assertIn('https://graph.microsoft.com/beta/test/endpoint', call_args[0])
+
+    @patch('c7n_azure.resources.entraid_conditional_access.get_required_permissions_for_endpoint')
+    def test_make_graph_request_unmapped_endpoint(self, mock_get_permissions):
+        """Test Graph API request with unmapped endpoint raises ValueError"""
+        mock_get_permissions.side_effect = ValueError("Unmapped endpoint")
+
+        mock_session = Mock()
+        mock_session._initialize_session = Mock()
+
+        policy = self.load_policy({
+            'name': 'test-unmapped-endpoint',
+            'resource': 'azure.entraid-conditional-access-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resource_mgr.get_client = Mock(return_value=mock_session)
+
+        with self.assertRaises(ValueError):
+            resource_mgr.make_graph_request('unmapped/endpoint')
+
+    @patch('c7n_azure.resources.entraid_conditional_access.requests.get')
+    @patch('c7n_azure.resources.entraid_conditional_access.get_required_permissions_for_endpoint')
+    def test_make_graph_request_api_error(self, mock_get_permissions, mock_requests_get):
+        """Test Graph API request handling of request exceptions"""
+        mock_get_permissions.return_value = ['Policy.Read.All']
+        mock_requests_get.side_effect = requests.exceptions.RequestException("API Error")
+
+        mock_token = Mock()
+        mock_token.token = 'test-token'
+
+        mock_session = Mock()
+        mock_session._initialize_session = Mock()
+        mock_session.credentials.get_token.return_value = mock_token
+
+        policy = self.load_policy({
+            'name': 'test-api-error',
+            'resource': 'azure.entraid-conditional-access-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resource_mgr.get_client = Mock(return_value=mock_session)
+
+        with self.assertRaises(requests.exceptions.RequestException):
+            resource_mgr.make_graph_request('test/endpoint')
+
+    @patch('c7n_azure.resources.entraid_conditional_access.EntraIDConditionalAccessPolicy.make_graph_request')
+    def test_get_graph_resources_success(self, mock_make_request):
+        """Test successful retrieval of conditional access policies"""
+        mock_make_request.return_value = {
+            'value': [
+                {'id': 'policy1', 'displayName': 'Test Policy 1'},
+                {'id': 'policy2', 'displayName': 'Test Policy 2'}
+            ]
+        }
+
+        policy = self.load_policy({
+            'name': 'test-get-resources',
+            'resource': 'azure.entraid-conditional-access-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        self.assertEqual(len(resources), 2)
+        self.assertEqual(resources[0]['id'], 'policy1')
+        self.assertEqual(resources[1]['id'], 'policy2')
+        mock_make_request.assert_called_once_with('identity/conditionalAccess/policies')
+
+    @patch('c7n_azure.resources.entraid_conditional_access.EntraIDConditionalAccessPolicy.make_graph_request')
+    def test_get_graph_resources_error(self, mock_make_request):
+        """Test get_graph_resources returns empty list on exception"""
+        mock_make_request.side_effect = Exception("API Error")
+
+        policy = self.load_policy({
+            'name': 'test-get-resources-error',
+            'resource': 'azure.entraid-conditional-access-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return empty list on error
+        self.assertEqual(resources, [])
+
 
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform
