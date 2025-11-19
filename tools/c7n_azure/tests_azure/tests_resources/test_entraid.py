@@ -2787,6 +2787,14 @@ class EntraIDConditionalAccessTest(BaseTest):
 class EntraIDSecurityDefaultsTest(BaseTest):
     """Test EntraID Security Defaults resource functionality"""
 
+    def setUp(self):
+        super().setUp()
+        self.policy = self.load_policy({
+            'name': 'test-entraid-security-defaults',
+            'resource': 'azure.entraid-security-defaults'
+        })
+        self.manager = self.policy.resource_manager
+
     def test_security_defaults_schema_validate(self):
         """Test security defaults schema validation"""
         with self.sign_out_patch():
@@ -2806,6 +2814,144 @@ class EntraIDSecurityDefaultsTest(BaseTest):
         self.assertEqual(resource_type.id, 'id')
         self.assertTrue(resource_type.global_resource)
         self.assertIn('Policy.Read.All', resource_type.permissions)
+
+    def test_security_defaults_init(self):
+        """Test security defaults initialization with GraphSource"""
+        from c7n_azure.graph_utils import GraphSource
+        # Verify GraphSource is set in __init__
+        self.assertIsInstance(self.manager.source, GraphSource)
+
+    def test_get_graph_resources_success(self):
+        """Test get_graph_resources successful API call"""
+        mock_policy = {
+            'id': 'security-defaults-id',
+            'displayName': 'Security Defaults',
+            'description': 'Security defaults policy',
+            'isEnabled': True
+        }
+
+        with patch.object(self.manager, 'make_graph_request', return_value=mock_policy):
+            with patch('c7n_azure.resources.entraid_security_defaults.log') as mock_log:
+                resources = self.manager.get_graph_resources()
+
+                # Verify API was called with correct endpoint
+                self.manager.make_graph_request.assert_called_once_with(
+                    'policies/identitySecurityDefaultsEnforcementPolicy'
+                )
+
+                # Verify returned list contains the policy
+                self.assertEqual(len(resources), 1)
+                self.assertEqual(resources[0]['id'], 'security-defaults-id')
+                self.assertEqual(resources[0]['isEnabled'], True)
+
+                # Verify debug logging was called
+                mock_log.debug.assert_called_once_with(
+                    "Retrieved security defaults policy from Graph API"
+                )
+
+    def test_get_graph_resources_error_handling(self):
+        """Test get_graph_resources error handling"""
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=Exception("API Error")):
+            with patch('c7n_azure.resources.entraid_security_defaults.log') as mock_log:
+                resources = self.manager.get_graph_resources()
+
+                # Should return empty list on error
+                self.assertEqual(resources, [])
+
+                # Verify warning log was called with error message
+                mock_log.warning.assert_called_once()
+                call_args = mock_log.warning.call_args[0][0]
+                self.assertIn("Could not retrieve Security Defaults policy", call_args)
+                self.assertIn("API Error", call_args)
+
+    def test_get_graph_resources_permission_error(self):
+        """Test get_graph_resources with insufficient privileges"""
+        http_error = requests.exceptions.HTTPError("403 Insufficient privileges")
+
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=http_error):
+            with patch('c7n_azure.resources.entraid_security_defaults.log') as mock_log:
+                resources = self.manager.get_graph_resources()
+
+                # Should return empty list on permission error
+                self.assertEqual(resources, [])
+
+                # Verify warning log includes exception details
+                mock_log.warning.assert_called_once()
+                call_args = mock_log.warning.call_args[0][0]
+                self.assertIn("Could not retrieve Security Defaults policy", call_args)
+                self.assertIn("403 Insufficient privileges", call_args)
+
+    def test_get_graph_resources_network_error(self):
+        """Test get_graph_resources with network error"""
+        network_error = requests.exceptions.ConnectionError("Network unreachable")
+
+        with patch.object(self.manager, 'make_graph_request',
+                         side_effect=network_error):
+            with patch('c7n_azure.resources.entraid_security_defaults.log') as mock_log:
+                resources = self.manager.get_graph_resources()
+
+                # Should return empty list on network error
+                self.assertEqual(resources, [])
+
+                # Verify warning log includes exception details
+                mock_log.warning.assert_called_once()
+                call_args = mock_log.warning.call_args[0][0]
+                self.assertIn("Could not retrieve Security Defaults policy", call_args)
+                self.assertIn("Network unreachable", call_args)
+
+    def test_security_defaults_with_filter(self):
+        """Test security defaults resource with enabled filter"""
+        mock_policy = {
+            'id': 'security-defaults-id',
+            'displayName': 'Security Defaults',
+            'description': 'Security defaults policy',
+            'isEnabled': True
+        }
+
+        policy = self.load_policy({
+            'name': 'test-enabled-security-defaults',
+            'resource': 'azure.entraid-security-defaults',
+            'filters': [
+                {'type': 'value', 'key': 'isEnabled', 'value': True}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        with patch.object(resource_mgr, 'make_graph_request', return_value=mock_policy):
+            resources = resource_mgr.get_graph_resources()
+            filtered = resource_mgr.filter_resources(resources)
+
+            # Should return the policy since it's enabled
+            self.assertEqual(len(filtered), 1)
+            self.assertEqual(filtered[0]['isEnabled'], True)
+
+    def test_security_defaults_disabled_filter(self):
+        """Test security defaults resource with disabled filter"""
+        mock_policy = {
+            'id': 'security-defaults-id',
+            'displayName': 'Security Defaults',
+            'description': 'Security defaults policy',
+            'isEnabled': False
+        }
+
+        policy = self.load_policy({
+            'name': 'test-disabled-security-defaults',
+            'resource': 'azure.entraid-security-defaults',
+            'filters': [
+                {'type': 'value', 'key': 'isEnabled', 'value': False}
+            ]
+        })
+
+        resource_mgr = policy.resource_manager
+        with patch.object(resource_mgr, 'make_graph_request', return_value=mock_policy):
+            resources = resource_mgr.get_graph_resources()
+            filtered = resource_mgr.filter_resources(resources)
+
+            # Should return the policy since it's disabled
+            self.assertEqual(len(filtered), 1)
+            self.assertEqual(filtered[0]['isEnabled'], False)
 
 
 # Terraform-based integration tests
