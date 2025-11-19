@@ -3077,6 +3077,106 @@ class EntraIDAuthorizationPolicyTest(BaseTest):
         self.assertEqual(len(violation_filtered), 1)
         self.assertTrue(violation_filtered[0]['defaultUserRolePermissions']['allowedToCreateApps'])
 
+    @patch('c7n_azure.resources.entraid_authorization_policy.EntraIDAuthorizationPolicy.make_graph_request')
+    def test_authorization_policy_empty_response(self, mock_graph_request):
+        """Test authorization policy when API returns None/empty response"""
+        # Mock the Graph API to return None
+        mock_graph_request.return_value = None
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-empty-response',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return empty list when response is None
+        self.assertEqual(len(resources), 0)
+        self.assertEqual(resources, [])
+
+    @patch('c7n_azure.resources.entraid_authorization_policy.EntraIDAuthorizationPolicy.make_graph_request')
+    def test_authorization_policy_general_exception(self, mock_graph_request):
+        """Test authorization policy handles general exceptions"""
+        # Mock the Graph API to raise a general exception
+        mock_graph_request.side_effect = Exception("Network error")
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-exception',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return empty list on exception
+        self.assertEqual(len(resources), 0)
+        self.assertEqual(resources, [])
+
+    @patch('c7n_azure.resources.entraid_authorization_policy.EntraIDAuthorizationPolicy.make_graph_request')
+    def test_authorization_policy_insufficient_privileges_exception(self, mock_graph_request):
+        """Test authorization policy handles insufficient privileges error"""
+        # Mock the Graph API to raise an insufficient privileges exception
+        mock_graph_request.side_effect = Exception(
+            "Insufficient privileges to complete the operation"
+        )
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-insufficient-privileges',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return empty list on permission error
+        self.assertEqual(len(resources), 0)
+        self.assertEqual(resources, [])
+
+    @patch('c7n_azure.resources.entraid_authorization_policy.EntraIDAuthorizationPolicy.make_graph_request')
+    def test_authorization_policy_403_exception(self, mock_graph_request):
+        """Test authorization policy handles 403 forbidden error"""
+        # Mock the Graph API to raise a 403 exception
+        mock_graph_request.side_effect = requests.exceptions.RequestException("403 Forbidden")
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-403-error',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+        resources = resource_mgr.get_graph_resources()
+
+        # Should return empty list on 403 error
+        self.assertEqual(len(resources), 0)
+        self.assertEqual(resources, [])
+
+    def test_authorization_policy_diagnostic_settings_filter_registered(self):
+        """Test that diagnostic-settings filter is properly registered"""
+        # Check that the diagnostic-settings filter is registered
+        from c7n_azure.graph_utils import EntraIDDiagnosticSettingsFilter
+
+        filter_registry = EntraIDAuthorizationPolicy.filter_registry
+        self.assertIn('diagnostic-settings', filter_registry.keys())
+
+        # Verify it's the correct filter class
+        registered_filter = filter_registry.get('diagnostic-settings')
+        self.assertEqual(registered_filter, EntraIDDiagnosticSettingsFilter)
+
+    def test_authorization_policy_source_initialization(self):
+        """Test that authorization policy initializes with GraphSource"""
+        from c7n_azure.graph_utils import GraphSource
+
+        policy = self.load_policy({
+            'name': 'test-auth-policy-source',
+            'resource': 'azure.entraid-authorization-policy'
+        })
+
+        resource_mgr = policy.resource_manager
+
+        # Verify that the source is a GraphSource instance
+        self.assertIsInstance(resource_mgr.source, GraphSource)
+
 
 # Terraform-based integration tests
 # These tests use real Azure EntraID resources provisioned via Terraform
