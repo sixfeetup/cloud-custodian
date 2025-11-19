@@ -69,7 +69,6 @@ class EntraIDNamedLocation(GraphResourceManager):
             'displayName',
             'createdDateTime',
             'modifiedDateTime',
-            '@odata.type',
             'id'
         )
         permissions = ('Policy.Read.All',)
