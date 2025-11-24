@@ -49,11 +49,11 @@ def cli():
     help="Use a jmespath expression to filter json output",
 )
 @click.option(
-    "--stop-on-hcl-errors",
+    "--err-invalid",
     is_flag=True,
     help="Fail/stop if there are errors present in the HCL",
 )
-def dump(directory, var_file, output_file, terraform_workspace, output_query, stop_on_hcl_errors):
+def dump(directory, var_file, output_file, terraform_workspace, output_query, err_invalid):
     """Dump the parsed resource graph or subset"""
     config = get_config(
         directory,
@@ -62,7 +62,7 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, st
         var_file=var_file,
         terraform_workspace=terraform_workspace,
         output_query=output_query,
-        stop_on_hcl_errors=stop_on_hcl_errors,
+        stop_on_hcl_errors=err_invalid,
     )
     reporter = get_reporter(config)
     config["reporter"] = reporter
@@ -72,7 +72,7 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, st
         config.source_dir,
         config.var_files,
         workspace=terraform_workspace,
-        stop_on_hcl_errors=stop_on_hcl_errors,
+        stop_on_hcl_errors=err_invalid,
     )
     reporter.on_execution_started([], graph)
     reporter.on_execution_ended()
@@ -114,7 +114,7 @@ def dump(directory, var_file, output_file, terraform_workspace, output_query, st
 )
 @click.option("--summary", default="policy", type=click.Choice(summary_options.keys()))
 @click.option(
-    "--stop-on-hcl-errors",
+    "--err-invalid",
     is_flag=True,
     help="Fail/stop if there are errors present in the HCL",
 )
@@ -130,7 +130,7 @@ def run(
     summary,
     filters,
     warn_on,
-    stop_on_hcl_errors,
+    err_invalid,
     reporter=None,
 ):
     """evaluate policies against IaC sources.
@@ -151,7 +151,7 @@ def run(
         summary=summary,
         warn_on=warn_on,
         filters=filters,
-        stop_on_hcl_errors=stop_on_hcl_errors,
+        stop_on_hcl_errors=err_invalid,
     )
     policies = config.exec_filter.filter_policies(load_policies(policy_dir, config))
     if not policies:
