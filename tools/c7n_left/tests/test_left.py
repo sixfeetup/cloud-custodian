@@ -1224,7 +1224,7 @@ def test_cli_dump_bad_tf_error(policy_env, test, debug_cli_runner):
             # policy_env.policy_dir / "vars2.tfvars",
             "--output-file",
             str(policy_env.policy_dir / "output.json"),
-            "--stop-on-hcl-errors",
+            "--err-invalid",
         ],
     )
     # We now strictly check for TF errors, & bomb out if they're present.
