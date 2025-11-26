@@ -86,7 +86,7 @@ class EntraIDGroup(GraphResourceManager):
                     "Insufficient privileges to read groups. "
                     "Required permissions: Group.Read.All"
                 )
-            return []
+            raise
 
     def augment(self, resources):
         """Augment group resources with additional Graph API data"""

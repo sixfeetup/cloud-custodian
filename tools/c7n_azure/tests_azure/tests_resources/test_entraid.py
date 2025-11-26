@@ -1112,10 +1112,8 @@ class EntraIDGroupTest(BaseTest):
             'resource': 'azure.entraid-group'
         })
 
-        resources = policy.resource_manager.get_graph_resources()
-
-        # Should return empty list on permission error
-        self.assertEqual(resources, [])
+        with self.assertRaises(requests.exceptions.RequestException):
+            resources = policy.resource_manager.get_graph_resources()
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_graph_resources_generic_error(self, mock_request):
@@ -1127,10 +1125,8 @@ class EntraIDGroupTest(BaseTest):
             'resource': 'azure.entraid-group'
         })
 
-        resources = policy.resource_manager.get_graph_resources()
-
-        # Should return empty list on error
-        self.assertEqual(resources, [])
+        with self.assertRaises(requests.exceptions.RequestException):
+            resources = policy.resource_manager.get_graph_resources()
 
     def test_augment_exception_handling(self):
         """Test exception handling during augmentation"""
