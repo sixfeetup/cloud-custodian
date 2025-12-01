@@ -291,7 +291,9 @@ class MemberCountFilter(Filter):
                 "url": f"/groups/{group_id}/members/$count",
             })
 
-        batch_group_count_response = self.manager.make_batched_graph_request(batch_group_count_request)
+        batch_group_count_response = self.manager.make_batched_graph_request(
+            batch_group_count_request
+        )
 
         filtered = []
         for group_result in batch_group_count_response.get("responses", None):

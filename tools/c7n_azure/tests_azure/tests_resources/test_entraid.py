@@ -1124,7 +1124,7 @@ class EntraIDGroupTest(BaseTest):
         })
 
         with self.assertRaises(requests.exceptions.RequestException):
-            resources = policy.resource_manager.get_graph_resources()
+            policy.resource_manager.get_graph_resources()
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_graph_resources_generic_error(self, mock_request):
@@ -1137,7 +1137,7 @@ class EntraIDGroupTest(BaseTest):
         })
 
         with self.assertRaises(requests.exceptions.RequestException):
-            resources = policy.resource_manager.get_graph_resources()
+            policy.resource_manager.get_graph_resources()
 
     def test_augment_exception_handling(self):
         """Test exception handling during augmentation"""
@@ -1203,7 +1203,7 @@ class EntraIDGroupTest(BaseTest):
         })
 
         with self.assertRaises(requests.exceptions.RequestException):
-            count = policy.resource_manager.get_group_member_count('group-id')
+            policy.resource_manager.get_group_member_count('group-id')
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_group_member_count_generic_error(self, mock_request):
@@ -1216,7 +1216,7 @@ class EntraIDGroupTest(BaseTest):
         })
 
         with self.assertRaises(requests.exceptions.RequestException):
-            count = policy.resource_manager.get_group_member_count('group-id')
+            policy.resource_manager.get_group_member_count('group-id')
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_group_owner_count_success(self, mock_request):
@@ -1924,12 +1924,19 @@ def test_entraid_group_discovery_terraform(test, entraid_group):
     # Distribution group is simplified to just another security group (not mail-enabled)
     assert distribution_group['security_enabled'] is True
     assert distribution_group['mail_enabled'] is False
-    assert 'Second' in distribution_group['display_name'] or 'Distribution' in distribution_group['display_name']
+    assert (
+        'Second' in distribution_group['display_name']
+        or 'Distribution' in distribution_group['display_name']
+    )
 
-    # Dynamic group is now just a regular security group (dynamic membership requires Azure AD P1 license)
+    # Dynamic group is now just a regular security group
+    # (dynamic membership requires Azure AD P1 license)
     assert dynamic_group['security_enabled'] is True
     assert dynamic_group['mail_enabled'] is False
-    assert 'Third' in dynamic_group['display_name'] or 'Dynamic' in dynamic_group['display_name']
+    assert (
+        'Third' in dynamic_group['display_name']
+        or 'Dynamic' in dynamic_group['display_name']
+    )
 
     assert admin_group['security_enabled'] is True
     assert 'Admin' in admin_group['display_name']
