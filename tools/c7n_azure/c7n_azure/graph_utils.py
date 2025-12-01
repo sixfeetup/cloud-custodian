@@ -66,6 +66,9 @@ GRAPH_ENDPOINT_PERMISSIONS = {
     'settings': ['Directory.Read.All'],
     'settings/{id}': ['Directory.ReadWrite.All'],
     'directorySettingTemplates': ['Directory.Read.All'],
+
+    # Batch endpoint
+    '$batch': ['Directory.Read.All'],  # Inherits permissions from individual requests
 }
 
 
@@ -173,6 +176,36 @@ class GraphResourceManager(QueryResourceManager):
             return response.json()
         except requests.exceptions.RequestException as e:
             log.error(f"Microsoft Graph API request failed for {endpoint}: {e}")
+            raise
+
+    def make_batched_graph_request(self, batch):
+        """Make a batched request to Microsoft Graph API."""
+        try:
+            session = self.get_client()
+            session._initialize_session()
+
+            try:
+                get_required_permissions_for_endpoint('$batch', 'POST')
+            except ValueError:
+                log.error("Cannot make Graph API batch request to unmapped endpoint: $batch")
+                raise
+
+            # Request token for Microsoft Graph API
+            scope = 'https://graph.microsoft.com/.default'
+            token = session.credentials.get_token(scope)
+            url = 'https://graph.microsoft.com/v1.0/$batch'
+
+            headers = {
+                'Authorization': f'Bearer {token.token}',
+                'Content-Type': 'application/json'
+            }
+
+            response = requests.post(url, headers=headers, json=batch, timeout=30)
+
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            log.error(f"Microsoft Graph API request failed for $batch: {e}")
             raise
 
     @staticmethod

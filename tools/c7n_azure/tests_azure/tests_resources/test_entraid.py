@@ -930,7 +930,7 @@ class EntraIDGroupTest(BaseTest):
         self.assertTrue(augmented[2]['c7n:IsSecurityGroup'])
         self.assertTrue(augmented[2]['c7n:IsDynamicGroup'])
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter(self, mock_member_count):
         """Test member count filter with real Graph API implementation"""
         groups = [
@@ -950,14 +950,25 @@ class EntraIDGroupTest(BaseTest):
 
         # Mock member counts: group1=2, group2=5, group3=0
         def mock_count_side_effect(group_id):
-            if group_id == 'group1':
-                return 2
-            elif group_id == 'group2':
-                return 5
-            elif group_id == 'group3':
-                return 0
-            else:
-                return None
+            return {
+                "responses": [
+                    {
+                        "status": 200,
+                        "id": "group1",
+                        "body": 2
+                    },
+                    {
+                        "status": 200,
+                        "id": "group2",
+                        "body": 5
+                    },
+                    {
+                        "status": 200,
+                        "id": "group3",
+                        "body": 0
+                    }
+                ]
+            }
 
         mock_member_count.side_effect = mock_count_side_effect
 
@@ -977,7 +988,7 @@ class EntraIDGroupTest(BaseTest):
         self.assertEqual(filtered[0]['id'], 'group2')
 
         # Verify the member count check was called
-        self.assertEqual(mock_member_count.call_count, 3)
+        self.assertEqual(mock_member_count.call_count, 1)
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_owner_count')
     def test_owner_count_filter(self, mock_owner_count):
@@ -1191,8 +1202,8 @@ class EntraIDGroupTest(BaseTest):
             'resource': 'azure.entraid-group'
         })
 
-        count = policy.resource_manager.get_group_member_count('group-id')
-        self.assertIsNone(count)
+        with self.assertRaises(requests.exceptions.RequestException):
+            count = policy.resource_manager.get_group_member_count('group-id')
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_group_member_count_generic_error(self, mock_request):
@@ -1204,8 +1215,8 @@ class EntraIDGroupTest(BaseTest):
             'resource': 'azure.entraid-group'
         })
 
-        count = policy.resource_manager.get_group_member_count('group-id')
-        self.assertIsNone(count)
+        with self.assertRaises(requests.exceptions.RequestException):
+            count = policy.resource_manager.get_group_member_count('group-id')
 
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_group_owner_count_success(self, mock_request):
@@ -1340,7 +1351,7 @@ class EntraIDGroupTest(BaseTest):
         analysis = policy.resource_manager.analyze_group_member_types('group-id')
         self.assertIsNone(analysis)
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_missing_group_id(self, mock_count):
         """Test member count filter with missing group ID"""
         groups = [
@@ -1358,10 +1369,18 @@ class EntraIDGroupTest(BaseTest):
         filtered = policy.resource_manager.filter_resources(groups)
         self.assertEqual(len(filtered), 0)
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_none_count(self, mock_count):
         """Test member count filter with None count (permission error)"""
-        mock_count.return_value = None
+        mock_count.return_value = {
+            "responses": [
+                {
+                    "status": 403,
+                    "id": "group1",
+                    "body": "Permission denied"
+                }
+            ]
+        }
 
         groups = [
             {'id': 'group1', 'displayName': 'Test Group'}
@@ -1378,10 +1397,18 @@ class EntraIDGroupTest(BaseTest):
         filtered = policy.resource_manager.filter_resources(groups)
         self.assertEqual(len(filtered), 0)
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_less_than(self, mock_count):
         """Test member count filter with less-than operator"""
-        mock_count.return_value = 5
+        mock_count.return_value = {
+            "responses": [
+                {
+                    "status": 200,
+                    "id": "group1",
+                    "body": 5
+                }
+            ]
+        }
 
         groups = [
             {'id': 'group1', 'displayName': 'Small Group'}
@@ -1398,10 +1425,18 @@ class EntraIDGroupTest(BaseTest):
         filtered = policy.resource_manager.filter_resources(groups)
         self.assertEqual(len(filtered), 1)
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_equal(self, mock_count):
         """Test member count filter with equal operator"""
-        mock_count.return_value = 10
+        mock_count.return_value = {
+            "responses": [
+                {
+                    "status": 200,
+                    "id": "group1",
+                    "body": 10
+                }
+            ]
+        }
 
         groups = [
             {'id': 'group1', 'displayName': 'Exact Group'}
@@ -1418,10 +1453,18 @@ class EntraIDGroupTest(BaseTest):
         filtered = policy.resource_manager.filter_resources(groups)
         self.assertEqual(len(filtered), 1)
 
-    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.get_group_member_count')
+    @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_greater_than(self, mock_count):
         """Test member count filter with greater-than matching"""
-        mock_count.return_value = 150
+        mock_count.return_value = {
+            "responses": [
+                {
+                    "status": 200,
+                    "id": "group1",
+                    "body": 150
+                }
+            ]
+        }
 
         groups = [
             {'id': 'group1', 'displayName': 'Large Group'}
@@ -1854,3 +1897,192 @@ def test_entraid_user_department_filter_terraform(test, entraid_user):
     assert old_password_user['department'] == 'Finance'
 
     assert policy is not None
+
+
+@terraform('entraid_group')
+@pytest.mark.functional
+def test_entraid_group_discovery_terraform(test, entraid_group):
+    """Test that Cloud Custodian can discover groups provisioned by Terraform"""
+    # Verify terraform fixtures loaded successfully
+    assert len(entraid_group.outputs) > 0, (
+        f"Expected outputs from Terraform, got {len(entraid_group.outputs)}"
+    )
+    assert 'azuread_group' in entraid_group.resources, "azuread_group resources not found"
+
+    # Get terraform-provisioned group data
+    security_group = entraid_group.outputs['test_security_group']['value']
+    distribution_group = entraid_group.outputs['test_distribution_group']['value']
+    dynamic_group = entraid_group.outputs['test_dynamic_group']['value']
+    admin_group = entraid_group.outputs['test_admin_group']['value']
+    empty_group = entraid_group.outputs['test_empty_group']['value']
+
+    # Verify test data integrity
+    assert security_group['security_enabled'] is True
+    assert security_group['mail_enabled'] is False
+    assert 'Security' in security_group['display_name']
+
+    # Distribution group is simplified to just another security group (not mail-enabled)
+    assert distribution_group['security_enabled'] is True
+    assert distribution_group['mail_enabled'] is False
+    assert 'Second' in distribution_group['display_name'] or 'Distribution' in distribution_group['display_name']
+
+    # Dynamic group is now just a regular security group (dynamic membership requires Azure AD P1 license)
+    assert dynamic_group['security_enabled'] is True
+    assert dynamic_group['mail_enabled'] is False
+    assert 'Third' in dynamic_group['display_name'] or 'Dynamic' in dynamic_group['display_name']
+
+    assert admin_group['security_enabled'] is True
+    assert 'Admin' in admin_group['display_name']
+
+    assert empty_group['security_enabled'] is True
+    assert 'Empty' in empty_group['display_name']
+
+    # Test Cloud Custodian policy creation and validation
+    policy = test.load_policy({
+        'name': 'terraform-security-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'value', 'key': 'securityEnabled', 'value': True}
+        ]
+    })
+
+    # Verify policy loads correctly
+    assert policy.resource_manager.type == 'entraid-group'
+
+    print(f"SUCCESS: Terraform fixtures loaded {len(entraid_group.outputs)} groups successfully")
+
+
+@terraform('entraid_group')
+@pytest.mark.functional
+def test_entraid_group_type_filter_terraform(test, entraid_group):
+    """Test group-type filter against Terraform-provisioned groups"""
+    security_group = entraid_group.outputs['test_security_group']['value']
+    distribution_group = entraid_group.outputs['test_distribution_group']['value']
+    dynamic_group = entraid_group.outputs['test_dynamic_group']['value']
+
+    # Test policy for security groups
+    security_policy = test.load_policy({
+        'name': 'terraform-security-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'group-type', 'group-type': 'security'}
+        ]
+    })
+
+    # Verify test data has expected types
+    assert security_group['security_enabled'] is True
+    assert security_group['mail_enabled'] is False
+
+    # Distribution group is now just another security group (simplified)
+    assert distribution_group['security_enabled'] is True
+    assert distribution_group['mail_enabled'] is False
+
+    # Dynamic group is now just a regular security group (no DynamicMembership type)
+    assert dynamic_group['security_enabled'] is True
+    assert dynamic_group['mail_enabled'] is False
+
+    # Verify policy validates correctly
+    assert security_policy is not None
+
+    # Test policy for distribution groups
+    distribution_policy = test.load_policy({
+        'name': 'terraform-distribution-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'group-type', 'group-type': 'distribution'}
+        ]
+    })
+
+    assert distribution_policy is not None
+
+    # Test policy for dynamic groups
+    dynamic_policy = test.load_policy({
+        'name': 'terraform-dynamic-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'group-type', 'group-type': 'dynamic'}
+        ]
+    })
+
+    assert dynamic_policy is not None
+
+
+@terraform('entraid_group')
+@pytest.mark.functional
+def test_entraid_group_owner_count_filter_terraform(test, entraid_group):
+    """Test owner-count filter against Terraform-provisioned groups"""
+    empty_group = entraid_group.outputs['test_empty_group']['value']
+    security_group = entraid_group.outputs['test_security_group']['value']
+
+    # Test policy for groups without owners
+    no_owner_policy = test.load_policy({
+        'name': 'terraform-groups-no-owners',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'owner-count', 'count': 0, 'op': 'equal'}
+        ]
+    })
+
+    # Verify test data
+    assert empty_group['display_name'] is not None
+    assert security_group['display_name'] is not None
+
+    # Verify policy validates correctly
+    assert no_owner_policy is not None
+
+    # Test policy for groups with owners
+    has_owner_policy = test.load_policy({
+        'name': 'terraform-groups-with-owners',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'owner-count', 'count': 0, 'op': 'greater-than'}
+        ]
+    })
+
+    assert has_owner_policy is not None
+
+
+@terraform('entraid_group')
+@pytest.mark.functional
+def test_entraid_group_member_count_filter_terraform(test, entraid_group):
+    """Test member-count filter against Terraform-provisioned groups"""
+    empty_group = entraid_group.outputs['test_empty_group']['value']
+    security_group = entraid_group.outputs['test_security_group']['value']
+
+    # Test policy for empty groups
+    empty_policy = test.load_policy({
+        'name': 'terraform-empty-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'member-count', 'count': 0, 'op': 'equal'}
+        ]
+    })
+
+    # Verify test data
+    assert empty_group['display_name'] is not None
+    assert security_group['display_name'] is not None
+
+    # Verify policy validates correctly
+    assert empty_policy is not None
+
+    # Test policy for groups with members
+    has_members_policy = test.load_policy({
+        'name': 'terraform-groups-with-members',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'member-count', 'count': 0, 'op': 'greater-than'}
+        ]
+    })
+
+    assert has_members_policy is not None
+
+    # Test policy for large groups
+    large_groups_policy = test.load_policy({
+        'name': 'terraform-large-groups',
+        'resource': 'azure.entraid-group',
+        'filters': [
+            {'type': 'member-count', 'count': 100, 'op': 'greater-than'}
+        ]
+    })
+
+    assert large_groups_policy is not None

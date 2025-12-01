@@ -152,11 +152,10 @@ class EntraIDGroup(GraphResourceManager):
                     f"Insufficient privileges to read member count for group {group_id}. "
                     "Required permission: GroupMember.Read.All"
                 )
-
-                return None  # Unknown member count
             else:
                 log.error(f"Error getting member count for group {group_id}: {e}")
-                return None
+
+            raise
 
     def get_group_owner_count(self, group_id):
         """Get accurate owner count for a group using Graph API.
@@ -272,7 +271,9 @@ class MemberCountFilter(Filter):
         count_threshold = self.data.get('count', 0)
         op = self.data.get('op', 'greater-than')
 
-        filtered = []
+        batch_group_count_request = {
+            "requests": []
+        }
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
@@ -283,8 +284,24 @@ class MemberCountFilter(Filter):
 
                 continue
 
-            # Get actual member count via Graph API
-            member_count = self.manager.get_group_member_count(group_id)
+            # Add to batch.
+            batch_group_count_request["requests"].append({
+                "id": group_id,
+                "method": "GET",
+                "url": f"/groups/{group_id}/members/$count",
+            })
+
+        batch_group_count_response = self.manager.make_batched_graph_request(batch_group_count_request)
+
+        filtered = []
+        for group_result in batch_group_count_response.get("responses", None):
+            member_count = None
+            resource = [x for x in resources if x.get("id") == group_result.get("id")][0]
+
+            if group_result.get("status", 503) < 300:
+                member_count_data = group_result.get("body", None)
+                if isinstance(member_count_data, (int, str)):
+                    member_count = int(member_count_data)
 
             if member_count is None:
                 # Unknown member count (permission error or API failure)
