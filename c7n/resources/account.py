@@ -2680,3 +2680,32 @@ class SetSecurityTokenServicePreferences(BaseAction):
         client.set_security_token_service_preferences(
             GlobalEndpointTokenVersion=token_version
         )
+
+
+@resources.register('savings-plans')
+class SavingsPlans(QueryResourceManager):
+    """AWS SavingsPlans resource.
+
+    Query savings plans for an AWS account.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: savings-plans-query
+            resource: savings-plans
+    """
+
+    class resource_type(TypeInfo):
+        service = 'savingsplans'
+        arn_type = 'savingsplan'
+        enum_spec = ('describe_savings_plans', 'SavingsPlans', None)
+        id = 'SavingsPlanId'
+        name = 'SavingsPlanId'
+        config_id = 'savingsPlanId'
+        universal_taggable = True
+        # SavingsPlans are global resources
+        global_resource = True
+        cfn_type = 'AWS::SavingsPlans::SavingsPlan'
+        permissions_augment = ("savingsplans:DescribeSavingsPlans",)
