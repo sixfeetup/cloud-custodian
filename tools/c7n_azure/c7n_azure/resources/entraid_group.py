@@ -267,7 +267,7 @@ class MemberCountFilter(ValueFilter):
         # Allow 'count' as an alias for 'value' for backward compatibility
         count={'type': 'number'}
     )
-  
+
     annotation_key = 'c7n:MemberCount'
 
     def __init__(self, data, manager=None):
