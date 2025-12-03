@@ -1218,6 +1218,46 @@ class EntraIDGroupTest(BaseTest):
         with self.assertRaises(requests.exceptions.RequestException):
             policy.resource_manager.get_group_member_count('group-id')
 
+    @patch('c7n_azure.graph_utils.requests.get')
+    @patch('c7n_azure.graph_utils.local_session')
+    def test_get_group_member_count_consistency_level_header(self, mock_session, mock_get):
+        """Test that member count requests include ConsistencyLevel: eventual header"""
+        # Setup mock session and credentials
+        mock_session_instance = Mock()
+        mock_session.return_value = mock_session_instance
+        mock_session_instance.get_session_for_resource.return_value = mock_session_instance
+
+        mock_credentials = Mock()
+        mock_token = Mock()
+        mock_token.token = 'test-token'
+        mock_credentials.get_token.return_value = mock_token
+        mock_session_instance.credentials = mock_credentials
+        mock_session_instance._initialize_session = Mock()
+
+        # Setup mock response
+        mock_response = Mock()
+        mock_response.json.return_value = 42
+        mock_response.raise_for_status = Mock()
+        mock_get.return_value = mock_response
+
+        policy = self.load_policy({
+            'name': 'test-member-count-header',
+            'resource': 'azure.entraid-group'
+        })
+
+        # Call the method
+        count = policy.resource_manager.get_group_member_count('test-group-id')
+
+        # Verify the call was made with the ConsistencyLevel header
+        mock_get.assert_called_once()
+        call_args = mock_get.call_args
+        headers = call_args.kwargs.get('headers', {})
+
+        # Assert that ConsistencyLevel: eventual header is present
+        self.assertIn('ConsistencyLevel', headers)
+        self.assertEqual(headers['ConsistencyLevel'], 'eventual')
+        self.assertEqual(count, 42)
+
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_graph_request')
     def test_get_group_owner_count_success(self, mock_request):
         """Test successful retrieval of group owner count"""
