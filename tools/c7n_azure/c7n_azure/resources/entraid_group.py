@@ -263,9 +263,16 @@ class MemberCountFilter(Filter):
 
     schema = type_schema(
         'member-count',
-        count={'type': 'number'},
-        op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
+    schema = type_schema(
+        'member-count',
+        rinherit=ValueFilter.schema
     )
+  
+    annotation_key = 'c7n:MemberCount'
+
+    def __init__(self, data, manager=None):
+        data["key"] = f'"{self.annotation_key}"'
+        super().__init__(data, manager)
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
         count_threshold = self.data.get('count', 0)
