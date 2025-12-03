@@ -4,7 +4,7 @@
 import logging
 import requests
 
-from c7n.filters import Filter
+from c7n.filters import Filter, ValueFilter
 
 from c7n.utils import type_schema
 
@@ -241,7 +241,7 @@ class EntraIDGroup(GraphResourceManager):
 
 
 @EntraIDGroup.filter_registry.register('member-count')
-class MemberCountFilter(Filter):
+class MemberCountFilter(ValueFilter):
     """Filter groups based on member count.
 
     Required permission: GroupMember.Read.All
@@ -263,32 +263,30 @@ class MemberCountFilter(Filter):
 
     schema = type_schema(
         'member-count',
-    schema = type_schema(
-        'member-count',
-        rinherit=ValueFilter.schema
+        rinherit=ValueFilter.schema,
+        # Allow 'count' as an alias for 'value' for backward compatibility
+        count={'type': 'number'}
     )
   
     annotation_key = 'c7n:MemberCount'
 
     def __init__(self, data, manager=None):
+        # Map 'count' to 'value' for ValueFilter compatibility
+        if 'count' in data:
+            data['value'] = data.pop('count')
         data["key"] = f'"{self.annotation_key}"'
         super().__init__(data, manager)
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
-        count_threshold = self.data.get('count', 0)
-        op = self.data.get('op', 'greater-than')
-
         batch_group_count_request = {
             "requests": []
         }
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
-
                 log.warning(
                     f"Skipping group without ID: {resource.get('displayName', 'Unknown')}"
                 )
-
                 continue
 
             # Add to batch.
@@ -302,7 +300,7 @@ class MemberCountFilter(Filter):
             batch_group_count_request
         )
 
-        filtered = []
+        # Annotate resources with member counts
         for group_result in batch_group_count_response.get("responses", None):
             member_count = None
             resource = [x for x in resources if x.get("id") == group_result.get("id")][0]
@@ -315,7 +313,6 @@ class MemberCountFilter(Filter):
             if member_count is None:
                 # Unknown member count (permission error or API failure)
                 # Skip this group to avoid false results
-
                 log.warning(
                     f"Could not determine member count for group "
                     f"{resource.get('displayName', group_id)}"
@@ -324,10 +321,8 @@ class MemberCountFilter(Filter):
 
             resource[self.annotation_key] = member_count
 
-            if self.match(resource):
-                filtered.append(resource)
-
-        return filtered
+        # Let ValueFilter do the actual filtering based on the annotated values
+        return super().process(resources, event)
 
 
 @EntraIDGroup.filter_registry.register('owner-count')
