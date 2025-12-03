@@ -322,11 +322,9 @@ class MemberCountFilter(Filter):
                 )
                 continue
 
-            if op == 'greater-than' and member_count > count_threshold:
-                filtered.append(resource)
-            elif op == 'less-than' and member_count < count_threshold:
-                filtered.append(resource)
-            elif op == 'equal' and member_count == count_threshold:
+            resource[self.annotation_key] = member_count
+
+            if self.match(resource):
                 filtered.append(resource)
 
         return filtered
