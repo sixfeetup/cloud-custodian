@@ -1,7 +1,7 @@
-.. _accountsavingsplans:
+.. _savingsplans:
 
-Account - Savings Plans
-=======================
+Savings Plans
+=============
 
 The following example policy will query for all savings plans for your account.
 
