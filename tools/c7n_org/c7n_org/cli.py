@@ -458,6 +458,222 @@ def report(config, output, use, output_dir, accounts,
     writer.writerows(rows)
 
 
+@cli.command()
+@click.option('-c', '--config', required=True, help="Accounts config file")
+@click.option('-u', '--use', required=True, help="Policy config file(s)")
+@click.option('-p', '--policy', multiple=True, help="Policy name filter")
+@click.option('-l', '--policytags', 'policy_tags',
+              multiple=True, default=None, help="Policy tag filter")
+@click.option('--resource', default=None, help="Resource type filter")
+@click.option('--check-deprecations',
+              type=click.Choice(['skip', 'warn', 'strict']),
+              default='warn',
+              help="Check for deprecated features")
+@click.option('--debug', default=False, is_flag=True, help="Enable debug logging")
+@click.option('-v', '--verbose', default=False, help="Verbose output", is_flag=True)
+def validate(config, use, policy, policy_tags, resource,
+             check_deprecations, debug, verbose):
+    """Validate policy files for c7n-org execution.
+
+    This command validates Cloud Custodian policy files without requiring
+    cloud credentials or account-specific context. It performs:
+
+    - JSON/YAML schema validation
+    - Policy structure validation
+    - Resource type validation
+    - Policy object validation
+    - Duplicate policy name detection
+    - Optional deprecation checking
+
+    Exit codes:
+      0 - All policies are valid
+      1 - Validation errors found
+
+    Example:
+      c7n-org validate -c accounts.yml -u policies.yml
+    """
+    # Setup logging
+    level = logging.DEBUG if verbose else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(asctime)s: %(name)s:%(levelname)s %(message)s"
+    )
+    logging.getLogger('botocore').setLevel(logging.ERROR)
+    logging.getLogger('urllib3').setLevel(logging.ERROR)
+
+    log.info("Starting policy validation")
+    log.debug(f"Config file: {config}")
+    log.debug(f"Policy file: {use}")
+
+    # Import validation utilities from c7n.commands
+    from c7n.commands import DuplicateKeyCheckLoader
+    from c7n import schema, deprecated
+    from c7n.schema import StructureParser
+    from c7n.policy import Policy, PolicyValidationError
+    from c7n.config import Config, Bag
+    from c7n.resources import load_resources, load_available
+    from c7n.loader import SourceLocator
+
+    # Load available resources
+    load_available()
+
+    # Load account config (for filtering, minimal validation in Phase 1)
+    # Note: accounts_config loaded but not used in Phase 1 - reserved for future phases
+    log.debug("Loading account config")
+    try:
+        with open(config, 'rb') as fh:
+            _ = yaml.safe_load(fh.read())  # noqa: F841
+    except IOError:
+        log.error(f"Account config file not found: {config}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        log.error(f"Invalid YAML in account config: {e}")
+        sys.exit(1)
+
+    # Load policy config
+    log.debug("Loading policy config")
+    use = os.path.expanduser(use)
+    if not os.path.exists(use):
+        log.error(f"Policy config file not found: {use}")
+        sys.exit(1)
+
+    fmt = use.rsplit('.', 1)[-1]
+    if fmt not in ('yml', 'yaml', 'json'):
+        log.error("The policy file must end in .json, .yml or .yaml.")
+        sys.exit(1)
+
+    try:
+        with open(use) as fh:
+            custodian_config = yaml.load(fh.read(), Loader=DuplicateKeyCheckLoader)  # nosec nosemgrep
+    except IOError:
+        log.error(f"Policy config file not found: {use}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        log.error(f"Invalid YAML in policy config: {e}")
+        sys.exit(1)
+
+    # Apply policy filters
+    log.debug("Applying policy filters")
+    policies = custodian_config.get('policies', [])
+    original_count = len(policies)
+
+    if policy:
+        log.debug(f"Filtering by policy names: {policy}")
+        policies = [p for p in policies if p.get('name') in policy]
+
+    if resource:
+        log.debug(f"Filtering by resource type: {resource}")
+        policies = [p for p in policies if p.get('resource') == resource]
+
+    if policy_tags:
+        log.debug(f"Filtering by policy tags: {policy_tags}")
+        policies = [p for p in policies if set(policy_tags).issubset(
+            set(p.get('tags', [])))]
+
+    custodian_config['policies'] = policies
+    log.info(f"Validating {len(policies)} policies (filtered from {original_count})")
+
+    if len(policies) == 0:
+        log.warning("No policies to validate after filtering")
+        sys.exit(0)
+
+    # Core validation logic
+    structure = StructureParser()
+    errors = []
+    used_policy_names = set()
+    found_deprecations = False
+    footnotes = deprecated.Footnotes()
+
+    # Structure validation
+    log.debug("Running structure validation")
+    try:
+        structure.validate(custodian_config)
+    except PolicyValidationError as e:
+        log.error(f"Configuration invalid: {use}")
+        log.error(str(e))
+        sys.exit(1)
+
+    # Load resources for schema validation
+    log.debug("Loading resources for schema validation")
+    resource_types = structure.get_resource_types(custodian_config)
+    log.debug(f"Resource types found: {resource_types}")
+    load_resources(resource_types)
+
+    # Schema validation
+    log.debug("Running schema validation")
+    schm = schema.generate()
+    errors = schema.validate(custodian_config, schm)
+
+    # Check for duplicate policy names
+    log.debug("Checking for duplicate policy names")
+    conf_policy_names = {
+        p.get('name', 'unknown') for p in custodian_config.get('policies', ())}
+    dupes = conf_policy_names.intersection(used_policy_names)
+    if len(dupes) >= 1:
+        errors.append(ValueError(
+            f"Only one policy with a given name allowed, duplicates: {', '.join(dupes)}"
+        ))
+    used_policy_names = used_policy_names.union(conf_policy_names)
+
+    # Determine deprecation check mode
+    if check_deprecations == 'skip':
+        check_mode = deprecated.SKIP
+    elif check_deprecations == 'strict':
+        check_mode = deprecated.STRICT
+    else:
+        check_mode = None  # 'warn' mode - check but don't exit
+
+    # Policy-level validation
+    if not errors:
+        log.debug("Running policy-level validation")
+        null_config = Config.empty(dryrun=True, account_id='na', region='na')
+        source_locator = None
+        if fmt in ('yml', 'yaml'):
+            source_locator = SourceLocator(use)
+
+        for p in custodian_config.get('policies', ()):
+            policy_name = p.get('name', 'unknown')
+            log.debug(f"Validating policy: {policy_name}")
+            try:
+                policy = Policy(p, null_config, Bag())
+                policy.validate()
+
+                # Check deprecations
+                if check_mode != deprecated.SKIP:
+                    report = deprecated.report(policy)
+                    if report:
+                        found_deprecations = True
+                        log.warning(
+                            "deprecated usage found in policy\n" +
+                            report.format(
+                                source_locator=source_locator,
+                                footnotes=footnotes))
+            except Exception as e:
+                msg = f"Policy: {policy_name} is invalid: {e}"
+                errors.append(msg)
+
+    # Report results
+    if errors:
+        log.error(f"Configuration invalid: {use}")
+        for e in errors:
+            log.error(str(e))
+        sys.exit(1)
+
+    log.info(f"Configuration valid: {use}")
+
+    # Handle deprecations
+    if found_deprecations:
+        notes = footnotes()
+        if notes:
+            log.warning("deprecation footnotes:\n" + notes)
+        if check_mode == deprecated.STRICT:
+            log.error("Deprecations found with --check-deprecations=strict")
+            sys.exit(1)
+
+    log.info("Validation complete - all policies are valid!")
+    sys.exit(0)
+
+
 def _get_env_creds(account, session, region, env=None):
     env = env or {}
     if account["provider"] == 'aws':
