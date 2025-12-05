@@ -112,6 +112,10 @@ class ElasticSearch(BaseTest):
             ("OpenSearch", "1.3", ComparableVersion("1.3"))
         )
         self.assertEqual(parse_es_version("invalid"), (None, None, None))
+        self.assertEqual(
+            parse_es_version("7.2"),
+            ("Elasticsearch", "7.2", ComparableVersion("7.2"))
+        )
 
     def test_upgrade_available_filter_with_upgrades(self):
         factory = self.replay_flight_data("test_elasticsearch_upgrade_available")

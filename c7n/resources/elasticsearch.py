@@ -28,8 +28,18 @@ def parse_es_version(version):
     - "Elasticsearch_7.4" -> ("Elasticsearch", "7.4", ComparableVersion("7.4"))
     - "OpenSearch_1.3" -> ("OpenSearch", "1.3", ComparableVersion("1.3"))
     """
-    if '_' not in version:
+    # If it's empty, return all `None`s.
+    if not version:
         return None, None, None
+
+    # If there's no `_` in the version string, check for a plain version.
+    if '_' not in version:
+        # If it doesn't start with a number, it's probably not a valid version
+        # string.
+        if not version[0].isnumeric():
+            return None, None, None
+
+        return "Elasticsearch", version, ComparableVersion(version)
 
     engine_name, version_str = version.split('_', 1)
     version = ComparableVersion(version_str)
@@ -353,22 +363,19 @@ class UpgradeAvailable(Filter):
         check_major = self.data.get('major', False)
         check_upgrade_extant = self.data.get('value', True)
         results = []
+        compatible_versions = []
+
+        # Get compatible versions for this domain
+        response = self.manager.retry(
+            client.get_compatible_elasticsearch_versions,
+            ignore_err_codes=('ResourceNotFoundException',)
+        )
+
+        if response:
+            compatible_versions = response.get('CompatibleVersions', [])
 
         for r in resources:
-            domain_name = r["DomainName"]
             current_version = r.get('ElasticsearchVersion', '')
-
-            # Get compatible versions for this domain
-            response = self.manager.retry(
-                client.get_compatible_elasticsearch_versions,
-                DomainName=domain_name,
-                ignore_err_codes=('ResourceNotFoundException',)
-            )
-
-            if not response:
-                continue
-
-            compatible_versions = response.get('CompatibleVersions', [])
 
             # Find upgrades for the current domain version
             available_upgrades = set([])
