@@ -27,6 +27,7 @@ Commands:
   report      report on an AWS cross account policy execution
   run         run a custodian policy across accounts (AWS, Azure, GCP, OCI)
   run-script  run a script across AWS accounts
+  validate    validate policy files without requiring cloud credentials
 ```
 
 In order to run c7n-org against multiple accounts, a config file must
@@ -238,6 +239,25 @@ i.e., `{ charge_code }` would be invalid due to the extra white space. Additiona
 yaml parsing can transform a value like `{charge_code}` to null, unless it's quoted
 in strings like the above example. Values that do interpolation into other content
 don't require quoting, i.e., "my_{charge_code}".
+
+## Validating Policies
+
+c7n-org supports validating policy files without requiring cloud credentials:
+
+```shell
+c7n-org validate -c accounts.yml -u policies.yml
+```
+
+This performs schema validation, checks policy structure, and detects common
+errors. It's useful for pre-commit checks and CI/CD pipelines. The command
+supports the same policy filtering options as `run` (`-p`, `-l`, `--resource`)
+and includes optional deprecation checking with `--check-deprecations`.
+
+Note that validation is account-agnostic and doesn't expand variables or
+require cloud access. For full validation with account context, use
+`c7n-org run --dryrun`.
+
+See `c7n-org validate --help` for more information.
 
 ## Other commands
 

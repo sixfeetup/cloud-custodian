@@ -498,12 +498,16 @@ def validate(config, use, policy, policy_tags, resource,
         level=level,
         format="%(asctime)s: %(name)s:%(levelname)s %(message)s"
     )
+    # Suppress noisy third-party loggers
     logging.getLogger('botocore').setLevel(logging.ERROR)
     logging.getLogger('urllib3').setLevel(logging.ERROR)
+    logging.getLogger('oci').setLevel(logging.ERROR)
+    logging.getLogger('oci.circuit_breaker').setLevel(logging.ERROR)
 
     log.info("Starting policy validation")
-    log.debug(f"Config file: {config}")
-    log.debug(f"Policy file: {use}")
+    if verbose:
+        log.debug(f"Config file: {config}")
+        log.debug(f"Policy file: {use}")
 
     # Import validation utilities from c7n.commands
     from c7n.commands import DuplicateKeyCheckLoader
