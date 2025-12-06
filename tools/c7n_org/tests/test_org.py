@@ -597,3 +597,43 @@ class OrgTest(TestUtils):
              '-u', os.path.join(run_dir, 'policies.txt')],
             catch_exceptions=False)
         self.assertEqual(result.exit_code, 1)
+
+    def test_validate_command_multicloud_policies(self):
+        """Test validate command with multicloud policies (AWS, Azure, GCP) - should exit 0."""
+        run_dir = self.setup_run_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'multicloud-policy.yml')],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
+        # Test filtering by AWS resources
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'multicloud-policy.yml'),
+             '--resource', 'aws.ec2'],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
+        # Test filtering by Azure resources
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'multicloud-policy.yml'),
+             '--resource', 'azure.storage'],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
+        # Test filtering by GCP resources
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'multicloud-policy.yml'),
+             '--resource', 'gcp.bucket'],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
