@@ -426,7 +426,7 @@ class OpensearchReservedInstance(QueryResourceManager):
             'ReservedInstances',
             None,
         )
-        filter_name = 'ReservedInstanceId'
-        filter_type = 'scalar'
+        filter_name = 'ReservedInstances'
+        filter_type = 'list'
         arn_type = "reserved-instances"
         permissions_enum = ('opensearch:DescribeReservedInstances',)
