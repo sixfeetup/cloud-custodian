@@ -294,6 +294,9 @@ class MemberCountFilter(ValueFilter):
                 "id": group_id,
                 "method": "GET",
                 "url": f"/groups/{group_id}/members/$count",
+                "headers": {
+                    "ConsistencyLevel": "eventual"
+                }
             })
 
         batch_group_count_response = self.manager.make_batched_graph_request(
