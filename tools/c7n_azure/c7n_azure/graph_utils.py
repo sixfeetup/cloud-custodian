@@ -166,7 +166,7 @@ class GraphResourceManager(QueryResourceManager):
             # Add ConsistencyLevel header for advanced queries using $count
             # This is required per Microsoft Graph API documentation:
             # https://learn.microsoft.com/en-us/graph/aad-advanced-queries
-            if '/$count' in endpoint or '$count' in endpoint:
+            if '$count' in endpoint:
                 headers['ConsistencyLevel'] = 'eventual'
 
             url = f'https://graph.microsoft.com/v1.0/{endpoint}'
