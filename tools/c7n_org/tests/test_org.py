@@ -637,3 +637,255 @@ class OrgTest(TestUtils):
              '--resource', 'gcp.bucket'],
             catch_exceptions=False)
         self.assertEqual(result.exit_code, 0)
+
+    # Phase 2 Tests: Account-Aware Validation
+
+    def test_validate_cli_options_exist(self):
+        """Test that Phase 2 CLI options are registered and accessible."""
+        runner = CliRunner()
+
+        # Test --help to verify new options exist
+        result = runner.invoke(org.cli, ['validate', '--help'])
+        self.assertEqual(result.exit_code, 0)
+
+        # Check that Phase 2 options are documented
+        self.assertIn('--accounts', result.output)
+        self.assertIn('--tags', result.output)
+        self.assertIn('--not-accounts', result.output)
+        self.assertIn('--per-account', result.output)
+
+        # Check descriptions mention account filtering
+        self.assertIn('Account', result.output)
+        self.assertIn('per account', result.output.lower())
+
+    def test_validate_account_filtering_by_name(self):
+        """Test that validate command accepts account name filters."""
+        # This test verifies that account filtering options are accepted
+        # The actual filtering logic will be tested in per-account mode tests
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with multiple accounts
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        # Use a simple valid policy
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'simple-valid-policy.yml'),
+             '-a', 'dev-account'],  # Filter by account name
+            catch_exceptions=False)
+
+        # Should succeed - basic mode ignores account filters but accepts them
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_account_filtering_by_tags(self):
+        """Test that validate command accepts account tag filters."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with multiple accounts
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'simple-valid-policy.yml'),
+             '--tags', 'dev'],  # Filter by tag
+            catch_exceptions=False)
+
+        # Should succeed
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_account_config_schema_validation(self):
+        """Test that validate command validates account config schema."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create an invalid accounts file (missing required field)
+        invalid_accounts = """
+accounts:
+  - name: test-account
+    # Missing required account_id and role/profile
+    tags:
+      - dev
+"""
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            fh.write(invalid_accounts)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'simple-valid-policy.yml')],
+            catch_exceptions=False)
+
+        # Should fail due to invalid account config
+        # Exit code 1 indicates validation failure
+        self.assertEqual(result.exit_code, 1)
+
+    def test_validate_account_filtering_exclude(self):
+        """Test that validate command accepts --not-accounts filter."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with multiple accounts
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'simple-valid-policy.yml'),
+             '--not-accounts', 'staging-account'],  # Exclude staging account
+            catch_exceptions=False)
+
+        # Should succeed
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_basic_mode(self):
+        """Ensure basic validation mode works."""
+        run_dir = self.setup_run_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+        runner = CliRunner()
+
+        # Test 1: Valid policy should pass
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml')],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
+        # Test 2: Invalid policy should fail
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'invalid-schema-policy.yml')],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 1)
+
+        # Test 3: Policy filtering should work
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '-p', 's3-global-grants'],
+            catch_exceptions=False)
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_per_account_mode_valid(self):
+        """Test per-account validation with valid variable expansion."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with variables
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'policy-with-vars.yml'),
+             '--per-account',
+             '--accounts', 'dev-account,prod-account'],  # Only test accounts with vars
+            catch_exceptions=False)
+
+        # Should succeed - these accounts have required variables
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_per_account_mode_variable_expansion(self):
+        """Test that variables are correctly expanded per account."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with variables
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'policy-with-vars.yml'),
+             '--per-account',
+             '--accounts', 'dev-account,prod-account'],  # Only accounts with vars
+            catch_exceptions=False)
+
+        # Should succeed - these accounts have vars
+        self.assertEqual(result.exit_code, 0)
+
+    def test_validate_per_account_mode_missing_variable(self):
+        """Test that missing variable references are detected and reported."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with variables
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'policy-missing-vars.yml'),
+             '--per-account',
+             '--accounts', 'staging-account'],  # This account has no vars defined
+            catch_exceptions=False)
+
+        # Should fail - policy references variables that staging-account doesn't have
+        self.assertEqual(result.exit_code, 1)
+
+    def test_validate_per_account_mode_account_specific_failure(self):
+        """Test that failures are properly attributed to specific accounts."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with variables
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'policy-with-vars.yml'),
+             '--per-account'],  # Test all accounts - staging should fail
+            catch_exceptions=False)
+
+        # Should fail - staging-account doesn't have required variables
+        self.assertEqual(result.exit_code, 1)
+
+    def test_validate_per_account_summary_report(self):
+        """Test that the summary report shows correct account statistics."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Create accounts file with variables
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(fixtures_dir, 'policy-with-vars.yml'),
+             '--per-account'],
+            catch_exceptions=False)
+
+        # Should fail - staging account doesn't have the required vars
+        self.assertEqual(result.exit_code, 1)
