@@ -458,6 +458,360 @@ def report(config, output, use, output_dir, accounts,
     writer.writerows(rows)
 
 
+def validate_basic(custodian_config, policy_file, fmt, check_mode, verbose):
+    """Run basic account-agnostic validation (Phase 1 logic).
+
+    Args:
+        custodian_config: Parsed policy configuration
+        policy_file: Path to policy file (for error reporting)
+        fmt: File format ('yml', 'yaml', 'json')
+        check_mode: Deprecation check mode (deprecated.SKIP, deprecated.STRICT, or None)
+        verbose: Verbose logging flag
+
+    Returns:
+        bool: True if validation passes, False otherwise
+    """
+    from c7n import schema, deprecated
+    from c7n.schema import StructureParser
+    from c7n.policy import Policy, PolicyValidationError
+    from c7n.config import Config, Bag
+    from c7n.resources import load_resources
+    from c7n.loader import SourceLocator
+
+    # Core validation logic
+    structure = StructureParser()
+    errors = []
+    used_policy_names = set()
+    found_deprecations = False
+    footnotes = deprecated.Footnotes()
+
+    # Structure validation
+    log.debug("Running structure validation")
+    try:
+        structure.validate(custodian_config)
+    except PolicyValidationError as e:
+        log.error(f"Configuration invalid: {policy_file}")
+        log.error(str(e))
+        return False
+
+    # Load resources for schema validation
+    log.debug("Loading resources for schema validation")
+    resource_types = structure.get_resource_types(custodian_config)
+    log.debug(f"Resource types found: {resource_types}")
+    load_resources(resource_types)
+
+    # Schema validation
+    log.debug("Running schema validation")
+    schm = schema.generate()
+    errors = schema.validate(custodian_config, schm)
+
+    # Check for duplicate policy names
+    log.debug("Checking for duplicate policy names")
+    conf_policy_names = {
+        p.get('name', 'unknown') for p in custodian_config.get('policies', ())}
+    dupes = conf_policy_names.intersection(used_policy_names)
+    if len(dupes) >= 1:
+        errors.append(ValueError(
+            f"Only one policy with a given name allowed, duplicates: {', '.join(dupes)}"
+        ))
+    used_policy_names = used_policy_names.union(conf_policy_names)
+
+    # Policy-level validation
+    if not errors:
+        log.debug("Running policy-level validation")
+        null_config = Config.empty(dryrun=True, account_id='na', region='na')
+        source_locator = None
+        if fmt in ('yml', 'yaml'):
+            source_locator = SourceLocator(policy_file)
+
+        for p in custodian_config.get('policies', ()):
+            policy_name = p.get('name', 'unknown')
+            log.debug(f"Validating policy: {policy_name}")
+            try:
+                policy = Policy(p, null_config, Bag())
+                policy.validate()
+
+                # Check deprecations
+                if check_mode != deprecated.SKIP:
+                    report = deprecated.report(policy)
+                    if report:
+                        found_deprecations = True
+                        log.warning(
+                            "deprecated usage found in policy\n" +
+                            report.format(
+                                source_locator=source_locator,
+                                footnotes=footnotes))
+            except Exception as e:
+                msg = f"Policy: {policy_name} is invalid: {e}"
+                errors.append(msg)
+
+    # Report results
+    if errors:
+        log.error(f"Configuration invalid: {policy_file}")
+        for e in errors:
+            log.error(str(e))
+        return False
+
+    log.info(f"Configuration valid: {policy_file}")
+
+    # Handle deprecations
+    if found_deprecations:
+        notes = footnotes()
+        if notes:
+            log.warning("deprecation footnotes:\n" + notes)
+        if check_mode == deprecated.STRICT:
+            log.error("Deprecations found with --check-deprecations=strict")
+            return False
+
+    log.info("Validation complete - all policies are valid!")
+    return True
+
+
+def find_unexpanded_variables(obj, path=""):
+    """Recursively find unexpanded variable references in policy data.
+
+    Args:
+        obj: Policy data object (dict, list, str, or other)
+        path: Current path in the object tree (for error reporting)
+
+    Returns:
+        list: List of tuples (path, unexpanded_string) for each unexpanded variable
+    """
+    import re
+
+    unexpanded = []
+    var_pattern = re.compile(r'\{[^}]+\}')
+
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            new_path = f"{path}.{key}" if path else key
+            unexpanded.extend(find_unexpanded_variables(value, new_path))
+    elif isinstance(obj, list):
+        for idx, item in enumerate(obj):
+            new_path = f"{path}[{idx}]"
+            unexpanded.extend(find_unexpanded_variables(item, new_path))
+    elif isinstance(obj, str):
+        # Check if string contains variable placeholders
+        if var_pattern.search(obj):
+            # Extract variable names from the string
+            matches = var_pattern.findall(obj)
+            for match in matches:
+                # Skip known runtime variables that are intentionally not expanded
+                runtime_vars = [
+                    '{account}', '{event}', '{op}', '{action_date}',
+                    '{service}', '{bucket_region}', '{bucket_name}',
+                    '{source_bucket_name}', '{source_bucket_region}',
+                    '{target_bucket_name}', '{target_prefix}', '{LoadBalancerName}'
+                ]
+                if match in runtime_vars:
+                    continue
+                unexpanded.append((path, match))
+
+    return unexpanded
+
+
+def validate_per_account(custodian_config, accounts_config, policy_file,
+                        fmt, check_mode, verbose):
+    """Run per-account validation with variable expansion.
+
+    Validates policies for each account, expanding account-specific variables
+    and checking for missing or invalid variable references.
+
+    This function validates that policies work correctly with each account's
+    specific configuration and variables. It handles multi-cloud scenarios by
+    matching policy providers with account providers.
+
+    Args:
+        custodian_config: Parsed policy configuration
+        accounts_config: Parsed account configuration
+        policy_file: Path to policy file (for error reporting)
+        fmt: File format ('yml', 'yaml', 'json')
+        check_mode: Deprecation check mode
+        verbose: Verbose logging flag
+
+    Returns:
+        bool: True if validation passes for all accounts, False otherwise
+    """
+    import copy
+    from c7n import deprecated
+    from c7n.policy import Policy
+    from c7n.config import Config, Bag
+    from c7n.loader import SourceLocator
+
+    accounts = accounts_config['accounts']
+    policies = custodian_config.get('policies', [])
+
+    log.info(f"Validating {len(policies)} policies across {len(accounts)} accounts")
+
+    # First, run basic validation to catch structural issues
+    log.debug("Running initial basic validation")
+    if not validate_basic(custodian_config, policy_file, fmt, check_mode, verbose):
+        return False
+
+    # Track results per account
+    account_results = {}
+    overall_success = True
+
+    # Validate for each account
+    for account in accounts:
+        account_name = account.get('name', account.get('account_id', 'unknown'))
+        log.info(f"Validating for account: {account_name}")
+
+        account_errors = []
+        account_warnings = []
+
+        # Get account-specific variables
+        account_vars = account.get('vars', {})
+        if verbose and account_vars:
+            log.debug(f"  Account variables: {list(account_vars.keys())}")
+
+        # Get account info (already normalized by accounts_iterator)
+        account_id = account.get('account_id', 'na')
+        account_provider = account.get('provider', 'aws')
+
+        # Use region from account config
+        # accounts_iterator() has already set appropriate region defaults per provider
+        regions = account.get('regions', ['na'])
+        region = regions[0] if regions else 'na'
+
+        if verbose:
+            log.debug(f"  Account provider: {account_provider}, region: {region}")
+
+        # Create config for this account
+        account_config = Config.empty(
+            dryrun=True,
+            account_id=account_id,
+            region=region
+        )
+
+        source_locator = None
+        if fmt in ('yml', 'yaml'):
+            source_locator = SourceLocator(policy_file)
+
+        # Validate each policy with account context
+        for policy_data in policies:
+            policy_name = policy_data.get('name', 'unknown')
+
+            # Determine policy provider from resource type
+            resource_type = policy_data.get('resource', '')
+            if '.' in resource_type:
+                policy_provider = resource_type.split('.')[0]
+            else:
+                # Default to aws for unqualified resource types
+                policy_provider = 'aws'
+
+            # Skip if policy provider doesn't match account provider
+            if policy_provider != account_provider:
+                if verbose:
+                    log.debug(
+                        f"  Skipping policy '{policy_name}' for account '{account_name}' "
+                        f"(provider mismatch: policy={policy_provider}, "
+                        f"account={account_provider})"
+                    )
+                continue
+
+            if verbose:
+                log.debug(f"  Validating policy: {policy_name}")
+
+            try:
+                # Make a deep copy to avoid modifying original
+                policy_data_copy = copy.deepcopy(policy_data)
+
+                # Create policy object
+                policy = Policy(policy_data_copy, account_config, Bag())
+
+                # Get variables (this adds runtime variables)
+                variables = policy.get_variables(account_vars)
+
+                # Expand variables (modifies policy.data in place)
+                policy.expand_variables(variables)
+
+                # Check for unexpanded variables (those that couldn't be resolved)
+                unexpanded = find_unexpanded_variables(policy.data, f"policy.{policy_name}")
+                if unexpanded:
+                    for path, var in unexpanded:
+                        var_name = var.strip('{}')
+                        msg = (f"Policy '{policy_name}' references undefined "
+                               f"variable '{var_name}' at {path}")
+                        account_errors.append(msg)
+                    continue
+
+                # Validate expanded policy
+                try:
+                    policy.validate()
+                except Exception as e:
+                    msg = f"Policy '{policy_name}' validation failed after variable expansion: {e}"
+                    account_errors.append(msg)
+                    continue
+
+                # Check deprecations
+                if check_mode != deprecated.SKIP:
+                    report = deprecated.report(policy)
+                    if report:
+                        warning = f"Policy '{policy_name}' uses deprecated features"
+                        account_warnings.append(warning)
+                        if verbose:
+                            log.warning(f"  {warning}\n" +
+                                      report.format(source_locator=source_locator))
+
+            except Exception as e:
+                msg = f"Policy '{policy_name}' unexpected error: {e}"
+                account_errors.append(msg)
+
+        # Store results for this account
+        account_results[account_name] = {
+            'errors': account_errors,
+            'warnings': account_warnings,
+            'success': len(account_errors) == 0
+        }
+
+        if not account_results[account_name]['success']:
+            overall_success = False
+
+    # Report results
+    log.info("=" * 60)
+    log.info("Per-Account Validation Summary")
+    log.info("=" * 60)
+
+    accounts_with_errors = []
+    accounts_with_warnings = []
+    accounts_valid = []
+
+    for account_name, result in account_results.items():
+        if result['errors']:
+            accounts_with_errors.append(account_name)
+            log.error(f"Account validation FAILED: {account_name}")
+            for error in result['errors']:
+                log.error(f"  {error}")
+        elif result['warnings']:
+            accounts_with_warnings.append(account_name)
+            log.warning(f"Account validation PASSED with warnings: {account_name}")
+            for warning in result['warnings']:
+                log.warning(f"  {warning}")
+        else:
+            accounts_valid.append(account_name)
+            log.info(f"Account validation PASSED: {account_name}")
+
+    # Final summary
+    log.info("=" * 60)
+    log.info(f"Total Accounts: {len(account_results)}")
+    log.info(f"  Valid: {len(accounts_valid)}")
+    log.info(f"  With Warnings: {len(accounts_with_warnings)}")
+    log.info(f"  With Errors: {len(accounts_with_errors)}")
+    log.info("=" * 60)
+
+    if overall_success:
+        log.info("All accounts validated successfully")
+        # Check if deprecations should fail in strict mode
+        if check_mode == deprecated.STRICT and accounts_with_warnings:
+            log.error("Deprecations found with --check-deprecations=strict")
+            return False
+        return True
+    else:
+        log.error("Validation failed for one or more accounts")
+        return False
+
+
 @cli.command()
 @click.option('-c', '--config', required=True, help="Accounts config file")
 @click.option('-u', '--use', required=True, help="Policy config file(s)")
@@ -465,6 +819,14 @@ def report(config, output, use, output_dir, accounts,
 @click.option('-l', '--policytags', 'policy_tags',
               multiple=True, default=None, help="Policy tag filter")
 @click.option('--resource', default=None, help="Resource type filter")
+@click.option('-a', '--accounts', multiple=True, default=None,
+              help="Account name or id filter")
+@click.option('--tags', multiple=True, default=None,
+              help="Account tag filter")
+@click.option('--not-accounts', multiple=True, default=None,
+              help="Exclude accounts")
+@click.option('--per-account', default=False, is_flag=True,
+              help="Validate per account with variable expansion")
 @click.option('--check-deprecations',
               type=click.Choice(['skip', 'warn', 'strict']),
               default='warn',
@@ -472,26 +834,9 @@ def report(config, output, use, output_dir, accounts,
 @click.option('--debug', default=False, is_flag=True, help="Enable debug logging")
 @click.option('-v', '--verbose', default=False, help="Verbose output", is_flag=True)
 def validate(config, use, policy, policy_tags, resource,
+             accounts, tags, not_accounts, per_account,
              check_deprecations, debug, verbose):
-    """Validate policy files for c7n-org execution.
-
-    This command validates Cloud Custodian policy files without requiring
-    cloud credentials or account-specific context. It performs:
-
-    - JSON/YAML schema validation
-    - Policy structure validation
-    - Resource type validation
-    - Policy object validation
-    - Duplicate policy name detection
-    - Optional deprecation checking
-
-    Exit codes:
-      0 - All policies are valid
-      1 - Validation errors found
-
-    Example:
-      c7n-org validate -c accounts.yml -u policies.yml
-    """
+    """validate policy files for c7n-org execution."""
     # Setup logging
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
@@ -511,28 +856,52 @@ def validate(config, use, policy, policy_tags, resource,
 
     # Import validation utilities from c7n.commands
     from c7n.commands import DuplicateKeyCheckLoader
-    from c7n import schema, deprecated
-    from c7n.schema import StructureParser
-    from c7n.policy import Policy, PolicyValidationError
-    from c7n.config import Config, Bag
-    from c7n.resources import load_resources, load_available
-    from c7n.loader import SourceLocator
+    from c7n import deprecated
+    from c7n.resources import load_available
 
     # Load available resources
     load_available()
 
-    # Load account config (for filtering, minimal validation in Phase 1)
-    # Note: accounts_config loaded but not used in Phase 1 - reserved for future phases
-    log.debug("Loading account config")
+    # Load and validate account config
+    log.debug("Loading and validating account config")
     try:
         with open(config, 'rb') as fh:
-            _ = yaml.safe_load(fh.read())  # noqa: F841
+            accounts_config = yaml.safe_load(fh.read())
     except IOError:
         log.error(f"Account config file not found: {config}")
         sys.exit(1)
     except yaml.YAMLError as e:
         log.error(f"Invalid YAML in account config: {e}")
         sys.exit(1)
+
+    # Validate account config against schema
+    log.debug("Validating account config schema")
+    try:
+        jsonschema.validate(accounts_config, CONFIG_SCHEMA)
+    except jsonschema.ValidationError as e:
+        log.error(f"Account config validation failed: {e.message}")
+        if e.path:
+            log.error(f"Path: {' -> '.join(str(p) for p in e.path)}")
+        sys.exit(1)
+
+    # Normalize accounts using accounts_iterator
+    log.debug("Normalizing account configurations")
+    accounts_config['accounts'] = list(accounts_iterator(accounts_config))
+
+    # Apply account filters if provided
+    if accounts or tags or not_accounts:
+        log.debug(
+            f"Applying account filters: accounts={accounts}, "
+            f"tags={tags}, not_accounts={not_accounts}"
+        )
+        filter_accounts(accounts_config, tags, accounts, not_accounts)
+        log.info(f"Filtered to {len(accounts_config['accounts'])} accounts")
+    else:
+        log.info(f"Loaded {len(accounts_config['accounts'])} accounts")
+
+    if len(accounts_config['accounts']) == 0:
+        log.warning("No accounts selected after filtering")
+        sys.exit(0)
 
     # Load policy config
     log.debug("Loading policy config")
@@ -581,44 +950,6 @@ def validate(config, use, policy, policy_tags, resource,
         log.warning("No policies to validate after filtering")
         sys.exit(0)
 
-    # Core validation logic
-    structure = StructureParser()
-    errors = []
-    used_policy_names = set()
-    found_deprecations = False
-    footnotes = deprecated.Footnotes()
-
-    # Structure validation
-    log.debug("Running structure validation")
-    try:
-        structure.validate(custodian_config)
-    except PolicyValidationError as e:
-        log.error(f"Configuration invalid: {use}")
-        log.error(str(e))
-        sys.exit(1)
-
-    # Load resources for schema validation
-    log.debug("Loading resources for schema validation")
-    resource_types = structure.get_resource_types(custodian_config)
-    log.debug(f"Resource types found: {resource_types}")
-    load_resources(resource_types)
-
-    # Schema validation
-    log.debug("Running schema validation")
-    schm = schema.generate()
-    errors = schema.validate(custodian_config, schm)
-
-    # Check for duplicate policy names
-    log.debug("Checking for duplicate policy names")
-    conf_policy_names = {
-        p.get('name', 'unknown') for p in custodian_config.get('policies', ())}
-    dupes = conf_policy_names.intersection(used_policy_names)
-    if len(dupes) >= 1:
-        errors.append(ValueError(
-            f"Only one policy with a given name allowed, duplicates: {', '.join(dupes)}"
-        ))
-    used_policy_names = used_policy_names.union(conf_policy_names)
-
     # Determine deprecation check mode
     if check_deprecations == 'skip':
         check_mode = deprecated.SKIP
@@ -627,55 +958,23 @@ def validate(config, use, policy, policy_tags, resource,
     else:
         check_mode = None  # 'warn' mode - check but don't exit
 
-    # Policy-level validation
-    if not errors:
-        log.debug("Running policy-level validation")
-        null_config = Config.empty(dryrun=True, account_id='na', region='na')
-        source_locator = None
-        if fmt in ('yml', 'yaml'):
-            source_locator = SourceLocator(use)
+    # Decide validation mode
+    if per_account:
+        log.info("Running per-account validation mode")
+        success = validate_per_account(
+            custodian_config,
+            accounts_config,
+            use,
+            fmt,
+            check_mode,
+            verbose
+        )
+    else:
+        log.info("Running basic validation mode (account-agnostic)")
+        success = validate_basic(custodian_config, use, fmt, check_mode, verbose)
 
-        for p in custodian_config.get('policies', ()):
-            policy_name = p.get('name', 'unknown')
-            log.debug(f"Validating policy: {policy_name}")
-            try:
-                policy = Policy(p, null_config, Bag())
-                policy.validate()
-
-                # Check deprecations
-                if check_mode != deprecated.SKIP:
-                    report = deprecated.report(policy)
-                    if report:
-                        found_deprecations = True
-                        log.warning(
-                            "deprecated usage found in policy\n" +
-                            report.format(
-                                source_locator=source_locator,
-                                footnotes=footnotes))
-            except Exception as e:
-                msg = f"Policy: {policy_name} is invalid: {e}"
-                errors.append(msg)
-
-    # Report results
-    if errors:
-        log.error(f"Configuration invalid: {use}")
-        for e in errors:
-            log.error(str(e))
-        sys.exit(1)
-
-    log.info(f"Configuration valid: {use}")
-
-    # Handle deprecations
-    if found_deprecations:
-        notes = footnotes()
-        if notes:
-            log.warning("deprecation footnotes:\n" + notes)
-        if check_mode == deprecated.STRICT:
-            log.error("Deprecations found with --check-deprecations=strict")
-            sys.exit(1)
-
-    log.info("Validation complete - all policies are valid!")
-    sys.exit(0)
+    # Exit based on results
+    sys.exit(0 if success else 1)
 
 
 def _get_env_creds(account, session, region, env=None):
