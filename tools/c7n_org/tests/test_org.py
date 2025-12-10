@@ -889,3 +889,346 @@ accounts:
 
         # Should fail - staging account doesn't have the required vars
         self.assertEqual(result.exit_code, 1)
+
+
+# Tests for extract_framework_runtime_variables function (TDD Phase 1)
+class TestExtractFrameworkRuntimeVariables(TestUtils):
+    """Test suite for extract_framework_runtime_variables function.
+
+    These tests follow TDD - written BEFORE implementation.
+    """
+
+    def test_empty_dict_returns_empty_set(self):
+        """Empty dict should return empty set."""
+        result = org.extract_framework_runtime_variables({})
+        assert result == set()
+
+    def test_no_placeholders_returns_empty_set(self):
+        """Dict with no placeholders should return empty set."""
+        variables = {
+            'account_id': '123456789012',
+            'region': 'us-east-1',
+            'partition': 'aws'
+        }
+        result = org.extract_framework_runtime_variables(variables)
+        assert result == set()
+
+    def test_only_placeholders_returns_all(self):
+        """Dict with only placeholders should return all of them."""
+        variables = {
+            'event': '{event}',
+            'op': '{op}',
+            'action_date': '{action_date}'
+        }
+        result = org.extract_framework_runtime_variables(variables)
+        assert result == {'{event}', '{op}', '{action_date}'}
+
+    def test_mixed_returns_only_unexpanded(self):
+        """Dict with mixed values should return only placeholders."""
+        variables = {
+            'account_id': '123456789012',
+            'region': 'us-east-1',
+            'event': '{event}',
+            'op': '{op}',
+            'partition': 'aws'
+        }
+        result = org.extract_framework_runtime_variables(variables)
+        assert result == {'{event}', '{op}'}
+
+    def test_partial_placeholders_not_matched(self):
+        """Partial placeholders like 'prefix-{var}-suffix' should NOT be matched."""
+        variables = {
+            'key1': 'prefix-{var}-suffix',
+            'key2': 'arn:aws:iam::{account_id}::role/test',
+            'key3': '{event}'  # This should match
+        }
+        result = org.extract_framework_runtime_variables(variables)
+        # Only exact placeholder matches
+        assert result == {'{event}'}
+
+    def test_non_string_types_handled(self):
+        """Non-string values should be ignored gracefully."""
+        variables = {
+            'account_id': '123456',
+            'policy': {'name': 'test', 'resource': 's3'},  # dict
+            'count': 42,  # int
+            'enabled': True,  # bool
+            'items': ['a', 'b', 'c'],  # list
+            'event': '{event}',  # placeholder string - should match
+            'nothing': None  # None
+        }
+        result = org.extract_framework_runtime_variables(variables)
+        assert result == {'{event}'}
+
+
+# Tests for modified find_unexpanded_variables function (TDD Phase 2)
+class TestFindUnexpandedVariablesModified(TestUtils):
+    """Test suite for modified find_unexpanded_variables with allowed_placeholders.
+
+    These tests follow TDD - written BEFORE modifying the implementation.
+    """
+
+    def test_none_parameter_rejects_all(self):
+        """With allowed_placeholders=None (default), all unexpanded vars should be flagged."""
+        policy_data = {'actions': [{'type': 'notify', 'to': ['{admin_email}']}]}
+        result = org.find_unexpanded_variables(policy_data)
+        assert len(result) == 1
+        assert result[0][1] == '{admin_email}'
+
+    def test_empty_allowed_set_rejects_all(self):
+        """With empty allowed_placeholders set, all unexpanded vars should be flagged."""
+        policy_data = {'actions': [{'type': 'notify', 'to': ['{admin_email}']}]}
+        result = org.find_unexpanded_variables(policy_data, allowed_placeholders=set())
+        assert len(result) == 1
+        assert result[0][1] == '{admin_email}'
+
+    def test_allowed_placeholders_are_accepted(self):
+        """Allowed placeholders should NOT be flagged as errors."""
+        policy_data = {
+            'actions': [
+                {'type': 'notify', 'to': ['{event}']},  # Allowed
+                {'type': 'tag', 'key': '{admin_email}'}  # Not allowed
+            ]
+        }
+        result = org.find_unexpanded_variables(
+            policy_data,
+            allowed_placeholders={'{event}', '{op}'}
+        )
+        assert len(result) == 1
+        assert result[0][1] == '{admin_email}'
+
+    def test_nested_structures_handled_correctly(self):
+        """Nested structures with mixed allowed/disallowed variables."""
+        policy_data = {
+            'filters': [
+                {'tag:Owner': '{account_id}'},  # Not allowed
+                {'type': 'event', 'key': '{event}'}  # Allowed
+            ]
+        }
+        result = org.find_unexpanded_variables(
+            policy_data,
+            allowed_placeholders={'{event}'}
+        )
+        assert len(result) == 1
+        assert '{account_id}' in result[0][1]
+
+    def test_multiple_variables_in_string(self):
+        """String with multiple variables, some allowed, some not."""
+        policy_data = {
+            'actions': [{
+                'type': 'notify',
+                'subject': 'Alert for {event} on {missing_var}'
+            }]
+        }
+        result = org.find_unexpanded_variables(
+            policy_data,
+            allowed_placeholders={'{event}'}
+        )
+        # Should only flag {missing_var}
+        assert len(result) == 1
+        assert result[0][1] == '{missing_var}'
+
+    def test_all_allowed_returns_empty(self):
+        """If all variables are in allowed set, should return empty list."""
+        policy_data = {
+            'actions': [
+                {'type': 'notify', 'to': ['{event}']},
+                {'type': 'webhook', 'url': 'http://example.com/{op}'}
+            ]
+        }
+        result = org.find_unexpanded_variables(
+            policy_data,
+            allowed_placeholders={'{event}', '{op}'}
+        )
+        assert len(result) == 0
+
+    def test_backward_compatibility_default_parameter(self):
+        """Test that omitting allowed_placeholders maintains backward compatibility."""
+        policy_data = {
+            'actions': [
+                {'type': 'notify', 'subject': '{event}'},  # Was in old hardcoded list
+                {'type': 'tag', 'key': '{custom_var}'}  # Was not
+            ]
+        }
+        # With default (None), should flag all unexpanded variables
+        result = org.find_unexpanded_variables(policy_data)
+        # Both should be flagged now (no hardcoded allowlist)
+        assert len(result) == 2
+
+
+# Integration Tests (Phase 4)
+class TestIntegrationUnexpandedVariables(TestUtils):
+    """Integration tests for the complete unexpanded variable validation flow.
+
+    These tests validate end-to-end scenarios with real Policy objects.
+    """
+
+    def test_runtime_variables_not_flagged(self):
+        """Test that framework runtime variables are NOT flagged as errors."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Use accounts with variables defined
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        # Policy with runtime variables like {event}, {op}, {action_date}
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-runtime-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--accounts', 'dev-account'],  # Account with vars defined
+            catch_exceptions=False)
+
+        # Should pass - runtime variables should NOT be flagged
+        assert result.exit_code == 0, f"Validation failed: {result.output}"
+
+    def test_undefined_user_variable_flagged(self):
+        """Test that undefined user variables ARE flagged as errors."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Use accounts - staging has NO variables defined
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        # Policy requires {environment} and {cost_center} from account vars
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        # Capture both output and logging
+        log_output = self.capture_logging('c7n_org')
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--accounts', 'staging-account'],  # Account WITHOUT vars
+            catch_exceptions=False)
+
+        # Should fail - user variables are undefined
+        assert result.exit_code == 1, "Should have failed validation"
+        # Check captured log output instead of result.output
+        log_text = log_output.getvalue().lower()
+        assert 'environment' in log_text or 'cost_center' in log_text
+
+    def test_mixed_variables_correct_distinction(self):
+        """Test that mixed user+runtime variables are handled correctly."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Account with user variables defined
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        # Policy with both user vars and runtime vars
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-runtime-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--accounts', 'dev-account',  # Has environment var
+             '-p', 'mixed-variables-policy'],  # Policy with both types
+            catch_exceptions=False)
+
+        # Should pass - user vars are defined, runtime vars are allowed
+        assert result.exit_code == 0, f"Mixed variables failed: {result.output}"
+
+    def test_account_without_vars_mixed_policy(self):
+        """Test mixed policy fails when user variables are missing."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-runtime-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        log_output = self.capture_logging('c7n_org')
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--accounts', 'staging-account',  # NO vars defined
+             '-p', 'mixed-variables-policy'],  # Needs {environment}
+            catch_exceptions=False)
+
+        # Should fail - {environment} is undefined, but {event} should be OK
+        assert result.exit_code == 1, "Should fail for missing user variable"
+        # Should mention the user variable that's missing
+        log_text = log_output.getvalue().lower()
+        assert 'environment' in log_text
+
+    def test_all_accounts_with_per_account_validation(self):
+        """Test validation across multiple accounts with different var sets."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        log_output = self.capture_logging('c7n_org')
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account'],  # Test ALL accounts
+            catch_exceptions=False)
+
+        # Should fail because staging-account lacks required variables
+        assert result.exit_code == 1
+        # Should show which account(s) failed
+        log_text = log_output.getvalue().lower()
+        assert 'staging' in log_text
+
+    def test_runtime_only_policy_passes_all_accounts(self):
+        """Test that policies with ONLY runtime vars pass for all accounts."""
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'policy-with-runtime-vars.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '-p', 'lambda-with-event-var'],  # Only has {event}
+            catch_exceptions=False)
+
+        # Should pass for ALL accounts - no user variables required
+        assert result.exit_code == 0, f"Runtime-only policy failed: {result.output}"

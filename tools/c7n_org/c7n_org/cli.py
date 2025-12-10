@@ -567,15 +567,32 @@ def validate_basic(custodian_config, policy_file, fmt, check_mode, verbose):
     return True
 
 
-def find_unexpanded_variables(obj, path=""):
+def find_unexpanded_variables(obj, path="", allowed_placeholders=None):
     """Recursively find unexpanded variable references in policy data.
+
+    This function identifies variable placeholders (e.g., {variable_name}) that remain
+    unexpanded in policy data. Framework runtime variables can be explicitly allowed
+    by passing them in the allowed_placeholders parameter.
 
     Args:
         obj: Policy data object (dict, list, str, or other)
         path: Current path in the object tree (for error reporting)
+        allowed_placeholders: Optional set of placeholder strings (e.g., {'{event}', '{op}'})
+                            that should NOT be flagged as errors. These represent framework
+                            runtime variables that are intentionally not expanded during
+                            validation. If None (default), no placeholders are allowed.
 
     Returns:
         list: List of tuples (path, unexpanded_string) for each unexpanded variable
+              that is not in the allowed_placeholders set
+
+    Example:
+        # Flag all unexpanded variables (default behavior)
+        errors = find_unexpanded_variables(policy_data)
+
+        # Allow framework runtime variables
+        framework_vars = extract_framework_runtime_variables(variables)
+        errors = find_unexpanded_variables(policy_data, allowed_placeholders=framework_vars)
     """
     import re
 
@@ -585,29 +602,65 @@ def find_unexpanded_variables(obj, path=""):
     if isinstance(obj, dict):
         for key, value in obj.items():
             new_path = f"{path}.{key}" if path else key
-            unexpanded.extend(find_unexpanded_variables(value, new_path))
+            unexpanded.extend(find_unexpanded_variables(value, new_path, allowed_placeholders))
     elif isinstance(obj, list):
         for idx, item in enumerate(obj):
             new_path = f"{path}[{idx}]"
-            unexpanded.extend(find_unexpanded_variables(item, new_path))
+            unexpanded.extend(find_unexpanded_variables(item, new_path, allowed_placeholders))
     elif isinstance(obj, str):
         # Check if string contains variable placeholders
         if var_pattern.search(obj):
             # Extract variable names from the string
             matches = var_pattern.findall(obj)
             for match in matches:
-                # Skip known runtime variables that are intentionally not expanded
-                runtime_vars = [
-                    '{account}', '{event}', '{op}', '{action_date}',
-                    '{service}', '{bucket_region}', '{bucket_name}',
-                    '{source_bucket_name}', '{source_bucket_region}',
-                    '{target_bucket_name}', '{target_prefix}', '{LoadBalancerName}'
-                ]
-                if match in runtime_vars:
+                # Skip framework runtime variables that are intentionally not expanded
+                if allowed_placeholders and match in allowed_placeholders:
                     continue
                 unexpanded.append((path, match))
 
     return unexpanded
+
+
+def extract_framework_runtime_variables(variables):
+    """Extract framework runtime variables that should remain unexpanded.
+
+    Cloud Custodian's Policy.get_variables() returns a dict where some values
+    are placeholder strings like '{event}', '{op}', etc. These are intentionally
+    NOT expanded during validation because they're only available at runtime.
+
+    This function identifies those placeholders by looking for string values
+    that match the pattern {variable_name}. This approach is provider-agnostic
+    and works across AWS, Azure, and GCP by querying the actual Policy object's
+    variable definitions rather than using hardcoded lists.
+
+    Args:
+        variables: Dictionary returned by Policy.get_variables()
+
+    Returns:
+        set: Set of placeholder strings like '{event}', '{op}', etc.
+
+    Example:
+        variables = {
+            'account_id': '123456789012',  # Expanded value
+            'region': 'us-east-1',          # Expanded value
+            'event': '{event}',              # Runtime placeholder
+            'op': '{op}'                     # Runtime placeholder
+        }
+        Returns: {'{event}', '{op}'}
+    """
+    import re
+
+    runtime_placeholders = set()
+    # Match strings that are EXACTLY a placeholder: {something}
+    # This excludes partial matches like "arn:aws:iam::{account_id}::role/name"
+    placeholder_pattern = re.compile(r'^\{[^}]+\}$')
+
+    for key, value in variables.items():
+        # Only consider string values that match the exact placeholder pattern
+        if isinstance(value, str) and placeholder_pattern.match(value):
+            runtime_placeholders.add(value)
+
+    return runtime_placeholders
 
 
 def validate_per_account(custodian_config, accounts_config, policy_file,
@@ -723,11 +776,22 @@ def validate_per_account(custodian_config, accounts_config, policy_file,
                 # Get variables (this adds runtime variables)
                 variables = policy.get_variables(account_vars)
 
+                # Extract framework runtime variables BEFORE expansion
+                # These are placeholders like {event}, {op} that remain unexpanded
+                # because they're only available at policy execution time, not validation time
+                framework_runtime_vars = extract_framework_runtime_variables(variables)
+
                 # Expand variables (modifies policy.data in place)
+                # This expands user-defined variables from account config
                 policy.expand_variables(variables)
 
-                # Check for unexpanded variables (those that couldn't be resolved)
-                unexpanded = find_unexpanded_variables(policy.data, f"policy.{policy_name}")
+                # Check for unexpanded variables, but allow framework runtime placeholders
+                # User-defined variables that couldn't be resolved will still be flagged
+                unexpanded = find_unexpanded_variables(
+                    policy.data,
+                    f"policy.{policy_name}",
+                    allowed_placeholders=framework_runtime_vars
+                )
                 if unexpanded:
                     for path, var in unexpanded:
                         var_name = var.strip('{}')
