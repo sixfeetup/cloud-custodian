@@ -1087,7 +1087,9 @@ class IamUserTest(BaseTest):
         self.assertEqual(resources[0]["UserName"], "test-user-console-access")
 
     def test_iam_user_service_specific_credentials_filter(self):
-        session_factory = self.replay_flight_data("test_iam_user_service_specific_credentials_filter")
+        session_factory = self.replay_flight_data(
+            "test_iam_user_service_specific_credentials_filter"
+        )
         self.patch(UserServiceSpecificCredentials, "executor_factory", MainThreadExecutor)
         p = self.load_policy(
             {
@@ -1110,7 +1112,9 @@ class IamUserTest(BaseTest):
         self.assertTrue("c7n:matched-service-specific-credentials" in resources[0])
 
     def test_iam_user_service_specific_credentials_filter_by_service(self):
-        session_factory = self.replay_flight_data("test_iam_user_service_specific_credentials_service")
+        session_factory = self.replay_flight_data(
+            "test_iam_user_service_specific_credentials_service"
+        )
         self.patch(UserServiceSpecificCredentials, "executor_factory", MainThreadExecutor)
         p = self.load_policy(
             {
@@ -1136,7 +1140,9 @@ class IamUserTest(BaseTest):
         )
 
     def test_iam_user_service_specific_credentials_filter_by_age(self):
-        session_factory = self.replay_flight_data("test_iam_user_service_specific_credentials_age")
+        session_factory = self.replay_flight_data(
+            "test_iam_user_service_specific_credentials_age"
+        )
         self.patch(UserServiceSpecificCredentials, "executor_factory", MainThreadExecutor)
         with freezegun.freeze_time("2021-01-15"):
             p = self.load_policy(
@@ -1160,7 +1166,9 @@ class IamUserTest(BaseTest):
             self.assertEqual(resources[0]["UserName"], "testuser-8aa8c470")
 
     def test_iam_user_delete_service_specific_credentials(self):
-        session_factory = self.replay_flight_data("test_iam_user_delete_service_specific_credentials")
+        session_factory = self.replay_flight_data(
+            "test_iam_user_delete_service_specific_credentials"
+        )
         p = self.load_policy(
             {
                 "name": "iam-user-delete-service-credentials",
