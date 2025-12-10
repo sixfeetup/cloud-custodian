@@ -278,9 +278,7 @@ class MemberCountFilter(ValueFilter):
         super().__init__(data, manager)
 
     def process(self, resources, event=None):  # pylint: disable=unused-argument
-        batch_group_count_request = {
-            "requests": []
-        }
+        batch_group_count_request = []
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
@@ -290,7 +288,7 @@ class MemberCountFilter(ValueFilter):
                 continue
 
             # Add to batch.
-            batch_group_count_request["requests"].append({
+            batch_group_count_request.append({
                 "id": group_id,
                 "method": "GET",
                 "url": f"/groups/{group_id}/members/$count",
@@ -304,7 +302,7 @@ class MemberCountFilter(ValueFilter):
         )
 
         # Annotate resources with member counts
-        for group_result in batch_group_count_response.get("responses", None):
+        for group_result in batch_group_count_response:
             member_count = None
             resource = [x for x in resources if x.get("id") == group_result.get("id")][0]
 

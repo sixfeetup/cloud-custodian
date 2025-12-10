@@ -206,10 +206,22 @@ class GraphResourceManager(QueryResourceManager):
                 'Content-Type': 'application/json'
             }
 
-            response = requests.post(url, headers=headers, json=batch, timeout=30)
+            mut_batch = batch[:]
+            results = []
 
-            response.raise_for_status()
-            return response.json()
+            while mut_batch:
+                sub_batch = mut_batch[:20]
+                mut_batch = mut_batch[20:]
+
+                batch_obj = {"requests": sub_batch}
+
+                response = requests.post(url, headers=headers, json=batch_obj, timeout=30)
+                response.raise_for_status()
+
+                results.extend(response.json().get('responses', []))
+
+            return results
+
         except requests.exceptions.RequestException as e:
             log.error(f"Microsoft Graph API request failed for $batch: {e}")
             raise

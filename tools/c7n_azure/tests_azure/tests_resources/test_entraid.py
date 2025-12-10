@@ -950,25 +950,23 @@ class EntraIDGroupTest(BaseTest):
 
         # Mock member counts: group1=2, group2=5, group3=0
         def mock_count_side_effect(group_id):
-            return {
-                "responses": [
-                    {
-                        "status": 200,
-                        "id": "group1",
-                        "body": 2
-                    },
-                    {
-                        "status": 200,
-                        "id": "group2",
-                        "body": 5
-                    },
-                    {
-                        "status": 200,
-                        "id": "group3",
-                        "body": 0
-                    }
-                ]
-            }
+            return [
+                {
+                    "status": 200,
+                    "id": "group1",
+                    "body": 2
+                },
+                {
+                    "status": 200,
+                    "id": "group2",
+                    "body": 5
+                },
+                {
+                    "status": 200,
+                    "id": "group3",
+                    "body": 0
+                }
+            ]
 
         mock_member_count.side_effect = mock_count_side_effect
 
@@ -1412,15 +1410,13 @@ class EntraIDGroupTest(BaseTest):
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_none_count(self, mock_count):
         """Test member count filter with None count (permission error)"""
-        mock_count.return_value = {
-            "responses": [
-                {
-                    "status": 403,
-                    "id": "group1",
-                    "body": "Permission denied"
-                }
-            ]
-        }
+        mock_count.return_value = [
+            {
+                "status": 403,
+                "id": "group1",
+                "body": "Permission denied"
+            }
+        ]
 
         groups = [
             {'id': 'group1', 'displayName': 'Test Group'}
@@ -1440,15 +1436,13 @@ class EntraIDGroupTest(BaseTest):
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_less_than(self, mock_count):
         """Test member count filter with less-than operator"""
-        mock_count.return_value = {
-            "responses": [
-                {
-                    "status": 200,
-                    "id": "group1",
-                    "body": 5
-                }
-            ]
-        }
+        mock_count.return_value = [
+            {
+                "status": 200,
+                "id": "group1",
+                "body": 5
+            }
+        ]
 
         groups = [
             {'id': 'group1', 'displayName': 'Small Group'}
@@ -1468,15 +1462,13 @@ class EntraIDGroupTest(BaseTest):
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_equal(self, mock_count):
         """Test member count filter with equal operator"""
-        mock_count.return_value = {
-            "responses": [
-                {
-                    "status": 200,
-                    "id": "group1",
-                    "body": 10
-                }
-            ]
-        }
+        mock_count.return_value = [
+            {
+                "status": 200,
+                "id": "group1",
+                "body": 10
+            }
+        ]
 
         groups = [
             {'id': 'group1', 'displayName': 'Exact Group'}
@@ -1496,15 +1488,13 @@ class EntraIDGroupTest(BaseTest):
     @patch('c7n_azure.resources.entraid_group.EntraIDGroup.make_batched_graph_request')
     def test_member_count_filter_greater_than(self, mock_count):
         """Test member count filter with greater-than matching"""
-        mock_count.return_value = {
-            "responses": [
-                {
-                    "status": 200,
-                    "id": "group1",
-                    "body": 150
-                }
-            ]
-        }
+        mock_count.return_value = [
+            {
+                "status": 200,
+                "id": "group1",
+                "body": 150
+            }
+        ]
 
         groups = [
             {'id': 'group1', 'displayName': 'Large Group'}

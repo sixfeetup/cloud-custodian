@@ -696,22 +696,20 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session._initialize_session.return_value = None
 
         # Sample batch request
-        batch_request = {
-            "requests": [
-                {
-                    "id": "1",
-                    "method": "GET",
-                    "url": "/users/user1"
-                },
-                {
-                    "id": "2",
-                    "method": "GET",
-                    "url": "/users/user2"
-                }
-            ]
-        }
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
 
-        # Sample batch response
+        # Sample Graph API batch response
         batch_response = {
             "responses": [
                 {
@@ -738,8 +736,8 @@ class TestMakeBatchedGraphRequest(BaseTest):
                     result = manager.make_batched_graph_request(batch_request)
 
         # Verify the result
-        self.assertEqual(result, batch_response)
-        self.assertEqual(len(result['responses']), 2)
+        self.assertEqual(result, batch_response["responses"])
+        self.assertEqual(len(result), 2)
 
         # Verify requests.post was called with correct parameters
         mock_post.assert_called_once()
@@ -747,7 +745,7 @@ class TestMakeBatchedGraphRequest(BaseTest):
         self.assertEqual(call_args[0][0], 'https://graph.microsoft.com/v1.0/$batch')
         self.assertIn('headers', call_args[1])
         self.assertIn('json', call_args[1])
-        self.assertEqual(call_args[1]['json'], batch_request)
+        self.assertEqual(call_args[1]['json']['requests'], batch_request)
         self.assertEqual(call_args[1]['timeout'], 30)
 
     def test_make_batched_graph_request_permission_check_error(self):
@@ -789,7 +787,19 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
+        # Sample batch request
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
 
         with patch.object(manager, 'get_client', return_value=mock_session):
             with patch('c7n_azure.graph_utils.get_required_permissions_for_endpoint'):
@@ -816,7 +826,19 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
+        # Sample batch request
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
 
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("403 Forbidden")
@@ -841,8 +863,35 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
-        batch_response = {"responses": []}
+        # Sample batch request
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
+
+        # Sample Graph API batch response
+        batch_response = {
+            "responses": [
+                {
+                    "id": "1",
+                    "status": 200,
+                    "body": {"id": "user1", "displayName": "User One"}
+                },
+                {
+                    "id": "2",
+                    "status": 200,
+                    "body": {"id": "user2", "displayName": "User Two"}
+                }
+            ]
+        }
 
         mock_response = Mock()
         mock_response.json.return_value = batch_response
@@ -878,7 +927,7 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session = Mock()
 
-        batch_request = {"requests": []}
+        batch_request = []
         batch_response = {"responses": []}
 
         mock_response = Mock()
@@ -906,8 +955,35 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
-        batch_response = {"responses": []}
+        # Sample batch request
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
+
+        # Sample Graph API batch response
+        batch_response = {
+            "responses": [
+                {
+                    "id": "1",
+                    "status": 200,
+                    "body": {"id": "user1", "displayName": "User One"}
+                },
+                {
+                    "id": "2",
+                    "status": 200,
+                    "body": {"id": "user2", "displayName": "User Two"}
+                }
+            ]
+        }
 
         mock_response = Mock()
         mock_response.json.return_value = batch_response
@@ -936,8 +1012,34 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
-        batch_response = {"responses": []}
+        batch_request = [
+            {
+                "id": "1",
+                "method": "GET",
+                "url": "/users/user1"
+            },
+            {
+                "id": "2",
+                "method": "GET",
+                "url": "/users/user2"
+            }
+        ]
+
+        # Sample Graph API batch response
+        batch_response = {
+            "responses": [
+                {
+                    "id": "1",
+                    "status": 200,
+                    "body": {"id": "user1", "displayName": "User One"}
+                },
+                {
+                    "id": "2",
+                    "status": 200,
+                    "body": {"id": "user2", "displayName": "User Two"}
+                }
+            ]
+        }
 
         mock_response = Mock()
         mock_response.json.return_value = batch_response
@@ -966,7 +1068,7 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {"requests": []}
+        batch_request = []
         batch_response = {"responses": []}
 
         mock_response = Mock()
@@ -978,8 +1080,8 @@ class TestMakeBatchedGraphRequest(BaseTest):
                           return_value=mock_response):
                     result = manager.make_batched_graph_request(batch_request)
 
-        self.assertEqual(result, batch_response)
-        self.assertEqual(len(result['responses']), 0)
+        self.assertEqual(result, batch_response["responses"])
+        self.assertEqual(len(result), 0)
 
     def test_make_batched_graph_request_large_batch(self):
         """Test batched request handles large batch with many requests"""
@@ -995,23 +1097,29 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        # Create a batch with 20 requests (Graph API limit is typically 20)
-        batch_request = {
-            "requests": [
-                {"id": str(i), "method": "GET", "url": f"/users/user{i}"}
-                for i in range(20)
-            ]
-        }
+        # Create a batch with 25 requests (Graph API limit is typically 20)
+        batch_request = [
+            {"id": str(i), "method": "GET", "url": f"/users/user{i}"}
+            for i in range(25)
+        ]
 
-        batch_response = {
-            "responses": [
-                {"id": str(i), "status": 200, "body": {"id": f"user{i}"}}
-                for i in range(20)
-            ]
-        }
+        batch_responses = [
+            {
+                "responses": [
+                    {"id": str(i), "status": 200, "body": {"id": f"user{i}"}}
+                    for i in range(20)
+                ]
+            },
+            {
+                "responses": [
+                    {"id": str(i), "status": 200, "body": {"id": f"user{i}"}}
+                    for i in range(20, 25)
+                ]
+            },
+        ]
 
         mock_response = Mock()
-        mock_response.json.return_value = batch_response
+        mock_response.json.side_effect = batch_responses
 
         with patch.object(manager, 'get_client', return_value=mock_session):
             with patch('c7n_azure.graph_utils.get_required_permissions_for_endpoint'):
@@ -1019,7 +1127,8 @@ class TestMakeBatchedGraphRequest(BaseTest):
                           return_value=mock_response):
                     result = manager.make_batched_graph_request(batch_request)
 
-        self.assertEqual(len(result['responses']), 20)
+        self.assertEqual(len(result), 25)
+        self.assertEqual(result, batch_responses[0]["responses"] + batch_responses[1]["responses"])
 
     def test_make_batched_graph_request_mixed_status_codes(self):
         """Test batched request handles mixed success/error responses"""
@@ -1035,13 +1144,11 @@ class TestMakeBatchedGraphRequest(BaseTest):
         mock_session.credentials.get_token.return_value = mock_token
         mock_session._initialize_session.return_value = None
 
-        batch_request = {
-            "requests": [
-                {"id": "1", "method": "GET", "url": "/users/user1"},
-                {"id": "2", "method": "GET", "url": "/users/nonexistent"},
-                {"id": "3", "method": "GET", "url": "/users/user3"}
-            ]
-        }
+        batch_request = [
+            {"id": "1", "method": "GET", "url": "/users/user1"},
+            {"id": "2", "method": "GET", "url": "/users/nonexistent"},
+            {"id": "3", "method": "GET", "url": "/users/user3"}
+        ]
 
         # Some requests succeed, some fail
         batch_response = {
@@ -1062,7 +1169,7 @@ class TestMakeBatchedGraphRequest(BaseTest):
                     result = manager.make_batched_graph_request(batch_request)
 
         # The batch request itself succeeds, individual errors are in responses
-        self.assertEqual(len(result['responses']), 3)
-        self.assertEqual(result['responses'][0]['status'], 200)
-        self.assertEqual(result['responses'][1]['status'], 404)
-        self.assertEqual(result['responses'][2]['status'], 200)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]['status'], 200)
+        self.assertEqual(result[1]['status'], 404)
+        self.assertEqual(result[2]['status'], 200)
