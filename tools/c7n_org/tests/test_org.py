@@ -382,14 +382,8 @@ class OrgTest(TestUtils):
 
     def test_validate_command_invalid_schema(self):
         """Test validate command with schema errors - should exit 1."""
-        run_dir = self.get_temp_dir()
-
-        # Create accounts file
-        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
-            fh.write(ACCOUNTS_AWS_DEFAULT)
-
         # Create invalid policy file with schema violation
-        invalid_policy = yaml.safe_dump({
+        invalid_policy = {
             'policies': [{
                 'name': 'invalid-schema',
                 'resource': 'aws.ec2',
@@ -397,9 +391,8 @@ class OrgTest(TestUtils):
                     {'type': 'nonexistent-filter-type-xyz123'}
                 ]
             }]
-        })
-        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
-            fh.write(invalid_policy)
+        }
+        run_dir = self.setup_run_dir(policies=invalid_policy)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -411,21 +404,14 @@ class OrgTest(TestUtils):
 
     def test_validate_command_invalid_structure(self):
         """Test validate command with structural errors - should exit 1."""
-        run_dir = self.get_temp_dir()
-
-        # Create accounts file
-        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
-            fh.write(ACCOUNTS_AWS_DEFAULT)
-
         # Create structurally invalid policy (missing required fields)
-        invalid_policy = yaml.safe_dump({
+        invalid_policy = {
             'policies': [{
                 'name': 'missing-resource'
                 # Missing 'resource' field which is required
             }]
-        })
-        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
-            fh.write(invalid_policy)
+        }
+        run_dir = self.setup_run_dir(policies=invalid_policy)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -437,21 +423,14 @@ class OrgTest(TestUtils):
 
     def test_validate_command_duplicate_policy_names(self):
         """Test validate command with duplicate policy names - should exit 1."""
-        run_dir = self.get_temp_dir()
-
-        # Create accounts file
-        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
-            fh.write(ACCOUNTS_AWS_DEFAULT)
-
         # Create policy file with duplicate names
-        duplicate_policy = yaml.safe_dump({
+        duplicate_policy = {
             'policies': [
                 {'name': 'duplicate', 'resource': 'aws.ec2'},
                 {'name': 'duplicate', 'resource': 'aws.s3'}
             ]
-        })
-        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
-            fh.write(duplicate_policy)
+        }
+        run_dir = self.setup_run_dir(policies=duplicate_policy)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -499,14 +478,8 @@ class OrgTest(TestUtils):
 
     def test_validate_command_check_deprecations_warn(self):
         """Test validate command with deprecated features in warn mode - should exit 0."""
-        run_dir = self.get_temp_dir()
-
-        # Create accounts file
-        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
-            fh.write(ACCOUNTS_AWS_DEFAULT)
-
         # Create policy with mark-for-op (commonly deprecated)
-        policy = yaml.safe_dump({
+        policy = {
             'policies': [{
                 'name': 'with-mark-for-op',
                 'resource': 'aws.ec2',
@@ -517,9 +490,8 @@ class OrgTest(TestUtils):
                     'days': 7
                 }]
             }]
-        })
-        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
-            fh.write(policy)
+        }
+        run_dir = self.setup_run_dir(policies=policy)
 
         runner = CliRunner()
         result = runner.invoke(
@@ -533,14 +505,8 @@ class OrgTest(TestUtils):
 
     def test_validate_command_check_deprecations_strict(self):
         """Test validate command with deprecated features in strict mode - should exit 1."""
-        run_dir = self.get_temp_dir()
-
-        # Create accounts file
-        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
-            fh.write(ACCOUNTS_AWS_DEFAULT)
-
         # Create policy with mark-for-op (commonly deprecated)
-        policy = yaml.safe_dump({
+        policy = {
             'policies': [{
                 'name': 'with-mark-for-op',
                 'resource': 'aws.ec2',
@@ -551,9 +517,8 @@ class OrgTest(TestUtils):
                     'days': 7
                 }]
             }]
-        })
-        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
-            fh.write(policy)
+        }
+        run_dir = self.setup_run_dir(policies=policy)
 
         runner = CliRunner()
         result = runner.invoke(
