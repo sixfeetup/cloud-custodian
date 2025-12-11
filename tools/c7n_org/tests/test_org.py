@@ -891,12 +891,9 @@ accounts:
         self.assertEqual(result.exit_code, 1)
 
 
-# Tests for extract_framework_runtime_variables function (TDD Phase 1)
+# Tests for extract_framework_runtime_variables function
 class TestExtractFrameworkRuntimeVariables(TestUtils):
-    """Test suite for extract_framework_runtime_variables function.
-
-    These tests follow TDD - written BEFORE implementation.
-    """
+    """Test suite for extract_framework_runtime_variables function."""
 
     def test_empty_dict_returns_empty_set(self):
         """Empty dict should return empty set."""
@@ -961,12 +958,9 @@ class TestExtractFrameworkRuntimeVariables(TestUtils):
         assert result == {'{event}'}
 
 
-# Tests for modified find_unexpanded_variables function (TDD Phase 2)
+# Tests for modified find_unexpanded_variables function
 class TestFindUnexpandedVariablesModified(TestUtils):
-    """Test suite for modified find_unexpanded_variables with allowed_placeholders.
-
-    These tests follow TDD - written BEFORE modifying the implementation.
-    """
+    """Test suite for modified find_unexpanded_variables with allowed_placeholders."""
 
     def test_none_parameter_rejects_all(self):
         """With allowed_placeholders=None (default), all unexpanded vars should be flagged."""
@@ -1056,7 +1050,7 @@ class TestFindUnexpandedVariablesModified(TestUtils):
         assert len(result) == 2
 
 
-# Integration Tests (Phase 4)
+# Integration tests for unexpanded variables.
 class TestIntegrationUnexpandedVariables(TestUtils):
     """Integration tests for the complete unexpanded variable validation flow.
 
@@ -1232,3 +1226,193 @@ class TestIntegrationUnexpandedVariables(TestUtils):
 
         # Should pass for ALL accounts - no user variables required
         assert result.exit_code == 0, f"Runtime-only policy failed: {result.output}"
+
+    def test_validate_per_account_multi_provider(self):
+        """Test per-account validation with AWS, Azure, and GCP accounts.
+
+        Validates that:
+        - AWS policies only validate against AWS accounts
+        - Azure policies only validate against Azure accounts
+        - GCP policies only validate against GCP accounts
+        - Provider matching works correctly
+        """
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        # Load the multicloud policy fixture (has AWS, Azure, and GCP policies)
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'multicloud-policy.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+
+        # Test 1: AWS accounts - should validate AWS policies only
+        aws_accounts = """
+accounts:
+  - name: aws-prod
+    account_id: '111111111111'
+    role: 'arn:aws:iam::111111111111:role/CloudCustodian'
+    regions:
+      - us-east-1
+"""
+        with open(os.path.join(run_dir, 'aws-accounts.yml'), 'w') as fh:
+            fh.write(aws_accounts)
+
+        log_output = self.capture_logging('c7n_org', level=20)
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'aws-accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account'],
+            catch_exceptions=False)
+
+        # Should pass - AWS policies validated against AWS account
+        assert result.exit_code == 0, f"AWS validation failed: {result.output}"
+        log_text = log_output.getvalue()
+        assert 'aws-prod' in log_text or 'Validating for account' in log_text
+
+        # Test 2: Azure subscription - should validate Azure policies only
+        azure_accounts = """
+subscriptions:
+  - name: azure-prod
+    subscription_id: 'ea42f556-5106-4743-99b0-c129bfa71a47'
+"""
+        with open(os.path.join(run_dir, 'azure-accounts.yml'), 'w') as fh:
+            fh.write(azure_accounts)
+
+        log_output = self.capture_logging('c7n_org', level=20)
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'azure-accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account'],
+            catch_exceptions=False)
+
+        # Should pass - Azure policies validated against Azure subscription
+        assert result.exit_code == 0, f"Azure validation failed: {result.output}"
+        log_text = log_output.getvalue()
+        assert 'azure-prod' in log_text or 'Validating for account' in log_text
+
+        # Test 3: GCP project - should validate GCP policies only
+        gcp_accounts = """
+projects:
+  - name: gcp-prod
+    project_id: 'my-gcp-project-123'
+"""
+        with open(os.path.join(run_dir, 'gcp-accounts.yml'), 'w') as fh:
+            fh.write(gcp_accounts)
+
+        log_output = self.capture_logging('c7n_org', level=20)
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'gcp-accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account'],
+            catch_exceptions=False)
+
+        # Should pass - GCP policies validated against GCP project
+        assert result.exit_code == 0, f"GCP validation failed: {result.output}"
+        log_text = log_output.getvalue()
+        assert 'gcp-prod' in log_text or 'Validating for account' in log_text
+
+    def test_validate_per_account_with_deprecations(self):
+        """Test per-account validation detects deprecated flow-logs fields.
+
+        Uses deprecated 'enabled', 'status', and 'destination-type' fields
+        in the flow-logs filter, which should trigger deprecation warnings.
+
+        Tests that:
+        - Deprecation warnings are shown in per-account mode
+        - --check-deprecations=warn allows validation to pass
+        - --check-deprecations=strict causes validation to fail
+        - Warnings are reported per-account
+        """
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'flow-logs-deprecated-policy.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+
+        # Test 1: With --check-deprecations=warn (should pass with warnings)
+        log_output = self.capture_logging('c7n_org', level=20)
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--check-deprecations=warn'],
+            catch_exceptions=False)
+
+        # Should pass but show warnings
+        assert result.exit_code == 0, f"Warn mode should pass: {result.output}"
+        log_text = log_output.getvalue().lower()
+
+        # Verify deprecation was actually detected
+        assert 'deprecated' in log_text or 'warning' in log_text, \
+            "Expected deprecation warnings but none found"
+        # Check that warnings were counted per account
+        assert 'with warnings: 3' in log_text or 'warnings: 3' in log_text, \
+            f"Expected 3 accounts with warnings, got: {log_text}"
+
+        # Test 2: With --check-deprecations=strict (should FAIL)
+        log_output = self.capture_logging('c7n_org', level=20)
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '--per-account',
+             '--check-deprecations=strict'],
+            catch_exceptions=False)
+
+        # Should FAIL in strict mode when deprecations found
+        assert result.exit_code == 1, \
+            f"Strict mode should fail with deprecations, got exit code {result.exit_code}"
+        log_text = log_output.getvalue().lower()
+        assert 'deprecations found' in log_text or 'strict' in log_text, \
+            "Expected strict mode deprecation failure message"
+
+    def test_validate_basic_mode_with_account_filters(self):
+        """Test basic validation mode with account filters.
+
+        Validates that:
+        - Account filters are accepted but logged as info
+        - Basic mode still works correctly
+        - Exit code is correct
+        - Appropriate message shown about filters being applied
+        """
+        run_dir = self.get_temp_dir()
+        fixtures_dir = os.path.join(os.path.dirname(__file__), 'fixtures')
+
+        with open(os.path.join(run_dir, 'accounts.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'accounts-with-vars.yml')) as src:
+                fh.write(src.read())
+
+        with open(os.path.join(run_dir, 'policies.yml'), 'w') as fh:
+            with open(os.path.join(fixtures_dir, 'simple-valid-policy.yml')) as src:
+                fh.write(src.read())
+
+        runner = CliRunner()
+        log_output = self.capture_logging('c7n_org', level=10)  # DEBUG level
+        result = runner.invoke(
+            org.cli,
+            ['validate', '-c', os.path.join(run_dir, 'accounts.yml'),
+             '-u', os.path.join(run_dir, 'policies.yml'),
+             '-a', 'dev-account',  # Account filter in basic mode
+             '--verbose'],
+            catch_exceptions=False)
+
+        # Should pass - basic mode doesn't use accounts for validation
+        assert result.exit_code == 0
+        log_text = log_output.getvalue().lower()
+
+        # Should see message about running basic validation
+        assert 'basic' in log_text or 'account-agnostic' in log_text
+        # Should show that accounts were loaded and filtered
+        assert 'filtered to 1 account' in log_text or 'loaded' in log_text

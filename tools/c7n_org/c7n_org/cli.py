@@ -872,7 +872,8 @@ def validate_per_account(custodian_config, accounts_config, policy_file,
             return False
         return True
     else:
-        log.error("Validation failed for one or more accounts")
+        log.error(f"Validation failed for {len(accounts_with_errors)} account(s): "
+                  f"{', '.join(accounts_with_errors)}")
         return False
 
 
@@ -1012,6 +1013,15 @@ def validate(config, use, policy, policy_tags, resource,
 
     if len(policies) == 0:
         log.warning("No policies to validate after filtering")
+        if policy or resource or policy_tags:
+            filters_applied = []
+            if policy:
+                filters_applied.append(f"policy names: {', '.join(policy)}")
+            if resource:
+                filters_applied.append(f"resource type: {resource}")
+            if policy_tags:
+                filters_applied.append(f"policy tags: {', '.join(policy_tags)}")
+            log.warning(f"Filters applied: {'; '.join(filters_applied)}")
         sys.exit(0)
 
     # Determine deprecation check mode

@@ -242,20 +242,31 @@ don't require quoting, i.e., "my_{charge_code}".
 
 ## Validating Policies
 
-c7n-org supports validating policy files without requiring cloud credentials:
+c7n-org supports validating policy files without requiring cloud credentials.
+This is useful for pre-commit checks and CI/CD pipelines.
 
 ```shell
 c7n-org validate -c accounts.yml -u policies.yml
 ```
 
-This performs schema validation, checks policy structure, and detects common
-errors. It's useful for pre-commit checks and CI/CD pipelines. The command
-supports the same policy filtering options as `run` (`-p`, `-l`, `--resource`)
-and includes optional deprecation checking with `--check-deprecations`.
+By default, validation performs schema checks, policy structure validation,
+and detects common errors. The `--per-account` flag enables deeper validation
+with account-specific variable expansion:
 
-Note that validation is account-agnostic and doesn't expand variables or
-require cloud access. For full validation with account context, use
-`c7n-org run --dryrun`.
+```shell
+c7n-org validate -c accounts.yml -u policies.yml --per-account
+```
+
+In per-account mode, c7n-org validates that policy variables can be expanded
+correctly for each account, catching issues like missing variable definitions
+that would only appear at runtime.
+
+You can filter which policies and accounts to validate using the same flags
+as the `run` command:
+
+- Filter policies with `-p`, `-l`, or `--resource`
+- Filter accounts with `-a`, `--tags`, or `--not-accounts` (when using `--per-account`)
+- Check for deprecated features with `--check-deprecations`
 
 See `c7n-org validate --help` for more information.
 
