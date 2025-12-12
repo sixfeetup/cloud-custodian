@@ -9,25 +9,25 @@ resource "aws_apigatewayv2_api" "example" {
 }
 
 resource "aws_apigatewayv2_integration" "example" {
-  api_id           = aws_apigatewayv2_api.example.id
-  integration_type = "HTTP_PROXY"
-  integration_uri  = "https://example.com"
+  api_id             = aws_apigatewayv2_api.example.id
+  integration_type   = "HTTP_PROXY"
+  integration_uri    = "https://example.com"
   integration_method = "ANY"
 }
 
 # Route with no authorization (should be flagged by policy)
 resource "aws_apigatewayv2_route" "no_auth" {
-  api_id    = aws_apigatewayv2_api.example.id
-  route_key = "GET /no-auth"
-  target    = "integrations/${aws_apigatewayv2_integration.example.id}"
+  api_id             = aws_apigatewayv2_api.example.id
+  route_key          = "GET /no-auth"
+  target             = "integrations/${aws_apigatewayv2_integration.example.id}"
   authorization_type = "NONE"
 }
 
 # Route with IAM authorization (should pass policy)
 resource "aws_apigatewayv2_route" "iam_auth" {
-  api_id    = aws_apigatewayv2_api.example.id
-  route_key = "GET /iam-auth"
-  target    = "integrations/${aws_apigatewayv2_integration.example.id}"
+  api_id             = aws_apigatewayv2_api.example.id
+  route_key          = "GET /iam-auth"
+  target             = "integrations/${aws_apigatewayv2_integration.example.id}"
   authorization_type = "AWS_IAM"
 }
 
