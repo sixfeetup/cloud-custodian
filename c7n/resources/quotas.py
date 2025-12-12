@@ -504,7 +504,10 @@ class DefaultServiceQuotas(QueryResourceManager):
                     service_codes.append(item['ServiceCode'])
         elif isinstance(q, dict) and 'ServiceCode' in q:
             # Single ServiceCode in query dict
-            service_codes = [q['ServiceCode']] if isinstance(q['ServiceCode'], str) else q['ServiceCode']
+            if isinstance(q['ServiceCode'], str):
+                service_codes = [q['ServiceCode']]
+            else:
+                service_codes = q['ServiceCode']
 
         # If no ServiceCode specified, we need to get all services first
         # This could be expensive, but it's the expected behavior
