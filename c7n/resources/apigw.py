@@ -1414,14 +1414,9 @@ class ApiGatewayV2Route(query.ChildResourceManager):
         arn_type = "/apis"
         id = "RouteId"
         name = "RouteKey"
-        cfn_type = config_type = "AWS::ApiGatewayV2::Route"
+        cfn_type = "AWS::ApiGatewayV2::Route"
         permission_prefix = 'apigateway'
         permissions_enum = ('apigateway:GET',)
-
-    source_mapping = {
-        "describe-child": query.ChildDescribeSource,
-        "config": query.ConfigSource
-    }
 
     def get_arns(self, resources):
         partition = get_partition(self.config.region)
