@@ -1,11 +1,13 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import json
+import time
+from unittest.mock import MagicMock, patch
+
 import yaml
 
+from c7n.resources.cfn import CloudFormationAddTag, CloudFormationRemoveTag
 from .common import BaseTest
-
-import time
-import json
 
 
 class TestCFN(BaseTest):
@@ -352,3 +354,55 @@ class TestCFN(BaseTest):
         self.assertFalse(cfn._cfn_stack_updatable({}))  # Missing StackStatus
         self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': ''}))  # Empty status
         self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'UNKNOWN'}))  # Unknown status
+
+    def test_cfn_tag_skip_non_updateable(self):
+        """Test that tagging skips stacks in non-updateable states."""
+        stacks = [
+            {'StackName': 'stack-ok', 'StackStatus': 'CREATE_COMPLETE', 'Tags': []},
+            {'StackName': 'stack-in-progress', 'StackStatus': 'UPDATE_IN_PROGRESS', 'Tags': []},
+            {'StackName': 'stack-failed', 'StackStatus': 'DELETE_FAILED', 'Tags': []},
+        ]
+
+        action = MagicMock(spec=CloudFormationAddTag)
+        action.log = MagicMock()
+        tags = [{'Key': 'Test', 'Value': 'Value'}]
+
+        with patch('c7n.resources.cfn._tag_stack') as mock_tag_stack:
+            CloudFormationAddTag.process_resource_set(
+                action, MagicMock(), stacks, tags)
+
+            # Should only tag the one stack in updateable state
+            self.assertEqual(mock_tag_stack.call_count, 1)
+            # Verify the stack that was tagged (positional args: client, stack, add=tags)
+            call_args = mock_tag_stack.call_args
+            tagged_stack = call_args[0][1]  # Second positional arg is the stack
+            self.assertEqual(tagged_stack['StackName'], 'stack-ok')
+
+        # Verify warning was logged for skipped stacks
+        action.log.warning.assert_called_once()
+        warning_args = action.log.warning.call_args[0]
+        self.assertIn('2', str(warning_args))  # 2 stacks skipped
+
+    def test_cfn_remove_tag_skip_non_updateable(self):
+        """Test that removing tags skips stacks in non-updateable states."""
+        tags = [{'Key': 'Test', 'Value': 'Value'}]
+        stacks = [
+            {'StackName': 'stack-ok', 'StackStatus': 'UPDATE_COMPLETE', 'Tags': tags},
+            {'StackName': 'stack-in-progress', 'StackStatus': 'CREATE_IN_PROGRESS',
+             'Tags': tags},
+        ]
+
+        action = MagicMock(spec=CloudFormationRemoveTag)
+        action.log = MagicMock()
+
+        with patch('c7n.resources.cfn._tag_stack') as mock_tag_stack:
+            CloudFormationRemoveTag.process_resource_set(
+                action, MagicMock(), stacks, ['Test'])
+
+            # Should only process the one stack in updateable state
+            self.assertEqual(mock_tag_stack.call_count, 1)
+
+        # Verify warning was logged for skipped stack
+        action.log.warning.assert_called_once()
+        warning_args = action.log.warning.call_args[0]
+        self.assertIn('1', str(warning_args))  # 1 stack skipped
