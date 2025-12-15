@@ -44,11 +44,15 @@ def test_apigwv2_route_query(test, apigatewayv2_route):
     resources = policy.run()
 
     assert len(resources) > 0
-    # Verify we get routes with expected fields
     assert 'RouteId' in resources[0]
     assert 'RouteKey' in resources[0]
     assert 'AuthorizationType' in resources[0]
     assert 'c7n:parent-id' in resources[0]
+
+    assert policy.resource_manager.get_arns(resources) == [
+        'arn:aws:apigateway:us-east-1::/apis/sozi1cborg/routes/ms6wuq0',
+        'arn:aws:apigateway:us-east-1::/apis/sozi1cborg/routes/v7guotm'
+    ]
 
 
 @terraform("apigatewayv2_route")
