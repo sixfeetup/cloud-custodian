@@ -325,3 +325,30 @@ class TestCFN(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['c7n:SnsTopics'][0]['SubscriptionsConfirmed'], '0')
+
+    def test_cfn_stack_updatable(self):
+        """Test stack state eligibility for tagging operations."""
+        from c7n.resources import cfn
+
+        # Updateable states - should return True
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'CREATE_COMPLETE'}))
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'UPDATE_COMPLETE'}))
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'UPDATE_ROLLBACK_COMPLETE'}))
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'IMPORT_COMPLETE'}))
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'IMPORT_ROLLBACK_COMPLETE'}))
+        self.assertTrue(cfn._cfn_stack_updatable({'StackStatus': 'ROLLBACK_COMPLETE'}))
+
+        # Non-updateable states - should return False
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'CREATE_IN_PROGRESS'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'UPDATE_IN_PROGRESS'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'DELETE_IN_PROGRESS'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'DELETE_COMPLETE'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'DELETE_FAILED'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'CREATE_FAILED'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'ROLLBACK_IN_PROGRESS'}))
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'UPDATE_ROLLBACK_IN_PROGRESS'}))
+
+        # Edge cases
+        self.assertFalse(cfn._cfn_stack_updatable({}))  # Missing StackStatus
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': ''}))  # Empty status
+        self.assertFalse(cfn._cfn_stack_updatable({'StackStatus': 'UNKNOWN'}))  # Unknown status
