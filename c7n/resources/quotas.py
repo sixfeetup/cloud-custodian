@@ -470,7 +470,10 @@ class DefaultServiceQuotas(QueryResourceManager):
         name = 'QuotaName'
         # Default quotas are the same across all regions
         global_resource = True
-        permissions_augment = ('servicequotas:ListAWSDefaultServiceQuotas',)
+        # Do NOT remove `permissions_enum` or swap to `permissions_augment` here.
+        # The automatic permission-generation does incorrect CamelCasing vs.
+        # the correct permission below.
+        permissions_enum = ('servicequotas:ListAWSDefaultServiceQuotas',)
 
     def get_resources(self, resource_ids, cache=True):
         """Override to handle the ServiceCode requirement for list_aws_default_service_quotas"""
