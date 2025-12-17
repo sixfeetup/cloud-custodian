@@ -65,7 +65,7 @@ class ServiceQuota(QueryResourceManager):
                 token = None
                 kwargs = {
                     'ServiceCode': s['ServiceCode'],
-                    'MaxResults': self.batch_size
+                    'MaxResults': self.batch_size,
                 }
 
                 while True:
@@ -73,7 +73,7 @@ class ServiceQuota(QueryResourceManager):
                         kwargs['NextToken'] = token
                     response = retry(
                         getattr(client, attr),
-                        **kwargs
+                        **kwargs,
                     )
                     rquotas = {q['QuotaCode']: q for q in response['Quotas']}
                     token = response.get('NextToken')
@@ -92,13 +92,9 @@ class ServiceQuota(QueryResourceManager):
                 return quotas.values()
 
             dquotas = {
-                q['QuotaCode']: q
-                for q in _get_quotas(client, s, 'list_aws_default_service_quotas')
+                q['QuotaCode']: q for q in _get_quotas(client, s, 'list_aws_default_service_quotas')
             }
-            quotas = {
-                q['QuotaCode']: q
-                for q in _get_quotas(client, s, 'list_service_quotas')
-            }
+            quotas = {q['QuotaCode']: q for q in _get_quotas(client, s, 'list_service_quotas')}
             dquotas.update(quotas)
             return dquotas.values()
 
@@ -166,7 +162,7 @@ class UsageFilter(MetricsFilter):
         'usage-metric',
         limit={'type': 'integer'},
         min_period={'type': 'integer'},
-        hard_limit={'type': 'integer'}
+        hard_limit={'type': 'integer'},
     )
 
     cloudwatch_max_datapoints = 1440
@@ -197,7 +193,7 @@ class UsageFilter(MetricsFilter):
         'Minimum': min,
         'Average': mean,
         'Sum': sum,
-        'SampleCount': len
+        'SampleCount': len,
     }
 
     percentile_regex = re.compile('p\\d{0,2}\\.{0,1}\\d{0,2}')
@@ -266,7 +262,8 @@ class UsageFilter(MetricsFilter):
                 raise Exception(
                     f'failed to collect metric {metric["MetricName"]}'
                     f' namespace {metric["MetricNamespace"]}'
-                    f' for service {r.get("ServiceCode")}') from e
+                    f' for service {r.get("ServiceCode")}'
+                ) from e
 
             if res['Datapoints']:
                 if self.percentile_regex.match(stat):
@@ -322,9 +319,7 @@ class RequestHistoryFilter(RelatedResourceFilter):
     RelatedIdsExpression = 'QuotaCode'
     AnnotationKey = 'ServiceQuotaChangeHistory'
 
-    schema = type_schema(
-        'request-history', rinherit=ValueFilter.schema
-    )
+    schema = type_schema('request-history', rinherit=ValueFilter.schema)
 
     permissions = ('servicequotas:ListRequestedServiceQuotaChangeHistory',)
 
@@ -377,31 +372,39 @@ class Increase(Action):
             if not r['Adjustable']:
                 continue
             # Skip if quota equals hard_limit
-            if ('c7n:UsageMetric' in r and
-                    'hard_limit' in r['c7n:UsageMetric'] and
-                    r['c7n:UsageMetric']['quota'] == r['c7n:UsageMetric']['hard_limit']):
+            if (
+                'c7n:UsageMetric' in r
+                and 'hard_limit' in r['c7n:UsageMetric']
+                and r['c7n:UsageMetric']['quota'] == r['c7n:UsageMetric']['hard_limit']
+            ):
                 continue
             # Cap count at hard_limit if it exceeds it
-            if ('c7n:UsageMetric' in r and
-                    'hard_limit' in r['c7n:UsageMetric'] and
-                    count > r['c7n:UsageMetric']['hard_limit']):
+            if (
+                'c7n:UsageMetric' in r
+                and 'hard_limit' in r['c7n:UsageMetric']
+                and count > r['c7n:UsageMetric']['hard_limit']
+            ):
                 count = int(r['c7n:UsageMetric']['hard_limit'])
             try:
                 client.request_service_quota_increase(
                     ServiceCode=r['ServiceCode'],
                     QuotaCode=r['QuotaCode'],
-                    DesiredValue=count
+                    DesiredValue=count,
                 )
             except client.exceptions.QuotaExceededException as e:
                 error = e
                 self.log.error('Requested:%s exceeds quota limit for %s' % (count, r['QuotaCode']))
                 continue
-            except (client.exceptions.AccessDeniedException,
-                    client.exceptions.DependencyAccessDeniedException,):
+            except (
+                client.exceptions.AccessDeniedException,
+                client.exceptions.DependencyAccessDeniedException,
+            ):
                 raise PolicyExecutionError('Access Denied to increase quota: %s' % r['QuotaCode'])
-            except (client.exceptions.NoSuchResourceException,
-                    client.exceptions.InvalidResourceStateException,
-                    client.exceptions.ResourceAlreadyExistsException,) as e:
+            except (
+                client.exceptions.NoSuchResourceException,
+                client.exceptions.InvalidResourceStateException,
+                client.exceptions.ResourceAlreadyExistsException,
+            ) as e:
                 error = e
                 continue
         if error:

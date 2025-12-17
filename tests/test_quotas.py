@@ -220,8 +220,8 @@ class TestQuotas(BaseTest):
             'Adjustable': True,
             'c7n:UsageMetric': {
                 'quota': 50.0,  # Same as hard_limit
-                'hard_limit': 50.0
-            }
+                'hard_limit': 50.0,
+            },
         }
 
         # Create the action with multiplier that would normally increase
@@ -253,8 +253,8 @@ class TestQuotas(BaseTest):
             'Adjustable': True,
             'c7n:UsageMetric': {
                 'quota': 30.0,
-                'hard_limit': 50.0  # Hard limit is 50
-            }
+                'hard_limit': 50.0,  # Hard limit is 50
+            },
         }
 
         # Create the action with multiplier that would exceed hard_limit
@@ -274,19 +274,21 @@ class TestQuotas(BaseTest):
             mock_client.request_service_quota_increase.assert_called_once_with(
                 ServiceCode='ec2',
                 QuotaCode='L-TEST123',
-                DesiredValue=50  # Should be capped at hard_limit
+                DesiredValue=50,  # Should be capped at hard_limit
             )
 
     # Given the ServiceQuota.augment.get_quotas is a nested function,can't patch it;
     # This test case is the best we can do at the moment.
     def test_service_quota_metadata_incl_filter(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-metaddata-filter",
-            "resource": "aws.service-quota",
-            "query": [{"include_service_codes": ["ec2"]}],
+        p = self.load_policy(
+            {
+                "name": "service-quota-metaddata-filter",
+                "resource": "aws.service-quota",
+                "query": [{"include_service_codes": ["ec2"]}],
             },
-            session_factory=session_factory)
+            session_factory=session_factory,
+        )
         resources = p.run()
         # called ListAWSDefaultServiceQuotas once, 6 quotas returned
         # called servicequotas.ListServiceQuotas once, 2 quotas returned
@@ -294,12 +296,14 @@ class TestQuotas(BaseTest):
 
     def test_service_quota_metadata_excl_filter(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-metaddata-filter",
-            "resource": "aws.service-quota",
-            "query": [{"exclude_service_codes": ["logs"]}],
+        p = self.load_policy(
+            {
+                "name": "service-quota-metaddata-filter",
+                "resource": "aws.service-quota",
+                "query": [{"exclude_service_codes": ["logs"]}],
             },
-            session_factory=session_factory)
+            session_factory=session_factory,
+        )
         resources = p.run()
         # called ListAWSDefaultServiceQuotas twice, 6x2 quotas returned
         # called servicequotas.ListServiceQuotas twice, 2+1 quotas returned
@@ -307,32 +311,33 @@ class TestQuotas(BaseTest):
 
     def test_usage_metric_filter(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-usage-metric",
-            "resource": "aws.service-quota",
-            "filters": [
-                {"UsageMetric": "present"},
-                {"type": "usage-metric",
-                 "min_period": 60,
-                 "limit": 20}
-            ]},
-            session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "service-quota-usage-metric",
+                "resource": "aws.service-quota",
+                "filters": [
+                    {"UsageMetric": "present"},
+                    {"type": "usage-metric", "min_period": 60, "limit": 20},
+                ],
+            },
+            session_factory=session_factory,
+        )
         resources = p.run()
         self.assertEqual(len(resources), 2)
 
     def test_usage_metric_filter_with_hard_limit(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-usage-metric-hard-limit",
-            "resource": "aws.service-quota",
-            "filters": [
-                {"UsageMetric": "present"},
-                {"type": "usage-metric",
-                 "min_period": 60,
-                 "limit": 20,
-                 "hard_limit": 100}
-            ]},
-            session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "service-quota-usage-metric-hard-limit",
+                "resource": "aws.service-quota",
+                "filters": [
+                    {"UsageMetric": "present"},
+                    {"type": "usage-metric", "min_period": 60, "limit": 20, "hard_limit": 100},
+                ],
+            },
+            session_factory=session_factory,
+        )
         resources = p.run()
         self.assertEqual(len(resources), 2)
         # Check that hard_limit is added to the annotation
