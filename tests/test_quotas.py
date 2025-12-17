@@ -12,7 +12,6 @@ from .common import BaseTest
 
 
 class TestQuotas(BaseTest):
-
     def setUp(self):
         super().setUp()
         self.patch(ServiceQuota, "executor_factory", MainThreadExecutor)
@@ -20,58 +19,63 @@ class TestQuotas(BaseTest):
     def test_service_quota_request_history_filter(self):
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "service-quota-history-filter",
-            "resource": "aws.service-quota",
-            "filters": [{
-                "type": "request-history",
-                "key": "[].Status",
-                "value": "CASE_CLOSED",
-                "op": "in",
-                "value_type": "swap"}
-            ]},
-            session_factory=session_factory
+        p = self.load_policy(
+            {
+                "name": "service-quota-history-filter",
+                "resource": "aws.service-quota",
+                "filters": [
+                    {
+                        "type": "request-history",
+                        "key": "[].Status",
+                        "value": "CASE_CLOSED",
+                        "op": "in",
+                        "value_type": "swap",
+                    }
+                ],
+            },
+            session_factory=session_factory,
         )
         resources = p.run()
         self.assertTrue(resources)
 
     def test_service_quota_request_increase(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-request-increase",
-            "resource": "aws.service-quota",
-            "filters": [{
-                "QuotaCode": "L-355B2B67"}],
-            "actions": [{
-                "type": "request-increase",
-                "multiplier": 1.2}
-            ]},
-            session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "service-quota-request-increase",
+                "resource": "aws.service-quota",
+                "filters": [{"QuotaCode": "L-355B2B67"}],
+                "actions": [{"type": "request-increase", "multiplier": 1.2}],
+            },
+            session_factory=session_factory,
+        )
         resources = p.run()
         self.assertEqual(len(resources), 1)
         client = local_session(session_factory).client('service-quotas')
         changes = client.list_requested_service_quota_change_history_by_quota(
-            ServiceCode=resources[0]['ServiceCode'],
-            QuotaCode=resources[0]['QuotaCode']
+            ServiceCode=resources[0]['ServiceCode'], QuotaCode=resources[0]['QuotaCode']
         )['RequestedQuotas']
         self.assertTrue(changes)
 
     def test_service_quota_request_increase_with_hard_limit(self):
         session_factory = self.replay_flight_data('test_service_quota')
-        p = self.load_policy({
-            "name": "service-quota-request-increase-hard-limit",
-            "resource": "aws.service-quota",
-            "filters": [
-                {"QuotaCode": "L-14BB0BE7"},  # Use a quota that has UsageMetric
-                {"type": "usage-metric",
-                 "limit": 20,
-                 "hard_limit": 50}
-            ],
-            "actions": [{
-                "type": "request-increase",
-                "multiplier": 2.0}  # This would normally request 2x the current value
-            ]},
-            session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "service-quota-request-increase-hard-limit",
+                "resource": "aws.service-quota",
+                "filters": [
+                    {"QuotaCode": "L-14BB0BE7"},  # Use a quota that has UsageMetric
+                    {"type": "usage-metric", "limit": 20, "hard_limit": 50},
+                ],
+                "actions": [
+                    {
+                        "type": "request-increase",
+                        "multiplier": 2.0,
+                    }  # This would normally request 2x the current value
+                ],
+            },
+            session_factory=session_factory,
+        )
         resources = p.run()
         # The test verifies that the hard_limit logic is applied
         # In a real scenario, this would cap the requested value at the hard_limit
@@ -81,10 +85,10 @@ class TestQuotas(BaseTest):
         """Test listing all AWS services integrated with Service Quotas"""
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "list-services",
-            "resource": "aws.service-quota-services"
-        }, session_factory=session_factory)
+        p = self.load_policy(
+            {"name": "list-services", "resource": "aws.service-quota-services"},
+            session_factory=session_factory,
+        )
 
         resources = p.run()
         self.assertTrue(resources)
@@ -106,17 +110,14 @@ class TestQuotas(BaseTest):
         """Test filtering services by ServiceCode"""
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "filter-services-by-code",
-            "resource": "aws.service-quota-services",
-            "filters": [
-                {
-                    "type": "value",
-                    "key": "ServiceCode",
-                    "value": "ec2"
-                }
-            ]
-        }, session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "filter-services-by-code",
+                "resource": "aws.service-quota-services",
+                "filters": [{"type": "value", "key": "ServiceCode", "value": "ec2"}],
+            },
+            session_factory=session_factory,
+        )
 
         resources = p.run()
         self.assertEqual(len(resources), 1)
@@ -127,10 +128,10 @@ class TestQuotas(BaseTest):
         """Test listing default service quotas"""
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "list-default-quotas",
-            "resource": "aws.default-service-quotas"
-        }, session_factory=session_factory)
+        p = self.load_policy(
+            {"name": "list-default-quotas", "resource": "aws.default-service-quotas"},
+            session_factory=session_factory,
+        )
 
         resources = p.run()
         self.assertTrue(resources)
@@ -149,17 +150,14 @@ class TestQuotas(BaseTest):
         """Test filtering default quotas by ServiceCode"""
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "filter-default-quotas-by-service",
-            "resource": "aws.default-service-quotas",
-            "filters": [
-                {
-                    "type": "value",
-                    "key": "ServiceCode",
-                    "value": "AWSCloudMap"
-                }
-            ]
-        }, session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "filter-default-quotas-by-service",
+                "resource": "aws.default-service-quotas",
+                "filters": [{"type": "value", "key": "ServiceCode", "value": "AWSCloudMap"}],
+            },
+            session_factory=session_factory,
+        )
 
         resources = p.run()
         self.assertTrue(resources)
@@ -171,17 +169,14 @@ class TestQuotas(BaseTest):
         """Test filtering default quotas by QuotaCode"""
         session_factory = self.replay_flight_data('test_service_quota')
 
-        p = self.load_policy({
-            "name": "filter-default-quotas-by-code",
-            "resource": "aws.default-service-quotas",
-            "filters": [
-                {
-                    "type": "value",
-                    "key": "QuotaCode",
-                    "value": "L-D589BB26"
-                }
-            ]
-        }, session_factory=session_factory)
+        p = self.load_policy(
+            {
+                "name": "filter-default-quotas-by-code",
+                "resource": "aws.default-service-quotas",
+                "filters": [{"type": "value", "key": "QuotaCode", "value": "L-D589BB26"}],
+            },
+            session_factory=session_factory,
+        )
 
         resources = p.run()
         # Should find quota(s) with this QuotaCode from the test data
@@ -192,6 +187,25 @@ class TestQuotas(BaseTest):
         for resource in matching_resources:
             self.assertEqual(resource['QuotaCode'], 'L-D589BB26')
             self.assertEqual(resource['QuotaName'], 'Custom attributes per instance')
+
+    def test_default_service_quotas_empty_resource_ids(self):
+        """Test that get_resources returns empty list when given empty resource_ids"""
+        session_factory = self.replay_flight_data('test_service_quota')
+
+        p = self.load_policy(
+            {"name": "test-empty-resource-ids", "resource": "aws.default-service-quotas"},
+            session_factory=session_factory,
+        )
+
+        # Get the resource manager
+        resource_manager = p.resource_manager
+
+        # Call get_resources with empty list
+        result = resource_manager.get_resources([])
+
+        # Should return empty list without making any API calls
+        self.assertEqual(result, [])
+        self.assertIsInstance(result, list)
 
     def test_request_increase_hard_limit_skip_when_quota_equals_hard_limit(self):
         """Test that request-increase skips when quota equals hard_limit"""

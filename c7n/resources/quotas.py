@@ -19,13 +19,12 @@ from c7n.filters import ValueFilter
 from c7n.filters.metrics import MetricsFilter
 from c7n.filters.related import RelatedResourceFilter
 from c7n.manager import resources
-from c7n.query import QueryResourceManager, TypeInfo
+from c7n.query import QueryResourceManager, TypeInfo, ChildResourceManager
 from c7n.utils import local_session, type_schema, get_retry
 
 
 @resources.register('service-quota-request')
 class ServiceQuotaRequest(QueryResourceManager):
-
     class resource_type(TypeInfo):
         service = 'service-quotas'
         permission_prefix = 'servicequotas'
@@ -38,7 +37,6 @@ class ServiceQuotaRequest(QueryResourceManager):
 
 @resources.register('service-quota')
 class ServiceQuota(QueryResourceManager):
-
     batch_size = 100
 
     class resource_type(TypeInfo):
@@ -442,22 +440,41 @@ class Services(QueryResourceManager):
 
 
 @resources.register('default-service-quotas')
-class DefaultServiceQuotas(QueryResourceManager):
-    """Lists all the default service quotas for AWS services.
+class DefaultServiceQuotas(ChildResourceManager):
+    """Lists default service quotas for AWS services.
+
+    This is a child resource of service-quota-services. The list_aws_default_service_quotas
+    API requires a ServiceCode parameter, so this resource enumerates quotas by iterating
+    over parent services.
 
     :example:
 
     .. code-block:: yaml
 
+        # Get all default quotas for all services
         policies:
-        - name: list-default-quotas-for-service
+        - name: list-all-default-quotas
+          resource: aws.default-service-quotas
+
+        policies:
+        - name: list-default-quotas-for-all-services
+          resource: aws.default-service-quotas
+          filters:
+            - type: value
+              key: QuotaCode
+              value: L-1216C47A
+
+        # Get default quotas only for EC2
+        policies:
+        - name: list-default-quotas-for-ec2
           resource: aws.default-service-quotas
           query:
             - ServiceCode: ec2
           filters:
             - type: value
-              key: QuotaCode
-              value: L-1216C47A
+              key: Value
+              op: gte
+              value: 100
 
     """
 
@@ -465,6 +482,7 @@ class DefaultServiceQuotas(QueryResourceManager):
         service = 'service-quotas'
         permission_prefix = 'servicequotas'
         enum_spec = ('list_aws_default_service_quotas', 'Quotas', None)
+        parent_spec = ('service-quota-services', 'ServiceCode', None)
         id = 'QuotaCode'
         arn = 'QuotaArn'
         name = 'QuotaName'
@@ -474,50 +492,3 @@ class DefaultServiceQuotas(QueryResourceManager):
         # The automatic permission-generation does incorrect CamelCasing vs.
         # the correct permission below.
         permissions_enum = ('servicequotas:ListAWSDefaultServiceQuotas',)
-
-    def get_resources(self, resource_ids, cache=True):
-        """Override to handle the ServiceCode requirement for list_aws_default_service_quotas"""
-        if not resource_ids:
-            return []
-
-        client = local_session(self.session_factory).client('service-quotas')
-        results = []
-
-        for service_code in resource_ids:
-            try:
-                paginator = client.get_paginator('list_aws_default_service_quotas')
-                for page in paginator.paginate(ServiceCode=service_code):
-                    results.extend(page.get('Quotas', []))
-            except client.exceptions.NoSuchResourceException:
-                continue
-
-        return results
-
-    def resources(self, query=None):
-        """Override resources method to handle ServiceCode requirement"""
-        q = query or {}
-
-        # Extract ServiceCode from different query formats
-        service_codes = []
-
-        # Check if ServiceCode is specified in query list format
-        if isinstance(q, list):
-            for item in q:
-                if 'ServiceCode' in item:
-                    service_codes.append(item['ServiceCode'])
-        elif isinstance(q, dict) and 'ServiceCode' in q:
-            # Single ServiceCode in query dict
-            if isinstance(q['ServiceCode'], str):
-                service_codes = [q['ServiceCode']]
-            else:
-                service_codes = q['ServiceCode']
-
-        # If no ServiceCode specified, we need to get all services first
-        # This could be expensive, but it's the expected behavior
-        if not service_codes:
-            services_client = local_session(self.session_factory).client('service-quotas')
-            paginator = services_client.get_paginator('list_services')
-            for page in paginator.paginate():
-                service_codes.extend([s['ServiceCode'] for s in page.get('Services', [])])
-
-        return self.get_resources(service_codes)
