@@ -399,7 +399,7 @@ class UpdateOpenSearchIngestion(BaseAction):
                 continue
 
 
-@resources.register('opensearch-reserved-instance')
+@resources.register('opensearch-reserved')
 class OpensearchReservedInstance(QueryResourceManager):
     """Lists all the reserved OpenSearch instances
 
@@ -409,7 +409,7 @@ class OpensearchReservedInstance(QueryResourceManager):
 
         policies:
           - name: opensearch-reserved-instances-policy
-            resource: aws.opensearch-reserved-instance
+            resource: aws.opensearch-reserved
             filters:
               - type: value
                 key: State
@@ -426,7 +426,7 @@ class OpensearchReservedInstance(QueryResourceManager):
             'ReservedInstances',
             None,
         )
-        filter_name = 'ReservedInstances'
-        filter_type = 'list'
+        filter_name = 'ReservedInstanceId'
+        filter_type = 'scalar'
         arn_type = "reserved-instances"
         permissions_enum = ('opensearch:DescribeReservedInstances',)

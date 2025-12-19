@@ -264,7 +264,7 @@ class OpensearchReservedInstances(BaseTest):
         p = self.load_policy(
             {
                 "name": "opensearch-reserved-instances",
-                "resource": "aws.opensearch-reserved-instance"
+                "resource": "aws.opensearch-reserved"
             },
             session_factory=session_factory,
         )
