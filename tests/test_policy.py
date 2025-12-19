@@ -802,7 +802,7 @@ class PolicyMetaLint(BaseTest):
             'rrset',
             'redshift-reserved',
             'elasticsearch-reserved',
-            'opensearch-reserved-instance',
+            'opensearch-reserved',
             'ses-receipt-rule-set',
             'iam-access-key',
         ))
