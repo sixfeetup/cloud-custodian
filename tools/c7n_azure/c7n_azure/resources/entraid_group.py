@@ -4,7 +4,7 @@
 import logging
 import requests
 
-from c7n.filters import Filter
+from c7n.filters import Filter, ValueFilter
 
 from c7n.utils import type_schema
 
@@ -86,7 +86,7 @@ class EntraIDGroup(GraphResourceManager):
                     "Insufficient privileges to read groups. "
                     "Required permissions: Group.Read.All"
                 )
-            return []
+            raise
 
     def augment(self, resources):
         """Augment group resources with additional Graph API data"""
@@ -152,11 +152,10 @@ class EntraIDGroup(GraphResourceManager):
                     f"Insufficient privileges to read member count for group {group_id}. "
                     "Required permission: GroupMember.Read.All"
                 )
-
-                return None  # Unknown member count
             else:
                 log.error(f"Error getting member count for group {group_id}: {e}")
-                return None
+
+            raise
 
     def get_group_owner_count(self, group_id):
         """Get accurate owner count for a group using Graph API.
@@ -242,7 +241,7 @@ class EntraIDGroup(GraphResourceManager):
 
 
 @EntraIDGroup.filter_registry.register('member-count')
-class MemberCountFilter(Filter):
+class MemberCountFilter(ValueFilter):
     """Filter groups based on member count.
 
     Required permission: GroupMember.Read.All
@@ -264,46 +263,67 @@ class MemberCountFilter(Filter):
 
     schema = type_schema(
         'member-count',
-        count={'type': 'number'},
-        op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']}
+        rinherit=ValueFilter.schema,
+        # Allow 'count' as an alias for 'value' for backward compatibility
+        count={'type': 'number'}
     )
 
-    def process(self, resources, event=None):  # pylint: disable=unused-argument
-        count_threshold = self.data.get('count', 0)
-        op = self.data.get('op', 'greater-than')
+    annotation_key = 'c7n:MemberCount'
 
-        filtered = []
+    def __init__(self, data, manager=None):
+        # Map 'count' to 'value' for ValueFilter compatibility
+        if 'count' in data:
+            data['value'] = data.pop('count')
+        data["key"] = f'"{self.annotation_key}"'
+        super().__init__(data, manager)
+
+    def process(self, resources, event=None):  # pylint: disable=unused-argument
+        batch_group_count_request = []
         for resource in resources:
             group_id = resource.get('id')
             if not group_id:
-
                 log.warning(
                     f"Skipping group without ID: {resource.get('displayName', 'Unknown')}"
                 )
-
                 continue
 
-            # Get actual member count via Graph API
-            member_count = self.manager.get_group_member_count(group_id)
+            # Add to batch.
+            batch_group_count_request.append({
+                "id": group_id,
+                "method": "GET",
+                "url": f"/groups/{group_id}/members/$count",
+                "headers": {
+                    "ConsistencyLevel": "eventual"
+                }
+            })
+
+        batch_group_count_response = self.manager.make_batched_graph_request(
+            batch_group_count_request
+        )
+
+        # Annotate resources with member counts
+        for group_result in batch_group_count_response:
+            member_count = None
+            resource = [x for x in resources if x.get("id") == group_result.get("id")][0]
+
+            if group_result.get("status", 503) < 300:
+                member_count_data = group_result.get("body", None)
+                if isinstance(member_count_data, (int, str)):
+                    member_count = int(member_count_data)
 
             if member_count is None:
                 # Unknown member count (permission error or API failure)
                 # Skip this group to avoid false results
-
                 log.warning(
                     f"Could not determine member count for group "
                     f"{resource.get('displayName', group_id)}"
                 )
                 continue
 
-            if op == 'greater-than' and member_count > count_threshold:
-                filtered.append(resource)
-            elif op == 'less-than' and member_count < count_threshold:
-                filtered.append(resource)
-            elif op == 'equal' and member_count == count_threshold:
-                filtered.append(resource)
+            resource[self.annotation_key] = member_count
 
-        return filtered
+        # Let ValueFilter do the actual filtering based on the annotated values
+        return super().process(resources, event)
 
 
 @EntraIDGroup.filter_registry.register('owner-count')
