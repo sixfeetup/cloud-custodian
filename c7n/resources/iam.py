@@ -2399,28 +2399,56 @@ class UserServiceSpecificCredentials(ValueFilter):
     matched_annotation_key = 'c7n:matched-service-specific-credentials'
     annotate = False
 
-    def get_user_service_specific_credentials(self, client, user_set):
-        for u in user_set:
-            u[self.annotation_key] = self.manager.retry(
-                client.list_service_specific_credentials,
-                UserName=u['UserName'])['ServiceSpecificCredentials']
+    def get_all_service_specific_credentials(self, client):
+        all_credentials = {}
+        # Pagination is different, so we need to look for the lack of truncation.
+        is_truncated = True
+        marker = None
+        # Implement a numeric cap, to prevent infinite loops.
+        # This allows for up to 5000 items to be returned.
+        max_requests = 50
+        num_requests = 0
+
+        while is_truncated is True and num_requests < max_requests:
+            kwargs = {
+                "AllUsers": True,
+                # This needs to be present for paingation to be active.
+                "MaxItems": 100,
+            }
+
+            if marker is not None:
+                kwargs["Marker"] = marker
+
+            resp = client.list_service_specific_credentials(**kwargs)
+            credentials = resp.get("ServiceSpecificCredentials", [])
+
+            for cred_detail in credentials:
+                all_credentials.setdefault(cred_detail["UserName"], [])
+                all_credentials[cred_detail["UserName"]].append(cred_detail)
+
+            # Bookkeeping.
+            num_requests += 1
+            is_truncated = resp.get("IsTruncated", False)
+            marker = resp.get("Marker", None)
+
+        return all_credentials
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client('iam')
-        with self.executor_factory(max_workers=2) as w:
-            augment_set = [r for r in resources if self.annotation_key not in r]
-            self.log.debug(
-                "Querying %d users' service specific credentials" % len(augment_set))
-            list(w.map(
-                functools.partial(self.get_user_service_specific_credentials, client),
-                chunks(augment_set, 50)))
-
+        all_credentials = self.get_all_service_specific_credentials(client)
         matched = []
+
         for r in resources:
+            if r["UserName"] not in all_credentials:
+                continue
+
+            r[self.annotation_key] = all_credentials[r["UserName"]]
             matched_credentials = [k for k in r[self.annotation_key] if self.match(k)]
             self.merge_annotation(r, self.matched_annotation_key, matched_credentials)
+
             if matched_credentials:
                 matched.append(r)
+
         return matched
 
 

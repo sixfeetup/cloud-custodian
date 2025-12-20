@@ -1133,10 +1133,33 @@ class IamUserTest(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]["UserName"], "testuser-8aa8c470")
-        self.assertEqual(len(resources[0]["c7n:matched-service-specific-credentials"]), 1)
+        self.assertEqual(len(resources[0]["c7n:matched-service-specific-credentials"]), 3)
         self.assertEqual(
             resources[0]["c7n:matched-service-specific-credentials"][0]["ServiceName"],
             "codecommit.amazonaws.com"
+        )
+        # Active, page 1.
+        self.assertEqual(
+            resources[0]["c7n:matched-service-specific-credentials"][0]["ServiceSpecificCredentialId"],
+            "ACCACKCEVSQ6C2EXAMPLE"
+        )
+        self.assertEqual(
+            resources[0]["c7n:matched-service-specific-credentials"][1]["ServiceName"],
+            "codecommit.amazonaws.com"
+        )
+        # Inactive, page 1.
+        self.assertEqual(
+            resources[0]["c7n:matched-service-specific-credentials"][1]["ServiceSpecificCredentialId"],
+            "ACCACKCEVSQ6A1EX4MPLE"
+        )
+        # Active, page 2.
+        self.assertEqual(
+            resources[0]["c7n:matched-service-specific-credentials"][2]["ServiceName"],
+            "codecommit.amazonaws.com"
+        )
+        self.assertEqual(
+            resources[0]["c7n:matched-service-specific-credentials"][2]["ServiceSpecificCredentialId"],
+            "ACCACKCEVSQ6F7EXAMPLE"
         )
 
     def test_iam_user_service_specific_credentials_filter_by_age(self):
