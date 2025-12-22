@@ -7,7 +7,6 @@ import pytest
 from pytest_terraform import terraform
 
 from c7n.exceptions import PolicyValidationError
-from c7n.filters.core import ComparableVersion
 from c7n.resources.aws import shape_validate
 from c7n.resources.elasticsearch import parse_es_version
 
