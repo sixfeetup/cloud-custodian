@@ -105,16 +105,19 @@ class ElasticSearch(BaseTest):
         # Test the version parsing function
         self.assertEqual(
             parse_es_version("Elasticsearch_7.4"),
-            ("Elasticsearch", "7.4", ComparableVersion("7.4"))
+            ("Elasticsearch", "7.4"),
         )
         self.assertEqual(
             parse_es_version("OpenSearch_1.3"),
-            ("OpenSearch", "1.3", ComparableVersion("1.3"))
+            ("OpenSearch", "1.3"),
         )
-        self.assertEqual(parse_es_version("invalid"), (None, None, None))
+        self.assertEqual(
+            parse_es_version("invalid"),
+            (None, None),
+        )
         self.assertEqual(
             parse_es_version("7.2"),
-            ("Elasticsearch", "7.2", ComparableVersion("7.2"))
+            ("Elasticsearch", "7.2"),
         )
 
     def test_upgrade_available_filter_with_upgrades(self):
@@ -140,7 +143,7 @@ class ElasticSearch(BaseTest):
         self.assertIn('c7n:AvailableUpgrades', resources[0])
         self.assertEqual(
             sorted(resources[0]['c7n:AvailableUpgrades']),
-            sorted(['ElasticSeach_7.7']),
+            sorted(['ElasticSearch_7.7']),
         )
 
     def test_upgrade_available_filter_with_major_upgrades(self):
@@ -153,7 +156,7 @@ class ElasticSearch(BaseTest):
                     {
                         "type": "upgrade-available",
                         "value": True,  # Only domains with upgrades available
-                        "major": True  # Only minor version upgrades
+                        "major": True  # Major version upgrades allowed
                     }
                 ],
             },
@@ -166,7 +169,12 @@ class ElasticSearch(BaseTest):
         self.assertIn('c7n:AvailableUpgrades', resources[0])
         self.assertEqual(
             sorted(resources[0]['c7n:AvailableUpgrades']),
-            sorted(['ElasticSeach_7.6', 'ElasticSeach_7.7']),
+            sorted([
+                'ElasticSearch_6.0',
+                'ElasticSearch_7.6',
+                'ElasticSearch_7.7',
+                'OpenSearch_1.0',
+            ]),
         )
 
     def test_upgrade_available_filter_no_upgrades(self):
@@ -185,12 +193,9 @@ class ElasticSearch(BaseTest):
             session_factory=factory,
         )
         resources = p.run()
-        # Should include domains that have no available upgrades
-        for r in resources:
-            self.assertIn('c7n:AvailableUpgrades', r)
-            upgrades = r['c7n:AvailableUpgrades']
-            self.assertIsInstance(upgrades, list)
-            self.assertEqual(len(upgrades), 0)
+        self.assertEqual(len(resources), 1)
+        self.assertIn('c7n:AvailableUpgrades', resources[0])
+        self.assertEqual(len(resources[0]['c7n:AvailableUpgrades']), 0)
 
     def test_delete_search(self):
         factory = self.replay_flight_data("test_elasticsearch_delete")

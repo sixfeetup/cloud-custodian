@@ -1,8 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from collections import defaultdict
 import json
 import time
-from collections import defaultdict
+from typing import TypedDict, Dict, List, Tuple
+
+from botocore.client import BaseClient
 
 from c7n.actions import Action, BaseAction, ModifyVpcSecurityGroupsAction, RemovePolicyBase
 from c7n.filters import MetricsFilter, CrossAccountAccessFilter, ValueFilter
@@ -19,31 +22,30 @@ import c7n.filters.policystatement as polstmt_filter
 from .securityhub import PostFinding
 
 
-def parse_es_version(version):
+def parse_es_version(version: str) -> Tuple[str, str]:
     """
     Parses a ElasticSearch/OpenSearch version string into a
-    `(engine_name, full_version_str, parsed_version)` tuple.
+    `(engine_name, full_version_str)` tuple.
 
     Examples:
-    - "Elasticsearch_7.4" -> ("Elasticsearch", "7.4", ComparableVersion("7.4"))
-    - "OpenSearch_1.3" -> ("OpenSearch", "1.3", ComparableVersion("1.3"))
+    - "Elasticsearch_7.4" -> ("Elasticsearch", "7.4")
+    - "OpenSearch_1.3" -> ("OpenSearch", "1.3")
     """
     # If it's empty, return all `None`s.
     if not version:
-        return None, None, None
+        return None, None
 
     # If there's no `_` in the version string, check for a plain version.
     if '_' not in version:
         # If it doesn't start with a number, it's probably not a valid version
         # string.
         if not version[0].isnumeric():
-            return None, None, None
+            return None, None
 
-        return "Elasticsearch", version, ComparableVersion(version)
+        return "Elasticsearch", version
 
     engine_name, version_str = version.split('_', 1)
-    version = ComparableVersion(version_str)
-    return engine_name, version_str, version
+    return engine_name, version_str
 
 
 class DescribeDomain(DescribeSource):
@@ -331,6 +333,24 @@ class SourceIP(Filter):
         return source_ips
 
 
+EngineUpgradesDict = Dict[
+    # Version string from the API as the key.
+    str, List[
+        # Each of the available upgrades.
+        TypedDict("TargetUpgradeOptions", {
+            "engine": str,
+            "version": str,
+            "original": str,
+        })
+    ]
+]
+# A type to make clear the expected structure for upgrade options.
+ESUpgradeOptionsDict = TypedDict("ESUpgradeOptionsDict", {
+    "elasticsearch": EngineUpgradesDict,
+    "opensearch": EngineUpgradesDict,
+})
+
+
 @ElasticSearchDomain.filter_registry.register('upgrade-available')
 class UpgradeAvailable(Filter):
     """Scans for available upgrade-compatible ES versions
@@ -357,75 +377,132 @@ class UpgradeAvailable(Filter):
         value={'type': 'boolean'},
     )
     permissions = ('es:GetCompatibleVersions',)
+    annotation_key = "c7n:AvailableUpgrades"
+
+    def collect_available_upgrades(self, client: BaseClient) -> ESUpgradeOptionsDict:
+        """
+        Fetch all upgrades for all engines/versions.
+
+        We want a structure that will let us efficiently look up those values
+        per-resource, and return all the upgrade options in a single O(1)-ish
+        lookup.
+        """
+        all_upgrades = {
+            "elasticsearch": {},
+            "opensearch": {},
+        }
+
+        # We fetch them all at once & restructure.
+        response = self.manager.retry(
+            client.get_compatible_elasticsearch_versions,
+            ignore_err_codes=('ResourceNotFoundException',)
+        )
+        compatible_versions = response.get('CompatibleElasticsearchVersions', [])
+
+        for upgrade_options in compatible_versions:
+            source_version = upgrade_options.get('SourceVersion')
+            target_versions = upgrade_options.get('TargetVersions', [])
+
+            source_engine, sversion_str = parse_es_version(source_version)
+            source_engine = source_engine.lower()
+            all_upgrades.setdefault(source_engine, {})
+            all_upgrades[source_engine].setdefault(sversion_str, [])
+
+            for target_version in target_versions:
+                target_engine, tversion_str = parse_es_version(target_version)
+                all_upgrades[source_engine][sversion_str].append({
+                    "engine": target_engine,
+                    "version": tversion_str,
+                    "original": target_version,
+                })
+
+        return all_upgrades
+
+    def get_matches_for(
+        self,
+        current_engine: str,
+        cversion: ComparableVersion,
+        per_engine_options: EngineUpgradesDict,
+        check_major=False
+    ) -> List[str]:
+        matches = []
+
+        for sversion_str, targets in per_engine_options.items():
+            sversion = ComparableVersion(sversion_str)
+
+            # Compare major versions first, ...
+            if sversion.version[0] != cversion.version[0]:
+                continue
+
+            # ...then minor, to find a match.
+            if (
+                len(sversion.version) < 2
+                or len(cversion.version) < 2
+                or sversion.version[1] != cversion.version[1]
+            ):
+                continue
+
+            # If we're here, we have a "good-enough" engine/version match.
+            # Next, we'll build the list of matching upgrades.
+            for target_data in targets:
+                target_engine = target_data["engine"]
+                tversion = ComparableVersion(target_data["version"])
+
+                # If the engines don't match, it'd be considered a "major"
+                # upgrade.
+                if (
+                    target_engine.lower() != current_engine.lower()
+                    and not check_major
+                ):
+                    continue
+
+                # Only if the engines are the same, should we check the
+                # major versions.
+                if (
+                    target_engine.lower() == current_engine.lower()
+                    and tversion.version[0] > sversion.version[0]
+                    and not check_major
+                ):
+                    continue
+
+                matches.append(target_data["original"])
+
+        return matches
 
     def process(self, resources, event=None):
         client = local_session(self.manager.session_factory).client('es')
         check_major = self.data.get('major', False)
         check_upgrade_extant = self.data.get('value', True)
         results = []
-        compatible_versions = []
 
-        # Get compatible versions for this domain
-        response = self.manager.retry(
-            client.get_compatible_elasticsearch_versions,
-            ignore_err_codes=('ResourceNotFoundException',)
-        )
-
-        if response:
-            compatible_versions = response.get('CompatibleVersions', [])
+        all_available_upgrades = self.collect_available_upgrades(client)
 
         for r in resources:
-            current_version = r.get('ElasticsearchVersion', '')
+            current_raw_version = r.get('ElasticsearchVersion', '')
+            current_engine, cversion_str = parse_es_version(current_raw_version)
+            cversion = ComparableVersion(cversion_str)
+            per_engine_options = all_available_upgrades.get(current_engine.lower())
+            matches = self.get_matches_for(
+                current_engine,
+                cversion,
+                per_engine_options,
+                check_major=check_major
+            )
 
-            # Find upgrades for the current domain version
-            available_upgrades = set([])
+            # Annotate on all the upgrades (in a stable ordering).
+            r[self.annotation_key] = list(sorted(matches))
 
-            for version_map in compatible_versions:
-                source_version = version_map.get('SourceVersion')
-                target_versions = version_map.get('TargetVersions', [])
-
-                source_engine, sversion_str, sversion = parse_es_version(source_version)
-
-                # If this doesn't match our current domain version, skip.
-                if (
-                    sversion_str != current_version and
-                    not check_major
-                ):
-                    continue
-
-                for target in target_versions:
-                    target_engine, _, tversion = parse_es_version(target)
-
-                    if not target_engine or not source_engine:
-                        # If anything can't be parsed, skip.
-                        continue
-
-                    if target_engine.lower() != source_engine.lower():
-                        # If the engines don't match, skip.
-                        continue
-
-                    # Check the major version.
-                    if tversion.version[0] < sversion.version[0]:
-                        # It's an older version. Skip.
-                        continue
-                    elif tversion.version[0] == sversion.version[0]:
-                        if tversion > sversion:
-                            # It's a minor upgrade. We always want this.
-                            available_upgrades.add(target)
-                    else:
-                        # It's a major version upgrade. Check the filter.
-                        if check_major:
-                            available_upgrades.add(target)
-
-                    available_upgrades.add(target)
-
-            # Annotate the resource with available upgrades
-            r['c7n:AvailableUpgrades'] = sorted(list(available_upgrades))
-
-            # Decide whether to include this resource based on value filter
-            has_upgrades = len(available_upgrades) > 0
-            if check_upgrade_extant == has_upgrades:
-                results.append(r)
+            # Lastly, depending on `value` (filter if upgrades exist or not):
+            if check_upgrade_extant:
+                if matches:
+                    # We want to filter to include only resources that have
+                    # upgrades.
+                    results.append(r)
+            else:
+                if not matches:
+                    # We want to filter to include only resources **without**
+                    # upgrades,
+                    results.append(r)
 
         return results
 

@@ -12,12 +12,21 @@
         "content-type": "application/json"
       }
     },
-    "CompatibleVersions": [
+    "CompatibleElasticsearchVersions": [
       {
-        "SourceVersion": "ElasticSeach_7.5",
+        "SourceVersion": "ElasticSearch_5.3",
         "TargetVersions": [
-          "ElasticSeach_7.6",
-          "ElasticSeach_7.7",
+          "ElasticSearch_6.0",
+          "ElasticSearch_7.6",
+          "ElasticSearch_7.7",
+          "OpenSearch_1.0"
+        ]
+      },
+      {
+        "SourceVersion": "ElasticSearch_7.5",
+        "TargetVersions": [
+          "ElasticSearch_7.6",
+          "ElasticSearch_7.7",
           "OpenSearch_1.0"
         ]
       }
