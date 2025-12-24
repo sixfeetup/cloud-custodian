@@ -1,14 +1,14 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from c7n.actions import BaseAction
 from c7n.manager import resources
 from c7n.filters.kms import KmsRelatedFilter
 from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, ConfigSource
 from c7n.tags import universal_augment
-from c7n.utils import local_session
+from c7n.utils import local_session, type_schema
 
 
 class DescribeBackup(DescribeSource):
-
     def augment(self, resources):
         resources = super(DescribeBackup, self).augment(resources)
         client = local_session(self.manager.session_factory).client('backup')
@@ -41,7 +41,6 @@ class DescribeBackup(DescribeSource):
 
 @resources.register('backup-plan')
 class BackupPlan(QueryResourceManager):
-
     class resource_type(TypeInfo):
         service = 'backup'
         enum_spec = ('list_backup_plans', 'BackupPlansList', None)
@@ -53,14 +52,50 @@ class BackupPlan(QueryResourceManager):
         universal_taggable = object()
         permissions_augment = ("backup:ListTags",)
 
-    source_mapping = {
-        'describe': DescribeBackup,
-        'config': ConfigSource
-    }
+    source_mapping = {'describe': DescribeBackup, 'config': ConfigSource}
+
+
+@BackupPlan.action_registry.register('delete')
+class BackupPlanDeleteAction(BaseAction):
+    """
+    Action to delete a backup plan
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: backup-plan-removal
+            resource: aws.backup-plan
+            filters:
+              - type: value
+                key: "Owner"
+                value: "{account_id}"
+                op: ne
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema('delete')
+    permissions = ("backup:DeleteBackupPlan",)
+
+    def process(self, resources):
+        client = local_session(self.manager.session_factory).client(
+            self.manager.get_model().service
+        )
+
+        for r in resources:
+            self.process_resource(client, r)
+
+    def process_resource(self, client, resource):
+        self.manager.retry(
+            client.delete_backup_plan,
+            BackupPlanId=resource['BackupPlanId'],
+            ignore_err_codes=('ResourceNotFoundException',),
+        )
 
 
 class DescribeVault(DescribeSource):
-
     def augment(self, resources):
         return universal_augment(self.manager, super(DescribeVault, self).augment(resources))
 
@@ -69,8 +104,7 @@ class DescribeVault(DescribeSource):
         resources = []
         for rid in resource_ids:
             try:
-                resources.append(
-                    client.describe_backup_vault(BackupVaultName=rid))
+                resources.append(client.describe_backup_vault(BackupVaultName=rid))
             except client.exceptions.ResourceNotFoundException:
                 continue
         return resources
@@ -78,7 +112,6 @@ class DescribeVault(DescribeSource):
 
 @resources.register('backup-vault')
 class BackupVault(QueryResourceManager):
-
     class resource_type(TypeInfo):
         service = 'backup'
         enum_spec = ('list_backup_vaults', 'BackupVaultList', None)
@@ -88,13 +121,48 @@ class BackupVault(QueryResourceManager):
         universal_taggable = object()
         config_type = cfn_type = 'AWS::Backup::BackupVault'
 
-    source_mapping = {
-        'describe': DescribeVault,
-        'config': ConfigSource
-    }
+    source_mapping = {'describe': DescribeVault, 'config': ConfigSource}
 
 
 @BackupVault.filter_registry.register('kms-key')
 class KmsFilter(KmsRelatedFilter):
-
     RelatedIdsExpression = 'EncryptionKeyArn'
+
+
+@BackupVault.action_registry.register('delete')
+class BackupVaultDeleteAction(BaseAction):
+    """
+    Action to delete a backup vault
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: backup-vault-removal
+            resource: aws.backup-vault
+            filters:
+              - type: value
+                key: "BackupVaultName"
+                value: "test-vault"
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema('delete')
+    permissions = ("backup:DeleteBackupVault",)
+
+    def process(self, resources):
+        client = local_session(self.manager.session_factory).client(
+            self.manager.get_model().service
+        )
+
+        for r in resources:
+            self.process_resource(client, r)
+
+    def process_resource(self, client, resource):
+        self.manager.retry(
+            client.delete_backup_vault,
+            BackupVaultName=resource['BackupVaultName'],
+            ignore_err_codes=('ResourceNotFoundException',),
+        )
