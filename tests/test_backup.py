@@ -205,3 +205,62 @@ class BackupVaultTest(BaseTest):
         vaults = client.list_backup_vaults().get('BackupVaultList', [])
         vault_names = [v['BackupVaultName'] for v in vaults]
         self.assertNotIn(resources[0]['BackupVaultName'], vault_names)
+
+    def test_backup_vault_delete_with_recovery_points_fails(self):
+        factory = self.replay_flight_data("test_backup_vault_delete_with_recovery_points_fails")
+        p = self.load_policy(
+            {
+                "name": "backup-vault-delete",
+                "resource": "backup-vault",
+                "filters": [
+                    {
+                        "type": "value",
+                        "key": "BackupVaultName",
+                        "value": "test-backup-vault",
+                    },
+                ],
+                "actions": [
+                    {"type": "delete"},
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # Verify the backup vault still exists (deletion should have failed)
+        client = factory().client("backup")
+        vaults = client.list_backup_vaults().get('BackupVaultList', [])
+        vault_names = [v['BackupVaultName'] for v in vaults]
+        self.assertIn(resources[0]['BackupVaultName'], vault_names)
+
+    def test_backup_vault_delete_with_remove_recovery_points(self):
+        factory = self.replay_flight_data("test_backup_vault_delete_with_remove_recovery_points")
+        p = self.load_policy(
+            {
+                "name": "backup-vault-delete",
+                "resource": "backup-vault",
+                "filters": [
+                    {
+                        "type": "value",
+                        "key": "BackupVaultName",
+                        "value": "test-backup-vault",
+                    },
+                ],
+                "actions": [
+                    {
+                        "type": "delete",
+                        "remove-recovery-points": True,
+                    },
+                ],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # Verify the backup vault was deleted
+        client = factory().client("backup")
+        vaults = client.list_backup_vaults().get('BackupVaultList', [])
+        vault_names = [v['BackupVaultName'] for v in vaults]
+        self.assertNotIn(resources[0]['BackupVaultName'], vault_names)

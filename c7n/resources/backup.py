@@ -82,7 +82,7 @@ class BackupPlanDeleteAction(BaseAction):
     """
 
     schema = type_schema('delete', **{'remove-selections': {'type': 'boolean'}})
-    permissions = ("backup:DeleteBackupPlan",)
+    permissions = ("backup:*",)
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client(
@@ -166,7 +166,10 @@ class KmsFilter(KmsRelatedFilter):
 @BackupVault.action_registry.register('delete')
 class BackupVaultDeleteAction(BaseAction):
     """
-    Action to delete a backup vault
+    Action to delete a backup vault.
+
+    Only works against empty Backup Vaults (unless `remove-recovery-points` is
+    provided, which will empty them out for you).
 
     :example:
 
@@ -181,10 +184,12 @@ class BackupVaultDeleteAction(BaseAction):
                 value: "test-vault"
             actions:
               - type: delete
+                # If there are any recovery points still in the vault, remove them first.
+                remove-recovery-points: true
     """
 
-    schema = type_schema('delete')
-    permissions = ("backup:DeleteBackupVault",)
+    schema = type_schema('delete', **{'remove-recovery-points': {'type': 'boolean'}})
+    permissions = ("backup:*",)
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client(
@@ -194,9 +199,38 @@ class BackupVaultDeleteAction(BaseAction):
         for r in resources:
             self.process_resource(client, r)
 
+    def get_recovery_points_for_vault(self, client, backup_vault_name):
+        recovery_points = []
+        paginator = client.get_paginator('list_recovery_points_by_backup_vault')
+
+        for resp in paginator.paginate(BackupVaultName=backup_vault_name):
+            for recovery_point_data in resp.get("RecoveryPoints", []):
+                recovery_points.append(recovery_point_data['RecoveryPointArn'])
+
+        return recovery_points
+
     def process_resource(self, client, resource):
+        backup_vault_name = resource['BackupVaultName']
+        remove_recovery_points = self.data.get("remove-recovery-points", False)
+        existing_recovery_points = self.get_recovery_points_for_vault(client, backup_vault_name)
+
+        if len(existing_recovery_points):
+            if not remove_recovery_points:
+                self.log.error(
+                    f"Error while deleting backup vault {backup_vault_name}, vault is not empty"
+                )
+                return False
+
+            for recovery_point_arn in existing_recovery_points:
+                self.manager.retry(
+                    client.delete_recovery_point,
+                    BackupVaultName=backup_vault_name,
+                    RecoveryPointArn=recovery_point_arn,
+                    ignore_err_codes=('ResourceNotFoundException',),
+                )
+
         self.manager.retry(
             client.delete_backup_vault,
-            BackupVaultName=resource['BackupVaultName'],
+            BackupVaultName=backup_vault_name,
             ignore_err_codes=('ResourceNotFoundException',),
         )
