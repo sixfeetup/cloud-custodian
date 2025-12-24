@@ -58,7 +58,10 @@ class BackupPlan(QueryResourceManager):
 @BackupPlan.action_registry.register('delete')
 class BackupPlanDeleteAction(BaseAction):
     """
-    Action to delete a backup plan
+    Action to delete a backup plan.
+
+    Only works against empty Backup Plans (unless `remove-selections` is
+    provided, which will empty them out for you).
 
     :example:
 
@@ -74,9 +77,11 @@ class BackupPlanDeleteAction(BaseAction):
                 op: ne
             actions:
               - type: delete
+                # If there are any selections still in the plan, remove them first.
+                remove-selections: true
     """
 
-    schema = type_schema('delete')
+    schema = type_schema('delete', **{'remove-selections': {'type': 'boolean'}})
     permissions = ("backup:DeleteBackupPlan",)
 
     def process(self, resources):
@@ -87,10 +92,39 @@ class BackupPlanDeleteAction(BaseAction):
         for r in resources:
             self.process_resource(client, r)
 
+    def get_selections_for_plan(self, client, backup_plan_id):
+        selections = []
+        paginator = client.get_paginator('list_backup_selections')
+
+        for resp in paginator.paginate(BackupPlanId=backup_plan_id):
+            for selection_data in resp.get("BackupSelectionsList", []):
+                selections.append(selection_data['SelectionId'])
+
+        return selections
+
     def process_resource(self, client, resource):
+        backup_plan_id = resource['BackupPlanId']
+        remove_selections = self.data.get("remove-selections", False)
+        existing_selections = self.get_selections_for_plan(client, backup_plan_id)
+
+        if len(existing_selections):
+            if not remove_selections:
+                self.log.error(
+                    f"Error while deleting backup plan {backup_plan_id}, plan is not empty"
+                )
+                return False
+
+            for selection_id in existing_selections:
+                self.manager.retry(
+                    client.delete_backup_selection,
+                    BackupPlanId=backup_plan_id,
+                    SelectionId=selection_id,
+                    ignore_err_codes=('ResourceNotFoundException',),
+                )
+
         self.manager.retry(
             client.delete_backup_plan,
-            BackupPlanId=resource['BackupPlanId'],
+            BackupPlanId=backup_plan_id,
             ignore_err_codes=('ResourceNotFoundException',),
         )
 
