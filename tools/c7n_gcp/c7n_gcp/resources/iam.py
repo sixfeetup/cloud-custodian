@@ -42,36 +42,6 @@ class ProjectRole(QueryResourceManager):
             )
 
 
-@ProjectRole.action_registry.register('delete')
-class RoleDeleteAction(MethodAction):
-    """Action to delete GCP custom project roles
-
-    It is recommended to use a filter to avoid unwanted deletion of IAM roles
-
-    :example:
-
-    .. code-block:: yaml
-
-            policies:
-              - name: gcp-delete-testing-project-roles
-                resource: gcp.project-role
-                filters:
-                  - type: value
-                    key: name
-                    op: regex
-                    value: '.*test.*'
-                actions:
-                  - type: delete
-    """
-
-    schema = type_schema('delete')
-    method_spec = {'op': 'delete'}
-    permissions = ('iam.roles.delete',)
-
-    def get_resource_params(self, model, resource):
-        return {'name': resource['name']}
-
-
 @resources.register('service-account')
 class ServiceAccount(QueryResourceManager):
     class resource_type(TypeInfo):
@@ -238,6 +208,36 @@ class Role(QueryResourceManager):
         @staticmethod
         def get(client, resource_info):
             return client.execute_command('get', {'name': 'roles/{}'.format(resource_info['name'])})
+
+
+@Role.action_registry.register('delete')
+class RoleDeleteAction(MethodAction):
+    """Action to delete GCP custom roles
+
+    It is recommended to use a filter to avoid unwanted deletion of IAM roles
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: gcp-delete-testing-project-roles
+                resource: gcp.iam-role
+                filters:
+                  - type: value
+                    key: name
+                    op: regex
+                    value: '.*test.*'
+                actions:
+                  - type: delete
+    """
+
+    schema = type_schema('delete')
+    method_spec = {'op': 'delete'}
+    permissions = ('iam.roles.delete',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
 
 
 @resources.register('api-key')
