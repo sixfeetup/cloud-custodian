@@ -32,6 +32,32 @@ class ProjectRoleTest(BaseTest):
             ["gcp:iam::cloud-custodian:project-role/CustomRole1"],
         )
 
+    def test_project_role_delete(self):
+        project_id = "custodian-1291"
+        role_name = "custodianTestRole"
+        factory = self.replay_flight_data("iam-project-role-delete", project_id)
+        p = self.load_policy(
+            {
+                "name": "role-delete",
+                "resource": "gcp.project-role",
+                "filters": [{"name": f"projects/{project_id}/roles/{role_name}"}],
+                "actions": ["delete"],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        if self.recording:
+            time.sleep(1)
+        client = p.resource_manager.get_client()
+        try:
+            result = client.execute_query("get", {"name": resources[0]["name"]})
+            # If role still exists, it should be marked as deleted
+            self.assertTrue(result.get("deleted", False))
+        except HttpError as e:
+            # Or it might return a 404/403
+            self.assertTrue("Not Found" in str(e) or "404" in str(e) or "403" in str(e))
+
 
 class ServiceAccountTest(BaseTest):
     def test_get(self):
@@ -301,10 +327,7 @@ class ApiKeyTest(BaseTest):
             {
                 "name": "gcp-api-key-list",
                 "resource": "gcp.api-key",
-                "filters": [{
-                    "type": "time-range",
-                    "value": 30
-                }],
+                "filters": [{"type": "time-range", "value": 30}],
             },
             session_factory=factory,
         )
@@ -312,5 +335,5 @@ class ApiKeyTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertEqual(
             resources[0]["name"],
-            "projects/cloud-custodian/locations/global/keys/03b651c2-718a-4702-b5d7-9946987cc4da"
+            "projects/cloud-custodian/locations/global/keys/03b651c2-718a-4702-b5d7-9946987cc4da",
         )
