@@ -577,9 +577,9 @@ def find_unexpanded_variables(obj, path="", allowed_placeholders=None):
         obj: Policy data object (dict, list, str, or other)
         path: Current path in the object tree (for error reporting)
         allowed_placeholders: Optional set of placeholder strings (e.g., {'{event}', '{op}'})
-                            that should NOT be flagged as errors. These represent framework
-                            runtime variables that are intentionally not expanded during
-                            validation. If None (default), no placeholders are allowed.
+                              that should NOT be flagged as errors. These represent framework
+                              runtime variables that are intentionally not expanded during
+                              validation. If None (default), no placeholders are allowed.
 
     Returns:
         list: List of tuples (path, unexpanded_string) for each unexpanded variable
@@ -639,9 +639,9 @@ def extract_framework_runtime_variables(variables):
     Example:
         variables = {
             'account_id': '123456789012',  # Expanded value
-            'region': 'us-east-1',          # Expanded value
-            'event': '{event}',              # Runtime placeholder
-            'op': '{op}'                     # Runtime placeholder
+            'region': 'us-east-1',         # Expanded value
+            'event': '{event}',            # Runtime placeholder
+            'op': '{op}'                   # Runtime placeholder
         }
         Returns: {'{event}', '{op}'}
     """
