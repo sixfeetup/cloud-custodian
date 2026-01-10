@@ -12,6 +12,8 @@ import time
 import subprocess  # nosec
 import sys
 import shlex
+import re
+import copy
 
 import multiprocessing
 from concurrent.futures import (
@@ -24,14 +26,17 @@ from botocore.exceptions import ClientError
 import click
 import jsonschema
 
+from c7n import schema, deprecated
 from c7n.credentials import assumed_session, SessionFactory
 from c7n.executor import MainThreadExecutor
 from c7n.exceptions import InvalidOutputConfig
-from c7n.config import Config
-from c7n.policy import PolicyCollection
+from c7n.config import Config, Bag
+from c7n.loader import SourceLocator
+from c7n.policy import PolicyCollection, Policy, PolicyValidationError
 from c7n.provider import get_resource_class, clouds as cloud_providers
 from c7n.reports.csvout import Formatter, fs_record_set, record_set, strip_output_path
-from c7n.resources import load_available
+from c7n.resources import load_available, load_resources
+from c7n.schema import StructureParser
 from c7n.utils import (
     CONN_CACHE, dumps, filter_empty, format_string_values, get_policy_provider, join_output_path)
 
@@ -471,12 +476,6 @@ def validate_basic(custodian_config, policy_file, fmt, check_mode, verbose):
     Returns:
         bool: True if validation passes, False otherwise
     """
-    from c7n import schema, deprecated
-    from c7n.schema import StructureParser
-    from c7n.policy import Policy, PolicyValidationError
-    from c7n.config import Config, Bag
-    from c7n.resources import load_resources
-    from c7n.loader import SourceLocator
 
     # Core validation logic
     structure = StructureParser()
@@ -594,8 +593,6 @@ def find_unexpanded_variables(obj, path="", allowed_placeholders=None):
         framework_vars = extract_framework_runtime_variables(variables)
         errors = find_unexpanded_variables(policy_data, allowed_placeholders=framework_vars)
     """
-    import re
-
     unexpanded = []
     var_pattern = re.compile(r'\{[^}]+\}')
 
@@ -648,8 +645,6 @@ def extract_framework_runtime_variables(variables):
         }
         Returns: {'{event}', '{op}'}
     """
-    import re
-
     runtime_placeholders = set()
     # Match strings that are EXACTLY a placeholder: {something}
     # This excludes partial matches like "arn:aws:iam::{account_id}::role/name"
@@ -685,12 +680,6 @@ def validate_per_account(custodian_config, accounts_config, policy_file,
     Returns:
         bool: True if validation passes for all accounts, False otherwise
     """
-    import copy
-    from c7n import deprecated
-    from c7n.policy import Policy
-    from c7n.config import Config, Bag
-    from c7n.loader import SourceLocator
-
     accounts = accounts_config['accounts']
     policies = custodian_config.get('policies', [])
 
