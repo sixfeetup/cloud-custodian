@@ -727,7 +727,7 @@ def validate_per_account(custodian_config, accounts_config, policy_file,
         )
 
         source_locator = None
-        if fmt in ('yml', 'yaml'):
+        if fmt.lower() in ('yml', 'yaml'):
             source_locator = SourceLocator(policy_file)
 
         # Validate each policy with account context
