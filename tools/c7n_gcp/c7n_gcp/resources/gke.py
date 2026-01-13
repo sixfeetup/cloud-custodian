@@ -334,7 +334,7 @@ class NodepoolDeleteAction(MethodAction):
         # Extract location and cluster name from the nodepool selfLink
         # selfLink format: projects/{project}/zones/{zone}/clusters/{cluster}/nodePools/{nodepool}
         project_param_re = re.compile(
-            '.*?/projects/(.*?)/(?:zones|locations)/(.*?)/clusters/(.*?)/nodePools/(.*?)'
+            '.*?/projects/([^/]+)/(?:zones|locations)/([^/]+)/clusters/([^/]+)/nodePools/([^/]+)'
         )
         match = re.match(project_param_re, resource['selfLink'])
         if match:

@@ -354,14 +354,12 @@ class KubernetesClusterNodePoolTest(BaseTest):
         self.assertEqual(1, len(resources))
         self.assertEqual('c7nnode-node-pool-1', resources[0]['name'])
 
-    @terraform('gke_nodepool', replay=False)
+    @terraform('gke_nodepool')
     def test_nodepool_delete(self):
-        from googleapiclient.errors import HttpError
-
         project_id = "cloud-custodian"
         nodepool_name = "custodian-nodepool-delete-test"
 
-        factory = self.record_flight_data("gke-nodepool-delete", project_id)
+        factory = self.replay_flight_data("gke-nodepool-delete", project_id)
         p = self.load_policy(
             {
                 "name": "delete-gke-nodepool",
