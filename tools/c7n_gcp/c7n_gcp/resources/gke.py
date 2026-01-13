@@ -327,7 +327,7 @@ class NodepoolDeleteAction(MethodAction):
 
     schema = type_schema('delete')
     method_spec = {'op': 'delete'}
-    permissions = ('container.nodePools.delete',)
+    permissions = ('container.clusters.update',)
 
     def get_resource_params(self, model, resource):
         project = local_session(self.manager.source.query.session_factory).get_default_project()
