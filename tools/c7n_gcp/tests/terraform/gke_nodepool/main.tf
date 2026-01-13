@@ -10,7 +10,7 @@ resource "random_pet" "cluster_name" {
 resource "google_container_cluster" "test_cluster" {
   name     = "c7n-test-cluster-${random_pet.cluster_name.id}"
   location = "us-central1-a"
-  
+
   # We can't create a cluster without a node pool defined
   # but we want to create a separate node pool for testing deletion
   remove_default_node_pool = true

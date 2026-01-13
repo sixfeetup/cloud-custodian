@@ -11,7 +11,7 @@ resource "google_project_iam_custom_role" "test_role" {
   role_id     = "custodianTestRole"
   title       = "Custodian Test Role"
   description = "A custom role for testing Cloud Custodian delete action"
-  
+
   permissions = [
     "storage.buckets.list",
     "storage.buckets.get",
