@@ -76,7 +76,10 @@ class KubernetesClusterTest(BaseTest):
                 'filters': [
                     {
                         'type': 'server-config',
-                        'key': "contains(serverConfig.validMasterVersions, resource.currentMasterVersion)",
+                        'key': (
+                            "contains(serverConfig.validMasterVersions, "
+                            "resource.currentMasterVersion)"
+                        ),
                         'value': False,
                     }
                 ],
