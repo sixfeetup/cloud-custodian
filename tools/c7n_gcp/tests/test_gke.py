@@ -3,6 +3,7 @@
 import time
 import pytest
 import logging
+from unittest import mock
 
 from pytest_terraform import terraform
 
@@ -402,3 +403,51 @@ class KubernetesClusterNodePoolTest(BaseTest):
         target_pool = [np for np in nodepools if np['name'] == nodepool_name]
         if target_pool:
             self.assertEqual(target_pool[0]['status'], 'STOPPING')
+
+    def test_nodepool_delete_fallback_path(self):
+        """Test nodepool deletion when selfLink regex fails and fallback is used"""
+        project_id = "cloud-custodian"
+        location = "us-central1-a"
+        cluster_name = "test-cluster"
+        nodepool_name = "test-nodepool"
+
+        # Create a resource with a malformed or non-standard selfLink
+        # that won't match the regex pattern
+        resource = {
+            "name": nodepool_name,
+            "selfLink": "malformed-link-that-wont-match-regex",
+        }
+
+        p = self.load_policy(
+            {
+                "name": "delete-gke-nodepool-fallback",
+                "resource": "gcp.gke-nodepool",
+                "actions": ["delete"],
+            }
+        )
+
+        # Mock the _get_parent_resource_info method to return parent info
+        mock_parent_info = {
+            'location': location,
+            'cluster_name': cluster_name,
+        }
+
+        # Get the action and test just the parameter extraction
+        action = p.resource_manager.actions[0]
+        action.manager._get_parent_resource_info = mock.MagicMock(return_value=mock_parent_info)
+
+        # Mock local_session for get_resource_params
+        mock_session = mock.MagicMock()
+        mock_session.get_default_project.return_value = project_id
+
+        with mock.patch('c7n_gcp.resources.gke.local_session', return_value=mock_session):
+            # Test get_resource_params directly to verify the fallback path
+            model = action.manager.get_model()
+            params = action.get_resource_params(model, resource)
+
+        # Verify _get_parent_resource_info was called (fallback path taken)
+        action.manager._get_parent_resource_info.assert_called_once_with(resource)
+
+        # Verify the correct parameters were generated from fallback
+        expected_name = f'projects/{project_id}/locations/{location}/clusters/{cluster_name}/nodePools/{nodepool_name}'
+        self.assertEqual(params['name'], expected_name)
