@@ -6,6 +6,7 @@ import time
 from unittest import mock
 
 import pytest
+from pytest_terraform import terraform
 
 from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
@@ -526,6 +527,7 @@ class IAMRoleTest(BaseTest):
             ],
         )
 
+    @terraform('iam_organization_role')
     def test_iam_role_delete(self):
         project_id = "cloud-custodian"
         org_id = "111111111111"
