@@ -237,12 +237,12 @@ class RoleDeleteAction(MethodAction):
     """
     # Preface: The `roles` resources is a mutt. It returns a blend of:
     #
-    # * pre-defined roles (NO TOUCHY)
+    # * pre-defined roles (GCP-defined, not allowed to delete)
     # * organization-wide roles
-    # * project-specific roles (Already more different above with `ProjectRole`)
+    # * project-specific roles (Already present in the `ProjectRole` resource above)
     #
     # In order to support deletes WITHOUT breaking the backward-compatibility
-    # of this resource, we need to do detection of the roles that allow deletes
+    # of this resource, we need to do detection of the roles that allow deletes.
 
     schema = type_schema('delete')
     method_spec = {'op': 'delete'}
@@ -252,10 +252,7 @@ class RoleDeleteAction(MethodAction):
         return {'name': r['name']}
 
     def is_organizational_role(self, role):
-        if not role.startswith('organizations/'):
-            return False
-
-        return True
+        return role.startswith('organizations/')
 
     def get_organizational_role_name(self, role):
         # Extract org ID: organizations/123456/roles/customRole
@@ -267,10 +264,7 @@ class RoleDeleteAction(MethodAction):
         return match.groups()[1]
 
     def is_project_role(self, role):
-        if not role.startswith('projects/'):
-            return False
-
-        return True
+        return role.startswith('projects/')
 
     def get_project_role_name(self, role):
         # Extract project ID: projects/my-project/roles/customRole
