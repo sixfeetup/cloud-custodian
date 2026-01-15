@@ -434,9 +434,7 @@ class KubernetesClusterNodePoolTest(BaseTest):
 
         # Get the action and test just the parameter extraction
         action = p.resource_manager.actions[0]
-        action.manager._get_parent_resource_info = mock.MagicMock(
-            return_value=mock_parent_info,
-        )
+        action.manager._get_parent_resource_info = mock.MagicMock(return_value=mock_parent_info)
 
         # Mock local_session for get_resource_params
         mock_session = mock.MagicMock()
@@ -451,8 +449,5 @@ class KubernetesClusterNodePoolTest(BaseTest):
         action.manager._get_parent_resource_info.assert_called_once_with(resource)
 
         # Verify the correct parameters were generated from fallback
-        expected_name = (
-            f'projects/{project_id}/locations/{location}/'
-            f'clusters/{cluster_name}/nodePools/{nodepool_name}'
-        )
+        expected_name = f'projects/{project_id}/locations/{location}/clusters/{cluster_name}/nodePools/{nodepool_name}'
         self.assertEqual(params['name'], expected_name)
