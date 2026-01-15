@@ -251,6 +251,10 @@ class RoleDeleteAction(MethodAction):
     def get_resource_params(self, m, r):
         return {'name': r['name']}
 
+    def handle_resource_error(self, client, model, resource, op_name, params, error):
+        self.log.error(f"Failed to call {op_name} with params: %s", params)
+        self.log.exception(error)
+
     def is_organizational_role(self, role):
         return role.startswith("organizations/")
 
