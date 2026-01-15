@@ -306,7 +306,7 @@ class RoleDeleteActionTest(BaseTest):
         mock_get_op,
         mock_get_params,
         mock_invoke,
-        mock_error
+        mock_error,
     ):
         override_client = mock.MagicMock()
         model = mock.MagicMock()
@@ -317,7 +317,7 @@ class RoleDeleteActionTest(BaseTest):
             "includedPermissions": [],
             "stage": "GA",
             "etag": "BwYGhFMnKpQ=",
-            "deleted": False
+            "deleted": False,
         }
 
         # Nothing should get raised, & no return value.
@@ -367,7 +367,7 @@ class RoleDeleteActionTest(BaseTest):
         mock_get_op,
         mock_get_params,
         mock_invoke,
-        mock_error
+        mock_error,
     ):
         override_client = mock.MagicMock()
         model = mock.MagicMock()
@@ -378,7 +378,7 @@ class RoleDeleteActionTest(BaseTest):
             "includedPermissions": [],
             "stage": "GA",
             "etag": "AwYGhFMnKpQ=",
-            "deleted": False
+            "deleted": False,
         }
 
         # Nothing should get raised, & no return value.
@@ -428,7 +428,7 @@ class RoleDeleteActionTest(BaseTest):
         mock_get_op,
         mock_get_params,
         mock_invoke,
-        mock_error
+        mock_error,
     ):
         override_client = mock.MagicMock()
         model = mock.MagicMock()
@@ -440,7 +440,7 @@ class RoleDeleteActionTest(BaseTest):
             "includedPermissions": [],
             "stage": "GA",
             "etag": "AwYGhFMnKpQ=",
-            "deleted": False
+            "deleted": False,
         }
 
         # Setup the error to occur.
@@ -451,7 +451,7 @@ class RoleDeleteActionTest(BaseTest):
         }
         mock_invoke.side_effect = HttpError(
             resp=mock.MagicMock(),
-            content=json.dumps(mock_resp).encode("utf-8")
+            content=json.dumps(mock_resp).encode("utf-8"),
         )
 
         # Even with an error, nothing should get raised, & no return value.
@@ -529,12 +529,11 @@ class IAMRoleTest(BaseTest):
 
     @terraform('iam_organization_role')
     def test_iam_role_delete(self):
-        project_id = "cloud-custodian"
         org_id = "111111111111"
         role_name = "customAccessContextManagerAdmin"
         full_role_name = f"organizations/{org_id}/roles/{role_name}"
 
-        factory = self.replay_flight_data("iam-role-delete", project_id)
+        factory = self.replay_flight_data("iam-role-delete", org_id)
 
         p = self.load_policy(
             {
@@ -569,7 +568,51 @@ class IAMRoleTest(BaseTest):
             }
             raise HttpError(
                 resp=mock.MagicMock(status=404),
-                content=json.dumps(mock_resp).encode("utf-8")
+                content=json.dumps(mock_resp).encode("utf-8"),
+            )
+
+    @terraform('iam_project_role')
+    def test_iam_role_project_delete(self):
+        project_id = "cloud-custodian"
+        role_name = "customAccessContextManagerAdmin"
+        full_role_name = f"projects/{project_id}/roles/{role_name}"
+
+        factory = self.replay_flight_data("iam-role-delete-proj", project_id)
+
+        p = self.load_policy(
+            {
+                "name": "role-delete",
+                "resource": "gcp.iam-role",
+                "filters": [{"name": full_role_name}],
+                "actions": ["delete"],
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        if self.recording:
+            time.sleep(1)
+
+        # Get client for projects.roles to verify deletion
+        session = local_session(factory)
+        client = session.client('iam', 'v1', 'projects.roles')
+
+        with pytest.raises(HttpError):
+            result = client.execute_query("get", {"name": full_role_name})
+            # If role still exists, it should be marked as deleted
+            self.assertTrue(result.get("deleted", False), "Role should be marked as deleted")
+            # If we're still here, the delete worked.
+            # For the sake of a single path of handling, simulate an Http 404
+            # error as well, as this is also an acceptable case.
+            mock_resp = {
+                "error": {
+                    "message": "Role not found.",
+                },
+            }
+            raise HttpError(
+                resp=mock.MagicMock(status=404),
+                content=json.dumps(mock_resp).encode("utf-8"),
             )
 
 

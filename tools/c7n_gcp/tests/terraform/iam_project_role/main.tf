@@ -26,6 +26,6 @@ output "role_name" {
   value = google_project_iam_custom_role.test_role.name
 }
 
-output "organization_id" {
-  value = data.google_project.current.organization_id
+output "project_id" {
+  value = data.google_project.current.project_id
 }
