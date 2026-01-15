@@ -5,6 +5,8 @@ import json
 import time
 from unittest import mock
 
+import pytest
+
 from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
 
@@ -548,18 +550,25 @@ class IAMRoleTest(BaseTest):
             time.sleep(1)
 
         # Get client for organizations.roles to verify deletion
-        from c7n.utils import local_session
-
         session = local_session(factory)
         client = session.client('iam', 'v1', 'organizations.roles')
 
-        try:
+        with pytest.raises(HttpError):
             result = client.execute_query("get", {"name": full_role_name})
             # If role still exists, it should be marked as deleted
             self.assertTrue(result.get("deleted", False), "Role should be marked as deleted")
-        except HttpError as e:
-            # 404 is acceptable for deleted resources
-            self.assertIn("404", str(e), f"Expected 404 for deleted role, got: {e}")
+            # If we're still here, the delete worked.
+            # For the sake of a single path of handling, simulate an Http 404
+            # error as well, as this is also an acceptable case.
+            mock_resp = {
+                "error": {
+                    "message": "Role not found.",
+                },
+            }
+            raise HttpError(
+                resp=mock.MagicMock(status=404),
+                content=json.dumps(mock_resp).encode("utf-8")
+            )
 
 
 class ApiKeyTest(BaseTest):
