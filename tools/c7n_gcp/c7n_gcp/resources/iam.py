@@ -252,7 +252,7 @@ class RoleDeleteAction(MethodAction):
         return {'name': r['name']}
 
     def is_organizational_role(self, role):
-        return role.startswith('organizations/')
+        return role.startswith("organizations/")
 
     def get_organizational_role_name(self, role):
         # Extract org ID: organizations/123456/roles/customRole
@@ -264,7 +264,7 @@ class RoleDeleteAction(MethodAction):
         return match.groups()[1]
 
     def is_project_role(self, role):
-        return role.startswith('projects/')
+        return role.startswith("projects/")
 
     def get_project_role_name(self, role):
         # Extract project ID: projects/my-project/roles/customRole
@@ -274,6 +274,21 @@ class RoleDeleteAction(MethodAction):
             return None
 
         return match.groups()[1]
+
+    def handle_role_delete(self, override_client, model, resource, role_name):
+        """
+        Deletes an individual role.
+        """
+        op_name = self.get_operation_name(model, resource)
+        params = self.get_resource_params(model, resource)
+
+        try:
+            self.invoke_api(override_client, op_name, params)
+            self.log.info(f"Deleted role: {role_name}")
+        except HttpError as e:
+            self.handle_resource_error(
+                override_client, model, resource, op_name, params, e
+            )
 
     def process_resource_set(self, client, model, resources):
         """Override to handle different role types with appropriate API components"""
@@ -299,16 +314,7 @@ class RoleDeleteAction(MethodAction):
                 )
                 continue
 
-            op_name = self.get_operation_name(model, resource)
-            params = self.get_resource_params(model, resource)
-
-            try:
-                self.invoke_api(override_client, op_name, params)
-                self.log.info(f"Deleted role: {role_name}")
-            except HttpError as e:
-                self.handle_resource_error(
-                    override_client, model, resource, op_name, params, e
-                )
+            self.handle_role_delete(override_client, model, resource, role_name)
 
 
 @resources.register('api-key')
