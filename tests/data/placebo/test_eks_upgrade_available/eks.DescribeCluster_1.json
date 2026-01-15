@@ -15,7 +15,7 @@
         "second": 22,
         "microsecond": 288000
       },
-      "version": "1.22",
+      "version": "1.24",
       "endpoint": "https://26B111A1284F4828DEE0ECAF3F0A4C7B.gr7.us-east-1.eks.amazonaws.com",
       "roleArn": "arn:aws:iam::644160558196:role/eksctl-devk8s-cluster-ServiceRole-1JNA85I5147VF",
       "resourcesVpcConfig": {

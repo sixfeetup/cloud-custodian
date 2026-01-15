@@ -301,12 +301,10 @@ class EKS(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 3)
-        self.assertTrue('c7n:HasUpgrades' in resources[0])
-        self.assertTrue('c7n:UpgradeVersions' in resources[0])
-        self.assertTrue('c7n:AvailableVersions' in resources[0])
+        self.assertTrue('c7n:AvailableUpgrades' in resources[0])
 
     def test_upgrade_available_filter_upgrades_extant(self):
-        factory = self.replay_flight_data('test_eks_upgrade_available_no_upgrades_extant')
+        factory = self.replay_flight_data('test_eks_upgrade_available')
         p = self.load_policy(
             {
                 'name': 'test-eks-upgrade-available-no-upgrades',
@@ -314,7 +312,7 @@ class EKS(BaseTest):
                 'filters': [
                     {
                         'type': 'upgrade-available',
-                        # Find clusters WITHOUT upgrades available
+                        # Find clusters WITH upgrades available
                         'value': True,
                     }
                 ]
@@ -341,7 +339,7 @@ class EKS(BaseTest):
             session_factory=factory
         )
         resources = p.run()
-        self.assertEqual(len(resources), 0)
+        self.assertEqual(len(resources), 3)
 
     def test_upgrade_available_filter_no_upgrades(self):
         factory = self.replay_flight_data('test_eks_upgrade_available_no_upgrades')
