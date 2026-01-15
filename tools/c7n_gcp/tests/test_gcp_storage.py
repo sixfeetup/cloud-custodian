@@ -3,6 +3,10 @@
 
 import time
 
+from googleapiclient.errors import HttpError
+import pytest
+from pytest_terraform import terraform
+
 from gcp_common import BaseTest
 
 
@@ -131,9 +135,8 @@ class BucketTest(BaseTest):
             "gcp:storage::cloud-custodian:bucket/staging.cloud-custodian.appspot.com",
         ]
 
+    @terraform("gcs_bucket")
     def test_bucket_delete(self):
-        from googleapiclient.errors import HttpError
-
         project_id = "custodian-1291"
         bucket_name = "c7n-bucket-delete-test"
         factory = self.replay_flight_data("bucket-delete", project_id)
@@ -148,11 +151,12 @@ class BucketTest(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
+
         if self.recording:
             time.sleep(1)
+
         client = p.resource_manager.get_client()
-        try:
+
+        with pytest.raises(HttpError):
             client.execute_command("get", {"bucket": bucket_name})
             self.fail("found deleted bucket")
-        except HttpError as e:
-            self.assertTrue("Not Found" in str(e) or "404" in str(e))

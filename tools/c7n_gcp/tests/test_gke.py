@@ -1,9 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import time
-import pytest
-import logging
 
+import logging
+import re
+import time
+
+import pytest
 from pytest_terraform import terraform
 
 from gcp_common import BaseTest, event_data
@@ -380,8 +382,6 @@ class KubernetesClusterNodePoolTest(BaseTest):
 
         client = p.resource_manager.get_client()
         # Extract cluster info from the resource
-        import re
-
         project_param_re = re.compile(
             '.*?/projects/(.*?)/(?:zones|locations)/(.*?)/clusters/(.*?)/nodePools/(.*?)'
         )
