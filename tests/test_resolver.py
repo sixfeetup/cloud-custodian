@@ -152,12 +152,13 @@ class URIResolverProviderTest(BaseTest):
     """Test suite for URI resolver provider delegation mechanism (TDD)"""
 
     def setUp(self):
-        # Clear any registered providers before each test
+        # Save the current registered providers before each test
+        self._saved_uri_providers = URIResolver._uri_providers
         URIResolver._uri_providers = {}
 
     def tearDown(self):
-        # Clean up registered providers after each test
-        URIResolver._uri_providers = {}
+        # Restore the registered providers after each test
+        URIResolver._uri_providers = self._saved_uri_providers
 
     def test_register_provider(self):
         """Test that providers can register URI scheme handlers"""
