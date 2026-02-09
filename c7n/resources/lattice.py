@@ -8,6 +8,7 @@ from c7n.query import (
     ChildResourceManager,
     DescribeWithResourceTags,
     QueryResourceManager,
+    ResourceQuery,
     TypeInfo,
 )
 from c7n.tags import universal_augment
@@ -115,6 +116,115 @@ class VPCLatticeListener(ChildResourceManager):
         name = 'name'
         universal_taggable = object()
         permissions_enum = ('vpc-lattice:ListListeners',)
+
+
+class VPCLatticeRuleQuery(ResourceQuery):
+    def filter(self, resource_manager, **params):
+        m = self.resolve(resource_manager.resource_type)
+        if resource_manager.get_client:
+            client = resource_manager.get_client()
+        else:
+            client = local_session(self.session_factory).client(
+                m.service, resource_manager.config.region
+            )
+
+        service_id = params.get('serviceIdentifier')
+        listener_id = params.get('listenerIdentifier')
+
+        if service_id and listener_id:
+            rules = (
+                self._invoke_client_enum(
+                    client,
+                    'list_rules',
+                    {'serviceIdentifier': service_id, 'listenerIdentifier': listener_id},
+                    'items',
+                    retry=getattr(resource_manager, 'retry', None),
+                )
+                or []
+            )
+            for rule in rules:
+                rule['serviceIdentifier'] = service_id
+                rule['listenerIdentifier'] = listener_id
+            return rules
+
+        if service_id:
+            services = [{'id': service_id}]
+        else:
+            services = (
+                self._invoke_client_enum(
+                    client,
+                    'list_services',
+                    {},
+                    'items',
+                    retry=getattr(resource_manager, 'retry', None),
+                )
+                or []
+            )
+
+        results = []
+        for service in services:
+            current_service_id = service.get('id') or service.get('arn')
+            if not current_service_id:
+                continue
+            listeners = (
+                self._invoke_client_enum(
+                    client,
+                    'list_listeners',
+                    {'serviceIdentifier': current_service_id},
+                    'items',
+                    retry=getattr(resource_manager, 'retry', None),
+                )
+                or []
+            )
+            for listener in listeners:
+                current_listener_id = listener.get('id') or listener.get('arn')
+                if not current_listener_id:
+                    continue
+                rules = (
+                    self._invoke_client_enum(
+                        client,
+                        'list_rules',
+                        {
+                            'serviceIdentifier': current_service_id,
+                            'listenerIdentifier': current_listener_id,
+                        },
+                        'items',
+                        retry=getattr(resource_manager, 'retry', None),
+                    )
+                    or []
+                )
+                for rule in rules:
+                    rule['serviceIdentifier'] = current_service_id
+                    rule['listenerIdentifier'] = current_listener_id
+                results.extend(rules)
+        return results
+
+
+class VPCLatticeRuleSource(DescribeWithResourceTags):
+    resource_query_factory = VPCLatticeRuleQuery
+
+
+@resources.register('vpc-lattice-rule')
+class VPCLatticeRule(QueryResourceManager):
+    """VPC Lattice Rule Resource"""
+
+    source_mapping = {
+        'describe': VPCLatticeRuleSource,
+    }
+
+    class resource_type(TypeInfo):
+        service = 'vpc-lattice'
+        enum_spec = ('list_rules', 'items', None)
+        arn = 'arn'
+        id = 'id'
+        name = 'name'
+        universal_taggable = object()
+        permissions_enum = (
+            'vpc-lattice:ListRules',
+            'vpc-lattice:ListListeners',
+            'vpc-lattice:ListServices',
+        )
+        permissions_augment = ('vpc-lattice:ListTagsForResource',)
 
 
 @VPCLatticeServiceNetwork.filter_registry.register('access-logs')
