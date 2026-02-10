@@ -683,10 +683,8 @@ def test_elasticsearch_update_domain_config(test, elasticsearch_update_domain_co
             "actions": [
                 {
                     "type": "update-domain-config",
-                    "parameters": {
-                        "EBSOptions": {
-                            "VolumeType": "gp3"
-                        }
+                    "EBSOptions": {
+                        "VolumeType": "gp3"
                     }
                 }
             ]

@@ -14,6 +14,7 @@ from c7n.utils import chunks, local_session, type_schema, merge_dict_list, jmesp
 from c7n.tags import Tag, RemoveTag, TagActionFilter, TagDelayedAction
 from c7n.filters.kms import KmsRelatedFilter
 import c7n.filters.policystatement as polstmt_filter
+from c7n.resources.aws import shape_schema
 
 from .aws import shape_validate
 from .securityhub import PostFinding
@@ -605,31 +606,33 @@ class UpdateDomainConfig(Action):
                 value: gp2
             actions:
               - type: update-domain-config
-                parameters:
-                  EBSOptions:
-                    VolumeType: gp3
+                EBSOptions:
+                  VolumeType: gp3
 
     """
 
     schema = type_schema(
         'update-domain-config',
-        parameters={'type': 'object'},
-        required=['parameters'],
+        **shape_schema('es', 'UpdateElasticsearchDomainConfigRequest', drop_fields=('DomainName'))
     )
     permissions = ('es:UpdateElasticsearchDomainConfig',)
 
+    @property
+    def params(self):
+        return {k: v for k, v in self.data.items() if k != 'type'}
+
     def validate(self):
-        req = dict(self.data['parameters'])
+        params = self.params
         # We'll add DomainName to the request in process(), so the policy doesn't need to supply it.
         # Set it to something arbitrary here so the missing value doesn't fail validation.
-        req['DomainName'] = 'validate'
-        return shape_validate(req, 'UpdateElasticsearchDomainConfigRequest', 'es')
+        params['DomainName'] = 'validate'
+        return shape_validate(params, 'UpdateElasticsearchDomainConfigRequest', 'es')
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client('es')
         for r in resources:
             client.update_elasticsearch_domain_config(
-                **self.data['parameters'],
+                **self.params,
                 DomainName=r['DomainName'],
             )
 
