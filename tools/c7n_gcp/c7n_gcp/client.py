@@ -99,7 +99,8 @@ def is_retryable_exception(e):
        wait_exponential_max=10000,
        stop_max_attempt_number=5)
 def _create_service_api(credentials, service_name, version, developer_key=None,
-                        cache_discovery=False, http=None):
+                        cache_discovery=False, http=None, discoveryServiceUrl=None,
+                        client_options=None):
     """Builds and returns a cloud API service object.
 
     Args:
@@ -132,8 +133,20 @@ def _create_service_api(credentials, service_name, version, developer_key=None,
         discovery_kwargs['http'] = http
     else:
         discovery_kwargs['credentials'] = credentials
+    if discoveryServiceUrl:
+        discovery_kwargs['discoveryServiceUrl'] = discoveryServiceUrl
+    if client_options:
+        discovery_kwargs['client_options'] = client_options
 
-    return discovery.build(**discovery_kwargs)
+    try:
+        return discovery.build(**discovery_kwargs)
+    except TypeError:
+        # Older google-api-python-client versions do not accept these args.
+        if 'discoveryServiceUrl' in discovery_kwargs or 'client_options' in discovery_kwargs:
+            discovery_kwargs.pop('discoveryServiceUrl', None)
+            discovery_kwargs.pop('client_options', None)
+            return discovery.build(**discovery_kwargs)
+        raise
 
 
 def _build_http(http=None):
@@ -252,7 +265,9 @@ class Session:
             version,
             kw.get('developer_key'),
             kw.get('cache_discovery', False),
-            self._http or _build_http())
+            self._http or _build_http(),
+            discoveryServiceUrl=kw.get('discoveryServiceUrl'),
+            client_options=kw.get('client_options'))
 
         return ServiceClient(
             gcp_service=service,
