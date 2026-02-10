@@ -37,6 +37,7 @@ ResourceMap = {
   "aws.bedrock-agent": "c7n.resources.bedrock.BedrockAgent",
   "aws.bedrock-custom-model": "c7n.resources.bedrock.BedrockCustomModel",
   "aws.bedrock-knowledge-base": "c7n.resources.bedrock.BedrockKnowledgeBase",
+  "aws.bedrock-model-invocation-job": "c7n.resources.bedrock.BedrockModelInvocationJob",
   "aws.budget": "c7n.resources.budgets.Budget",
   "aws.cache-cluster": "c7n.resources.elasticache.ElastiCacheCluster",
   "aws.cache-snapshot": "c7n.resources.elasticache.ElastiCacheSnapshot",
