@@ -11,7 +11,7 @@ from c7n.query import (
     sources,
     ResourceQuery,
 )
-from c7n.utils import local_session, type_schema, chunks
+from c7n.utils import local_session, type_schema
 
 
 @resources.register('vpc-lattice-service-network')
