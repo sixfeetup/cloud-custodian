@@ -114,7 +114,6 @@ class VPCLatticeListener(ChildResourceManager):
         name = 'name'
         universal_taggable = object()
         permissions_enum = ('vpc-lattice:ListListeners',)
-        permissions_augment = ('vpc-lattice:ListTagsForResource',)
 
 
 @VPCLatticeServiceNetwork.filter_registry.register('access-logs')
