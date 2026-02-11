@@ -261,7 +261,7 @@ def test_bedrock_application_inference_profile(test, bedrock_application_inferen
     p = test.load_policy(
         {
             'name': 'bedrock-app-inference-profile-test',
-            'resource': 'bedrock-application-inference-profile',
+            'resource': 'bedrock-inference-profile',
             # We don't filter on exact arn or name here because we want to test that only
             # *application* inference profiles are returned by default.
         }, session_factory=session_factory
@@ -292,7 +292,7 @@ def test_bedrock_application_inference_profile_tag_actions(
     p = test.load_policy(
         {
             'name': 'bedrock-app-inference-profile-tag',
-            'resource': 'bedrock-application-inference-profile',
+            'resource': 'bedrock-inference-profile',
             'filters': [
                 {'inferenceProfileArn': profile_arn},
                 {'tag:NewTag': 'absent'},
@@ -319,7 +319,7 @@ def test_bedrock_application_inference_profile_tag_actions(
     p = test.load_policy(
         {
             'name': 'bedrock-app-inference-profile-untag',
-            'resource': 'bedrock-application-inference-profile',
+            'resource': 'bedrock-inference-profile',
             'filters': [
                 {'inferenceProfileArn': profile_arn},
             ],

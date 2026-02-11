@@ -552,7 +552,7 @@ class DeleteBedrockKnowledgeBase(BaseAction):
                 continue
 
 
-@resources.register('bedrock-application-inference-profile')
+@resources.register('bedrock-inference-profile')
 class BedrockApplicationInferenceProfile(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'bedrock'

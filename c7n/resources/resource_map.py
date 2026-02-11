@@ -35,7 +35,7 @@ ResourceMap = {
   "aws.batch-definition": "c7n.resources.batch.JobDefinition",
   "aws.batch-queue": "c7n.resources.batch.BatchJobQueue",
   "aws.bedrock-agent": "c7n.resources.bedrock.BedrockAgent",
-  "aws.bedrock-application-inference-profile":
+  "aws.bedrock-inference-profile":
     "c7n.resources.bedrock.BedrockApplicationInferenceProfile",
   "aws.bedrock-custom-model": "c7n.resources.bedrock.BedrockCustomModel",
   "aws.bedrock-knowledge-base": "c7n.resources.bedrock.BedrockKnowledgeBase",
