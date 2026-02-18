@@ -4,7 +4,6 @@
 from c7n.utils import type_schema
 
 from c7n_gcp.actions import MethodAction
-from c7n_gcp.actions.labels import SetLabelsAction, LabelDelayedAction
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo
 
@@ -26,7 +25,7 @@ class CertificateManagerCertificate(QueryResourceManager):
         scope_key = 'parent'
         name = 'name'
         id = 'name'
-        labels = False  # Disable automatic label registration
+        labels = True
         labels_op = 'patch'
         default_report_fields = [
             'name', 'description', 'createTime', 'expireTime',
@@ -86,49 +85,3 @@ class DeleteCertificate(MethodAction):
 
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
-
-
-@CertificateManagerCertificate.action_registry.register('set-labels')
-class CertificateSetLabelsAction(SetLabelsAction):
-    """Set labels to Certificate Manager Certificate
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: label-certificates
-            resource: gcp.certmanager-certificate
-            actions:
-              - type: set-labels
-                labels:
-                  environment: test
-    """
-
-    permissions = ('certificatemanager.certs.update',)
-
-    def get_permissions(self):
-        return self.permissions
-
-
-@CertificateManagerCertificate.action_registry.register('mark-for-op')
-class CertificateMarkForOpAction(LabelDelayedAction):
-    """Mark Certificate Manager Certificate for future action
-
-    :example:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: mark-certificates-for-deletion
-            resource: gcp.certmanager-certificate
-            actions:
-              - type: mark-for-op
-                op: delete
-                days: 7
-    """
-
-    permissions = ('certificatemanager.certs.update',)
-
-    def get_permissions(self):
-        return self.permissions
