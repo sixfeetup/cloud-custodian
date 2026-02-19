@@ -19,6 +19,7 @@ class CertificateManagerCertificate(QueryResourceManager):
         service = 'certificatemanager'
         version = 'v1'
         component = 'projects.locations.certificates'
+        perm_component = 'certs'  # Permission component differs from API component
         enum_spec = ('list', 'certificates[]', None)
         scope = 'project'
         scope_template = 'projects/{}/locations/-'
