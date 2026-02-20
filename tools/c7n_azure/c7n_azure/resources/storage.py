@@ -17,8 +17,12 @@ from c7n.utils import get_annotation_prefix, local_session
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.actions.firewall import SetFirewallAction
 from c7n_azure.constants import BLOB_TYPE, FILE_TYPE, QUEUE_TYPE, TABLE_TYPE
-from c7n_azure.filters import (FirewallBypassFilter, FirewallRulesFilter,
-                                MetricFilter, ValueFilter)
+from c7n_azure.filters import (
+    FirewallBypassFilter,
+    FirewallRulesFilter,
+    MetricFilter,
+    ValueFilter,
+)
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ArmResourceManager
 from c7n_azure.storage_utils import StorageUtilities
@@ -476,6 +480,8 @@ class StorageMetricsFilter(MetricFilter):
 
     Supports: blob, queue, table, file
 
+    Additional examples can be found at: docs/source/azure/examples/metrics-general.rst
+
     :example:
 
     Find storage accounts with high blob capacity (over 1GB)
@@ -492,78 +498,6 @@ class StorageMetricsFilter(MetricFilter):
                 aggregation: average
                 op: gt
                 threshold: 1000000000
-                timeframe: 24
-
-    :example:
-
-    Find storage accounts with low blob count
-
-    .. code-block:: yaml
-
-        policies:
-          - name: low-blob-count
-            resource: azure.storage
-            filters:
-              - type: storage-metrics
-                storage-type: blob
-                metric: BlobCount
-                aggregation: average
-                op: lt
-                threshold: 10
-                timeframe: 168
-
-    :example:
-
-    Find storage accounts with high queue message count
-
-    .. code-block:: yaml
-
-        policies:
-          - name: high-queue-messages
-            resource: azure.storage
-            filters:
-              - type: storage-metrics
-                storage-type: queue
-                metric: QueueMessageCount
-                aggregation: average
-                op: gt
-                threshold: 10000
-                timeframe: 24
-
-    :example:
-
-    Find storage accounts with table capacity over threshold
-
-    .. code-block:: yaml
-
-        policies:
-          - name: high-table-capacity
-            resource: azure.storage
-            filters:
-              - type: storage-metrics
-                storage-type: table
-                metric: TableCapacity
-                aggregation: average
-                op: gt
-                threshold: 5000000000
-                timeframe: 24
-
-    :example:
-
-    Find storage accounts with file share capacity over threshold
-
-    .. code-block:: yaml
-
-        policies:
-          - name: high-file-capacity
-            resource: azure.storage
-            filters:
-              - type: storage-metrics
-                storage-type: file
-                metric: FileCapacity
-                aggregation: average
-                op: gt
-                threshold: 10000000000
                 timeframe: 24
 
     """
