@@ -296,7 +296,7 @@ tools/c7n_gcp/tests/
 
 #### Best Practices
 
-- **Use descriptive test case names** - The name passed to `replay_flight_data()` becomes the directory name
+- **Use descriptive test case names** - The name passed to `record_flight_data()` becomes the directory name
 - **Commit flight data** - Required for CI/CD pipelines to run tests
 - **Use Terraform for complex resources** - Ensures reproducible test infrastructure
 - **Clean up resources** - Terraform automatically destroys resources after tests in recording mode
