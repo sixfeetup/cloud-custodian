@@ -37,6 +37,37 @@ def test_vertexai_endpoint_multi_location(test):
     assert all('c7n:location' in r for r in resources)
 
 
+def test_vertexai_endpoint_filtering(test,):
+    """Test filtering Vertex AI Endpoints on common fields.
+
+    This test explicitly verifies that value filters work correctly on
+    endpoint displayName field.
+    """
+    session_factory = test.replay_flight_data('vertexai-endpoint-filtering')
+
+    # Filter by displayName using regex
+    policy = test.load_policy(
+        {'name': 'filter-by-display-name',
+         'resource': 'gcp.vertex-ai-endpoint',
+         'query': [
+             {'location': 'us-central1'},
+             {'location': 'us-east1'}
+         ],
+         'filters': [
+             {'type': 'value',
+              'key': 'displayName',
+              'op': 'regex',
+              'value': '.*-central$'}
+         ]},
+        session_factory=session_factory)
+
+    resources = policy.run()
+
+    # Should only find endpoints with names ending in '-central'
+    assert len(resources) >= 1
+    assert all(r['displayName'].endswith('-central') for r in resources)
+
+
 def test_vertexai_endpoint_delete(test):
     """Test deleting Vertex AI Endpoints.
 
