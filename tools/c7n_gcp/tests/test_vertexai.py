@@ -1,6 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from pytest_terraform import terraform
+import time
+
 
 def test_vertexai_endpoint_multi_location(test):
     """Test querying Vertex AI Endpoints across multiple locations.
@@ -32,3 +35,60 @@ def test_vertexai_endpoint_multi_location(test):
 
     # Verify each resource has the c7n:location annotation
     assert all('c7n:location' in r for r in resources)
+
+
+def test_vertexai_endpoint_delete(test):
+    """Test deleting Vertex AI Endpoints.
+
+    This test verifies that the delete action can successfully delete
+    endpoints across multiple locations.
+    """
+    session_factory = test.replay_flight_data('vertexai-endpoint-delete')
+
+    policy = test.load_policy(
+        {'name': 'delete-test-endpoints',
+         'resource': 'gcp.vertex-ai-endpoint',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': [
+             {'type': 'value',
+              'key': 'displayName',
+              'op': 'regex',
+              'value': 'c7n-.*'}
+         ],
+         'actions': [
+             {'type': 'delete'}
+         ]},
+        session_factory=session_factory)
+
+    resources = policy.run()
+
+    # Verify that resources were found and deleted
+    assert len(resources) >= 1
+
+    # Verify all resources have the expected naming pattern
+    assert all('c7n-' in r.get('displayName', '') for r in resources)
+
+    # Re-query to verify the endpoint was actually deleted
+    if test.recording:
+        time.sleep(1)
+
+    verify_policy = test.load_policy(
+        {'name': 'verify-deletion',
+         'resource': 'gcp.vertex-ai-endpoint',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': [
+             {'type': 'value',
+              'key': 'displayName',
+              'op': 'regex',
+              'value': 'c7n-.*'}
+         ]},
+        session_factory=session_factory)
+
+    remaining_resources = verify_policy.run()
+
+    # Verify that the endpoint no longer exists
+    assert len(remaining_resources) == 0

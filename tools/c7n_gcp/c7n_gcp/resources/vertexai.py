@@ -5,7 +5,8 @@ from pathlib import Path
 
 from google.api_core.client_options import ClientOptions
 
-from c7n.utils import local_session, jmespath_search
+from c7n.utils import local_session, jmespath_search, type_schema
+from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo
 
@@ -238,3 +239,69 @@ class VertexAIEndpoint(QueryResourceManager):
 
         # Otherwise, let location manager use config.regions or config.region
         return None
+
+
+@VertexAIEndpoint.action_registry.register('delete')
+class VertexAIEndpointDelete(MethodAction):
+    """Delete Vertex AI Endpoints
+
+    Deletes a Vertex AI Endpoint. Note that this is an asynchronous operation
+    that returns a long-running operation. The endpoint will be deleted in the background.
+
+    **Warning**: Deleting an endpoint will undeploy all models from the endpoint.
+    Make sure to check for deployed models before deletion if needed.
+
+    :example:
+
+    Delete endpoints with no deployed models:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-unused-endpoints
+            resource: gcp.vertex-ai-endpoint
+            filters:
+              - type: value
+                key: deployedModels
+                value: []
+            actions:
+              - type: delete
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/delete
+    """
+
+    schema = type_schema('delete')
+    method_spec = {'op': 'delete'}
+    permissions = ('aiplatform.endpoints.delete',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+    def process_resource_set(self, client, model, resources):
+        """Process a set of resources for deletion.
+
+        Override to handle location-specific clients for each resource.
+        Vertex AI requires location-specific API endpoints
+        (e.g., us-central1-aiplatform.googleapis.com).
+        Since each resource may be in a different location, we need to create
+        a separate client for each resource rather than using a single client.
+        """
+        session = local_session(self.manager.session_factory)
+
+        for resource in resources:
+            # Extract location from resource name
+            # Format: projects/{project}/locations/{location}/endpoints/{endpoint}
+            location = resource['name'].split('/')[3]
+
+            # Create location-specific client
+            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
+            client_options = ClientOptions(api_endpoint=api_endpoint)
+            location_client = session.client(
+                model.service, model.version, model.component,
+                client_options=client_options
+            )
+
+            # Use base class logic for invoking the API
+            op_name = self.get_operation_name(model, resource)
+            params = self.get_resource_params(model, resource)
+            self.invoke_api(location_client, op_name, params)
