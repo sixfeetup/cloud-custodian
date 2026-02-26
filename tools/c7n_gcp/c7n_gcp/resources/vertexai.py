@@ -305,3 +305,328 @@ class VertexAIEndpointDelete(MethodAction):
             op_name = self.get_operation_name(model, resource)
             params = self.get_resource_params(model, resource)
             self.invoke_api(location_client, op_name, params)
+
+
+@resources.register('vertex-ai-batch-prediction-job')
+class VertexAIBatchPredictionJob(QueryResourceManager):
+    """GCP Vertex AI Batch Prediction Job Resource
+
+    Vertex AI Batch Prediction Jobs are used to run batch inference workloads
+    on machine learning models at scale.
+
+    :example:
+
+    List all Batch Prediction Jobs in specific locations:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertexai-batch-jobs-inventory
+            resource: gcp.vertex-ai-batch-prediction-job
+            query:
+              - location: us-central1
+              - location: us-east1
+
+    :example:
+
+    Find long-running batch prediction jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertexai-batch-jobs-long-running
+            resource: gcp.vertex-ai-batch-prediction-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+              - type: value
+                key: createTime
+                value_type: age
+                op: greater-than
+                value: 24
+
+    :example:
+
+    Find failed batch prediction jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertexai-batch-jobs-failed
+            resource: gcp.vertex-ai-batch-prediction-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_FAILED
+    """
+
+    class resource_type(TypeInfo):
+        service = 'aiplatform'
+        version = 'v1'
+        component = 'projects.locations.batchPredictionJobs'
+        enum_spec = ('list', 'batchPredictionJobs[]', None)
+        scope = 'project'
+        scope_key = 'parent'
+        scope_template = None  # Handled dynamically per location
+        name = id = 'name'
+        default_report_fields = [
+            'name', 'displayName', 'state', 'createTime', 'updateTime'
+        ]
+        asset_type = 'aiplatform.googleapis.com/BatchPredictionJob'
+        permissions = ('aiplatform.batchPredictionJobs.list',)
+        urn_component = 'batch-prediction-job'
+        urn_id_segments = (-1,)
+
+        @staticmethod
+        def get(client, resource_info):
+            # Resource name format:
+            # projects/{project}/locations/{location}/batchPredictionJobs/{job}
+            return client.execute_query(
+                'get', {'name': resource_info['resourceName']})
+
+        @classmethod
+        def _get_location(cls, resource):
+            """Extract location from resource name."""
+            # Resource name format:
+            # projects/{project}/locations/{location}/batchPredictionJobs/{job}
+            return resource['name'].split('/')[3]
+
+    def _fetch_resources(self, query):
+        """Override to handle location-specific API endpoints and multi-location enumeration.
+
+        Vertex AI requires:
+        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
+        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
+        3. Enumeration across multiple locations (similar to RegionalResourceManager)
+        """
+        if not query:
+            query = {}
+
+        session = local_session(self.session_factory)
+        project = session.get_default_project()
+
+        # Get locations to query
+        location_query = self._get_location_query()
+        location_manager = self.get_resource_manager(
+            resource_type='vertex-ai-location',
+            data=({'query': location_query} if location_query else {})
+        )
+
+        all_resources = []
+        annotation_key = 'c7n:location'
+
+        # Enumerate resources in each location
+        for location_instance in location_manager.resources():
+            location = location_instance['name']
+
+            # Build location-specific API endpoint (must include https:// scheme)
+            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
+            client_options = ClientOptions(api_endpoint=api_endpoint)
+
+            # Get client with location-specific endpoint
+            client = session.client(
+                self.resource_type.service,
+                self.resource_type.version,
+                self.resource_type.component,
+                client_options=client_options
+            )
+
+            # Build the parent scope with project and location
+            parent = f'projects/{project}/locations/{location}'
+
+            # Execute the list operation for this location
+            enum_op, path, extra_args = self.resource_type.enum_spec
+            params = {'parent': parent}
+            if extra_args:
+                params.update(extra_args)
+
+            # Invoke the client enumeration
+            location_resources = []
+            if client.supports_pagination(enum_op):
+                for page in client.execute_paged_query(enum_op, params):
+                    page_items = jmespath_search(path, page)
+                    if page_items:
+                        location_resources.extend(page_items)
+            else:
+                location_resources = jmespath_search(
+                    path, client.execute_query(enum_op, verb_arguments=params)) or []
+
+            # Annotate resources with their location
+            for resource in location_resources:
+                resource[annotation_key] = location_instance
+
+            all_resources.extend(location_resources)
+
+        return all_resources
+
+    def _get_location_query(self):
+        """Get location query for multi-location enumeration.
+
+        Returns query to pass to vertex-ai-location resource manager.
+        If policy has 'query' specified, use that to filter locations.
+        Otherwise, return None to use default location logic.
+
+        Returns:
+            list or None: Location query list or None for defaults
+        """
+        # If policy has query specified, pass it through to location manager
+        if 'query' in self.data:
+            return self.data['query']
+
+        # Otherwise, let location manager use config.regions or config.region
+        return None
+
+
+@VertexAIBatchPredictionJob.action_registry.register('delete')
+class VertexAIBatchPredictionJobDelete(MethodAction):
+    """Delete Vertex AI Batch Prediction Jobs
+
+    Deletes a Vertex AI Batch Prediction Job. Note that this is an asynchronous operation
+    that returns a long-running operation. The job will be deleted in the background.
+
+    **Warning**: This permanently deletes the batch prediction job and its metadata.
+    Job results in Cloud Storage are not affected.
+
+    :example:
+
+    Delete failed batch prediction jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-failed-batch-jobs
+            resource: gcp.vertex-ai-batch-prediction-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_FAILED
+            actions:
+              - type: delete
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs/delete
+    """
+
+    schema = type_schema('delete')
+    method_spec = {'op': 'delete'}
+    permissions = ('aiplatform.batchPredictionJobs.delete',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+    def process_resource_set(self, client, model, resources):
+        """Process a set of resources for deletion.
+
+        Override to handle location-specific clients for each resource.
+        Vertex AI requires location-specific API endpoints
+        (e.g., us-central1-aiplatform.googleapis.com).
+        Since each resource may be in a different location, we need to create
+        a separate client for each resource rather than using a single client.
+        """
+        session = local_session(self.manager.session_factory)
+
+        for resource in resources:
+            # Extract location from resource name
+            # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
+            location = resource['name'].split('/')[3]
+
+            # Create location-specific client
+            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
+            client_options = ClientOptions(api_endpoint=api_endpoint)
+            location_client = session.client(
+                model.service, model.version, model.component,
+                client_options=client_options
+            )
+
+            # Use base class logic for invoking the API
+            op_name = self.get_operation_name(model, resource)
+            params = self.get_resource_params(model, resource)
+            self.invoke_api(location_client, op_name, params)
+
+
+@VertexAIBatchPredictionJob.action_registry.register('stop')
+class VertexAIBatchPredictionJobStop(MethodAction):
+    """Stop (Cancel) Vertex AI Batch Prediction Jobs
+
+    Cancels a running Vertex AI Batch Prediction Job. This is useful for cost control
+    and incident response when jobs are running longer than expected or consuming
+    unexpected resources.
+
+    **Note**: Only jobs in JOB_STATE_RUNNING or JOB_STATE_PENDING can be cancelled.
+    Completed, failed, or already cancelled jobs cannot be cancelled.
+
+    :example:
+
+    Cancel long-running batch prediction jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cancel-long-running-batch-jobs
+            resource: gcp.vertex-ai-batch-prediction-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+              - type: value
+                key: createTime
+                value_type: age
+                op: greater-than
+                value: 24
+            actions:
+              - type: stop
+
+    :example:
+
+    Cancel all running batch jobs (emergency cost control):
+
+    .. code-block:: yaml
+
+        policies:
+          - name: emergency-cancel-all-batch-jobs
+            resource: gcp.vertex-ai-batch-prediction-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+            actions:
+              - type: stop
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.batchPredictionJobs/cancel
+    """
+
+    schema = type_schema('stop')
+    method_spec = {'op': 'cancel'}
+    permissions = ('aiplatform.batchPredictionJobs.cancel',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+    def process_resource_set(self, client, model, resources):
+        """Process a set of resources for cancellation.
+
+        Override to handle location-specific clients for each resource.
+        Vertex AI requires location-specific API endpoints
+        (e.g., us-central1-aiplatform.googleapis.com).
+        Since each resource may be in a different location, we need to create
+        a separate client for each resource rather than using a single client.
+        """
+        session = local_session(self.manager.session_factory)
+
+        for resource in resources:
+            # Extract location from resource name
+            # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
+            location = resource['name'].split('/')[3]
+
+            # Create location-specific client
+            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
+            client_options = ClientOptions(api_endpoint=api_endpoint)
+            location_client = session.client(
+                model.service, model.version, model.component,
+                client_options=client_options
+            )
+
+            # Use base class logic for invoking the API
+            op_name = self.get_operation_name(model, resource)
+            params = self.get_resource_params(model, resource)
+            self.invoke_api(location_client, op_name, params)
