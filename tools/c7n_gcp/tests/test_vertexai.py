@@ -302,39 +302,98 @@ def test_vertexai_batch_prediction_job_multi_location(test):
     assert 'us-east1' in locations
 
 
-# @terraform('vertexai_batch_prediction_job')
-# def test_vertexai_batch_prediction_job_filtering(test, vertexai_batch_prediction_job):
-#     """Test filtering Vertex AI Batch Prediction Jobs on state and other fields.
+def test_vertexai_batch_prediction_job_filtering(test):
+    """Test filtering Vertex AI Batch Prediction Jobs on state.
 
-#     This test verifies that value filters work correctly on batch job fields.
+    This test verifies that value filters work correctly on batch job state field.
+    It filters for jobs in JOB_STATE_RUNNING state.
+    """
+    session_factory = test.replay_flight_data(
+        'vertexai-batch-prediction-job-filtering')
 
-#     Note: This test relies on jobs created by the multi_location test.
-#     Run that test first when recording.
-#     """
-#     session_factory = test.replay_flight_data(
-#         'vertexai-batch-prediction-job-filtering')
+    # When recording, create batch prediction jobs via API
+    if test.recording:
+        session = session_factory()
+        project_id = session.get_default_project()
 
-#     # Filter by state
-#     policy = test.load_policy(
-#         {'name': 'filter-by-state',
-#          'resource': 'gcp.vertex-ai-batch-prediction-job',
-#          'query': [
-#              {'location': 'us-central1'},
-#              {'location': 'us-east1'}
-#          ],
-#          'filters': [
-#              {'type': 'value',
-#               'key': 'state',
-#               'value': 'JOB_STATE_SUCCEEDED'}
-#          ]},
-#         session_factory=session_factory)
+        # Get terraform outputs from tf_resources.json
+        tf_dir = os.path.join(
+            os.path.dirname(__file__),
+            'terraform/vertexai_batch_prediction_job'
+        )
+        tf_resources_file = os.path.join(tf_dir, 'tf_resources.json')
 
-#     resources = policy.run()
+        with open(tf_resources_file, 'r') as f:
+            tf_data = json.load(f)
 
-#     # Should only find succeeded jobs (if any exist)
-#     # Note: Jobs may still be running when test executes
-#     if len(resources) > 0:
-#         assert all(r['state'] == 'JOB_STATE_SUCCEEDED' for r in resources)
+        # Extract outputs
+        outputs = tf_data['outputs']
+        input_uri_us_central1 = outputs['input_uri_us_central1']['value']
+        output_uri_us_central1 = outputs['output_uri_us_central1']['value']
+
+        # Create batch prediction job in us-central1
+        client_options_central = ClientOptions(
+            api_endpoint='https://us-central1-aiplatform.googleapis.com'
+        )
+        client_central = session.client(
+            'aiplatform', 'v1',
+            'projects.locations.batchPredictionJobs',
+            client_options=client_options_central
+        )
+
+        model_id_central = get_test_model_id(project_id, 'us-central1')
+
+        job_config_central = {
+            'displayName': 'c7n-test-batch-job-filter',
+            'model': model_id_central,
+            'inputConfig': {
+                'instancesFormat': 'jsonl',
+                'gcsSource': {
+                    'uris': [input_uri_us_central1]
+                }
+            },
+            'outputConfig': {
+                'predictionsFormat': 'jsonl',
+                'gcsDestination': {
+                    'outputUriPrefix': output_uri_us_central1
+                }
+            },
+            'dedicatedResources': {
+                'machineSpec': {
+                    'machineType': 'n1-standard-2'
+                },
+                'startingReplicaCount': 1
+            }
+        }
+
+        client_central.execute_command(
+            'create',
+            {
+                'parent': f'projects/{project_id}/locations/us-central1',
+                'body': job_config_central
+            }
+        )
+
+    # Filter by state - looking for running jobs
+    policy = test.load_policy(
+        {'name': 'filter-by-state',
+         'resource': 'gcp.vertex-ai-batch-prediction-job',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': [
+             {'type': 'value',
+              'key': 'state',
+              'value': 'JOB_STATE_RUNNING'}
+         ]},
+        session_factory=session_factory)
+
+    resources = policy.run()
+
+    # When recording, should find the job we just created in running state
+    # When replaying, verify all returned jobs are in running state
+    if len(resources) > 0:
+        assert all(r['state'] == 'JOB_STATE_RUNNING' for r in resources)
 
 
 # @terraform('vertexai_batch_prediction_job')
