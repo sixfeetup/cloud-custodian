@@ -10,12 +10,12 @@ terraform {
 }
 
 provider "google" {
-  region  = "us-central1"
+  region = "us-central1"
 }
 
 resource "google_storage_bucket" "vertex_test_models" {
   name     = "${var.project_id}-vertex-test-models"
-  location = "US"   # multi-region → works for us-central1 + us-east1
+  location = "US" # multi-region → works for us-central1 + us-east1
 
   uniform_bucket_level_access = true
 
