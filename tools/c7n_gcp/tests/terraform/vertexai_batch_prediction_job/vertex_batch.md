@@ -77,7 +77,7 @@ export GCP_VERTEX_AI_TEST_MODEL_ID_EAST="9876543210987654321"
 
 ### Step 4: Generate Test Data if needed
 
-Generate the input data for batch predictions: Pytest terraform grabs the data from the input_data.jsonl file.  If you need to generate new data, run the following:
+Pytest terraform grabs the data from the input_data.jsonl file stored locally. If you need to generate a larger dataset to test with, run the following:
 
 ```bash
 cd tools/c7n_gcp/tests/terraform/vertexai_batch_prediction_job
