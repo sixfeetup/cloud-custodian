@@ -44,6 +44,66 @@ def get_test_model_id(project_id, location):
     return full_path
 
 
+def poll_for_state(
+    policy,
+    expected_states,
+    test,
+    max_attempts=6,
+    wait_seconds=10,
+    description='state change'
+):
+    """Poll a policy until resources reach expected state(s).
+
+    Args:
+        policy: Cloud Custodian policy to run
+        expected_states: List of acceptable states (e.g., ['JOB_STATE_RUNNING'])
+        test: Test fixture with recording attribute
+        max_attempts: Maximum number of polling attempts
+        wait_seconds: Seconds to wait between attempts (only in recording mode)
+        description: Human-readable description for logging
+
+    Returns:
+        List of resources that match the expected states
+
+    Raises:
+        AssertionError: If no resources found or states don't match after all attempts
+    """
+    print(f'\nPolling for {description}...')
+    resources = None
+
+    for attempt in range(1, max_attempts + 1):
+        print(f'  Check {attempt}/{max_attempts}:')
+
+        # Only sleep in recording mode; replay uses recorded responses
+        if test.recording:
+            print(f'    Waiting {wait_seconds} seconds...')
+            time.sleep(wait_seconds)
+
+        resources = policy.run()
+
+        if resources:
+            current_state = resources[0].get('state')
+            print(f'    Current state: {current_state}')
+
+            if current_state in expected_states:
+                print('    ✓ Reached expected state')
+                break
+        else:
+            print('    No resources found')
+
+    # Verify we got resources in the expected state
+    if not resources:
+        raise AssertionError(f'No resources found after {max_attempts} attempts')
+
+    states = [r.get('state') for r in resources]
+    if not all(r['state'] in expected_states for r in resources):
+        raise AssertionError(
+            f'Expected states {expected_states}, got: {states}'
+        )
+
+    return resources
+
+
 def test_vertexai_endpoint_multi_location(test):
     """Test querying Vertex AI Endpoints across multiple locations.
 
@@ -163,6 +223,11 @@ def test_vertexai_endpoint_delete(test):
     # Verify that the endpoint no longer exists
     assert len(remaining_resources) == 0
 
+
+# Batch Prediction Job Tests
+# Before running any of these test in recording mode. Complete the steps in
+# tools/c7n_gcp/tests/terraform/vertexai_batch_prediction_job/vertex_batch.md to create the
+# necessary test resources.
 
 def test_vertexai_batch_prediction_job_multi_location(test):
     """Test querying Vertex AI Batch Prediction Jobs across multiple locations.
@@ -396,203 +461,232 @@ def test_vertexai_batch_prediction_job_filtering(test):
         assert all(r['state'] == 'JOB_STATE_RUNNING' for r in resources)
 
 
-# @terraform('vertexai_batch_prediction_job')
-# def test_vertexai_batch_prediction_job_delete(test, vertexai_batch_prediction_job):
-#     """Test deleting Vertex AI Batch Prediction Jobs.
+# This test covers both stopping and deleting batch prediction jobs since they are closely related
+# and both require waiting for state changes to take effect before the next action can be performed.
+# if anything goes wrong during test execution it can leave behind test jobs which can cause
+# recording failures due to duplicate job names having a state of failed. If this occurs, use the
+# cleanup script in tests/scripts/cleanup_vertex_ai_batch_jobs.py to delete any leftover test jobs
+# before re-recording the test.
 
-#     This test verifies that the delete action can successfully delete
-#     batch prediction jobs across multiple locations.
-#     """
-#     session_factory = test.replay_flight_data(
-#         'vertexai-batch-prediction-job-delete')
+def test_vertexai_batch_prediction_job_stop_and_delete(test):
+    """Test stopping and deleting Vertex AI Batch Prediction Jobs.
 
-#     # When recording, create a batch prediction job to delete
-#     if test.recording:
-#         session = session_factory()
-#         project_id = session.get_default_project()
-#         tf_outputs = vertexai_batch_prediction_job
-#         input_uri = tf_outputs.outputs['input_uri_us_central1']['value']
-#         output_uri = tf_outputs.outputs['output_uri_us_central1']['value']
+    This test verifies that:
+    1. A running batch prediction job can be stopped (cancelled)
+    2. The stopped job can then be deleted
+    """
+    session_factory = test.replay_flight_data(
+        'vertexai-batch-prediction-job-stop-and-delete')
 
-#         model_id = get_test_model_id()
+    # When recording, create a batch prediction job to stop and delete
+    if test.recording:
+        session = session_factory()
+        project_id = session.get_default_project()
 
-#         client = session.client(
-#             'aiplatform', 'v1',
-#             'projects.locations.batchPredictionJobs',
-#             regional_endpoint='us-central1-aiplatform.googleapis.com'
-#         )
+        # Get terraform outputs from tf_resources.json
+        tf_dir = os.path.join(
+            os.path.dirname(__file__),
+            'terraform/vertexai_batch_prediction_job'
+        )
+        tf_resources_file = os.path.join(tf_dir, 'tf_resources.json')
 
-#         job_config = {
-#             'displayName': 'c7n-test-delete-job',
-#             'model': model_id,
-#             'inputConfig': {
-#                 'instancesFormat': 'jsonl',
-#                 'gcsSource': {'uris': [input_uri]}
-#             },
-#             'outputConfig': {
-#                 'predictionsFormat': 'jsonl',
-#                 'gcsDestination': {'outputUriPrefix': output_uri}
-#             }
-#         }
+        with open(tf_resources_file, 'r') as f:
+            tf_data = json.load(f)
 
-#         client.execute_command(
-#             'create',
-#             {
-#                 'parent': f'projects/{project_id}/locations/us-central1',
-#                 'body': job_config
-#             }
-#         )
-#         time.sleep(5)
+        # Extract outputs
+        outputs = tf_data['outputs']
+        input_uri_us_central1 = outputs['input_uri_us_central1']['value']
+        output_uri_us_central1 = outputs['output_uri_us_central1']['value']
 
-#     policy = test.load_policy(
-#         {'name': 'delete-test-batch-jobs',
-#          'resource': 'gcp.vertex-ai-batch-prediction-job',
-#          'query': [
-#              {'location': 'us-central1'}
-#          ],
-#          'filters': [
-#              {'type': 'value',
-#               'key': 'displayName',
-#               'op': 'regex',
-#               'value': 'c7n-.*'}
-#          ],
-#          'actions': [
-#              {'type': 'delete'}
-#          ]},
-#         session_factory=session_factory)
+        # Create batch prediction job in us-central1
+        client_options_central = ClientOptions(
+            api_endpoint='https://us-central1-aiplatform.googleapis.com'
+        )
+        client_central = session.client(
+            'aiplatform', 'v1',
+            'projects.locations.batchPredictionJobs',
+            client_options=client_options_central
+        )
 
-#     resources = policy.run()
+        model_id_central = get_test_model_id(project_id, 'us-central1')
 
-#     # Verify that resources were found and deleted
-#     assert len(resources) >= 1
+        job_config = {
+            'displayName': 'c7n-test-stop-delete-job',
+            'model': model_id_central,
+            'inputConfig': {
+                'instancesFormat': 'jsonl',
+                'gcsSource': {
+                    'uris': [input_uri_us_central1]
+                }
+            },
+            'outputConfig': {
+                'predictionsFormat': 'jsonl',
+                'gcsDestination': {
+                    'outputUriPrefix': output_uri_us_central1
+                }
+            },
+            'dedicatedResources': {
+                'machineSpec': {
+                    'machineType': 'n1-standard-2'
+                },
+                'startingReplicaCount': 1
+            }
+        }
 
-#     # Verify all resources have the expected naming pattern
-#     assert all('c7n-' in r.get('displayName', '') for r in resources)
+        response = client_central.execute_command(
+            'create',
+            {
+                'parent': f'projects/{project_id}/locations/us-central1',
+                'body': job_config
+            }
+        )
 
-#     # Re-query to verify the job was actually deleted
-#     if test.recording:
-#         time.sleep(1)
+        print('\nJob created:')
+        print(f'  Name: {response.get("name")}')
+        print(f'  Display Name: {response.get("displayName")}')
+        print(f'  Initial State: {response.get("state")}')
 
-#     verify_policy = test.load_policy(
-#         {'name': 'verify-deletion',
-#          'resource': 'gcp.vertex-ai-batch-prediction-job',
-#          'query': [
-#              {'location': 'us-central1'}
-#          ],
-#          'filters': [
-#              {'type': 'value',
-#               'key': 'displayName',
-#               'op': 'regex',
-#               'value': 'c7n-.*'}
-#          ]},
-#         session_factory=session_factory)
+        # Wait for job to transition to running state
+        check_running_policy = test.load_policy(
+            {'name': 'check-running',
+             'resource': 'gcp.vertex-ai-batch-prediction-job',
+             'query': [
+                 {'location': 'us-central1'}
+             ],
+             'filters': [
+                 {'type': 'value',
+                  'key': 'displayName',
+                  'value': 'c7n-test-stop-delete-job'}
+             ]},
+            session_factory=session_factory)
 
-#     remaining_resources = verify_policy.run()
+        poll_for_state(
+            check_running_policy,
+            ['JOB_STATE_RUNNING'],
+            test,
+            description='job to start running'
+        )
 
-#     # Verify that the job no longer exists
-#     assert len(remaining_resources) == 0
+    # Step 1: Stop the running job
+    stop_filters = [
+        {'type': 'value',
+         'key': 'state',
+         'value': 'JOB_STATE_RUNNING'},
+        {'type': 'value',
+         'key': 'displayName',
+         'value': 'c7n-test-stop-delete-job'}
+    ]
 
+    stop_policy = test.load_policy(
+        {'name': 'stop-running-batch-jobs',
+         'resource': 'gcp.vertex-ai-batch-prediction-job',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': stop_filters,
+         'actions': [
+             {'type': 'stop'}
+         ]},
+        session_factory=session_factory)
 
-# @terraform('vertexai_batch_prediction_job')
-# def test_vertexai_batch_prediction_job_stop(test, vertexai_batch_prediction_job):
-#     """Test stopping (cancelling) Vertex AI Batch Prediction Jobs.
+    stopped_resources = stop_policy.run()
+    assert len(stopped_resources) >= 1, 'No running jobs found to stop'
 
-#     This test verifies that the stop action can successfully cancel
-#     running batch prediction jobs.
-#     """
-#     session_factory = test.replay_flight_data(
-#         'vertexai-batch-prediction-job-stop')
+    # Step 2: Wait for the stop action to take effect and verify cancellation
+    verify_filters = [
+        {'type': 'value',
+         'key': 'displayName',
+         'value': 'c7n-test-stop-delete-job'}
+    ]
 
-#     # When recording, create a batch prediction job to stop
-#     if test.recording:
-#         session = session_factory()
-#         project_id = session.get_default_project()
-#         tf_outputs = vertexai_batch_prediction_job
-#         input_uri = tf_outputs.outputs['input_uri_us_central1']['value']
-#         output_uri = tf_outputs.outputs['output_uri_us_central1']['value']
+    verify_stop_policy = test.load_policy(
+        {'name': 'verify-cancellation',
+         'resource': 'gcp.vertex-ai-batch-prediction-job',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': verify_filters},
+        session_factory=session_factory)
 
-#         model_id = get_test_model_id()
+    cancelled_resources = poll_for_state(
+        verify_stop_policy,
+        ['JOB_STATE_CANCELLED', 'JOB_STATE_CANCELLING'],
+        test,
+        description='stop action to take effect'
+    )
 
-#         client = session.client(
-#             'aiplatform', 'v1',
-#             'projects.locations.batchPredictionJobs',
-#             regional_endpoint='us-central1-aiplatform.googleapis.com'
-#         )
+    # Wait for job to fully transition to CANCELLED (not just CANCELLING)
+    # Jobs in CANCELLING state cannot be deleted
+    # This runs in both recording and replay modes to consume all recorded API calls
+    if cancelled_resources and cancelled_resources[0].get('state') == 'JOB_STATE_CANCELLING':
+        recheck_filters = [
+            {'type': 'value',
+             'key': 'displayName',
+             'value': 'c7n-test-stop-delete-job'}
+        ]
 
-#         job_config = {
-#             'displayName': 'c7n-test-stop-job',
-#             'model': model_id,
-#             'inputConfig': {
-#                 'instancesFormat': 'jsonl',
-#                 'gcsSource': {'uris': [input_uri]}
-#             },
-#             'outputConfig': {
-#                 'predictionsFormat': 'jsonl',
-#                 'gcsDestination': {'outputUriPrefix': output_uri}
-#             }
-#         }
+        recheck_policy = test.load_policy(
+            {'name': 'recheck-cancelled-state',
+             'resource': 'gcp.vertex-ai-batch-prediction-job',
+             'query': [
+                 {'location': 'us-central1'}
+             ],
+             'filters': recheck_filters},
+            session_factory=session_factory)
 
-#         client.execute_command(
-#             'create',
-#             {
-#                 'parent': f'projects/{project_id}/locations/us-central1',
-#                 'body': job_config
-#             }
-#         )
-#         # Wait a bit for job to start running
-#         time.sleep(5)
+        poll_for_state(
+            recheck_policy,
+            ['JOB_STATE_CANCELLED'],
+            test,
+            description='full cancellation (CANCELLING → CANCELLED)'
+        )
 
-#     policy = test.load_policy(
-#         {'name': 'stop-running-batch-jobs',
-#          'resource': 'gcp.vertex-ai-batch-prediction-job',
-#          'query': [
-#              {'location': 'us-central1'}
-#          ],
-#          'filters': [
-#              {'type': 'value',
-#               'key': 'state',
-#               'value': 'JOB_STATE_RUNNING'},
-#              {'type': 'value',
-#               'key': 'displayName',
-#               'op': 'regex',
-#               'value': 'c7n-.*'}
-#          ],
-#          'actions': [
-#              {'type': 'stop'}
-#          ]},
-#         session_factory=session_factory)
+    # Step 3: Delete the cancelled job
+    delete_filters = [
+        {'type': 'value',
+         'key': 'displayName',
+         'value': 'c7n-test-stop-delete-job'}
+    ]
 
-#     resources = policy.run()
+    delete_policy = test.load_policy(
+        {'name': 'delete-cancelled-batch-jobs',
+         'resource': 'gcp.vertex-ai-batch-prediction-job',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': delete_filters,
+         'actions': [
+             {'type': 'delete'}
+         ]},
+        session_factory=session_factory)
 
-#     # Verify that resources were found and stopped
-#     assert len(resources) >= 1
+    deleted_resources = delete_policy.run()
 
-#     # Verify all resources were in running state
-#     assert all(r['state'] == 'JOB_STATE_RUNNING' for r in resources)
+    # Verify that the job was found and deleted
+    assert len(deleted_resources) >= 1
 
-#     # Re-query to verify the job was cancelled
-#     if test.recording:
-#         time.sleep(2)
+    # Wait for deletion to complete
+    if test.recording:
+        print('Waiting for deletion to complete...')
+        time.sleep(5)
 
-#     verify_policy = test.load_policy(
-#         {'name': 'verify-cancellation',
-#          'resource': 'gcp.vertex-ai-batch-prediction-job',
-#          'query': [
-#              {'location': 'us-central1'}
-#          ],
-#          'filters': [
-#              {'type': 'value',
-#               'key': 'displayName',
-#               'op': 'regex',
-#               'value': 'c7n-.*'}
-#          ]},
-#         session_factory=session_factory)
+    # Step 4: Verify the job no longer exists
+    verify_delete_filters = [
+        {'type': 'value',
+         'key': 'displayName',
+         'value': 'c7n-test-stop-delete-job'}
+    ]
 
-#     updated_resources = verify_policy.run()
+    verify_delete_policy = test.load_policy(
+        {'name': 'verify-deletion',
+         'resource': 'gcp.vertex-ai-batch-prediction-job',
+         'query': [
+             {'location': 'us-central1'}
+         ],
+         'filters': verify_delete_filters},
+        session_factory=session_factory)
 
-#     # Verify that the job state changed (should be CANCELLED or CANCELLING)
-#     if len(updated_resources) > 0:
-#         assert all(
-#             r['state'] in ['JOB_STATE_CANCELLED', 'JOB_STATE_CANCELLING']
-#             for r in updated_resources
-#         )
+    remaining_resources = verify_delete_policy.run()
+
+    # Verify that the job no longer exists
+    assert len(remaining_resources) == 0
