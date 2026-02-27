@@ -6,8 +6,6 @@ import json
 import time
 from google.api_core.client_options import ClientOptions
 
-from pytest_terraform import terraform
-
 
 def get_test_model_id(project_id, location):
     """Get full model resource name for testing.
