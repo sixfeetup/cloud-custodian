@@ -39,7 +39,10 @@ class GoogleFlightRecorder(CustodianTestCore):
     data_dir = Path(__file__).parent.parent / 'tests' / 'data' / 'flights'
 
     def cleanUp(self):
-        LOCAL_THREAD.http = None
+        # Must DELETE the attribute, not just set to None
+        # because ServiceClient.http checks hasattr() which returns True for None
+        if hasattr(LOCAL_THREAD, 'http'):
+            delattr(LOCAL_THREAD, 'http')
         return reset_session_cache()
 
     def record_flight_data(self, test_case, project_id=None):

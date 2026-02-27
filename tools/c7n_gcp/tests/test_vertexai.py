@@ -6,6 +6,12 @@ import json
 import time
 from google.api_core.client_options import ClientOptions
 
+import pytest
+from pytest_terraform import terraform
+from gcp_common import BaseTest
+from c7n_gcp.client import get_default_project
+from c7n.testing import C7N_FUNCTIONAL
+
 
 def get_test_model_id(project_id, location):
     """Get full model resource name for testing.
@@ -688,3 +694,133 @@ def test_vertexai_batch_prediction_job_stop_and_delete(test):
 
     # Verify that the job no longer exists
     assert len(remaining_resources) == 0
+
+
+# ============================================================================
+# EXPERIMENT: Testing the "Workaround" pattern for class-based tests
+# ============================================================================
+# This tests if we can use a module-level fixture registration combined with
+# a class-based test using autouse fixture to inject the terraform fixture.
+
+# Step 1: Register the terraform fixture at module level
+# This ensures the infrastructure is created once and shared across all test methods
+@terraform('vertexai_endpoint')
+def _vertexai_endpoint_fixture_for_class():
+    """Module-level fixture registration for class-based test workaround."""
+    pass
+
+
+# Step 2: Use the fixture in a class-based test
+class TestVertexAIEndpointWorkaround(BaseTest):
+    """Test the workaround pattern for class-based tests with terraform fixtures."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self, vertexai_endpoint):
+        """Auto-use fixture to inject terraform fixture into class and clear HTTP cache.
+
+        The HTTP cache clearing is necessary because BaseTest.cleanUp() is not called
+        between test methods in pytest's class-based execution. Without this, the second
+        test method will reuse the HTTP client from the first test, which may have stale
+        credentials, resulting in a 401 Unauthorized error.
+        """
+        # Clear cached HTTP client before each test to prevent cross-test interference
+        # move import to top of page in final versions
+        from c7n_gcp.client import LOCAL_THREAD
+        if hasattr(LOCAL_THREAD, 'http'):
+            delattr(LOCAL_THREAD, 'http')
+
+        self.vertexai_endpoint = vertexai_endpoint
+
+    def test_vertexai_endpoint_multi_location_class(self):
+        """Test querying Vertex AI Endpoints across multiple locations (class-based workaround).
+
+        This test verifies that we can query endpoints in multiple locations
+        in a single policy run by specifying multiple locations in the query.
+
+        This uses the "simpler workaround" pattern:
+        1. Register terraform fixture at module level
+        2. Use autouse fixture in class to inject it
+        3. Access via self.vertexai_endpoint
+        """
+        # Use record_flight_data in functional mode, replay_flight_data otherwise
+        if C7N_FUNCTIONAL:
+            project_id = get_default_project()
+            session_factory = self.record_flight_data(
+                'vertexai-endpoint-multi-location', project_id=project_id)
+        else:
+            session_factory = self.replay_flight_data('vertexai-endpoint-multi-location')
+
+        # Query both us-central1 and us-east1 in a single policy
+        policy = self.load_policy(
+            {'name': 'vertexai-endpoints-multi-location',
+             'resource': 'gcp.vertex-ai-endpoint',
+             'query': [
+                 {'location': 'us-central1'},
+                 {'location': 'us-east1'}
+             ]},
+            session_factory=session_factory)
+
+        resources = policy.run()
+
+        # Should find endpoints from both locations
+        assert len(resources) >= 2
+
+        # Verify we have resources from both locations
+        locations = {r['name'].split('/')[3] for r in resources}
+        assert 'us-central1' in locations
+        assert 'us-east1' in locations
+
+        # Verify each resource has the c7n:location annotation
+        assert all('c7n:location' in r for r in resources)
+
+        # Verify we can access the terraform fixture
+        if self.vertexai_endpoint:
+            print(f'Terraform fixture available via workaround: {self.vertexai_endpoint}')
+
+    def test_vertexai_endpoint_get(self):
+        """Test getting a specific Vertex AI Endpoint by name.
+
+        This test verifies that we can retrieve a specific endpoint
+        and that it has the expected properties.
+
+        This is the second test in the class to verify that the terraform
+        fixture is properly shared across multiple test methods.
+        """
+        # Use record_flight_data in functional mode, replay_flight_data otherwise
+        if C7N_FUNCTIONAL:
+            project_id = get_default_project()
+            session_factory = self.record_flight_data(
+                'vertexai-endpoint-get', project_id=project_id)
+        else:
+            session_factory = self.replay_flight_data('vertexai-endpoint-get')
+
+        # Get a specific endpoint from us-central1
+        policy = self.load_policy(
+            {'name': 'vertexai-endpoint-get',
+             'resource': 'gcp.vertex-ai-endpoint',
+             'query': [
+                 {'location': 'us-central1'}
+             ],
+             'filters': [
+                 {'type': 'value',
+                  'key': 'displayName',
+                  'value': 'c7n-endpoint-central'}
+             ]},
+            session_factory=session_factory)
+
+        resources = policy.run()
+
+        # Should find exactly one endpoint
+        assert len(resources) == 1
+
+        endpoint = resources[0]
+
+        # Verify the endpoint properties
+        assert endpoint['displayName'] == 'c7n-endpoint-central'
+        assert 'us-central1' in endpoint['name']
+        # c7n:location is the location instance object with a 'name' key
+        assert endpoint['c7n:location']['name'] == 'us-central1'
+
+        # Verify we can still access the terraform fixture in the second test
+        if self.vertexai_endpoint:
+            print(f'Terraform fixture still available in second test: {self.vertexai_endpoint}')
