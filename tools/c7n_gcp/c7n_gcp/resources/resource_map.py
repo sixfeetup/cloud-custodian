@@ -114,6 +114,8 @@ ResourceMap = {
     "gcp.sql-ssl-cert": "c7n_gcp.resources.sql.SqlSslCert",
     "gcp.sql-user": "c7n_gcp.resources.sql.SqlUser",
     "gcp.subnet": "c7n_gcp.resources.network.Subnet",
+    "gcp.vertex-ai-publisher": "c7n_gcp.resources.vertexai.VertexAIPublisher",
+    "gcp.vertex-ai-publisher-model": "c7n_gcp.resources.vertexai.VertexAIPublisherModel",
     "gcp.vpc": "c7n_gcp.resources.network.Network",
     "gcp.zone": "c7n_gcp.resources.compute.Zone",
 }
