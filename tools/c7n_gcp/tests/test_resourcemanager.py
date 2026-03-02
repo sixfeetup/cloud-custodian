@@ -727,3 +727,24 @@ class TestOrgPoliciesFilter(BaseTest):
             'c7n:MatchedFilters': ['constraint']
         }])
         self.assertEqual(len(resources), 1)
+
+
+def test_simple(test):
+    policy = test.load_policy(
+        {
+            'name': 'foo',
+            'resource': 'gcp.project',
+            # 'filters': [
+            #     {'type': 'value', 'key': 'name', 'value': 'project-name-here'}
+            # ],
+            'actions': [
+                {
+                    'type': 'set-org-policy',
+                    'constraint': 'iam.managed.disableServiceAccountCreation',
+                    'spec': {'rules': [{'enforce': True}]},
+                }
+            ],
+        },
+    )
+    resources = policy.run()
+    assert len(resources) == 1

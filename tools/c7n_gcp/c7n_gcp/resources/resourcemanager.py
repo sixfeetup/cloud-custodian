@@ -4,7 +4,7 @@
 import itertools
 from c7n_gcp.filters.iampolicy import IamPolicyFilter
 
-from c7n_gcp.actions import SetIamPolicy, MethodAction
+from c7n_gcp.actions import Action, SetIamPolicy, MethodAction
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo
 
@@ -512,3 +512,88 @@ class FolderIamPolicyFilter(IamPolicyFilter):
         verb_arguments = SetIamPolicy._verb_arguments(self, resource)
         verb_arguments['body'] = {}
         return verb_arguments
+
+
+class SetOrgPolicy(Action):
+    """Create or update an organization policy using Org Policy API v2.
+
+    This action is designed to be reusable for organizations, folders, and projects by overriding
+    the client component or policy parent resolution.
+    """
+
+    schema = type_schema(
+        'set-org-policy',
+        constraint={'type': 'string'},
+        spec={'type': 'object'},
+        required=['constraint', 'spec'],
+    )
+    schema_alias = True
+
+    permissions = (
+        'orgpolicy.policies.get',
+        'orgpolicy.policies.create',
+        'orgpolicy.policies.update',
+    )
+
+    # Override in subclasses
+    resource_type: str  # e.g. projects
+    resource_id_attr: str  # e.g. projectId
+
+    def process(self, resources):
+        session = local_session(self.manager.session_factory)
+        client = self.get_client(session)
+        for resource in resources:
+            self.process_resource(client, resource)
+
+    def process_resource(self, client, resource):
+        policy_parent = self.get_policy_parent(resource)
+        policy_name = self.get_policy_name(resource)
+
+        existing = self.get_existing_policy(client, policy_name)
+        if existing:
+            client.execute_command(
+                'patch',
+                {
+                    'policy.name': policy_name,
+                    'updateMask': 'spec',
+                    'body': {
+                        'spec': self.data['spec'],
+                        'etag': existing['etag'],
+                    },
+                },
+            )
+        else:
+            client.execute_command(
+                'create',
+                {
+                    'parent': policy_parent,
+                    'body': {
+                        'name': policy_name,
+                        'spec': self.data['spec'],
+                    },
+                },
+            )
+
+    def get_client(self, session):
+        return session.client('orgpolicy', 'v2', f'{self.resource_type}.policies')
+
+    def get_policy_parent(self, resource):
+        return f"{self.resource_type}/{resource[self.resource_id_attr]}"
+
+    def get_policy_name(self, resource):
+        return f"{self.get_policy_parent(resource)}/policies/{self.data['constraint']}"
+
+    def get_existing_policy(self, client, policy_name):
+        try:
+            return client.execute_query('get', {'name': policy_name})
+        except HttpError as e:
+            # Suppress 404 errors and just return None.
+            if e.status_code != 404:
+                raise
+
+
+@Project.action_registry.register('set-org-policy')
+class ProjectSetOrgPolicy(SetOrgPolicy):
+    """Create or update org policy using Org Policy API v2."""
+    resource_type = 'projects'
+    resource_id_attr = 'projectId'
