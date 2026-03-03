@@ -29,5 +29,4 @@ class SavingsPlan(QueryResourceManager):
         universal_taggable = True
         # SavingsPlans are global resources
         global_resource = True
-        cfn_type = 'AWS::SavingsPlans::SavingsPlans'
         permissions_augment = ("savingsplans:DescribeSavingsPlans",)
