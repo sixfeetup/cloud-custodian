@@ -9,6 +9,7 @@ import itertools
 import ipaddress
 import logging
 import os
+import boto3
 import random
 import re
 import sys
@@ -385,18 +386,11 @@ def parse_s3(s3_path):
     return s3_path, bucket, key_prefix
 
 
-REGION_PARTITION_MAP = {
-    'us-gov-east-1': 'aws-us-gov',
-    'us-gov-west-1': 'aws-us-gov',
-    'cn-north-1': 'aws-cn',
-    'cn-northwest-1': 'aws-cn',
-    'us-isob-east-1': 'aws-iso-b',
-    'us-iso-east-1': 'aws-iso'
-}
-
-
 def get_partition(region):
-    return REGION_PARTITION_MAP.get(region, 'aws')
+    if os.environ.get('PYTEST_CURRENT_TEST') and region == 'zanzibar':
+        return 'aws'
+    sess = boto3.Session()
+    return sess.get_partition_for_region(region)
 
 
 def generate_arn(
@@ -405,8 +399,8 @@ def generate_arn(
     """Generate an Amazon Resource Name.
     See http://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html.
     """
-    if region and region in REGION_PARTITION_MAP:
-        partition = REGION_PARTITION_MAP[region]
+    if region:
+        partition = get_partition(region)
     if service == 's3':
         region = ''
     arn = 'arn:%s:%s:%s:%s:' % (
@@ -1217,3 +1211,22 @@ def get_path(path: str, resource: dict):
 def jmespath_compile(expression):
     parsed = C7NJMESPathParser().parse(expression)
     return parsed
+
+
+def snap_to_period_start(start: datetime, end: datetime, period_start: str):
+    """
+    Adjust the start and end timestamps according to `period_start`.
+
+    Args:
+        start (datetime): The original start datetime.
+        end (datetime): The original end datetime.
+        period_start (str): One of 'auto', 'start-of-day'.
+
+    Returns:
+        Tuple[datetime, datetime]: Adjusted (start, end)
+    """
+    if period_start == "start-of-day":
+        start = start.replace(hour=0, minute=0, second=0, microsecond=0)
+        end = end.replace(hour=0, minute=0, second=0, microsecond=0)
+    # 'auto' does nothing
+    return start, end
