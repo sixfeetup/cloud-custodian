@@ -146,7 +146,8 @@ vertexai_batch_prediction_job/
 
 To destroy all infrastructure:
 
-destroy the model bucket
+```bash
+# Destroy the model bucket
 cd model_artifact
 terraform destroy
 ```
