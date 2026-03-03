@@ -4,61 +4,11 @@
         "ResponseMetadata": {},
         "invocationJobSummaries": [
             {
-                "jobArn": "arn:aws:bedrock:us-east-1:644160558196:model-invocation-job/h8kk04a1u8t3",
-                "jobName": "c7n-batch-invocation-allowed-ocelot",
-                "modelId": "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0",
-                "roleArn": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-allowed-ocelot",
-                "status": "Submitted",
-                "submitTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 3,
-                    "day": 3,
-                    "hour": 22,
-                    "minute": 57,
-                    "second": 41,
-                    "microsecond": 101000
-                },
-                "lastModifiedTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 3,
-                    "day": 3,
-                    "hour": 22,
-                    "minute": 57,
-                    "second": 41,
-                    "microsecond": 101000
-                },
-                "inputDataConfig": {
-                    "s3InputDataConfig": {
-                        "s3Uri": "s3://c7n-bedrock-input-allowed-ocelot/input.jsonl",
-                        "s3BucketOwner": "644160558196"
-                    }
-                },
-                "outputDataConfig": {
-                    "s3OutputDataConfig": {
-                        "s3Uri": "s3://c7n-bedrock-output-allowed-ocelot/",
-                        "s3BucketOwner": "644160558196"
-                    }
-                },
-                "timeoutDurationInHours": 24,
-                "jobExpirationTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 3,
-                    "day": 4,
-                    "hour": 22,
-                    "minute": 57,
-                    "second": 41,
-                    "microsecond": 101000
-                }
-            },
-            {
                 "jobArn": "arn:aws:bedrock:us-east-1:644160558196:model-invocation-job/9t46ttth7wrt",
                 "jobName": "c7n-batch-invocation-nice-bat",
                 "modelId": "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0",
                 "roleArn": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-nice-bat",
-                "status": "Failed",
+                "status": "Submitted",
                 "submitTime": {
                     "__class__": "datetime",
                     "year": 2026,
@@ -76,18 +26,8 @@
                     "day": 3,
                     "hour": 22,
                     "minute": 56,
-                    "second": 57,
-                    "microsecond": 370000
-                },
-                "endTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 3,
-                    "day": 3,
-                    "hour": 22,
-                    "minute": 56,
-                    "second": 57,
-                    "microsecond": 337000
+                    "second": 21,
+                    "microsecond": 209000
                 },
                 "inputDataConfig": {
                     "s3InputDataConfig": {

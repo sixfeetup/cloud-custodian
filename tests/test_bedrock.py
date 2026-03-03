@@ -1,38 +1,156 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import time
-
 from .common import BaseTest, event_data
 from botocore.exceptions import ClientError
 from pytest_terraform import terraform
+from c7n.testing import C7N_FUNCTIONAL
+import pytest
 
 
 @terraform('bedrock_model_invocation_job')
-def test_bedrock_model_invocation_job(test, bedrock_model_invocation_job):
-    session_factory = test.replay_flight_data(
-        'test_bedrock_model_invocation_job', region='us-east-1'
-    )
-    job_arn = bedrock_model_invocation_job['aws_bedrock_model_invocation_job.test_job.arn']
-    job_name = bedrock_model_invocation_job['aws_bedrock_model_invocation_job.test_job.job_name']
-    p = test.load_policy(
-        {
-            'name': 'bedrock-model-invocation-job',
-            'resource': 'bedrock-model-invocation-job',
-            'filters': [
-                {'jobArn': job_arn},
-            ],
-        },
-        session_factory=session_factory,
-        config={'region': 'us-east-1'},
-    )
+def test_bedrock_model_invocation_job_fixture():
+    pass
 
-    if test.recording:
-        time.sleep(10)
 
-    resources = p.run()
-    test.assertEqual(len(resources), 1)
-    test.assertEqual(resources[0]['jobArn'], job_arn)
-    test.assertEqual(resources[0]['jobName'], job_name)
+class BedrockModelInvocationJob(BaseTest):
+    @pytest.fixture(autouse=True)
+    def setup(self, bedrock_model_invocation_job):
+        """Auto-use fixture to inject terraform fixture into class."""
+        self.bedrock_model_invocation_job = bedrock_model_invocation_job
+
+    @staticmethod
+    def create_bedrock_invocation_job(session_factory, tf_fixture):
+        """Helper to create a Bedrock model invocation job using Terraform resources."""
+        # Extract outputs from the fixture's outputs attribute (fresh data from Terraform)
+        role_arn = tf_fixture.outputs['role_arn']['value']
+        input_s3_uri = tf_fixture.outputs['input_s3_uri']['value']
+        output_s3_uri = tf_fixture.outputs['output_s3_uri']['value']
+        job_name_prefix = tf_fixture.outputs['job_name_prefix']['value']
+
+        client = session_factory().client('bedrock', region_name='us-east-1')
+
+        # Extract unique ID from job_name_prefix (e.g., "curious-turkey")
+        # This ensures each test run has a unique identifier
+        unique_id = job_name_prefix.replace('c7n-batch-invocation-', '')
+
+        response = client.create_model_invocation_job(
+            jobName=job_name_prefix,
+            modelId='amazon.nova-micro-v1:0',
+            roleArn=role_arn,
+            inputDataConfig={
+                's3InputDataConfig': {
+                    's3Uri': input_s3_uri
+                }
+            },
+            outputDataConfig={
+                's3OutputDataConfig': {
+                    's3Uri': output_s3_uri
+                }
+            },
+            tags=[
+                {'key': 'Owner', 'value': 'c7n'},
+                {'key': 'Environment', 'value': 'test'},
+                {'key': 'TestRunId', 'value': unique_id}
+            ]
+        )
+
+        job_arn = response['jobArn']
+
+        return job_arn, unique_id
+
+    def test_bedrock_model_invocation_job(self):
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(
+                'test_bedrock_model_invocation_job', region='us-east-1'
+            )
+        else:
+            session_factory = self.replay_flight_data(
+                'test_bedrock_model_invocation_job', region='us-east-1'
+            )
+
+        # Create the job using the helper method with Terraform resources (only in recording mode)
+        # Build filters based on mode
+        filters = [
+            {'status': 'Submitted'},
+            {'tag:Owner': 'c7n'},
+            {'tag:Environment': 'test'},
+        ]
+
+        if C7N_FUNCTIONAL:
+            _job_arn, unique_id = self.create_bedrock_invocation_job(
+                session_factory, self.bedrock_model_invocation_job)
+            # Add unique filter only in functional mode to isolate this test run
+            filters.append({'tag:TestRunId': unique_id})
+
+        p = self.load_policy(
+            {
+                'name': 'bedrock-model-invocation-job',
+                'resource': 'bedrock-model-invocation-job',
+                'filters': filters,
+            },
+            session_factory=session_factory,
+            config={'region': 'us-east-1'},
+        )
+
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertIn('jobArn', resources[0])
+        self.assertEqual(resources[0]['status'], 'Submitted')
+
+    def test_bedrock_model_invocation_job_tag_actions(self):
+
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(
+                'test_bedrock_model_invocation_job_tag_actions', region='us-east-1')
+        else:
+            session_factory = self.replay_flight_data(
+                'test_bedrock_model_invocation_job_tag_actions', region='us-east-1')
+
+        client = session_factory().client('bedrock')
+
+        # Build filters based on mode
+        filters = [
+            {'status': 'Submitted'},
+            {'tag:foo': 'absent'},
+            {'tag:Owner': 'c7n'},
+        ]
+
+        # Create the job using the helper method with Terraform resources (only in recording mode)
+        if C7N_FUNCTIONAL:
+            _job_arn, unique_id = self.create_bedrock_invocation_job(
+                session_factory, self.bedrock_model_invocation_job)
+            # Add unique filter only in functional mode to isolate this test run
+            filters.append({'tag:TestRunId': unique_id})
+
+        p = self.load_policy(
+            {
+                'name': 'bedrock-invocation-job-tag',
+                'resource': 'bedrock-model-invocation-job',
+                'filters': filters,
+                'actions': [
+                    {
+                        'type': 'tag',
+                        'tags': {'foo': 'bar', 'Environment': 'test'}
+                    },
+                    {
+                        'type': 'remove-tag',
+                        'tags': ['Owner']
+                    }
+                ]
+            },
+            session_factory=session_factory,
+            config={'region': 'us-east-1'}
+        )
+
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # Verify tags were added and removed
+        tags = client.list_tags_for_resource(resourceARN=resources[0]['jobArn'])['tags']
+        tag_dict = {t['key']: t['value'] for t in tags}
+        self.assertEqual(tag_dict['foo'], 'bar')
+        self.assertEqual(tag_dict['Environment'], 'test')
+        self.assertNotIn('Owner', tag_dict)
 
 
 class BedrockCustomModel(BaseTest):
@@ -370,3 +488,101 @@ def test_bedrock_application_inference_profile_tag_actions(
     test.assertNotIn('Owner', tag_dict)
     test.assertEqual(tag_dict['NewTag'], 'NewValue')  # Still there
     test.assertEqual(tag_dict['Environment'], 'test')  # Still there
+
+
+# Commented out test for future implementation
+# class BedrockModelInvocationJobMarkForOp(BaseTest):
+#     # def test_bedrock_model_invocation_job_mark_for_op(self):
+#     #     session_factory = self.replay_flight_data(
+#     #         'test_bedrock_model_invocation_job_mark_for_op')
+    #     session_factory = self.replay_flight_data('test_bedrock_model_invocation_job_mark_for_op')
+    #     client = session_factory().client('bedrock')
+
+    #     # Mark resources for operation
+    #     p = self.load_policy(
+    #         {
+    #             'name': 'bedrock-invocation-job-mark',
+    #             'resource': 'bedrock-model-invocation-job',
+    #             'actions': [
+    #                 {
+    #                     'type': 'mark-for-op',
+    #                     'op': 'notify',
+    #                     'days': 7
+    #                 }
+    #             ]
+    #         },
+    #         session_factory=session_factory
+    #     )
+    #     resources = p.run()
+    #     self.assertGreater(len(resources), 0)
+
+    #     # Verify mark-for-op tag was added
+    #     tags = client.list_tags_for_resource(resourceARN=resources[0]['jobArn'])['tags']
+    #     tag_dict = {t['key']: t['value'] for t in tags}
+    #     self.assertIn('custodian_status', tag_dict)
+
+    #     # Test marked-for-op filter
+    #     p = self.load_policy(
+    #         {
+    #             'name': 'bedrock-invocation-job-marked',
+    #             'resource': 'bedrock-model-invocation-job',
+    #             'filters': [
+    #                 {
+    #                     'type': 'marked-for-op',
+    #                     'op': 'notify'
+    #                 }
+    #             ]
+    #         },
+    #         session_factory=session_factory
+    #     )
+    #     resources = p.run()
+    #     self.assertGreater(len(resources), 0)
+
+
+# class BedrockInferenceProfileTest(BaseTest):
+#     def test_bedrock_inference_profile_mark_for_op(self):
+#         session_factory = self.replay_flight_data(
+#             'test_bedrock_inference_profile_mark_for_op')
+#         client = session_factory().client('bedrock')
+
+#         # Mark resources for operation
+#         p = self.load_policy(
+#             {
+#                 'name': 'bedrock-inference-profile-mark',
+#                 'resource': 'bedrock-inference-profile',
+#                 'filters': [
+#                     {'tag:CostCenter': 'absent'}
+#                 ],
+#                 'actions': [
+#                     {
+#                         'type': 'mark-for-op',
+#                         'op': 'notify',
+#                         'days': 7
+#                     }
+#                 ]
+#             }, session_factory=session_factory
+#         )
+#         resources = p.run()
+#         self.assertGreater(len(resources), 0)
+
+#         # Verify mark-for-op tag was added
+#         tags = client.list_tags_for_resource(
+#             resourceARN=resources[0]['inferenceProfileArn'])['tags']
+#         tag_dict = {t['key']: t['value'] for t in tags}
+#         self.assertIn('custodian_status', tag_dict)
+
+#         # Test marked-for-op filter
+#         p = self.load_policy(
+#             {
+#                 'name': 'bedrock-inference-profile-marked',
+#                 'resource': 'bedrock-inference-profile',
+#                 'filters': [
+#                     {
+#                         'type': 'marked-for-op',
+#                         'op': 'notify'
+#                     }
+#                 ]
+#             }, session_factory=session_factory
+#         )
+#         resources = p.run()
+#         self.assertGreater(len(resources), 0)

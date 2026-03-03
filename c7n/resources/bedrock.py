@@ -304,10 +304,82 @@ class BedrockModelInvocationJob(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'bedrock'
         enum_spec = ('list_model_invocation_jobs', 'invocationJobSummaries[]', None)
-        detail_spec = ('get_model_invocation_job', 'jobIdentifier', 'jobArn', None)
         name = 'jobName'
         id = arn = 'jobArn'
         permission_prefix = 'bedrock'
+        universal_taggable = object()
+        permissions_augment = ("bedrock:ListTagsForResource",)
+
+    augment = universal_augment
+
+
+@BedrockModelInvocationJob.action_registry.register('tag')
+class TagBedrockModelInvocationJob(Tag):
+    """Create tags on Bedrock model invocation jobs
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: bedrock-model-invocation-job-tag
+              resource: aws.bedrock-model-invocation-job
+              actions:
+                - type: tag
+                  key: Owner
+                  value: DataTeam
+    """
+    permissions = ('bedrock:TagResource',)
+
+    def process_resource_set(self, client, resources, new_tags):
+        tags = [{'key': item['Key'], 'value': item['Value']} for item in new_tags]
+        for r in resources:
+            client.tag_resource(resourceARN=r['jobArn'], tags=tags)
+
+
+@BedrockModelInvocationJob.action_registry.register('remove-tag')
+class RemoveTagBedrockModelInvocationJob(RemoveTag):
+    """Remove tags from Bedrock model invocation jobs
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: bedrock-model-invocation-job-remove-tag
+              resource: aws.bedrock-model-invocation-job
+              actions:
+                - type: remove-tag
+                  tags: ['tag-key']
+    """
+    permissions = ('bedrock:UntagResource',)
+
+    def process_resource_set(self, client, resources, tags):
+        for r in resources:
+            client.untag_resource(resourceARN=r['jobArn'], tagKeys=tags)
+
+
+BedrockModelInvocationJob.filter_registry.register('marked-for-op', TagActionFilter)
+
+
+@BedrockModelInvocationJob.action_registry.register('mark-for-op')
+class MarkBedrockModelInvocationJobForOp(TagDelayedAction):
+    """Mark model invocation jobs for future actions
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: bedrock-invocation-job-mark-for-cleanup
+            resource: aws.bedrock-model-invocation-job
+            filters:
+              - 'tag:Owner': absent
+            actions:
+              - type: mark-for-op
+                op: notify
+                days: 7
+    """
 
 
 @resources.register('bedrock-agent')
@@ -593,3 +665,72 @@ class BedrockApplicationInferenceProfile(QueryResourceManager):
         permissions_augment = ("bedrock:ListTagsForResource",)
 
     augment = universal_augment
+
+
+@BedrockApplicationInferenceProfile.action_registry.register('tag')
+class TagBedrockInferenceProfile(Tag):
+    """Create tags on Bedrock application inference profiles
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: bedrock-inference-profile-tag
+              resource: aws.bedrock-inference-profile
+              actions:
+                - type: tag
+                  key: CostCenter
+                  value: AI-Research
+    """
+    permissions = ('bedrock:TagResource',)
+
+    def process_resource_set(self, client, resources, new_tags):
+        tags = [{'key': item['Key'], 'value': item['Value']} for item in new_tags]
+        for r in resources:
+            client.tag_resource(resourceARN=r['inferenceProfileArn'], tags=tags)
+
+
+@BedrockApplicationInferenceProfile.action_registry.register('remove-tag')
+class RemoveTagBedrockInferenceProfile(RemoveTag):
+    """Remove tags from Bedrock application inference profiles
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: bedrock-inference-profile-remove-tag
+              resource: aws.bedrock-inference-profile
+              actions:
+                - type: remove-tag
+                  tags: ['tag-key']
+    """
+    permissions = ('bedrock:UntagResource',)
+
+    def process_resource_set(self, client, resources, tags):
+        for r in resources:
+            client.untag_resource(resourceARN=r['inferenceProfileArn'], tagKeys=tags)
+
+
+BedrockApplicationInferenceProfile.filter_registry.register('marked-for-op', TagActionFilter)
+
+
+@BedrockApplicationInferenceProfile.action_registry.register('mark-for-op')
+class MarkBedrockInferenceProfileForOp(TagDelayedAction):
+    """Mark inference profiles for future actions
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: bedrock-inference-profile-mark-for-cleanup
+            resource: aws.bedrock-inference-profile
+            filters:
+              - 'tag:Owner': absent
+            actions:
+              - type: mark-for-op
+                op: notify
+                days: 7
+    """
