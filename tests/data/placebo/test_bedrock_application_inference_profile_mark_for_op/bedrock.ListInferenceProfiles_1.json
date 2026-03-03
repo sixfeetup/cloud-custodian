@@ -4,7 +4,7 @@
         "ResponseMetadata": {},
         "inferenceProfileSummaries": [
             {
-                "inferenceProfileName": "c7n-test-profile-6e3a879b",
+                "inferenceProfileName": "c7n-test-profile-5d2c2c7a",
                 "description": "Test profile for C7N",
                 "createdAt": {
                     "__class__": "datetime",
@@ -13,8 +13,8 @@
                     "day": 3,
                     "hour": 23,
                     "minute": 27,
-                    "second": 42,
-                    "microsecond": 778158
+                    "second": 54,
+                    "microsecond": 700370
                 },
                 "updatedAt": {
                     "__class__": "datetime",
@@ -23,10 +23,10 @@
                     "day": 3,
                     "hour": 23,
                     "minute": 27,
-                    "second": 42,
-                    "microsecond": 778158
+                    "second": 54,
+                    "microsecond": 700370
                 },
-                "inferenceProfileArn": "arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/q9kdlppdeheu",
+                "inferenceProfileArn": "arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/j1592te3vav6",
                 "models": [
                     {
                         "modelArn": "arn:aws:bedrock:::foundation-model/amazon.nova-2-lite-v1:0"
@@ -35,7 +35,7 @@
                         "modelArn": "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0"
                     }
                 ],
-                "inferenceProfileId": "q9kdlppdeheu",
+                "inferenceProfileId": "j1592te3vav6",
                 "status": "ACTIVE",
                 "type": "APPLICATION"
             }

@@ -4,23 +4,23 @@
         "PaginationToken": "",
         "ResourceTagMappingList": [
             {
-                "ResourceARN": "arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/q9kdlppdeheu",
+                "ResourceARN": "arn:aws:bedrock:us-east-1:644160558196:model-invocation-job/z5j17akehrhh",
                 "Tags": [
+                    {
+                        "Key": "TestRunId",
+                        "Value": "natural-monitor"
+                    },
                     {
                         "Key": "Owner",
                         "Value": "c7n"
-                    },
-                    {
-                        "Key": "AnotherTag",
-                        "Value": "AnotherValue"
                     },
                     {
                         "Key": "Environment",
                         "Value": "test"
                     },
                     {
-                        "Key": "NewTag",
-                        "Value": "NewValue"
+                        "Key": "maid_status",
+                        "Value": "Resource does not meet policy: notify@2026/03/10"
                     }
                 ]
             }

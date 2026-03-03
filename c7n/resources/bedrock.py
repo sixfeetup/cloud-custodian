@@ -306,6 +306,7 @@ class BedrockModelInvocationJob(QueryResourceManager):
         enum_spec = ('list_model_invocation_jobs', 'invocationJobSummaries[]', None)
         name = 'jobName'
         id = arn = 'jobArn'
+        arn_type = 'model-invocation-job'
         permission_prefix = 'bedrock'
         universal_taggable = object()
         permissions_augment = ("bedrock:ListTagsForResource",)

@@ -2,27 +2,27 @@
     "pytest-terraform": 1,
     "outputs": {
         "input_bucket": {
-            "value": "c7n-bedrock-input-allowed-ocelot",
+            "value": "c7n-bedrock-input-natural-monitor",
             "type": "string"
         },
         "input_s3_uri": {
-            "value": "s3://c7n-bedrock-input-allowed-ocelot/input.jsonl",
+            "value": "s3://c7n-bedrock-input-natural-monitor/input.jsonl",
             "type": "string"
         },
         "job_name_prefix": {
-            "value": "c7n-batch-invocation-allowed-ocelot",
+            "value": "c7n-batch-invocation-natural-monitor",
             "type": "string"
         },
         "output_bucket": {
-            "value": "c7n-bedrock-output-allowed-ocelot",
+            "value": "c7n-bedrock-output-natural-monitor",
             "type": "string"
         },
         "output_s3_uri": {
-            "value": "s3://c7n-bedrock-output-allowed-ocelot/",
+            "value": "s3://c7n-bedrock-output-natural-monitor/",
             "type": "string"
         },
         "role_arn": {
-            "value": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-allowed-ocelot",
+            "value": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-natural-monitor",
             "type": "string"
         }
     },
@@ -62,9 +62,9 @@
                 "version": "2012-10-17"
             },
             "batch_access": {
-                "id": "339292438",
-                "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot/*\",\n        \"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:PutObject\",\n        \"s3:ListBucket\",\n        \"s3:AbortMultipartUpload\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot/*\",\n        \"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"bedrock:InvokeModel\",\n      \"Resource\": \"arn:aws:bedrock:*::foundation-model/*\"\n    }\n  ]\n}",
-                "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:ListBucket\",\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot/*\",\"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot\"]},{\"Effect\":\"Allow\",\"Action\":[\"s3:PutObject\",\"s3:ListBucket\",\"s3:AbortMultipartUpload\"],\"Resource\":[\"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot/*\",\"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot\"]},{\"Effect\":\"Allow\",\"Action\":\"bedrock:InvokeModel\",\"Resource\":\"arn:aws:bedrock:*::foundation-model/*\"}]}",
+                "id": "3914655565",
+                "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::c7n-bedrock-input-natural-monitor/*\",\n        \"arn:aws:s3:::c7n-bedrock-input-natural-monitor\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:PutObject\",\n        \"s3:ListBucket\",\n        \"s3:AbortMultipartUpload\"\n      ],\n      \"Resource\": [\n        \"arn:aws:s3:::c7n-bedrock-output-natural-monitor/*\",\n        \"arn:aws:s3:::c7n-bedrock-output-natural-monitor\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"bedrock:InvokeModel\",\n      \"Resource\": \"arn:aws:bedrock:*::foundation-model/*\"\n    }\n  ]\n}",
+                "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:ListBucket\",\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::c7n-bedrock-input-natural-monitor/*\",\"arn:aws:s3:::c7n-bedrock-input-natural-monitor\"]},{\"Effect\":\"Allow\",\"Action\":[\"s3:PutObject\",\"s3:ListBucket\",\"s3:AbortMultipartUpload\"],\"Resource\":[\"arn:aws:s3:::c7n-bedrock-output-natural-monitor/*\",\"arn:aws:s3:::c7n-bedrock-output-natural-monitor\"]},{\"Effect\":\"Allow\",\"Action\":\"bedrock:InvokeModel\",\"Resource\":\"arn:aws:bedrock:*::foundation-model/*\"}]}",
                 "override_json": null,
                 "override_policy_documents": null,
                 "policy_id": null,
@@ -83,8 +83,8 @@
                         "not_resources": [],
                         "principals": [],
                         "resources": [
-                            "arn:aws:s3:::c7n-bedrock-input-allowed-ocelot",
-                            "arn:aws:s3:::c7n-bedrock-input-allowed-ocelot/*"
+                            "arn:aws:s3:::c7n-bedrock-input-natural-monitor",
+                            "arn:aws:s3:::c7n-bedrock-input-natural-monitor/*"
                         ],
                         "sid": ""
                     },
@@ -101,8 +101,8 @@
                         "not_resources": [],
                         "principals": [],
                         "resources": [
-                            "arn:aws:s3:::c7n-bedrock-output-allowed-ocelot",
-                            "arn:aws:s3:::c7n-bedrock-output-allowed-ocelot/*"
+                            "arn:aws:s3:::c7n-bedrock-output-natural-monitor",
+                            "arn:aws:s3:::c7n-bedrock-output-natural-monitor/*"
                         ],
                         "sid": ""
                     },
@@ -127,43 +127,43 @@
         },
         "aws_iam_role": {
             "bedrock_batch": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-allowed-ocelot",
+                "arn": "arn:aws:iam::644160558196:role/c7n-bedrock-batch-natural-monitor",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"bedrock.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-03-03T22:57:38Z",
+                "create_date": "2026-03-03T23:06:07Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-bedrock-batch-allowed-ocelot",
+                "id": "c7n-bedrock-batch-natural-monitor",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-bedrock-batch-allowed-ocelot",
+                "name": "c7n-bedrock-batch-natural-monitor",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAXGZAMH757IR53FVYL"
+                "unique_id": "AROAXGZAMH75Y3MV3JICL"
             }
         },
         "aws_iam_role_policy": {
             "bedrock_batch": {
-                "id": "c7n-bedrock-batch-allowed-ocelot:c7n-bedrock-batch-allowed-ocelot",
-                "name": "c7n-bedrock-batch-allowed-ocelot",
+                "id": "c7n-bedrock-batch-natural-monitor:c7n-bedrock-batch-natural-monitor",
+                "name": "c7n-bedrock-batch-natural-monitor",
                 "name_prefix": "",
-                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\",\"s3:GetObject\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot/*\",\"arn:aws:s3:::c7n-bedrock-input-allowed-ocelot\"]},{\"Action\":[\"s3:PutObject\",\"s3:ListBucket\",\"s3:AbortMultipartUpload\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot/*\",\"arn:aws:s3:::c7n-bedrock-output-allowed-ocelot\"]},{\"Action\":\"bedrock:InvokeModel\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:bedrock:*::foundation-model/*\"}]}",
-                "role": "c7n-bedrock-batch-allowed-ocelot"
+                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"s3:ListBucket\",\"s3:GetObject\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::c7n-bedrock-input-natural-monitor/*\",\"arn:aws:s3:::c7n-bedrock-input-natural-monitor\"]},{\"Action\":[\"s3:PutObject\",\"s3:ListBucket\",\"s3:AbortMultipartUpload\"],\"Effect\":\"Allow\",\"Resource\":[\"arn:aws:s3:::c7n-bedrock-output-natural-monitor/*\",\"arn:aws:s3:::c7n-bedrock-output-natural-monitor\"]},{\"Action\":\"bedrock:InvokeModel\",\"Effect\":\"Allow\",\"Resource\":\"arn:aws:bedrock:*::foundation-model/*\"}]}",
+                "role": "c7n-bedrock-batch-natural-monitor"
             }
         },
         "aws_s3_bucket": {
             "input": {
                 "acceleration_status": "",
                 "acl": null,
-                "arn": "arn:aws:s3:::c7n-bedrock-input-allowed-ocelot",
-                "bucket": "c7n-bedrock-input-allowed-ocelot",
-                "bucket_domain_name": "c7n-bedrock-input-allowed-ocelot.s3.amazonaws.com",
+                "arn": "arn:aws:s3:::c7n-bedrock-input-natural-monitor",
+                "bucket": "c7n-bedrock-input-natural-monitor",
+                "bucket_domain_name": "c7n-bedrock-input-natural-monitor.s3.amazonaws.com",
                 "bucket_prefix": "",
                 "bucket_region": "us-east-1",
-                "bucket_regional_domain_name": "c7n-bedrock-input-allowed-ocelot.s3.us-east-1.amazonaws.com",
+                "bucket_regional_domain_name": "c7n-bedrock-input-natural-monitor.s3.us-east-1.amazonaws.com",
                 "cors_rule": [],
                 "force_destroy": true,
                 "grant": [
@@ -177,7 +177,7 @@
                     }
                 ],
                 "hosted_zone_id": "Z3AQBSTGFYJSTF",
-                "id": "c7n-bedrock-input-allowed-ocelot",
+                "id": "c7n-bedrock-input-natural-monitor",
                 "lifecycle_rule": [],
                 "logging": [],
                 "object_lock_configuration": [],
@@ -217,12 +217,12 @@
             "output": {
                 "acceleration_status": "",
                 "acl": null,
-                "arn": "arn:aws:s3:::c7n-bedrock-output-allowed-ocelot",
-                "bucket": "c7n-bedrock-output-allowed-ocelot",
-                "bucket_domain_name": "c7n-bedrock-output-allowed-ocelot.s3.amazonaws.com",
+                "arn": "arn:aws:s3:::c7n-bedrock-output-natural-monitor",
+                "bucket": "c7n-bedrock-output-natural-monitor",
+                "bucket_domain_name": "c7n-bedrock-output-natural-monitor.s3.amazonaws.com",
                 "bucket_prefix": "",
                 "bucket_region": "us-east-1",
-                "bucket_regional_domain_name": "c7n-bedrock-output-allowed-ocelot.s3.us-east-1.amazonaws.com",
+                "bucket_regional_domain_name": "c7n-bedrock-output-natural-monitor.s3.us-east-1.amazonaws.com",
                 "cors_rule": [],
                 "force_destroy": true,
                 "grant": [
@@ -236,7 +236,7 @@
                     }
                 ],
                 "hosted_zone_id": "Z3AQBSTGFYJSTF",
-                "id": "c7n-bedrock-output-allowed-ocelot",
+                "id": "c7n-bedrock-output-natural-monitor",
                 "lifecycle_rule": [],
                 "logging": [],
                 "object_lock_configuration": [],
@@ -277,8 +277,8 @@
         "aws_s3_object": {
             "input": {
                 "acl": null,
-                "arn": "arn:aws:s3:::c7n-bedrock-input-allowed-ocelot/input.jsonl",
-                "bucket": "c7n-bedrock-input-allowed-ocelot",
+                "arn": "arn:aws:s3:::c7n-bedrock-input-natural-monitor/input.jsonl",
+                "bucket": "c7n-bedrock-input-natural-monitor",
                 "bucket_key_enabled": false,
                 "cache_control": "",
                 "checksum_algorithm": null,
@@ -295,7 +295,7 @@
                 "content_type": "application/octet-stream",
                 "etag": "b2b0bfd4a7f45bfdeb35bc7d22251a3d",
                 "force_destroy": false,
-                "id": "c7n-bedrock-input-allowed-ocelot/input.jsonl",
+                "id": "c7n-bedrock-input-natural-monitor/input.jsonl",
                 "key": "input.jsonl",
                 "kms_key_id": null,
                 "metadata": null,
@@ -316,7 +316,7 @@
         },
         "random_pet": {
             "job": {
-                "id": "allowed-ocelot",
+                "id": "natural-monitor",
                 "keepers": null,
                 "length": 2,
                 "prefix": null,
