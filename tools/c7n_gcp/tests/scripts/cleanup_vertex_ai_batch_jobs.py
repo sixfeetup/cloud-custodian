@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright The Cloud Custodian Authors.
+# SPDX-License-Identifier: Apache-2.0
+#
 """
 Script to delete old Vertex AI Batch Prediction Jobs.
 This helps clean up test jobs that may interfere with functional tests.
@@ -7,11 +10,15 @@ Usage:
     python cleanup_batch_jobs.py [--project PROJECT_ID] [--pattern PATTERN]
 """
 
-import argparse
+import logging
 import time
+
+import click
 from google.api_core.client_options import ClientOptions
-from googleapiclient import discovery
 from google.auth import default
+from googleapiclient import discovery
+
+log = logging.getLogger('c7n_gcp.cleanup')
 
 # Configuration
 LOCATIONS = ['us-central1', 'us-east1']
@@ -46,7 +53,7 @@ def list_batch_jobs(credentials, project_id, location):
         response = request.execute()
         return response.get('batchPredictionJobs', [])
     except Exception as e:
-        print(f'  Error listing jobs: {e}')
+        log.error(f'  Error listing jobs: {e}')
         return []
 
 
@@ -69,7 +76,7 @@ def cancel_job(credentials, job_name, location):
         request.execute()
         return True
     except Exception as e:
-        print(f'    Failed to cancel: {e}')
+        log.error(f'    Failed to cancel: {e}')
         return False
 
 
@@ -92,18 +99,18 @@ def delete_job(credentials, job_name, location):
         request.execute()
         return True
     except Exception as e:
-        print(f'    Failed to delete: {e}')
+        log.error(f'    Failed to delete: {e}')
         return False
 
 
 def cleanup_location(credentials, project_id, location, pattern):
     """Clean up jobs in a specific location."""
-    print(f'Processing location: {location}')
+    log.info(f'Processing location: {location}')
 
     jobs = list_batch_jobs(credentials, project_id, location)
 
     if not jobs:
-        print('  No jobs found')
+        log.info('  No jobs found')
         return
 
     deleted_count = 0
@@ -115,55 +122,54 @@ def cleanup_location(credentials, project_id, location, pattern):
 
         # Check if display name matches our test pattern
         if pattern in display_name:
-            print(f'  Found test job: {display_name} (state: {state})')
+            log.info(f'  Found test job: {display_name} (state: {state})')
 
             # Cancel job if it's running or pending
             if state in ['JOB_STATE_RUNNING', 'JOB_STATE_PENDING', 'JOB_STATE_CANCELLING']:
-                print('    Cancelling job...')
+                log.info('    Cancelling job...')
                 cancel_job(credentials, job_name, location)
                 # Wait for cancellation to complete
                 time.sleep(10)
 
             # Delete the job
-            print('    Deleting job...')
+            log.info('    Deleting job...')
             if delete_job(credentials, job_name, location):
                 deleted_count += 1
-                print('    ✓ Deleted')
+                log.info('    ✓ Deleted')
             else:
-                print('    ✗ Failed to delete')
+                log.warning('    ✗ Failed to delete')
 
-    print(f'  Deleted {deleted_count} job(s) in {location}')
+    log.info(f'  Deleted {deleted_count} job(s) in {location}')
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Clean up Vertex AI Batch Prediction Jobs'
-    )
-    parser.add_argument(
-        '--project',
-        help='GCP Project ID (default: from gcloud config)'
-    )
-    parser.add_argument(
-        '--pattern',
-        default=DEFAULT_PATTERN,
-        help=f'Display name pattern to match (default: {DEFAULT_PATTERN})'
-    )
+@click.command()
+@click.option(
+    '--project',
+    help='GCP Project ID (default: from gcloud config)',
+    default=None
+)
+@click.option(
+    '--pattern',
+    default=DEFAULT_PATTERN,
+    help=f'Display name pattern to match (default: {DEFAULT_PATTERN})'
+)
+def main(project, pattern):
+    """Clean up Vertex AI Batch Prediction Jobs."""
+    logging.basicConfig(level=logging.INFO)
 
-    args = parser.parse_args()
+    credentials, project_id = get_credentials_and_project(project)
 
-    credentials, project_id = get_credentials_and_project(args.project)
-
-    print('=== Cleaning up Vertex AI Batch Prediction Jobs ===')
-    print(f'Project: {project_id}')
-    print(f'Locations: {LOCATIONS}')
-    print(f'Display name pattern: {args.pattern}')
-    print('')
+    log.info('=== Cleaning up Vertex AI Batch Prediction Jobs ===')
+    log.info(f'Project: {project_id}')
+    log.info(f'Locations: {LOCATIONS}')
+    log.info(f'Display name pattern: {pattern}')
+    log.info('')
 
     for location in LOCATIONS:
-        cleanup_location(credentials, project_id, location, args.pattern)
-        print('')
+        cleanup_location(credentials, project_id, location, pattern)
+        log.info('')
 
-    print('=== Cleanup complete ===')
+    log.info('=== Cleanup complete ===')
 
 
 if __name__ == '__main__':

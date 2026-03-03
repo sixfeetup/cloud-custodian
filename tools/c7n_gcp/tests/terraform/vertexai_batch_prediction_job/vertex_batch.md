@@ -144,18 +144,43 @@ vertexai_batch_prediction_job/
 
 ## Cleanup
 
-To destroy all infrastructure:
+### Cleaning Up Test Batch Prediction Jobs
+
+Batch prediction jobs created by the test are ephemeral and not managed by terraform. Use the cleanup script to delete test jobs:
+
+```bash
+# From repository root
+
+# Clean up all jobs matching the default pattern 'c7n-test'
+python tools/c7n_gcp/tests/scripts/cleanup_vertex_ai_batch_jobs.py
+
+# Clean up jobs with a custom pattern
+python tools/c7n_gcp/tests/scripts/cleanup_vertex_ai_batch_jobs.py --pattern my-test-pattern
+
+# Clean up jobs in a specific project
+python tools/c7n_gcp/tests/scripts/cleanup_vertex_ai_batch_jobs.py --project my-project-id
+```
+
+The script will:
+- Search for batch prediction jobs in us-central1 and us-east1
+- Cancel any running/pending jobs that match the pattern
+- Delete all matching jobs
+- Provide detailed logging of the cleanup process
+
+Alternatively, you can use gcloud commands to manually delete jobs:
+
+```bash
+gcloud ai batch-prediction-jobs list --region=us-central1
+gcloud ai batch-prediction-jobs delete JOB_ID --region=us-central1
+```
+
+### Destroying Infrastructure
+
+To destroy all terraform-managed infrastructure:
 
 ```bash
 # Destroy the model bucket
 cd model_artifact
 terraform destroy
-```
-
-**Note:** Batch prediction jobs created by the test are ephemeral and not managed by terraform. They should be deleted manually if needed:
-
-```bash
-gcloud ai batch-prediction-jobs list --region=us-central1
-gcloud ai batch-prediction-jobs delete JOB_ID --region=us-central1
 ```
 
