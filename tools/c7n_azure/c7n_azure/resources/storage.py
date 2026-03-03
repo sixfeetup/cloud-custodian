@@ -518,29 +518,17 @@ class StorageMetricsFilter(MetricFilter):
         FILE_TYPE: 'Microsoft.Storage/storageAccounts/fileServices',
     }
 
-    schema = {
-        'type': 'object',
-        'required': ['type', 'storage-type', 'metric', 'op', 'threshold'],
-        'additionalProperties': False,
-        'properties': {
-            'type': {'enum': ['storage-metrics']},
+    schema = type_schema(
+        'storage-metrics',
+        rinherit=MetricFilter.schema,
+        **{
             'storage-type': {
                 'type': 'string',
-                'enum': [BLOB_TYPE, QUEUE_TYPE, TABLE_TYPE, FILE_TYPE]
+                'enum': [BLOB_TYPE, QUEUE_TYPE, TABLE_TYPE, FILE_TYPE],
             },
-            'metric': {'type': 'string'},
-            'op': {'enum': ['eq', 'equal', 'ne', 'not-equal', 'gt', 'greater-than',
-                           'ge', 'gte', 'le', 'lte', 'lt', 'less-than']},
-            'threshold': {'type': 'number'},
-            'metric_namespace': {'type': 'string'},
-            'timeframe': {'type': 'number'},
-            'interval': {'enum': [
-                'PT1M', 'PT5M', 'PT15M', 'PT30M', 'PT1H', 'PT6H', 'PT12H', 'P1D']},
-            'aggregation': {'enum': ['total', 'average', 'count', 'minimum', 'maximum']},
-            'no_data_action': {'enum': ['include', 'exclude', 'to_zero']},
-            'filter': {'type': 'string'}
-        }
-    }
+            'required': ['type', 'storage-type', 'metric', 'op', 'threshold'],
+        },
+    )
 
     def __init__(self, data, manager=None):
         # Auto-set metric namespace if not provided
