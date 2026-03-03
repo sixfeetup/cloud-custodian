@@ -9,7 +9,7 @@ The following example policy will query for all savings plans for your account.
 
     policies:
     - name: query-all-savings-plans
-        resource: savings-plans
+      resource: savings-plans
 
 The following example policy will find all active savings plans of the Compute
 type.
@@ -18,11 +18,11 @@ type.
 
     policies:
     - name: active-compute-savings-plans
-        resource: savings-plans
-        filters:
+      resource: savings-plans
+      filters:
         - type: value
-            key: State
-            value: active
+          key: State
+          value: active
         - type: value
-            key: SavingsPlanType
-            value: Compute
+          key: SavingsPlanType
+          value: Compute
