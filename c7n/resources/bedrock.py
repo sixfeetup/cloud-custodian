@@ -383,6 +383,40 @@ class MarkBedrockModelInvocationJobForOp(TagDelayedAction):
     """
 
 
+@BedrockModelInvocationJob.action_registry.register('stop')
+class StopModelInvocationJob(BaseAction):
+    """Stop Bedrock model invocation job
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: bedrock-stop-untagged-jobs
+              resource: aws.bedrock-model-invocation-job
+              filters:
+                - 'tag:Owner': absent
+                - type: value
+                  key: status
+                  op: in
+                  value: [Submitted, Validating, Scheduled, InProgress]
+              actions:
+                - type: stop
+    """
+    schema = type_schema('stop')
+    permissions = ('bedrock:StopModelInvocationJob',)
+
+    def process(self, resources):
+        client = local_session(self.manager.session_factory).client('bedrock')
+        for r in resources:
+            try:
+                client.stop_model_invocation_job(jobIdentifier=r['jobArn'])
+            except (client.exceptions.ResourceNotFoundException,
+                    client.exceptions.ConflictException) as e:
+                self.log.warning(
+                    'Unable to stop job %s: %s', r['jobArn'], e)
+
+
 @resources.register('bedrock-agent')
 class BedrockAgent(QueryResourceManager):
     class resource_type(TypeInfo):

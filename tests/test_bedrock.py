@@ -229,6 +229,54 @@ class BedrockModelInvocationJob(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
+    def test_bedrock_model_invocation_job_stop(self):
+
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(
+                'test_bedrock_model_invocation_job_stop', region='us-east-1')
+        else:
+            session_factory = self.replay_flight_data(
+                'test_bedrock_model_invocation_job_stop', region='us-east-1')
+
+        client = session_factory().client('bedrock')
+
+        # Build filters based on mode
+        filters = [
+            {'status': 'Submitted'},
+            {'tag:Owner': 'c7n'},
+        ]
+
+        unique_id = None  # Initialize for later use
+        # Create the job using the helper method with Terraform resources (only in recording mode)
+        if C7N_FUNCTIONAL:
+            job_arn, unique_id = self.create_bedrock_invocation_job(
+                session_factory, self.bedrock_model_invocation_job)
+            # Add unique filter only in functional mode to isolate this test run
+            filters.append({'tag:TestRunId': unique_id})
+
+        # Stop the job
+        p = self.load_policy(
+            {
+                'name': 'bedrock-invocation-job-stop',
+                'resource': 'bedrock-model-invocation-job',
+                'filters': filters,
+                'actions': [
+                    {
+                        'type': 'stop'
+                    }
+                ]
+            },
+            session_factory=session_factory,
+            config={'region': 'us-east-1'}
+        )
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        # Verify job status changed to Stopping or Stopped
+        job_arn = resources[0]['jobArn']
+        job_status = client.get_model_invocation_job(jobIdentifier=job_arn)
+        self.assertIn(job_status['status'], ['Stopping', 'Stopped'])
+
 
 class BedrockCustomModel(BaseTest):
     def test_bedrock_custom_model(self):
