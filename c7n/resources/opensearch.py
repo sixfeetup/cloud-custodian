@@ -429,4 +429,4 @@ class OpensearchReservedInstance(QueryResourceManager):
         filter_name = 'ReservedInstanceId'
         filter_type = 'scalar'
         arn_type = "reserved-instances"
-        permissions_enum = ('opensearch:DescribeReservedInstances',)
+        permissions_enum = ('es:DescribeReservedInstances',)
