@@ -3191,7 +3191,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-ip-count-filter',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'ip-range-count', 'count': 5, 'op': 'greater-than'}
+                {'type': 'ip-range-count', 'value': 5, 'op': 'greater-than'}
             ]
         }
         policy = self.load_policy(policy_data)
@@ -3224,7 +3224,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-ip-count-equal',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'ip-range-count', 'count': 5, 'op': 'equal'}
+                {'type': 'ip-range-count', 'value': 5, 'op': 'equal'}
             ]
         }
         policy = self.load_policy(policy_data)
@@ -3263,7 +3263,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-countries-count-filter',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'countries-count', 'count': 5, 'op': 'greater-than'}
+                {'type': 'countries-count', 'value': 5, 'op': 'greater-than'}
             ]
         }
         policy = self.load_policy(policy_data)
@@ -3296,7 +3296,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-countries-count-less-than',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'countries-count', 'count': 3, 'op': 'less-than'}
+                {'type': 'countries-count', 'value': 3, 'op': 'less-than'}
             ]
         }
         policy = self.load_policy(policy_data)
@@ -3364,7 +3364,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-ip-range-count-validation',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'ip-range-count', 'count': 5, 'op': 'greater-than'}
+                {'type': 'ip-range-count', 'value': 5, 'op': 'greater-than'}
             ]
         }
         policy = self.load_policy(policy_data, validate=True)
@@ -3375,7 +3375,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'name': 'test-countries-count-validation',
             'resource': 'azure.entraid-named-location',
             'filters': [
-                {'type': 'countries-count', 'count': 3, 'op': 'less-than'}
+                {'type': 'countries-count', 'value': 3, 'op': 'less-than'}
             ]
         }
         policy = self.load_policy(policy_data, validate=True)
@@ -3450,7 +3450,7 @@ class EntraIDNamedLocationTest(BaseTest):
             'resource': 'azure.entraid-named-location',
             'filters': [
                 {'type': 'location-type', 'location-type': 'ipNamedLocation'},
-                {'type': 'ip-range-count', 'count': 5, 'op': 'greater-than'}
+                {'type': 'ip-range-count', 'value': 5, 'op': 'greater-than'}
             ]
         }
         policy = self.load_policy(policy_data)
@@ -4508,7 +4508,7 @@ def test_entraid_named_location_ip_range_filter_terraform(test, entraid_named_lo
         'resource': 'azure.entraid-named-location',
         'filters': [
             {'type': 'location-type', 'location-type': 'ipNamedLocation'},
-            {'type': 'ip-range-count', 'count': 1, 'op': 'greater-than'}
+            {'type': 'ip-range-count', 'value': 1, 'op': 'greater-than'}
         ]
     })
 
@@ -4518,7 +4518,7 @@ def test_entraid_named_location_ip_range_filter_terraform(test, entraid_named_lo
         'resource': 'azure.entraid-named-location',
         'filters': [
             {'type': 'location-type', 'location-type': 'ipNamedLocation'},
-            {'type': 'ip-range-count', 'count': 1, 'op': 'equal'}
+            {'type': 'ip-range-count', 'value': 1, 'op': 'equal'}
         ]
     })
 
@@ -4545,7 +4545,7 @@ def test_entraid_named_location_countries_count_filter_terraform(test, entraid_n
         'resource': 'azure.entraid-named-location',
         'filters': [
             {'type': 'location-type', 'location-type': 'countryNamedLocation'},
-            {'type': 'countries-count', 'count': 1, 'op': 'greater-than'}
+            {'type': 'countries-count', 'value': 1, 'op': 'greater-than'}
         ]
     })
 
@@ -4555,7 +4555,7 @@ def test_entraid_named_location_countries_count_filter_terraform(test, entraid_n
         'resource': 'azure.entraid-named-location',
         'filters': [
             {'type': 'location-type', 'location-type': 'countryNamedLocation'},
-            {'type': 'countries-count', 'count': 1, 'op': 'equal'}
+            {'type': 'countries-count', 'value': 1, 'op': 'equal'}
         ]
     })
 
@@ -4628,11 +4628,11 @@ def test_entraid_named_location_comprehensive_terraform(test, entraid_named_loca
             {'or': [
                 {'and': [
                     {'type': 'location-type', 'location-type': 'ipNamedLocation'},
-                    {'type': 'ip-range-count', 'count': 1, 'op': 'greater-than'}
+                    {'type': 'ip-range-count', 'value': 1, 'op': 'greater-than'}
                 ]},
                 {'and': [
                     {'type': 'location-type', 'location-type': 'countryNamedLocation'},
-                    {'type': 'countries-count', 'count': 1, 'op': 'greater-than'}
+                    {'type': 'countries-count', 'value': 1, 'op': 'greater-than'}
                 ]}
             ]}
         ]
