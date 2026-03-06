@@ -1,0 +1,60 @@
+{
+  "headers": {
+    "content-type": "application/json; charset=UTF-8",
+    "vary": "Origin, X-Origin, Referer",
+    "date": "Fri, 06 Mar 2026 18:45:30 GMT",
+    "server": "ESF",
+    "x-xss-protection": "0",
+    "x-frame-options": "SAMEORIGIN",
+    "x-content-type-options": "nosniff",
+    "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+    "transfer-encoding": "chunked",
+    "status": "200",
+    "content-length": "1416",
+    "-content-encoding": "gzip",
+    "content-location": "https://us-east1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs?alt=json"
+  },
+  "body": {
+    "modelDeploymentMonitoringJobs": [
+      {
+        "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/4391103713649885184",
+        "displayName": "c7n-monitor-c7n-endpoint-east",
+        "endpoint": "projects/cloud-custodian/locations/us-east1/endpoints/0",
+        "state": "JOB_STATE_PENDING",
+        "scheduleState": "OFFLINE",
+        "modelDeploymentMonitoringObjectiveConfigs": [
+          {
+            "deployedModelId": "4948376270061699072",
+            "objectiveConfig": {
+              "predictionDriftDetectionConfig": {}
+            }
+          }
+        ],
+        "modelDeploymentMonitoringScheduleConfig": {
+          "monitorInterval": "3600s",
+          "monitorWindow": "3600s"
+        },
+        "loggingSamplingStrategy": {
+          "randomSampleConfig": {
+            "sampleRate": 0.8
+          }
+        },
+        "bigqueryTables": [
+          {
+            "logSource": "SERVING",
+            "logType": "PREDICT",
+            "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_869073781803450368.serving_predict"
+          }
+        ],
+        "createTime": "2026-03-06T18:45:30.429371Z",
+        "updateTime": "2026-03-06T18:45:30.521515Z",
+        "modelMonitoringAlertConfig": {
+          "emailAlertConfig": {},
+          "enableLogging": true
+        },
+        "analysisInstanceSchemaUri": "gs://stacklet-personal-2-vertex-test-models/schema/instance_schema.yaml",
+        "logTtl": "0s"
+      }
+    ]
+  }
+}

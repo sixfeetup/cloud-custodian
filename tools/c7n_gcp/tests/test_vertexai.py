@@ -5,6 +5,7 @@ import os
 import json
 import time
 from google.api_core.client_options import ClientOptions
+from c7n.testing import C7N_FUNCTIONAL
 
 from c7n.testing import C7N_FUNCTIONAL
 from c7n_gcp.client import get_default_project
@@ -253,6 +254,101 @@ def test_vertexai_endpoint_delete(test):
 
     # Verify that the endpoint no longer exists
     assert len(remaining_resources) == 0
+
+
+def test_vertexai_endpoint_monitor(test):
+    """Test creating Model Deployment Monitoring Jobs for Vertex AI Endpoints.
+
+    This test verifies that the monitor action can successfully create
+    monitoring jobs for endpoints with deployed models across multiple regions.
+    It also tests that running the action again does not fail.
+    """
+    if C7N_FUNCTIONAL:
+        session_factory = test.record_flight_data('vertexai-endpoint-monitor')
+        # In functional mode, use the actual GCS bucket
+        session = session_factory()
+        project_id = session.get_default_project()
+        schema_uri = f'gs://{project_id}-vertex-test-models/schema/instance_schema.yaml'
+    else:
+        session_factory = test.replay_flight_data('vertexai-endpoint-monitor')
+        # In replay mode, use a placeholder schema URI (won't actually be accessed)
+        schema_uri = 'gs://cloud-custodian-vertex-test-models/schema/instance_schema.yaml'
+
+    policy = test.load_policy(
+        {'name': 'monitor-endpoints',
+         'resource': 'gcp.vertex-ai-endpoint',
+         'query': [
+             {'location': 'us-central1'},
+             {'location': 'us-east1'}
+         ],
+         'filters': [
+             {'type': 'value',
+              'key': 'deployedModels',
+              'value': 'present'}
+         ],
+         'actions': [
+             {'type': 'monitor',
+              'analysis_instance_schema_uri': schema_uri}
+         ]},
+        session_factory=session_factory)
+
+    resources = policy.run()
+
+    # Verify that resources were found in both regions
+    assert len(resources) >= 2
+
+    # Verify all resources have deployed models
+    assert all(r.get('deployedModels') for r in resources)
+
+    locations = {r['name'].split('/')[3] for r in resources}
+    assert 'us-central1' in locations
+    assert 'us-east1' in locations
+
+    session = session_factory()
+    project_id = session.get_default_project()
+
+    # Check both regions
+    regions = ['us-central1', 'us-east1']
+    total_c7n_jobs = 0
+
+    for region in regions:
+        # Query for the monitoring job we just created
+        client_options = ClientOptions(
+            api_endpoint=f'https://{region}-aiplatform.googleapis.com'
+        )
+        monitoring_client = session.client(
+            'aiplatform', 'v1',
+            'projects.locations.modelDeploymentMonitoringJobs',
+            client_options=client_options
+        )
+
+        # List monitoring jobs
+        response = monitoring_client.execute_command(
+            'list',
+            {'parent': f'projects/{project_id}/locations/{region}'}
+        )
+
+        monitoring_jobs = response.get('modelDeploymentMonitoringJobs', [])
+
+        # Count monitoring jobs with c7n naming pattern
+        c7n_jobs = [
+            job for job in monitoring_jobs
+            if job.get('displayName', '').startswith('c7n-monitor-')
+        ]
+        total_c7n_jobs += len(c7n_jobs)
+
+        # Verify at least one monitoring job exists in this region
+        assert len(c7n_jobs) >= 1, f'No monitoring jobs found in {region}'
+
+    # Verify we have monitoring jobs in both regions
+    assert total_c7n_jobs >= 2
+
+    # Test idempotency: Run the monitor action again
+    # This should not fail (in replay mode, the recorded responses will be reused)
+    print('\nDEBUG: Testing idempotency - running monitor action again...')
+    resources_retry = policy.run()
+    assert len(resources_retry) >= 2
+    print('\nDEBUG: Idempotency test passed - action ran successfully')
 
 
 # Batch Prediction Job Tests
