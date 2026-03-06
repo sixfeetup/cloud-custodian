@@ -6,7 +6,6 @@ from .common import BaseTest, event_data
 from botocore.exceptions import ClientError
 from pytest_terraform import terraform
 
-
 @terraform('bedrock_model_invocation_job')
 def test_bedrock_model_invocation_job(test, bedrock_model_invocation_job):
     session_factory = test.replay_flight_data(
@@ -33,6 +32,83 @@ def test_bedrock_model_invocation_job(test, bedrock_model_invocation_job):
     test.assertEqual(len(resources), 1)
     test.assertEqual(resources[0]['jobArn'], job_arn)
     test.assertEqual(resources[0]['jobName'], job_name)
+
+
+@terraform("bedrock_model_invocation_job_logging_enabled", replay=False)
+def test_bedrock_model_invocation_job_model_invocation_logging_enabled(
+    test, bedrock_model_invocation_job_logging_enabled
+):
+    session_factory = test.record_flight_data(
+        "test_bedrock_model_invocation_job_model_invocation_logging_enabled",
+        region="us-east-1",
+    )
+    client = session_factory().client("bedrock")
+
+    # Create an invocation job manually (since terraform can't do it)
+    tf = bedrock_model_invocation_job_logging_enabled
+    job_arn = client.create_model_invocation_job(
+        jobName='c7n-batch-invocation',
+        modelId='amazon.nova-micro-v1:0',
+        roleArn=tf["aws_iam_role.bedrock_batch.arn"],
+        inputDataConfig={"s3InputDataConfig": {"s3Uri": f"s3://{tf['aws_s3_bucket.input.bucket']}/{tf['aws_s3_object.input.key']}"}},
+        outputDataConfig={"s3OutputDataConfig": {"s3Uri": f"s3://{tf['aws_s3_bucket.output.bucket']}/"}},
+    )
+
+    p = test.load_policy(
+        {
+            "name": "bedrock-model-invocation-job-logging-enabled",
+            "resource": "bedrock-model-invocation-job",
+            "filters": [
+                {"jobArn": job_arn},
+                {
+                    "type": "bedrock-model-invocation-logging",
+                    "attrs": [
+                        {"textDataDeliveryEnabled": True},
+                        {"s3Config.bucketName": "present"},
+                    ],
+                },
+            ],
+        },
+        session_factory=session_factory,
+        config={"region": "us-east-1"},
+    )
+    resources = p.run()
+    test.assertEqual(len(resources), 1)
+    test.assertTrue("c7n:BedrockModelInvocationLogging" in resources[0])
+
+
+@terraform("bedrock_model_invocation_job_logging_disabled")
+def test_bedrock_model_invocation_job_model_invocation_logging_disabled(
+    test, bedrock_model_invocation_job_logging_disabled
+):
+    session_factory = test.record_flight_data(
+        "test_bedrock_model_invocation_job_model_invocation_logging_disabled",
+        region="us-east-1",
+    )
+    client = session_factory().client("bedrock")
+    client.delete_model_invocation_logging_configuration()
+    job_arn = bedrock_model_invocation_job_logging_disabled[
+        "aws_bedrock_model_invocation_job.test_job.arn"
+    ]
+    p = test.load_policy(
+        {
+            "name": "bedrock-model-invocation-job-logging-disabled",
+            "resource": "bedrock-model-invocation-job",
+            "filters": [
+                {"jobArn": job_arn},
+                {
+                    "type": "bedrock-model-invocation-logging",
+                    "count": 0,
+                    "count_op": "eq",
+                },
+            ],
+        },
+        session_factory=session_factory,
+        config={"region": "us-east-1"},
+    )
+    resources = p.run()
+    test.assertEqual(len(resources), 1)
+    test.assertFalse("c7n:BedrockModelInvocationLogging" in resources[0])
 
 
 class BedrockCustomModel(BaseTest):
@@ -305,6 +381,74 @@ def test_bedrock_application_inference_profile(test, bedrock_application_inferen
     tags = {t['Key']: t['Value'] for t in resources[0]['Tags']}
     test.assertEqual(tags['Environment'], 'test')
     test.assertEqual(tags['Owner'], 'c7n')
+
+
+@terraform("bedrock_application_inference_profile_logging_enabled")
+def test_bedrock_application_inference_profile_model_invocation_logging_enabled(
+    test, bedrock_application_inference_profile_logging_enabled
+):
+    session_factory = test.record_flight_data(
+        "test_bedrock_application_inference_profile_model_invocation_logging_enabled",
+        region="us-east-1",
+    )
+    profile_arn = bedrock_application_inference_profile_logging_enabled[
+        "aws_bedrock_inference_profile.test_profile.arn"
+    ]
+    p = test.load_policy(
+        {
+            "name": "bedrock-app-inference-profile-logging-enabled",
+            "resource": "bedrock-inference-profile",
+            "filters": [
+                {"inferenceProfileArn": profile_arn},
+                {
+                    "type": "bedrock-model-invocation-logging",
+                    "attrs": [
+                        {"textDataDeliveryEnabled": True},
+                        {"s3Config.bucketName": "present"},
+                    ],
+                },
+            ],
+        },
+        session_factory=session_factory,
+        config={"region": "us-east-1"},
+    )
+    resources = p.run()
+    test.assertEqual(len(resources), 1)
+    test.assertTrue("c7n:BedrockModelInvocationLogging" in resources[0])
+
+
+@terraform("bedrock_application_inference_profile_logging_disabled")
+def test_bedrock_application_inference_profile_model_invocation_logging_disabled(
+    test, bedrock_application_inference_profile_logging_disabled
+):
+    session_factory = test.record_flight_data(
+        "test_bedrock_application_inference_profile_model_invocation_logging_disabled",
+        region="us-east-1",
+    )
+    client = session_factory().client("bedrock")
+    client.delete_model_invocation_logging_configuration()
+    profile_arn = bedrock_application_inference_profile_logging_disabled[
+        "aws_bedrock_inference_profile.test_profile.arn"
+    ]
+    p = test.load_policy(
+        {
+            "name": "bedrock-app-inference-profile-logging-disabled",
+            "resource": "bedrock-inference-profile",
+            "filters": [
+                {"inferenceProfileArn": profile_arn},
+                {
+                    "type": "bedrock-model-invocation-logging",
+                    "count": 0,
+                    "count_op": "eq",
+                },
+            ],
+        },
+        session_factory=session_factory,
+        config={"region": "us-east-1"},
+    )
+    resources = p.run()
+    test.assertEqual(len(resources), 1)
+    test.assertFalse("c7n:BedrockModelInvocationLogging" in resources[0])
 
 
 @terraform('bedrock_application_inference_profile_tag_actions')
