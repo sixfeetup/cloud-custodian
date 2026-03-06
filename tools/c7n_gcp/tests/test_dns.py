@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from gcp_common import BaseTest, event_data
+from pytest_terraform import terraform
 
 
 class DnsManagedZoneTest(BaseTest):
@@ -145,3 +146,73 @@ class TestDnsResourceRecordsFilter(BaseTest):
 
         self.assertEqual(len(policy_resources), 1)
         self.assertEqual(policy_resources[0]['name'], 'zone-277-red')
+
+
+@terraform("dns_enable_dnssec")
+def test_dns_managed_zone_enable_dnssec(test, dns_enable_dnssec):
+    zone_name = dns_enable_dnssec.resources['google_dns_managed_zone']['public_zone']['name']
+    project_id = dns_enable_dnssec.resources['google_dns_managed_zone']['public_zone']['project']
+
+    factory = test.replay_flight_data('dns-managed-zone-enable-dnssec')
+    p = test.load_policy(
+        {
+            'name': 'gcp-dns-enable-dnssec',
+            'resource': 'gcp.dns-managed-zone',
+            'filters': [
+                {'type': 'value', 'key': 'visibility', 'op': 'eq', 'value': 'public'},
+                {'type': 'value', 'key': 'dnssecConfig.state', 'op': 'ne', 'value': 'on'},
+            ],
+            'actions': [{'type': 'enable-dnssec'}],
+        },
+        session_factory=factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['name'] == zone_name
+    assert resources[0]['dnssecConfig']['state'] == 'off'
+
+    client = p.resource_manager.get_client()
+    result = client.execute_query('get', {'project': project_id, 'managedZone': zone_name})
+    assert result['dnssecConfig']['state'] == 'on'
+
+
+@terraform("dns_set_dnssec_key_specs")
+def test_dns_managed_zone_set_dnssec_key_specs(test, dns_set_dnssec_key_specs):
+    zone = dns_set_dnssec_key_specs.resources['google_dns_managed_zone']['public_zone']
+    zone_name = zone['name']
+    project_id = zone['project']
+    key_specs = [
+        {'keyType': 'keySigning', 'algorithm': 'rsasha256', 'keyLength': 2048},
+        {'keyType': 'zoneSigning', 'algorithm': 'rsasha512', 'keyLength': 1024},
+    ]
+
+    factory = test.replay_flight_data('dns-managed-zone-set-key-specs')
+    p = test.load_policy(
+        {
+            'name': 'gcp-dns-set-dnssec-key-specs',
+            'resource': 'gcp.dns-managed-zone',
+            'filters': [
+                {'type': 'value', 'key': 'visibility', 'op': 'eq', 'value': 'public'},
+                {'type': 'value', 'key': 'dnssecConfig.state', 'op': 'ne', 'value': 'on'},
+            ],
+            'actions': [
+                {
+                    'type': 'set-dnssec-key-specs',
+                    'defaultKeySpecs': key_specs,
+                }
+            ],
+        },
+        session_factory=factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['name'] == zone_name
+
+    client = p.resource_manager.get_client()
+    result = client.execute_query('get', {'project': project_id, 'managedZone': zone_name})
+    returned_specs = result['dnssecConfig']['defaultKeySpecs']
+    assert len(returned_specs) == 2
+    assert returned_specs[0]['keyType'] == 'keySigning'
+    assert returned_specs[0]['algorithm'] == 'rsasha256'
+    assert returned_specs[1]['keyType'] == 'zoneSigning'
+    assert returned_specs[1]['algorithm'] == 'rsasha512'
