@@ -3,7 +3,7 @@
 
 import logging
 
-from c7n.filters import Filter
+from c7n.filters import Filter, ValueFilter
 from c7n.utils import type_schema
 from c7n_azure.provider import resources
 from c7n_azure.graph_utils import GraphResourceManager, GraphTypeInfo, GraphSource
@@ -165,8 +165,11 @@ class LocationTypeFilter(Filter):
 
 
 @EntraIDNamedLocation.filter_registry.register('ip-range-count')
-class IPRangeCountFilter(Filter):
+class IPRangeCountFilter(ValueFilter):
     """Filter IP-based named locations by number of IP ranges.
+
+    This filter uses the c7n:IPRangesCount annotation added during resource augmentation.
+    It supports all standard ValueFilter operators (greater-than, less-than, equal, etc.).
 
     :example:
 
@@ -181,38 +184,30 @@ class IPRangeCountFilter(Filter):
               - type: location-type
                 location-type: ipNamedLocation
               - type: ip-range-count
-                count: 10
+                value: 10
                 op: greater-than
     """
 
-    schema = type_schema('ip-range-count',
-                        count={'type': 'number'},
-                        op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']})
+    schema = type_schema('ip-range-count', rinherit=ValueFilter.schema)
+    schema_alias = True
+
+    def __init__(self, data, manager=None):
+        # Set the key to the annotation that contains the IP ranges count
+        data['key'] = 'c7n:IPRangesCount'
+        super(IPRangeCountFilter, self).__init__(data, manager)
 
     def process(self, resources, event=None):
-        count_threshold = self.data.get('count', 0)
-        op = self.data.get('op', 'equal')
-
-        filtered = []
-        for resource in resources:
-            if not resource.get('c7n:IsIPLocation'):
-                continue
-
-            ip_ranges_count = resource.get('c7n:IPRangesCount', 0)
-
-            if op == 'greater-than' and ip_ranges_count > count_threshold:
-                filtered.append(resource)
-            elif op == 'less-than' and ip_ranges_count < count_threshold:
-                filtered.append(resource)
-            elif op == 'equal' and ip_ranges_count == count_threshold:
-                filtered.append(resource)
-
-        return filtered
+        # Filter out non-IP locations before applying the value filter
+        ip_locations = [r for r in resources if r.get('c7n:IsIPLocation')]
+        return super(IPRangeCountFilter, self).process(ip_locations, event)
 
 
 @EntraIDNamedLocation.filter_registry.register('countries-count')
-class CountriesCountFilter(Filter):
+class CountriesCountFilter(ValueFilter):
     """Filter country-based named locations by number of countries/regions.
+
+    This filter uses the c7n:CountriesCount annotation added during resource augmentation.
+    It supports all standard ValueFilter operators (greater-than, less-than, equal, etc.).
 
     :example:
 
@@ -227,30 +222,19 @@ class CountriesCountFilter(Filter):
               - type: location-type
                 location-type: countryNamedLocation
               - type: countries-count
-                count: 5
+                value: 5
                 op: greater-than
     """
 
-    schema = type_schema('countries-count',
-                        count={'type': 'number'},
-                        op={'type': 'string', 'enum': ['greater-than', 'less-than', 'equal']})
+    schema = type_schema('countries-count', rinherit=ValueFilter.schema)
+    schema_alias = True
+
+    def __init__(self, data, manager=None):
+        # Set the key to the annotation that contains the countries count
+        data['key'] = 'c7n:CountriesCount'
+        super(CountriesCountFilter, self).__init__(data, manager)
 
     def process(self, resources, event=None):
-        count_threshold = self.data.get('count', 0)
-        op = self.data.get('op', 'equal')
-
-        filtered = []
-        for resource in resources:
-            if not resource.get('c7n:IsCountryLocation'):
-                continue
-
-            countries_count = resource.get('c7n:CountriesCount', 0)
-
-            if op == 'greater-than' and countries_count > count_threshold:
-                filtered.append(resource)
-            elif op == 'less-than' and countries_count < count_threshold:
-                filtered.append(resource)
-            elif op == 'equal' and countries_count == count_threshold:
-                filtered.append(resource)
-
-        return filtered
+        # Filter out non-country locations before applying the value filter
+        country_locations = [r for r in resources if r.get('c7n:IsCountryLocation')]
+        return super(CountriesCountFilter, self).process(country_locations, event)
