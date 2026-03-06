@@ -52,10 +52,7 @@ class VertexAILocation:
         # Filter to only Vertex AI supported regions
         self.regions = [r for r in all_regions if r in self._vertex_ai_regions]
 
-    def get_permissions(self):
-        return ()
-
-    def resources(self, resource_ids=()):
+    def resources(self, resource_ids=None):
         """Return list of Vertex AI locations to query.
 
         Locations can be specified via:
@@ -65,9 +62,6 @@ class VertexAILocation:
         3. Config region: --region us-central1
         4. Default: All Vertex AI supported regions from regions.json
         """
-        # If specific resource IDs requested, filter to those
-        if resource_ids:
-            return [{'name': r} for r in self.regions if r in resource_ids]
 
         # If query specified in policy, use those locations
         if 'query' in self.data:
@@ -163,8 +157,6 @@ class VertexAIEndpoint(QueryResourceManager):
         2. Location in the parent scope (e.g., projects/{project}/locations/{location})
         3. Enumeration across multiple locations (similar to RegionalResourceManager)
         """
-        if not query:
-            query = {}
 
         session = local_session(self.session_factory)
         project = session.get_default_project()
@@ -199,21 +191,15 @@ class VertexAIEndpoint(QueryResourceManager):
             parent = f'projects/{project}/locations/{location}'
 
             # Execute the list operation for this location
-            enum_op, path, extra_args = self.resource_type.enum_spec
+            enum_op, path, _ = self.resource_type.enum_spec
             params = {'parent': parent}
-            if extra_args:
-                params.update(extra_args)
 
-            # Invoke the client enumeration
+            # Invoke the client enumeration (Vertex AI API supports pagination)
             location_resources = []
-            if client.supports_pagination(enum_op):
-                for page in client.execute_paged_query(enum_op, params):
-                    page_items = jmespath_search(path, page)
-                    if page_items:
-                        location_resources.extend(page_items)
-            else:
-                location_resources = jmespath_search(
-                    path, client.execute_query(enum_op, verb_arguments=params)) or []
+            for page in client.execute_paged_query(enum_op, params):
+                page_items = jmespath_search(path, page)
+                if page_items:
+                    location_resources.extend(page_items)
 
             # Annotate resources with their location
             for resource in location_resources:
@@ -400,8 +386,6 @@ class VertexAIBatchPredictionJob(QueryResourceManager):
         2. Location in the parent scope (e.g., projects/{project}/locations/{location})
         3. Enumeration across multiple locations (similar to RegionalResourceManager)
         """
-        if not query:
-            query = {}
 
         session = local_session(self.session_factory)
         project = session.get_default_project()
@@ -436,21 +420,15 @@ class VertexAIBatchPredictionJob(QueryResourceManager):
             parent = f'projects/{project}/locations/{location}'
 
             # Execute the list operation for this location
-            enum_op, path, extra_args = self.resource_type.enum_spec
+            enum_op, path, _ = self.resource_type.enum_spec
             params = {'parent': parent}
-            if extra_args:
-                params.update(extra_args)
 
-            # Invoke the client enumeration
+            # Invoke the client enumeration (Vertex AI API supports pagination)
             location_resources = []
-            if client.supports_pagination(enum_op):
-                for page in client.execute_paged_query(enum_op, params):
-                    page_items = jmespath_search(path, page)
-                    if page_items:
-                        location_resources.extend(page_items)
-            else:
-                location_resources = jmespath_search(
-                    path, client.execute_query(enum_op, verb_arguments=params)) or []
+            for page in client.execute_paged_query(enum_op, params):
+                page_items = jmespath_search(path, page)
+                if page_items:
+                    location_resources.extend(page_items)
 
             # Annotate resources with their location
             for resource in location_resources:

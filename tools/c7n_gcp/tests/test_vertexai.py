@@ -138,6 +138,35 @@ def test_vertexai_endpoint_multi_location(test):
     assert all('c7n:location' in r for r in resources)
 
 
+def test_vertexai_endpoint_get_urns(test):
+    """Test URN generation for Vertex AI Endpoints.
+
+    This test verifies that URNs are correctly generated for Vertex AI endpoints,
+    which exercises the _get_location classmethod to extract location from resource names.
+    """
+    session_factory = test.replay_flight_data('vertexai-endpoint-multi-location')
+
+    policy = test.load_policy({
+        'name': 'test-endpoint-urns',
+        'resource': 'gcp.vertex-ai-endpoint',
+        'query': [
+            {'location': 'us-central1'}
+        ]
+    }, session_factory=session_factory)
+
+    resources = policy.run()
+    assert len(resources) >= 1
+
+    # Get URNs for the resources - this calls _get_location
+    urns = policy.resource_manager.get_urns(resources)
+
+    # Verify URN format: gcp:aiplatform:us-central1:project:endpoint/id
+    assert len(urns) == len(resources)
+    for urn in urns:
+        assert urn.startswith('gcp:aiplatform:us-central1:')
+        assert ':endpoint/' in urn
+
+
 def test_vertexai_endpoint_filtering(test,):
     """Test filtering Vertex AI Endpoints on common fields.
 
@@ -461,6 +490,36 @@ def test_vertexai_batch_prediction_job_filtering(test):
     # When replaying, verify all returned jobs are in running state
     if len(resources) > 0:
         assert all(r['state'] == 'JOB_STATE_RUNNING' for r in resources)
+
+
+def test_vertexai_batch_prediction_job_get_urns(test):
+    """Test URN generation for Vertex AI Batch Prediction Jobs.
+
+    This test verifies that URNs are correctly generated for batch prediction jobs,
+    which exercises the _get_location classmethod to extract location from resource names.
+    """
+    session_factory = test.replay_flight_data(
+        'vertexai-batch-prediction-job-multi-location')
+
+    policy = test.load_policy({
+        'name': 'test-batch-job-urns',
+        'resource': 'gcp.vertex-ai-batch-prediction-job',
+        'query': [
+            {'location': 'us-central1'}
+        ]
+    }, session_factory=session_factory)
+
+    resources = policy.run()
+    assert len(resources) >= 1
+
+    # Get URNs for the resources - this calls _get_location
+    urns = policy.resource_manager.get_urns(resources)
+
+    # Verify URN format: gcp:aiplatform:us-central1:project:batch-prediction-job/id
+    assert len(urns) == len(resources)
+    for urn in urns:
+        assert urn.startswith('gcp:aiplatform:us-central1:')
+        assert ':batch-prediction-job/' in urn
 
 
 # This test covers both stopping and deleting batch prediction jobs since they are closely related
