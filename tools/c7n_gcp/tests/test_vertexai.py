@@ -969,3 +969,119 @@ def test_vertexai_endpoint_location_default_all_regions(test):
     # Just verify that if we have resources, they have the location annotation
     if resources:
         assert all('c7n:location' in r for r in resources)
+def test_vertexai_endpoint_monitor_invalid_schema_uri(test):
+    """Test monitor action with invalid GCS schema URI validation"""
+    from unittest.mock import patch, MagicMock
+
+    policy = test.load_policy({
+        'name': 'test-invalid-schema-uri-format',
+        'resource': 'gcp.vertex-ai-endpoint',
+        'filters': [{'displayName': 'test-endpoint'}],
+        'actions': [{
+            'type': 'monitor',
+            'analysis_instance_schema_uri': 'gs://test-bucket/schema.yaml'
+        }]
+    })
+
+    action = policy.resource_manager.actions[0]
+
+    # Test 1: Invalid GCS URI format (not starting with gs://)
+    try:
+        action.validate_schema_uri('https://invalid-url/schema.yaml')
+        assert False, 'Should have raised ValueError for non-GCS URI'
+    except ValueError as e:
+        assert 'must be a GCS path' in str(e)
+
+    # Test 2: Invalid file extension (not .yaml or .yml)
+    try:
+        action.validate_schema_uri('gs://bucket/schema.json')
+        assert False, 'Should have raised ValueError for non-YAML file'
+    except ValueError as e:
+        assert 'must be YAML format' in str(e)
+
+    # Test 3: Valid GCS URI with .yaml extension (mock the subprocess call)
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'type: object\nproperties:\n  field1:\n    type: string'
+        mock_run.return_value = mock_result
+
+        result = action.validate_schema_uri('gs://bucket/schema.yaml')
+        assert result is True
+
+    # Test 4: Valid GCS URI with .yml extension (mock the subprocess call)
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'type: object\nproperties:\n  field1:\n    type: string'
+        mock_run.return_value = mock_result
+
+        result = action.validate_schema_uri('gs://bucket/schema.yml')
+        assert result is True
+
+
+def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
+    """Test monitor action schema YAML parsing and validation"""
+    from unittest.mock import patch, MagicMock
+
+    policy = test.load_policy({
+        'name': 'test-schema-yaml-validation',
+        'resource': 'gcp.vertex-ai-endpoint',
+        'filters': [{'displayName': 'test-endpoint'}],
+        'actions': [{
+            'type': 'monitor',
+            'analysis_instance_schema_uri': 'gs://test-bucket/schema.yaml'
+        }]
+    })
+
+    action = policy.resource_manager.actions[0]
+    schema_uri = 'gs://test-bucket/schema.yaml'
+
+    # Test 1: Invalid YAML content
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'invalid: yaml: content: ['
+        mock_run.return_value = mock_result
+
+        try:
+            action.validate_schema_uri(schema_uri)
+            assert False, 'Should have raised ValueError for invalid YAML'
+        except ValueError as e:
+            assert 'is not valid YAML' in str(e)
+
+    # Test 2: Schema is not a dict (e.g., a list)
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = '- item1\n- item2'
+        mock_run.return_value = mock_result
+
+        try:
+            action.validate_schema_uri(schema_uri)
+            assert False, 'Should have raised ValueError for non-dict schema'
+        except ValueError as e:
+            assert 'Schema must be a YAML object (dict)' in str(e)
+
+    # Test 3: Schema dict missing 'type' field
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'properties:\n  field1:\n    type: string'
+        mock_run.return_value = mock_result
+
+        try:
+            action.validate_schema_uri(schema_uri)
+            assert False, 'Should have raised ValueError for schema missing type field'
+        except ValueError as e:
+            assert 'Schema must have a "type" field' in str(e)
+
+    # Test 4: Valid schema with type field
+    with patch('subprocess.run') as mock_run:
+        mock_result = MagicMock()
+        mock_result.returncode = 0
+        mock_result.stdout = 'type: object\nproperties:\n  field1:\n    type: string'
+        mock_run.return_value = mock_result
+
+        result = action.validate_schema_uri(schema_uri)
+        assert result is True
