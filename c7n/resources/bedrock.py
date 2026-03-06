@@ -587,7 +587,7 @@ class BedrockApplicationInferenceProfile(QueryResourceManager):
             'typeEquals': 'APPLICATION'})
         name = "inferenceProfileName"
         id = arn = "inferenceProfileArn"
-        arn_type = "inference-profile"
+        arn_type = "application-inference-profile"
         permission_prefix = 'bedrock'
         universal_taggable = object()
         permissions_augment = ("bedrock:ListTagsForResource",)
