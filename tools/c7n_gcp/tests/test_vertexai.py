@@ -702,7 +702,10 @@ def test_vertexai_endpoint_location_query_with_name(test):
     """
     if C7N_FUNCTIONAL:
         project_id = get_default_project()
-        session_factory = test.record_flight_data('vertexai-endpoint-location-query-name', project_id=project_id)
+        session_factory = test.record_flight_data(
+            'vertexai-endpoint-location-query-name',
+            project_id=project_id
+        )
     else:
         session_factory = test.replay_flight_data('vertexai-endpoint-location-query-name')
 
