@@ -24,7 +24,7 @@ class VertexAIPublisherModelTest(BaseTest):
         """Test listing Vertex AI publisher models."""
 
         # Use record_flight_data in functional mode, replay_flight_data otherwise
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-query', project_id=project_id)
@@ -45,7 +45,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_filter_by_launch_stage(self):
         """Test filtering publisher models by launch stage."""
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-filter-launch-stage', project_id=project_id)
@@ -77,7 +77,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_filter_by_name_pattern(self):
         """Test filtering publisher models by name pattern."""
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-filter-name', project_id=project_id)
@@ -111,7 +111,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_field_validation(self):
         """Test that expected fields are present in publisher model resources."""
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-fields', project_id=project_id)
@@ -144,7 +144,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_multiple_filters(self):
         """Test combining multiple filters on publisher models."""
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-multi-filter', project_id=project_id)
@@ -184,7 +184,7 @@ class VertexAIPublisherModelTest(BaseTest):
         The resource currently queries publishers/google, which may include models
         from various publishers in the Google catalog.
         """
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-non-google', project_id=project_id)
