@@ -8,7 +8,7 @@ import pytest
 
 
 @terraform('bedrock_model_invocation_job')
-def test_bedrock_model_invocation_job_fixture():
+def test_bedrock_model_invocation_job_fixture():  # pragma: no cover
     pass
 
 
@@ -19,7 +19,7 @@ class BedrockModelInvocationJob(BaseTest):
         self.bedrock_model_invocation_job = bedrock_model_invocation_job
 
     @staticmethod
-    def create_bedrock_invocation_job(session_factory, tf_fixture):
+    def create_bedrock_invocation_job(session_factory, tf_fixture):  # pragma: no cover
         """Helper to create a Bedrock model invocation job using Terraform resources."""
         # Extract outputs from the fixture's outputs attribute (fresh data from Terraform)
         role_arn = tf_fixture.outputs['role_arn']['value']
@@ -59,7 +59,7 @@ class BedrockModelInvocationJob(BaseTest):
         return job_arn, unique_id
 
     def test_bedrock_model_invocation_job(self):
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job', region='us-east-1'
             )
@@ -76,7 +76,7 @@ class BedrockModelInvocationJob(BaseTest):
             {'tag:Environment': 'test'},
         ]
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -99,7 +99,7 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_tag_actions(self):
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job_tag_actions', region='us-east-1')
         else:
@@ -116,7 +116,7 @@ class BedrockModelInvocationJob(BaseTest):
         ]
 
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -154,7 +154,7 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_mark_for_op(self):
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job_mark_for_op', region='us-east-1')
         else:
@@ -171,7 +171,7 @@ class BedrockModelInvocationJob(BaseTest):
 
         unique_id = None  # Initialize for later use
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -213,7 +213,7 @@ class BedrockModelInvocationJob(BaseTest):
             }
         ]
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             # Add unique filter only in functional mode to isolate this test run
             marked_filters.append({'tag:TestRunId': unique_id})
 
@@ -231,7 +231,7 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_stop(self):
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job_stop', region='us-east-1')
         else:
@@ -248,7 +248,7 @@ class BedrockModelInvocationJob(BaseTest):
 
         unique_id = None  # Initialize for later use
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -573,7 +573,7 @@ class BedrockApplicationInferenceProfile(BaseTest):
 
     def test_bedrock_application_inference_profile_tag_actions(self):
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_application_inference_profile_tag_actions',
                 region='us-east-1')
@@ -609,7 +609,7 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify tags were added (only in functional mode where we have real ARN)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
             tag_dict = {t['key']: t['value'] for t in tags}
             self.assertEqual(tag_dict['NewTag'], 'NewValue')
@@ -637,7 +637,7 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify tags were removed (only in functional mode)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
             tag_dict = {t['key']: t['value'] for t in tags}
             self.assertNotIn('AnotherTag', tag_dict)
@@ -647,7 +647,7 @@ class BedrockApplicationInferenceProfile(BaseTest):
 
     def test_bedrock_application_inference_profile_mark_for_op(self):
 
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             session_factory = self.record_flight_data(
                 'test_bedrock_application_inference_profile_mark_for_op',
                 region='us-east-1')
@@ -686,7 +686,7 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify mark-for-op tag was added (only in functional mode)
-        if C7N_FUNCTIONAL:
+        if C7N_FUNCTIONAL:  # pragma: no cover
             tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
             tag_dict = {t['key']: t['value'] for t in tags}
             self.assertIn('maid_status', tag_dict)
