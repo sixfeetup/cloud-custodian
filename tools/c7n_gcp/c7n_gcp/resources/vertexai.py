@@ -145,11 +145,11 @@ class VertexAIEndpoint(QueryResourceManager):
             return client.execute_query(
                 'get', {'name': resource_info['resourceName']})
 
-    @classmethod
-    def _get_location(cls, resource):
-        """Extract location from resource name."""
-        # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
-        return resource['name'].split('/')[3]
+        @classmethod
+        def _get_location(cls, resource):
+            """Extract location from resource name."""
+            # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
+            return resource['name'].split('/')[3]
 
     @staticmethod
     def get_location_client(session, location, service='aiplatform', version='v1',
@@ -546,7 +546,7 @@ class VertexAIEndpointMonitor(MethodAction):
 
         for resource in resources:
             # Extract location from endpoint resource name
-            location = VertexAIEndpoint._get_location(resource)
+            location = VertexAIEndpoint.resource_type._get_location(resource)
 
             # Create location-specific client using helper
             location_client = VertexAIEndpoint.get_location_client(

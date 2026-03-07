@@ -6,8 +6,6 @@ import json
 import time
 from google.api_core.client_options import ClientOptions
 from c7n.testing import C7N_FUNCTIONAL
-
-from c7n.testing import C7N_FUNCTIONAL
 from c7n_gcp.client import get_default_project
 from c7n.config import Config
 
@@ -969,6 +967,8 @@ def test_vertexai_endpoint_location_default_all_regions(test):
     # Just verify that if we have resources, they have the location annotation
     if resources:
         assert all('c7n:location' in r for r in resources)
+
+
 def test_vertexai_endpoint_monitor_invalid_schema_uri(test):
     """Test monitor action with invalid GCS schema URI validation"""
     from unittest.mock import patch, MagicMock
