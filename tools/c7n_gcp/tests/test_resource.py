@@ -21,6 +21,7 @@ RESOURCE_PERM_WHITELIST = set((
     'region',  # regions.list is not a documented permission, but is required to query regions
     'vertex-ai-publisher',  # synthetic resource with no permissions
     'vertex-ai-publisher-model',  # catalog resource with no permissions
+    'vertex-ai-location',  # metadata resource with no permissions
 ))
 
 
