@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 
 from google.api_core.client_options import ClientOptions
+from google.cloud import storage
 import yaml
-import subprocess
 
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
@@ -356,23 +356,21 @@ class VertexAIEndpointMonitor(MethodAction):
 
         # Try to read and validate the schema file
         try:
-            # Use gsutil to read the file
-            result = subprocess.run(
-                ['gsutil', 'cat', schema_uri],
-                capture_output=True,
-                text=True,
-                timeout=10
-            )
+            # Parse GCS URI (gs://bucket-name/path/to/file.yaml)
+            gcs_path = schema_uri[5:]  # Remove 'gs://' prefix
+            bucket_name, blob_path = gcs_path.split('/', 1)
 
-            if result.returncode != 0:
-                raise ValueError(
-                    f'Failed to read schema file from {schema_uri}: {result.stderr}. '
-                    f'Ensure the file exists and is accessible by the service account.'
-                )
+            # Use Google Cloud Storage API to read the file
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(bucket_name)
+            blob = bucket.blob(blob_path)
+
+            # Download as string
+            schema_yaml = blob.download_as_text()
 
             # Try to parse as YAML
             try:
-                schema_content = yaml.safe_load(result.stdout)
+                schema_content = yaml.safe_load(schema_yaml)
             except yaml.YAMLError as e:
                 raise ValueError(
                     f'Schema file at {schema_uri} is not valid YAML: {e}. '
@@ -395,15 +393,13 @@ class VertexAIEndpointMonitor(MethodAction):
             self.log.info('Schema validation passed for %s', schema_uri)
             return True
 
-        except subprocess.TimeoutExpired:
-            raise ValueError(
-                f'Timeout reading schema file from {schema_uri}. '
-                f'Check network connectivity and file accessibility.'
-            )
         except Exception as e:
             if isinstance(e, ValueError):
                 raise
-            raise ValueError(f'Unexpected error validating schema at {schema_uri}: {e}')
+            raise ValueError(
+                f'Failed to read or validate schema file from {schema_uri}: {e}. '
+                f'Ensure the file exists and is accessible by the service account.'
+            )
 
     def process(self, resources):
         """Override to filter out endpoints with no deployed models and validate schema."""

@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Fri, 06 Mar 2026 18:45:30 GMT",
+    "date": "Mon, 09 Mar 2026 19:30:11 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,21 +10,21 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1416",
+    "content-length": "5032",
     "-content-encoding": "gzip",
     "content-location": "https://us-east1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs?alt=json"
   },
   "body": {
     "modelDeploymentMonitoringJobs": [
       {
-        "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/4391103713649885184",
+        "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/1938673814221094912",
         "displayName": "c7n-monitor-c7n-endpoint-east",
         "endpoint": "projects/cloud-custodian/locations/us-east1/endpoints/0",
         "state": "JOB_STATE_PENDING",
         "scheduleState": "OFFLINE",
         "modelDeploymentMonitoringObjectiveConfigs": [
           {
-            "deployedModelId": "4948376270061699072",
+            "deployedModelId": "8325513040636149760",
             "objectiveConfig": {
               "predictionDriftDetectionConfig": {}
             }
@@ -43,17 +43,104 @@
           {
             "logSource": "SERVING",
             "logType": "PREDICT",
-            "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_869073781803450368.serving_predict"
+            "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_2373276057345196032.serving_predict"
           }
         ],
-        "createTime": "2026-03-06T18:45:30.429371Z",
-        "updateTime": "2026-03-06T18:45:30.521515Z",
+        "createTime": "2026-03-09T19:30:10.207686Z",
+        "updateTime": "2026-03-09T19:30:10.541777Z",
         "modelMonitoringAlertConfig": {
           "emailAlertConfig": {},
           "enableLogging": true
         },
         "analysisInstanceSchemaUri": "gs://stacklet-personal-2-vertex-test-models/schema/instance_schema.yaml",
-        "logTtl": "0s"
+        "logTtl": "0s",
+        "statsAnomaliesBaseDirectory": {
+          "outputUriPrefix": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/model_monitoring/job-1938673814221094912"
+        }
+      },
+      {
+        "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/8790909443358326784",
+        "displayName": "c7n-monitor-c7n-endpoint-east",
+        "endpoint": "projects/cloud-custodian/locations/us-east1/endpoints/0",
+        "state": "JOB_STATE_CANCELLED",
+        "scheduleState": "OFFLINE",
+        "modelDeploymentMonitoringScheduleConfig": {
+          "monitorInterval": "3600s",
+          "monitorWindow": "3600s"
+        },
+        "loggingSamplingStrategy": {
+          "randomSampleConfig": {
+            "sampleRate": 0.8
+          }
+        },
+        "predictInstanceSchemaUri": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/instance_schemas/job-8790909443358326784/predict",
+        "bigqueryTables": [
+          {
+            "logSource": "SERVING",
+            "logType": "PREDICT",
+            "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_869073781803450368.serving_predict"
+          }
+        ],
+        "createTime": "2026-03-06T18:45:32.385890Z",
+        "updateTime": "2026-03-06T18:45:34.983950Z",
+        "nextScheduleTime": "2026-03-06T18:00:00Z",
+        "modelMonitoringAlertConfig": {
+          "emailAlertConfig": {},
+          "enableLogging": true
+        },
+        "analysisInstanceSchemaUri": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/instance_schemas/job-8790909443358326784/analysis",
+        "logTtl": "0s",
+        "statsAnomaliesBaseDirectory": {
+          "outputUriPrefix": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/model_monitoring/job-8790909443358326784"
+        },
+        "error": {
+          "code": 9,
+          "message": "Endpoint has been deleted."
+        }
+      },
+      {
+        "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/4391103713649885184",
+        "displayName": "c7n-monitor-c7n-endpoint-east",
+        "endpoint": "projects/cloud-custodian/locations/us-east1/endpoints/0",
+        "state": "JOB_STATE_RUNNING",
+        "scheduleState": "OFFLINE",
+        "modelDeploymentMonitoringObjectiveConfigs": [
+          {
+            "deployedModelId": "4948376270061699072",
+            "objectiveConfig": {
+              "predictionDriftDetectionConfig": {}
+            }
+          }
+        ],
+        "modelDeploymentMonitoringScheduleConfig": {
+          "monitorInterval": "3600s",
+          "monitorWindow": "3600s"
+        },
+        "loggingSamplingStrategy": {
+          "randomSampleConfig": {
+            "sampleRate": 0.8
+          }
+        },
+        "predictInstanceSchemaUri": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/instance_schemas/job-4391103713649885184/predict",
+        "bigqueryTables": [
+          {
+            "logSource": "SERVING",
+            "logType": "PREDICT",
+            "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_869073781803450368.serving_predict"
+          }
+        ],
+        "createTime": "2026-03-06T18:45:30.429371Z",
+        "updateTime": "2026-03-06T18:45:34.053072Z",
+        "nextScheduleTime": "2026-03-06T18:00:00Z",
+        "modelMonitoringAlertConfig": {
+          "emailAlertConfig": {},
+          "enableLogging": true
+        },
+        "analysisInstanceSchemaUri": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/instance_schemas/job-4391103713649885184/analysis",
+        "logTtl": "0s",
+        "statsAnomaliesBaseDirectory": {
+          "outputUriPrefix": "gs://cloud-ai-platform-29435907-c147-4ebd-8a52-0635558e68b1/model_monitoring/job-4391103713649885184"
+        }
       }
     ]
   }

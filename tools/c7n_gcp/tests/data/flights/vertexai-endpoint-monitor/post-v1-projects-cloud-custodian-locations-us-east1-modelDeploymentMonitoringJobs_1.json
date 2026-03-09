@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Fri, 06 Mar 2026 18:45:30 GMT",
+    "date": "Mon, 09 Mar 2026 19:30:10 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,18 +10,18 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1215",
+    "content-length": "1216",
     "-content-encoding": "gzip"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/4391103713649885184",
+    "name": "projects/cloud-custodian/locations/us-east1/modelDeploymentMonitoringJobs/1938673814221094912",
     "displayName": "c7n-monitor-c7n-endpoint-east",
     "endpoint": "projects/cloud-custodian/locations/us-east1/endpoints/0",
     "state": "JOB_STATE_PENDING",
     "scheduleState": "OFFLINE",
     "modelDeploymentMonitoringObjectiveConfigs": [
       {
-        "deployedModelId": "4948376270061699072",
+        "deployedModelId": "8325513040636149760",
         "objectiveConfig": {
           "predictionDriftDetectionConfig": {}
         }
@@ -40,11 +40,11 @@
       {
         "logSource": "SERVING",
         "logType": "PREDICT",
-        "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_869073781803450368.serving_predict"
+        "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_2373276057345196032.serving_predict"
       }
     ],
-    "createTime": "2026-03-06T18:45:30.429371Z",
-    "updateTime": "2026-03-06T18:45:30.429371Z",
+    "createTime": "2026-03-09T19:30:10.207686Z",
+    "updateTime": "2026-03-09T19:30:10.207686Z",
     "modelMonitoringAlertConfig": {
       "emailAlertConfig": {},
       "enableLogging": true

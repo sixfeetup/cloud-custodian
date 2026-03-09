@@ -354,6 +354,40 @@ def upload_schema_to_gcs():
         os.unlink(temp_schema_path)
 
 
+def upload_test_schemas_to_gcs():
+    """Upload test schema files for schema validation tests.
+
+    These files are used to test error handling in the schema validation logic:
+    - invalid.yaml: Invalid YAML syntax
+    - list.yaml: Valid YAML but a list instead of a dict
+    - no-type.yaml: Valid YAML dict but missing the 'type' field
+    """
+    log.info('Uploading test schema files for validation tests...')
+
+    test_schemas = {
+        'schema/invalid.yaml': 'invalid: yaml: content: [',
+        'schema/list.yaml': '- item1\n- item2\n',
+        'schema/no-type.yaml': 'properties:\n  field1:\n    type: string\n',
+    }
+
+    for gcs_path, content in test_schemas.items():
+        full_gcs_path = f'gs://{BUCKET}/{gcs_path}'
+
+        # Write content to temporary file
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            f.write(content)
+            temp_path = f.name
+
+        try:
+            run(['gsutil', 'cp', temp_path, full_gcs_path])
+            log.info(f'  ✓ {gcs_path}')
+        finally:
+            os.unlink(temp_path)
+
+    log.info('✓ Test schema files uploaded')
+    log.info('')
+
+
 def run(cmd):
     """Helper to run shell commands with logging."""
     log.info(f"> {' '.join(cmd)}")
@@ -536,6 +570,10 @@ def main(deploy_to_endpoints, skip_model_upload, skip_container_validation):
 
     # Validate environment before doing anything
     validate_environment()
+
+    # Always upload test schemas (they're small and needed for tests)
+    log.info("Uploading test schemas for validation tests...")
+    upload_test_schemas_to_gcs()
 
     if not skip_model_upload:
         log.info("Creating model...")

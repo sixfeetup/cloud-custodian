@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Fri, 06 Mar 2026 18:45:28 GMT",
+    "date": "Mon, 09 Mar 2026 19:30:08 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -21,10 +21,10 @@
         "displayName": "c7n-endpoint-east",
         "deployedModels": [
           {
-            "id": "4948376270061699072",
-            "model": "projects/cloud-custodian/locations/us-east1/models/2718744809815670784",
+            "id": "8325513040636149760",
+            "model": "projects/cloud-custodian/locations/us-east1/models/8971711417442893824",
             "displayName": "c7n-test-deployment-us-east1",
-            "createTime": "2026-03-06T18:38:27.172988Z",
+            "createTime": "2026-03-09T19:05:58.324876Z",
             "dedicatedResources": {
               "machineSpec": {
                 "machineType": "n1-standard-2"
@@ -34,20 +34,20 @@
             },
             "modelVersionId": "1",
             "status": {
-              "lastUpdateTime": "2026-03-06T18:45:06.980696Z",
+              "lastUpdateTime": "2026-03-09T19:29:48.171429Z",
               "availableReplicaCount": 1
             }
           }
         ],
         "trafficSplit": {
-          "4948376270061699072": 100
+          "8325513040636149760": 100
         },
-        "etag": "AMEw9yMUBzduCnLH_UrNZmZm4p6zuaZVDichs1k2OGOUpp0k5hip0oaddzVXv1Z5Z4Q=",
+        "etag": "AMEw9yORTOTe4a8XnpuYt9XijamxyV0tDDGargp_wot3iUF5hEHiziWZIHd8LZt0ta21",
         "labels": {
           "goog-terraform-provisioned": "true"
         },
-        "createTime": "2026-03-06T18:37:24.394795Z",
-        "updateTime": "2026-03-06T18:43:06.251022Z"
+        "createTime": "2026-03-09T17:43:41.285368Z",
+        "updateTime": "2026-03-09T19:25:16.867858Z"
       }
     ]
   }
