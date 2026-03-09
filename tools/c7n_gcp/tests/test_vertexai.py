@@ -4,6 +4,7 @@
 import os
 import json
 import time
+from unittest.mock import Mock, patch
 from google.api_core.client_options import ClientOptions
 from c7n.testing import C7N_FUNCTIONAL
 from c7n_gcp.client import get_default_project
@@ -1035,27 +1036,11 @@ def test_vertexai_endpoint_monitor_invalid_schema_uri(test):
 def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
     """Test monitor action schema YAML parsing and validation
 
-    This test validates the schema validation logic by testing various
-    invalid schema formats using actual GCS files that will be recorded/replayed.
-
-    Note: In functional mode, you need to create test files in GCS:
-    - gs://{project}-vertex-test-models/schema/invalid.yaml (invalid YAML)
-    - gs://{project}-vertex-test-models/schema/list.yaml (YAML list, not dict)
-    - gs://{project}-vertex-test-models/schema/no-type.yaml (dict without 'type')
+    This test validates the schema validation logic by mocking GCS blob downloads
+    to test various invalid schema formats without requiring actual GCS files.
     """
-    if C7N_FUNCTIONAL:  # pragma: no cover
-        session_factory = test.record_flight_data(
-            'vertexai-endpoint-monitor'
-        )
-        session = session_factory()
-        project_id = session.get_default_project()
-        bucket_name = f'{project_id}-vertex-test-models'
-    else:
-        # Reuse existing cassette since we're making the same GCS API calls
-        session_factory = test.replay_flight_data(
-            'vertexai-endpoint-monitor'
-        )
-        bucket_name = 'stacklet-personal-2-vertex-test-models'
+    session_factory = test.replay_flight_data('vertexai-endpoint-monitor')
+    bucket_name = 'test-bucket'
 
     policy = test.load_policy({
         'name': 'test-schema-yaml-validation',
@@ -1069,30 +1054,47 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
 
     action = policy.resource_manager.actions[0]
 
-    # Test 0: Valid schema (success case)
-    result = action.validate_schema_uri(f'gs://{bucket_name}/schema/instance_schema.yaml')
-    assert result is True
+    # Mock the GCS storage client to return test data
+    with patch('c7n_gcp.resources.vertexai.storage.Client') as mock_storage_client:
+        mock_client = Mock()
+        mock_storage_client.return_value = mock_client
+        mock_bucket = Mock()
+        mock_blob = Mock()
+        mock_bucket.blob.return_value = mock_blob
+        mock_client.bucket.return_value = mock_bucket
 
-    # Test 1: Invalid YAML content
-    try:
-        action.validate_schema_uri(f'gs://{bucket_name}/schema/invalid.yaml')
-        assert False, 'Should have raised ValueError for invalid YAML'
-    except ValueError as e:
-        assert 'is not valid YAML' in str(e)
+        # Test 0: Valid schema (success case)
+        mock_blob.download_as_text.return_value = (
+            'type: object\nproperties:\n  field1:\n    type: string'
+        )
+        result = action.validate_schema_uri(
+            f'gs://{bucket_name}/schema/instance_schema.yaml'
+        )
+        assert result is True
 
-    # Test 2: Schema is not a dict (e.g., a list)
-    try:
-        action.validate_schema_uri(f'gs://{bucket_name}/schema/list.yaml')
-        assert False, 'Should have raised ValueError for non-dict schema'
-    except ValueError as e:
-        assert 'Schema must be a YAML object (dict)' in str(e)
+        # Test 1: Invalid YAML content
+        mock_blob.download_as_text.return_value = 'invalid: yaml: content: ['
+        try:
+            action.validate_schema_uri(f'gs://{bucket_name}/schema/invalid.yaml')
+            assert False, 'Should have raised ValueError for invalid YAML'
+        except ValueError as e:
+            assert 'is not valid YAML' in str(e)
 
-    # Test 3: Schema dict missing 'type' field
-    try:
-        action.validate_schema_uri(f'gs://{bucket_name}/schema/no-type.yaml')
-        assert False, 'Should have raised ValueError for missing type field'
-    except ValueError as e:
-        assert 'Schema must have a "type" field' in str(e)
+        # Test 2: Schema is not a dict (e.g., a list)
+        mock_blob.download_as_text.return_value = '- item1\n- item2'
+        try:
+            action.validate_schema_uri(f'gs://{bucket_name}/schema/list.yaml')
+            assert False, 'Should have raised ValueError for non-dict schema'
+        except ValueError as e:
+            assert 'Schema must be a YAML object (dict)' in str(e)
+
+        # Test 3: Schema dict missing 'type' field
+        mock_blob.download_as_text.return_value = 'properties:\n  field1:\n    type: string'
+        try:
+            action.validate_schema_uri(f'gs://{bucket_name}/schema/no-type.yaml')
+            assert False, 'Should have raised ValueError for missing type field'
+        except ValueError as e:
+            assert 'Schema must have a "type" field' in str(e)
 
     # Test 4: No schema URI provided (should return True)
     result = action.validate_schema_uri(None)
