@@ -8,8 +8,6 @@ from google.cloud import storage
 import yaml
 from collections import defaultdict
 
-from google.api_core.client_options import ClientOptions
-
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
