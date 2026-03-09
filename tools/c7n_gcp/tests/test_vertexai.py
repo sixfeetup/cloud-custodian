@@ -1045,14 +1045,15 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
     """
     if C7N_FUNCTIONAL:  # pragma: no cover
         session_factory = test.record_flight_data(
-            'vertexai-endpoint-monitor-schema-validation'
+            'vertexai-endpoint-monitor'
         )
         session = session_factory()
         project_id = session.get_default_project()
         bucket_name = f'{project_id}-vertex-test-models'
     else:
+        # Reuse existing cassette since we're making the same GCS API calls
         session_factory = test.replay_flight_data(
-            'vertexai-endpoint-monitor-schema-validation'
+            'vertexai-endpoint-monitor'
         )
         bucket_name = 'stacklet-personal-2-vertex-test-models'
 
