@@ -9,7 +9,7 @@ from google.api_core.client_options import ClientOptions
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
-from c7n_gcp.query import QueryResourceManager, TypeInfo
+from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo
 
 
 REGION_DATA_PATH = Path(__file__).parent.parent / 'regions.json'
@@ -595,10 +595,6 @@ class VertexAIBatchPredictionJobStop(MethodAction):
 
             # Use parent's process_resource_set with location-specific client
             self.process_resource_set(location_client, model, location_resources)
-# Copyright The Cloud Custodian Authors.
-# SPDX-License-Identifier: Apache-2.0
-from c7n_gcp.provider import resources
-from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo
 
 
 # Known Vertex AI Model Garden publishers
