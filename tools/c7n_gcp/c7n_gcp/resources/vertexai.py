@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import json
+from collections import defaultdict
 from pathlib import Path
 
 from google.api_core.client_options import ClientOptions
@@ -246,22 +247,25 @@ class VertexAIEndpointDelete(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process_resource_set(self, client, model, resources):
-        """Process a set of resources for deletion.
+    def process(self, resources):
+        """Process resources by grouping them by location.
 
-        Override to handle location-specific clients for each resource.
-        Vertex AI requires location-specific API endpoints
-        (e.g., us-central1-aiplatform.googleapis.com).
-        Since each resource may be in a different location, we need to create
-        a separate client for each resource rather than using a single client.
+        Override to group resources by location and create one client per location
         """
-        session = local_session(self.manager.session_factory)
+        # Group resources by location
+        resources_by_location = defaultdict(list)
 
         for resource in resources:
             # Extract location from resource name
             # Format: projects/{project}/locations/{location}/endpoints/{endpoint}
             location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
 
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
             # Create location-specific client
             api_endpoint = f'https://{location}-aiplatform.googleapis.com'
             client_options = ClientOptions(api_endpoint=api_endpoint)
@@ -270,10 +274,8 @@ class VertexAIEndpointDelete(MethodAction):
                 client_options=client_options
             )
 
-            # Use base class logic for invoking the API
-            op_name = self.get_operation_name(model, resource)
-            params = self.get_resource_params(model, resource)
-            self.invoke_api(location_client, op_name, params)
+            # Use parent's process_resource_set with location-specific client
+            self.process_resource_set(location_client, model, location_resources)
 
 
 @resources.register('vertex-ai-batch-prediction-job')
@@ -475,22 +477,25 @@ class VertexAIBatchPredictionJobDelete(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process_resource_set(self, client, model, resources):
-        """Process a set of resources for deletion.
+    def process(self, resources):
+        """Process resources by grouping them by location.
 
-        Override to handle location-specific clients for each resource.
-        Vertex AI requires location-specific API endpoints
-        (e.g., us-central1-aiplatform.googleapis.com).
-        Since each resource may be in a different location, we need to create
-        a separate client for each resource rather than using a single client.
+        Override to group resources by location and create one client per location
         """
-        session = local_session(self.manager.session_factory)
+        # Group resources by location
+        resources_by_location = defaultdict(list)
 
         for resource in resources:
             # Extract location from resource name
             # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
             location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
 
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
             # Create location-specific client
             api_endpoint = f'https://{location}-aiplatform.googleapis.com'
             client_options = ClientOptions(api_endpoint=api_endpoint)
@@ -499,10 +504,8 @@ class VertexAIBatchPredictionJobDelete(MethodAction):
                 client_options=client_options
             )
 
-            # Use base class logic for invoking the API
-            op_name = self.get_operation_name(model, resource)
-            params = self.get_resource_params(model, resource)
-            self.invoke_api(location_client, op_name, params)
+            # Use parent's process_resource_set with location-specific client
+            self.process_resource_set(location_client, model, location_resources)
 
 
 @VertexAIBatchPredictionJob.action_registry.register('stop')
@@ -563,22 +566,25 @@ class VertexAIBatchPredictionJobStop(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process_resource_set(self, client, model, resources):
-        """Process a set of resources for cancellation.
+    def process(self, resources):
+        """Process resources by grouping them by location.
 
-        Override to handle location-specific clients for each resource.
-        Vertex AI requires location-specific API endpoints
-        (e.g., us-central1-aiplatform.googleapis.com).
-        Since each resource may be in a different location, we need to create
-        a separate client for each resource rather than using a single client.
+        Override to group resources by location and create one client per location.
         """
-        session = local_session(self.manager.session_factory)
+        # Group resources by location
+        resources_by_location = defaultdict(list)
 
         for resource in resources:
             # Extract location from resource name
             # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
             location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
 
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
             # Create location-specific client
             api_endpoint = f'https://{location}-aiplatform.googleapis.com'
             client_options = ClientOptions(api_endpoint=api_endpoint)
@@ -587,7 +593,5 @@ class VertexAIBatchPredictionJobStop(MethodAction):
                 client_options=client_options
             )
 
-            # Use base class logic for invoking the API
-            op_name = self.get_operation_name(model, resource)
-            params = self.get_resource_params(model, resource)
-            self.invoke_api(location_client, op_name, params)
+            # Use parent's process_resource_set with location-specific client
+            self.process_resource_set(location_client, model, location_resources)
