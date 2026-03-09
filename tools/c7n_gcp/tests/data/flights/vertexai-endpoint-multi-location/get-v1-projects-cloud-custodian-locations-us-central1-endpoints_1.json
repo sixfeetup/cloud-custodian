@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Mon, 23 Feb 2026 22:07:24 GMT",
+    "date": "Mon, 09 Mar 2026 17:44:00 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -19,12 +19,12 @@
       {
         "name": "projects/cloud-custodian/locations/us-central1/endpoints/c7n-endpoint-central",
         "displayName": "c7n-endpoint-central",
-        "etag": "AMEw9yM2rP5NyUnOjsdYue7y4olmm6kzav83xVv2Wvmwr7r7f9Mpce9IKoE2im574zfu",
+        "etag": "AMEw9yM1kM94GcWQOnETkVuUIbGb1wCvUMd4kLW3ef8n5xx1ENT-1dXMztB-6l9QNXKL",
         "labels": {
           "goog-terraform-provisioned": "true"
         },
-        "createTime": "2026-02-23T22:06:33.330800Z",
-        "updateTime": "2026-02-23T22:07:20.721546Z"
+        "createTime": "2026-03-09T17:43:41.249854Z",
+        "updateTime": "2026-03-09T17:43:42.416844Z"
       }
     ]
   }

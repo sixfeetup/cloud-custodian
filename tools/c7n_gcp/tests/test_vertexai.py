@@ -112,7 +112,13 @@ def test_vertexai_endpoint_multi_location(test):
     This test verifies that we can query endpoints in multiple locations
     in a single policy run by specifying multiple locations in the query.
     """
-    session_factory = test.replay_flight_data('vertexai-endpoint-multi-location')
+
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-endpoint-multi-location', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data('vertexai-endpoint-multi-location')
 
     # Query both us-central1 and us-east1 in a single policy
     policy = test.load_policy(
@@ -144,7 +150,12 @@ def test_vertexai_endpoint_get_urns(test):
     This test verifies that URNs are correctly generated for Vertex AI endpoints,
     which exercises the _get_location classmethod to extract location from resource names.
     """
-    session_factory = test.replay_flight_data('vertexai-endpoint-multi-location')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-endpoint-multi-location', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data('vertexai-endpoint-multi-location')
 
     policy = test.load_policy({
         'name': 'test-endpoint-urns',
@@ -173,7 +184,12 @@ def test_vertexai_endpoint_filtering(test,):
     This test explicitly verifies that value filters work correctly on
     endpoint displayName field.
     """
-    session_factory = test.replay_flight_data('vertexai-endpoint-filtering')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-endpoint-filtering', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data('vertexai-endpoint-filtering')
 
     # Filter by displayName using regex
     policy = test.load_policy(
@@ -204,7 +220,12 @@ def test_vertexai_endpoint_delete(test):
     This test verifies that the delete action can successfully delete
     endpoints across multiple locations.
     """
-    session_factory = test.replay_flight_data('vertexai-endpoint-delete')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-endpoint-delete', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data('vertexai-endpoint-delete')
 
     policy = test.load_policy(
         {'name': 'delete-test-endpoints',
@@ -395,8 +416,13 @@ def test_vertexai_batch_prediction_job_multi_location(test):
     This test verifies that we can query batch prediction jobs in multiple locations
     in a single policy run by specifying multiple locations in the query.
     """
-    session_factory = test.replay_flight_data(
-        'vertexai-batch-prediction-job-multi-location')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-batch-prediction-job-multi-location', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data(
+            'vertexai-batch-prediction-job-multi-location')
 
     # When recording, create batch prediction jobs via API
     if test.recording:
@@ -533,8 +559,13 @@ def test_vertexai_batch_prediction_job_filtering(test):
     This test verifies that value filters work correctly on batch job state field.
     It filters for jobs in JOB_STATE_RUNNING state.
     """
-    session_factory = test.replay_flight_data(
-        'vertexai-batch-prediction-job-filtering')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-batch-prediction-job-filtering', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data(
+            'vertexai-batch-prediction-job-filtering')
 
     # When recording, create batch prediction jobs via API
     if test.recording:
@@ -627,8 +658,13 @@ def test_vertexai_batch_prediction_job_get_urns(test):
     This test verifies that URNs are correctly generated for batch prediction jobs,
     which exercises the _get_location classmethod to extract location from resource names.
     """
-    session_factory = test.replay_flight_data(
-        'vertexai-batch-prediction-job-multi-location')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-batch-prediction-job-multi-location', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data(
+            'vertexai-batch-prediction-job-multi-location')
 
     policy = test.load_policy({
         'name': 'test-batch-job-urns',
@@ -665,8 +701,13 @@ def test_vertexai_batch_prediction_job_stop_and_delete(test):
     1. A running batch prediction job can be stopped (cancelled)
     2. The stopped job can then be deleted
     """
-    session_factory = test.replay_flight_data(
-        'vertexai-batch-prediction-job-stop-and-delete')
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'vertexai-batch-prediction-job-stop-and-delete', project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data(
+            'vertexai-batch-prediction-job-stop-and-delete')
 
     # When recording, create a batch prediction job to stop and delete
     if test.recording:
@@ -882,27 +923,27 @@ def test_vertexai_batch_prediction_job_stop_and_delete(test):
     assert len(remaining_resources) == 0
 
 
-def test_vertexai_endpoint_location_query_with_name(test):
-    """Test location specification via query with 'name' key.
+def test_vertexai_endpoint_location_query_with_location(test):
+    """Test location specification via query with 'location' key.
 
     This test verifies that endpoints can be queried from specific locations
-    using the 'name' key in the query specification.
+    using the 'location' key in the query specification.
     """
     if C7N_FUNCTIONAL:
         project_id = get_default_project()
         session_factory = test.record_flight_data(
-            'vertexai-endpoint-location-query-name',
+            'vertexai-endpoint-location-query-location',
             project_id=project_id
         )
     else:
-        session_factory = test.replay_flight_data('vertexai-endpoint-location-query-name')
+        session_factory = test.replay_flight_data('vertexai-endpoint-location-query-location')
 
     policy = test.load_policy({
-        'name': 'test-location-query-name',
+        'name': 'test-location-query-location',
         'resource': 'gcp.vertex-ai-endpoint',
         'query': [
-            {'name': 'us-central1'},
-            {'name': 'us-east1'}
+            {'location': 'us-central1'},
+            {'location': 'us-east1'}
         ]
     }, session_factory=session_factory)
 
