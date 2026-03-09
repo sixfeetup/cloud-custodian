@@ -46,22 +46,15 @@ class VertexAILocation:
         """Return list of Vertex AI locations to query.
 
         Locations can be specified via:
-        1. Policy query: {'query': [{'name': 'us-central1'}, {'name': 'us-east1'}]}
-                     or: {'query': [{'location': 'us-central1'}, {'location': 'us-east1'}]}
+        1. Policy query: {'query': [{'location': 'us-central1'}, {'location': 'us-east1'}]}
         2. Config regions: --regions us-central1,us-east1
         3. Config region: --region us-central1
-        4. Default: All Vertex AI supported regions from regions.json
+        4. Default: All Vertex AI supported regions from vertexai_regions.json
         """
 
         # If query specified in policy, use those locations
         if 'query' in self.data:
-            query_locations = set()
-            for q in self.data['query']:
-                # Support both 'name' and 'location' keys
-                if 'name' in q:
-                    query_locations.add(q['name'])
-                elif 'location' in q:
-                    query_locations.add(q['location'])
+            query_locations = {q['location'] for q in self.data['query'] if 'location' in q}
             return [{'name': loc} for loc in self.regions if loc in query_locations]
 
         # If config regions specified, use those
@@ -92,8 +85,8 @@ class VertexAIEndpoint(QueryResourceManager):
           - name: vertexai-endpoints-missing-env-label
             resource: gcp.vertex-ai-endpoint
             query:
-              - name: us-central1
-              - name: us-east1
+              - location: us-central1
+              - location: us-east1
             filters:
               - type: value
                 key: labels.env

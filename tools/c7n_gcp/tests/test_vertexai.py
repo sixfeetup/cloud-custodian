@@ -753,27 +753,27 @@ def test_vertexai_batch_prediction_job_stop_and_delete(test):
     assert len(remaining_resources) == 0
 
 
-def test_vertexai_endpoint_location_query_with_name(test):
-    """Test location specification via query with 'name' key.
+def test_vertexai_endpoint_location_query_with_location(test):
+    """Test location specification via query with 'location' key.
 
     This test verifies that endpoints can be queried from specific locations
-    using the 'name' key in the query specification.
+    using the 'location' key in the query specification.
     """
     if C7N_FUNCTIONAL:
         project_id = get_default_project()
         session_factory = test.record_flight_data(
-            'vertexai-endpoint-location-query-name',
+            'vertexai-endpoint-location-query-location',
             project_id=project_id
         )
     else:
-        session_factory = test.replay_flight_data('vertexai-endpoint-location-query-name')
+        session_factory = test.replay_flight_data('vertexai-endpoint-location-query-location')
 
     policy = test.load_policy({
-        'name': 'test-location-query-name',
+        'name': 'test-location-query-location',
         'resource': 'gcp.vertex-ai-endpoint',
         'query': [
-            {'name': 'us-central1'},
-            {'name': 'us-east1'}
+            {'location': 'us-central1'},
+            {'location': 'us-east1'}
         ]
     }, session_factory=session_factory)
 
