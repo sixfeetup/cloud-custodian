@@ -48,6 +48,14 @@ test-coverage:
             tests tools $(ARGS)
 
 diff-coverage:
+	@echo "Checking for diff-cover..."
+	# This overcomes dependency issues with packages in pyproject.toml
+	@if ! uv tool list | grep -q "^diff-cover"; then \
+		echo "diff-cover not found. Installing as a tool..."; \
+		uv tool install diff-cover; \
+	else \
+		echo "diff-cover is already installed"; \
+	fi
 	@echo "Running tests with coverage for changed files..."
 	@CHANGED_TEST_FILES=$$(git diff --name-only origin/main | grep -E "test_.*\.py$$" || true); \
 	if [ -z "$$CHANGED_TEST_FILES" ]; then \
@@ -73,7 +81,7 @@ diff-coverage:
 		-v
 	@echo ""
 	@echo "Generating diff coverage report..."
-	@uv run diff-cover coverage.xml --compare-branch=origin/main --html-report htmlcov/diff-coverage.html
+	@uv tool run diff-cover coverage.xml --compare-branch=origin/main --html-report htmlcov/diff-coverage.html
 	@echo ""
 	@echo "HTML report generated: htmlcov/diff-coverage.html"
 	@echo "Run 'make view-diff-coverage' to open the report in your browser"
