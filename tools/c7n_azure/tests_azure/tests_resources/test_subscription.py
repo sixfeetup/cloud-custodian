@@ -1,15 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import patch, Mock
-import datetime
+from unittest.mock import patch
 
-from ..azure_common import BaseTest, arm_template, cassette_name
+from ..azure_common import BaseTest, cassette_name
 from c7n_azure.session import Session
-from c7n_azure.actions.tagging import AutoTagBase
-from c7n_azure import utils
 from c7n.utils import local_session
 from azure.mgmt.resource import SubscriptionClient
-from azure.mgmt.monitor.models import EventData
 
 
 class SubscriptionTest(BaseTest):
