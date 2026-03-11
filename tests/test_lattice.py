@@ -1,7 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-import time
-
 from pytest_terraform import terraform
 
 from .common import BaseTest
@@ -249,12 +247,12 @@ def test_lattice_service_network_detailspec(test, lattice_service_network_detail
     assert resources[0]['Tags'][0]['Value'] == 'TestServiceNetworkValue'
 
 
-@terraform('vpc_lattice_rule')
+@terraform('vpc_lattice_rule', replay=False)
 def test_lattice_rule_query(test, vpc_lattice_rule):
-    session_factory = test.replay_flight_data("test_lattice_rule_query")
-    rule_arn = vpc_lattice_rule["aws_vpc_lattice_rule.test_rule.arn"]
-    service_id = vpc_lattice_rule["aws_vpc_lattice_service.test_service.id"]
-    listener_id = vpc_lattice_rule["aws_vpc_lattice_listener.test_listener.id"]
+    session_factory = test.record_flight_data("test_lattice_rule_query")
+    rule_arn = vpc_lattice_rule["aws_vpclattice_listener_rule.test_rule.arn"]
+    service_id = vpc_lattice_rule["aws_vpclattice_service.test_service.id"]
+    listener_id = vpc_lattice_rule["aws_vpclattice_listener.test_listener.listener_id"]
 
     p = test.load_policy(
         {
@@ -265,11 +263,9 @@ def test_lattice_rule_query(test, vpc_lattice_rule):
         session_factory=session_factory,
     )
 
-    if test.recording:
-        time.sleep(10)
-
     resources = p.run()
     assert len(resources) == 1
     assert resources[0]["arn"] == rule_arn
+    assert resources[0]["c7n:parent-id"] == listener_id
     assert resources[0]["serviceIdentifier"] == service_id
     assert resources[0]["listenerIdentifier"] == listener_id

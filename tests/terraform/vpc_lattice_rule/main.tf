@@ -1,30 +1,30 @@
-resource "aws_vpc_lattice_service" "test_service" {
+resource "aws_vpclattice_service" "test_service" {
   name      = "test-service"
   auth_type = "NONE"
 }
 
-resource "aws_vpc_lattice_listener" "test_listener" {
+resource "aws_vpclattice_listener" "test_listener" {
   name               = "test-listener"
-  service_identifier = aws_vpc_lattice_service.test_service.id
+  service_identifier = aws_vpclattice_service.test_service.id
   protocol           = "HTTP"
   port               = 80
 
   default_action {
     fixed_response {
-      status_code = 200
+      status_code = 404
     }
   }
 }
 
-resource "aws_vpc_lattice_rule" "test_rule" {
+resource "aws_vpclattice_listener_rule" "test_rule" {
   name                = "test-rule"
-  service_identifier  = aws_vpc_lattice_service.test_service.id
-  listener_identifier = aws_vpc_lattice_listener.test_listener.id
+  service_identifier  = aws_vpclattice_service.test_service.id
+  listener_identifier = aws_vpclattice_listener.test_listener.listener_id
   priority            = 10
 
   action {
     fixed_response {
-      status_code = 200
+      status_code = 404
     }
   }
 
