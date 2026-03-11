@@ -1,7 +1,7 @@
 .. _azure_examples_cognitiveservice_deployments:
 
 Cognitive Services Deployments - Find and delete failed model deployments
-=======================================================================
+=========================================================================
 
 The ``azure.cognitiveservice-deployment`` resource can be used to find and
 remediate failed Azure OpenAI / Cognitive Services model deployments.
