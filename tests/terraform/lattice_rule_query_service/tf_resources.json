@@ -4,8 +4,8 @@
     "resources": {
         "aws_vpclattice_listener": {
             "test_listener": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-004c557de2baa42d9/listener/listener-0b95f3e74561e16d6",
-                "created_at": "2026-03-13 15:31:49.501 +0000 UTC",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0861b4cd69650046a/listener/listener-02e6d6e4b198fd51a",
+                "created_at": "2026-03-13 15:44:14.158 +0000 UTC",
                 "default_action": [
                     {
                         "fixed_response": [
@@ -16,22 +16,22 @@
                         "forward": []
                     }
                 ],
-                "id": "svc-004c557de2baa42d9/listener-0b95f3e74561e16d6",
-                "last_updated_at": "2026-03-13 15:31:49.501 +0000 UTC",
-                "listener_id": "listener-0b95f3e74561e16d6",
+                "id": "svc-0861b4cd69650046a/listener-02e6d6e4b198fd51a",
+                "last_updated_at": "2026-03-13 15:44:14.158 +0000 UTC",
+                "listener_id": "listener-02e6d6e4b198fd51a",
                 "name": "test-listener",
                 "port": 80,
                 "protocol": "HTTP",
                 "region": "us-east-1",
-                "service_arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-004c557de2baa42d9",
-                "service_identifier": "svc-004c557de2baa42d9",
+                "service_arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0861b4cd69650046a",
+                "service_identifier": "svc-0861b4cd69650046a",
                 "tags": null,
                 "tags_all": {},
                 "timeouts": null
             },
             "test_listener2": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0adf1a51e62605429/listener/listener-0c41dfe767f89cee5",
-                "created_at": "2026-03-13 15:31:51.12 +0000 UTC",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-02e81f6c1e61ddcfe/listener/listener-05fd18c3764b26259",
+                "created_at": "2026-03-13 15:44:14.244 +0000 UTC",
                 "default_action": [
                     {
                         "fixed_response": [
@@ -42,15 +42,15 @@
                         "forward": []
                     }
                 ],
-                "id": "svc-0adf1a51e62605429/listener-0c41dfe767f89cee5",
-                "last_updated_at": "2026-03-13 15:31:51.12 +0000 UTC",
-                "listener_id": "listener-0c41dfe767f89cee5",
+                "id": "svc-02e81f6c1e61ddcfe/listener-05fd18c3764b26259",
+                "last_updated_at": "2026-03-13 15:44:14.244 +0000 UTC",
+                "listener_id": "listener-05fd18c3764b26259",
                 "name": "test-listener2",
                 "port": 80,
                 "protocol": "HTTP",
                 "region": "us-east-1",
-                "service_arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0adf1a51e62605429",
-                "service_identifier": "svc-0adf1a51e62605429",
+                "service_arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-02e81f6c1e61ddcfe",
+                "service_identifier": "svc-02e81f6c1e61ddcfe",
                 "tags": null,
                 "tags_all": {},
                 "timeouts": null
@@ -68,9 +68,9 @@
                         "forward": []
                     }
                 ],
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-004c557de2baa42d9/listener/listener-0b95f3e74561e16d6/rule/rule-0d4ab7be37bf20e5e",
-                "id": "svc-004c557de2baa42d9/listener-0b95f3e74561e16d6/rule-0d4ab7be37bf20e5e",
-                "listener_identifier": "listener-0b95f3e74561e16d6",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0861b4cd69650046a/listener/listener-02e6d6e4b198fd51a/rule/rule-0aa60409d67d5ea6f",
+                "id": "svc-0861b4cd69650046a/listener-02e6d6e4b198fd51a/rule-0aa60409d67d5ea6f",
+                "listener_identifier": "listener-02e6d6e4b198fd51a",
                 "match": [
                     {
                         "http_match": [
@@ -95,8 +95,8 @@
                 "name": "test-rule",
                 "priority": 10,
                 "region": "us-east-1",
-                "rule_id": "rule-0d4ab7be37bf20e5e",
-                "service_identifier": "svc-004c557de2baa42d9",
+                "rule_id": "rule-0aa60409d67d5ea6f",
+                "service_identifier": "svc-0861b4cd69650046a",
                 "tags": {
                     "ExistingKey": "ExistingValue"
                 },
@@ -116,9 +116,9 @@
                         "forward": []
                     }
                 ],
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0adf1a51e62605429/listener/listener-0c41dfe767f89cee5/rule/rule-05f926fa961abdc3e",
-                "id": "svc-0adf1a51e62605429/listener-0c41dfe767f89cee5/rule-05f926fa961abdc3e",
-                "listener_identifier": "listener-0c41dfe767f89cee5",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-02e81f6c1e61ddcfe/listener/listener-05fd18c3764b26259/rule/rule-0e14d63e5ad9b7034",
+                "id": "svc-02e81f6c1e61ddcfe/listener-05fd18c3764b26259/rule-0e14d63e5ad9b7034",
+                "listener_identifier": "listener-05fd18c3764b26259",
                 "match": [
                     {
                         "http_match": [
@@ -143,8 +143,8 @@
                 "name": "test-rule2",
                 "priority": 10,
                 "region": "us-east-1",
-                "rule_id": "rule-05f926fa961abdc3e",
-                "service_identifier": "svc-0adf1a51e62605429",
+                "rule_id": "rule-0e14d63e5ad9b7034",
+                "service_identifier": "svc-02e81f6c1e61ddcfe",
                 "tags": null,
                 "tags_all": {},
                 "timeouts": null
@@ -152,17 +152,17 @@
         },
         "aws_vpclattice_service": {
             "test_service": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-004c557de2baa42d9",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0861b4cd69650046a",
                 "auth_type": "NONE",
                 "certificate_arn": "",
                 "custom_domain_name": "",
                 "dns_entry": [
                     {
-                        "domain_name": "test-service-004c557de2baa42d9.7d67968.vpc-lattice-svcs.us-east-1.on.aws",
+                        "domain_name": "test-service-0861b4cd69650046a.7d67968.vpc-lattice-svcs.us-east-1.on.aws",
                         "hosted_zone_id": "Z0681547Z82L3THDFSCZ"
                     }
                 ],
-                "id": "svc-004c557de2baa42d9",
+                "id": "svc-0861b4cd69650046a",
                 "name": "test-service",
                 "region": "us-east-1",
                 "status": "ACTIVE",
@@ -171,17 +171,17 @@
                 "timeouts": null
             },
             "test_service2": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-0adf1a51e62605429",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:service/svc-02e81f6c1e61ddcfe",
                 "auth_type": "NONE",
                 "certificate_arn": "",
                 "custom_domain_name": "",
                 "dns_entry": [
                     {
-                        "domain_name": "test-service2-0adf1a51e62605429.7d67968.vpc-lattice-svcs.us-east-1.on.aws",
+                        "domain_name": "test-service2-02e81f6c1e61ddcfe.7d67968.vpc-lattice-svcs.us-east-1.on.aws",
                         "hosted_zone_id": "Z0681547Z82L3THDFSCZ"
                     }
                 ],
-                "id": "svc-0adf1a51e62605429",
+                "id": "svc-02e81f6c1e61ddcfe",
                 "name": "test-service2",
                 "region": "us-east-1",
                 "status": "ACTIVE",
