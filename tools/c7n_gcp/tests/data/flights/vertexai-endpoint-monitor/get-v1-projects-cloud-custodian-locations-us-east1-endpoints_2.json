@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Mon, 09 Mar 2026 19:30:11 GMT",
+    "date": "Thu, 12 Mar 2026 03:54:24 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,7 +10,7 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1158",
+    "content-length": "1157",
     "-content-encoding": "gzip",
     "content-location": "https://us-east1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-east1/endpoints?alt=json"
   },
@@ -21,10 +21,10 @@
         "displayName": "c7n-endpoint-east",
         "deployedModels": [
           {
-            "id": "8325513040636149760",
-            "model": "projects/cloud-custodian/locations/us-east1/models/8971711417442893824",
+            "id": "2741330977673445376",
+            "model": "projects/cloud-custodian/locations/us-east1/models/288261162477289472",
             "displayName": "c7n-test-deployment-us-east1",
-            "createTime": "2026-03-09T19:05:58.324876Z",
+            "createTime": "2026-03-12T03:32:10.842657Z",
             "dedicatedResources": {
               "machineSpec": {
                 "machineType": "n1-standard-2"
@@ -34,20 +34,20 @@
             },
             "modelVersionId": "1",
             "status": {
-              "lastUpdateTime": "2026-03-09T19:29:48.171429Z",
+              "lastUpdateTime": "2026-03-12T03:54:16.228931Z",
               "availableReplicaCount": 1
             }
           }
         ],
         "trafficSplit": {
-          "8325513040636149760": 100
+          "2741330977673445376": 100
         },
-        "etag": "AMEw9yNOQHlSi1v1g18ZNMvI_y8c947R5j_1F7fnU30uISC6JFtTzGq3s6kiO69gzjs=",
+        "etag": "AMEw9yPwF3K91AQTD2bx2pWgz5y0FVh6yJMjb_XE-K3Jv2qlq87Xm9q0MCezj-DNuciZ",
         "labels": {
           "goog-terraform-provisioned": "true"
         },
-        "createTime": "2026-03-09T17:43:41.285368Z",
-        "updateTime": "2026-03-09T19:30:10.207686Z"
+        "createTime": "2026-03-12T03:30:42.187060Z",
+        "updateTime": "2026-03-12T03:53:53.368160Z"
       }
     ]
   }

@@ -1,55 +1,23 @@
 {
   "headers": {
-    "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Mon, 09 Mar 2026 19:30:12 GMT",
+    "content-type": "application/json; charset=UTF-8",
+    "date": "Thu, 12 Mar 2026 03:54:25 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
     "x-content-type-options": "nosniff",
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
-    "status": "200",
-    "content-length": "1225",
+    "status": "400",
+    "content-length": "1478",
     "-content-encoding": "gzip"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/modelDeploymentMonitoringJobs/6731564348247900160",
-    "displayName": "c7n-monitor-c7n-endpoint-central",
-    "endpoint": "projects/cloud-custodian/locations/us-central1/endpoints/0",
-    "state": "JOB_STATE_PENDING",
-    "scheduleState": "OFFLINE",
-    "modelDeploymentMonitoringObjectiveConfigs": [
-      {
-        "deployedModelId": "5914335168214073344",
-        "objectiveConfig": {
-          "predictionDriftDetectionConfig": {}
-        }
-      }
-    ],
-    "modelDeploymentMonitoringScheduleConfig": {
-      "monitorInterval": "3600s",
-      "monitorWindow": "3600s"
-    },
-    "loggingSamplingStrategy": {
-      "randomSampleConfig": {
-        "sampleRate": 0.8
-      }
-    },
-    "bigqueryTables": [
-      {
-        "logSource": "SERVING",
-        "logType": "PREDICT",
-        "bigqueryTablePath": "bq://stacklet-personal-2.model_deployment_monitoring_4220647456787922944.serving_predict"
-      }
-    ],
-    "createTime": "2026-03-09T19:30:12.436552Z",
-    "updateTime": "2026-03-09T19:30:12.436552Z",
-    "modelMonitoringAlertConfig": {
-      "emailAlertConfig": {},
-      "enableLogging": true
-    },
-    "analysisInstanceSchemaUri": "gs://stacklet-personal-2-vertex-test-models/schema/instance_schema.yaml",
-    "logTtl": "0s"
+    "error": {
+      "code": 400,
+      "message": "ModelMonitoring config [model_monitoring_schedule_config \t {\n  monitoring_interval {\n    seconds: 3600\n  }\n  monitoring_window {\n    seconds: 3600\n  }\n}\nlogging_sampling_strategy {\n  random_sample_config {\n    sample_rate: 0.8\n  }\n}\nmodel_monitoring_alert_config {\n  email_alert_config {\n  }\n  enable_logging: true\n}\nbigquery_tables {\n  log_source: SERVING\n  log_type: PREDICT\n  bigquery_table_path: \"bq://stacklet-personal-2.model_deployment_monitoring_7884607228630532096.serving_predict\"\n}\nis_enabled: true\nmodel_monitoring_objective_configs {\n  prediction_drift_detection_config {\n  }\n  deployed_model_id: \"1793004947495714816\"\n}\npredict_instance_schema_uri: \"gs://cloud-ai-platform-5acce865-8039-4d35-a80f-3acf65f819f1/instance_schemas/job-3750827907765764096/predict\"\npredict_instance_schema {\n  type_url: \"type.googleapis.com/cloud.ai.platform.openapi.Schema\"\n}\ntfdv_instance_schema_uri: \"gs://cloud-ai-platform-5acce865-8039-4d35-a80f-3acf65f819f1/instance_schemas/job-3750827907765764096/analysis\"\ntfdv_instance_schema {\n  type_url: \"type.googleapis.com/cloud.ai.platform.openapi.Schema\"\n  value: \"\\b\\005\\022\\002\\b\\002\"\n}\nlog_ttl {\n}\njob_id: 3750827907765764096\n] already exitsts in Endpoint projects/cloud-custodian/locations/us-central1/endpoints/c7n-endpoint-central, please update the existing ModelMonitoringJob.",
+      "status": "FAILED_PRECONDITION"
+    }
   }
 }

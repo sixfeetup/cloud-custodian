@@ -2,11 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 from pathlib import Path
+from collections import defaultdict
 
 from google.api_core.client_options import ClientOptions
 from google.cloud import storage
+from googleapiclient.errors import HttpError
 import yaml
-from collections import defaultdict
 
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
@@ -136,8 +137,11 @@ class VertexAIEndpoint(QueryResourceManager):
             return resource['name'].split('/')[3]
 
     @staticmethod
-    def get_location_client(session, location, service='aiplatform', version='v1',
-                           component='projects.locations.modelDeploymentMonitoringJobs'):
+    def get_location_client(
+        session,
+        location,
+        component='projects.locations.modelDeploymentMonitoringJobs'
+    ):
         """Helper method to create a location-specific client.
 
         This is a common pattern used across monitoring actions.
@@ -145,8 +149,6 @@ class VertexAIEndpoint(QueryResourceManager):
         Args:
             session: GCP session
             location: GCP location/region
-            service: API service name (default: 'aiplatform')
-            version: API version (default: 'v1')
             component: API component path
 
         Returns:
@@ -154,7 +156,7 @@ class VertexAIEndpoint(QueryResourceManager):
         """
         api_endpoint = f'https://{location}-aiplatform.googleapis.com'
         client_options = ClientOptions(api_endpoint=api_endpoint)
-        return session.client(service, version, component, client_options=client_options)
+        return session.client('aiplatform', 'v1', component, client_options=client_options)
 
     def _fetch_resources(self, query):
         """Override to handle location-specific API endpoints and multi-location enumeration.
@@ -182,16 +184,9 @@ class VertexAIEndpoint(QueryResourceManager):
         for location_instance in location_manager.resources():
             location = location_instance['name']
 
-            # Build location-specific API endpoint (must include https:// scheme)
-            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-            client_options = ClientOptions(api_endpoint=api_endpoint)
-
             # Get client with location-specific endpoint
-            client = session.client(
-                self.resource_type.service,
-                self.resource_type.version,
-                self.resource_type.component,
-                client_options=client_options
+            client = VertexAIEndpoint.get_location_client(
+                session, location, self.resource_type.component
             )
 
             # Build the parent scope with project and location
@@ -307,9 +302,8 @@ class VertexAIEndpointMonitor(MethodAction):
     )
     method_spec = {'op': 'create'}
     permissions = ('aiplatform.modelDeploymentMonitoringJobs.create',)
-    ignore_error_codes = (409,)
 
-    def validate_schema_uri(self, schema_uri):
+    def validate_schema(self, schema_uri):
         """Validate that a schema URI points to a valid YAML file.
 
         Args:
@@ -391,7 +385,7 @@ class VertexAIEndpointMonitor(MethodAction):
         schema_uri = self.data.get('analysis_instance_schema_uri')
         if schema_uri:
             try:
-                self.validate_schema_uri(schema_uri)
+                self.validate_schema(schema_uri)
             except ValueError as e:
                 # Log warning instead of error to allow tests to run in replay mode
                 # The GCP API will validate the schema during job creation
@@ -405,22 +399,11 @@ class VertexAIEndpointMonitor(MethodAction):
 
         # Filter out endpoints with no deployed models
         valid_resources = []
-        skipped_count = 0
 
         for resource in resources:
             deployed_models = resource.get('deployedModels', [])
             if deployed_models:
                 valid_resources.append(resource)
-            else:
-                skipped_count += 1
-
-        if skipped_count > 0:
-            self.log.warning(
-                'policy:%s action:%s skipped %d endpoints with no deployed models',
-                self.manager.ctx.policy.name,
-                self.type,
-                skipped_count
-            )
 
         if not valid_resources:
             self.log.info(
@@ -530,7 +513,7 @@ class VertexAIEndpointMonitor(MethodAction):
 
             # Create location-specific client using helper
             location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.service, model.version
+                session, location
             )
 
             # Try to create monitoring job
@@ -555,16 +538,35 @@ class VertexAIEndpointMonitor(MethodAction):
                         job_name,
                         result.get('error')
                     )
-            except Exception as e:
-                # If create fails with "already exists", log warning and skip
-                error_msg = str(e)
-                if 'already exists' in error_msg.lower() or 'already exitsts' in error_msg.lower():
-                    self.log.warning(
-                        'Monitoring job already exists for endpoint %s, skipping creation',
-                        resource['name']
+            except HttpError as e:
+                handled = False
+
+                # Vertex AI may surface duplicate monitoring configs as:
+                # HTTP 400 + FAILED_PRECONDITION + "already exists/exitsts" message.
+                if getattr(e.resp, 'status', None) == 400:
+                    try:
+                        content = e.content.decode(
+                            'utf-8') if isinstance(e.content, bytes) else e.content
+                        payload = json.loads(content)
+                    except Exception:
+                        payload = {}
+
+                    error = payload.get('error', {})
+                    error_status = (error.get('status') or '').upper()
+                    error_message = (error.get('message') or '').lower()
+                    is_duplicate_precondition = (
+                        error_status == 'FAILED_PRECONDITION' and
+                        ('already exists' in error_message or 'already exitsts' in error_message)
                     )
-                else:
-                    # Different error, re-raise
+
+                    if is_duplicate_precondition:
+                        self.log.warning(
+                            'Monitoring job already exists for endpoint %s, skipping creation',
+                            resource['name']
+                        )
+                        handled = True
+
+                if not handled:
                     raise
 
 
@@ -624,11 +626,8 @@ class VertexAIEndpointDelete(MethodAction):
 
         for location, location_resources in resources_by_location.items():
             # Create location-specific client
-            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-            client_options = ClientOptions(api_endpoint=api_endpoint)
-            location_client = session.client(
-                model.service, model.version, model.component,
-                client_options=client_options
+            location_client = VertexAIEndpoint.get_location_client(
+                session, location, model.component
             )
 
             # Use parent's process_resource_set with location-specific client
@@ -746,16 +745,9 @@ class VertexAIBatchPredictionJob(QueryResourceManager):
         for location_instance in location_manager.resources():
             location = location_instance['name']
 
-            # Build location-specific API endpoint (must include https:// scheme)
-            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-            client_options = ClientOptions(api_endpoint=api_endpoint)
-
             # Get client with location-specific endpoint
-            client = session.client(
-                self.resource_type.service,
-                self.resource_type.version,
-                self.resource_type.component,
-                client_options=client_options
+            client = VertexAIEndpoint.get_location_client(
+                session, location, self.resource_type.component
             )
 
             # Build the parent scope with project and location
@@ -854,11 +846,8 @@ class VertexAIBatchPredictionJobDelete(MethodAction):
 
         for location, location_resources in resources_by_location.items():
             # Create location-specific client
-            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-            client_options = ClientOptions(api_endpoint=api_endpoint)
-            location_client = session.client(
-                model.service, model.version, model.component,
-                client_options=client_options
+            location_client = VertexAIEndpoint.get_location_client(
+                session, location, model.component
             )
 
             # Use parent's process_resource_set with location-specific client
@@ -943,11 +932,8 @@ class VertexAIBatchPredictionJobStop(MethodAction):
 
         for location, location_resources in resources_by_location.items():
             # Create location-specific client
-            api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-            client_options = ClientOptions(api_endpoint=api_endpoint)
-            location_client = session.client(
-                model.service, model.version, model.component,
-                client_options=client_options
+            location_client = VertexAIEndpoint.get_location_client(
+                session, location, model.component
             )
 
             # Use parent's process_resource_set with location-specific client

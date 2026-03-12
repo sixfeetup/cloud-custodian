@@ -4,6 +4,7 @@
 import os
 import json
 import time
+import logging
 from unittest.mock import Mock, patch
 from google.api_core.client_options import ClientOptions
 from c7n.testing import C7N_FUNCTIONAL
@@ -364,11 +365,16 @@ def test_vertexai_endpoint_monitor(test):
     assert total_c7n_jobs >= 2
 
     # Test idempotency: Run the monitor action again
-    # This should not fail (in replay mode, the recorded responses will be reused)
-    print('\nDEBUG: Testing idempotency - running monitor action again...')
+    # wait 30 seconds to allow the monitoring job to enter running state
+    if C7N_FUNCTIONAL:
+        time.sleep(30)
+    log_output = test.capture_logging('custodian.actions', level=logging.WARNING)
     resources_retry = policy.run()
     assert len(resources_retry) >= 2
-    print('\nDEBUG: Idempotency test passed - action ran successfully')
+
+    # Verify we emit the expected warning when monitoring jobs already exist.
+    logs = log_output.getvalue()
+    assert 'Monitoring job already exists for endpoint' in logs
 
 
 def test_vertexai_endpoint_monitor_no_schema(test):
@@ -376,8 +382,7 @@ def test_vertexai_endpoint_monitor_no_schema(test):
 
     This test verifies that the monitor action works when no schema URI is provided.
     The monitoring job will be created but will remain in PENDING state until
-    ~1000 prediction requests are received. This test covers the warning log path
-    at line 521 in vertexai.py.
+    ~1000 prediction requests are received.
     """
     # Reuse the existing cassette since the API calls are the same
     session_factory = test.replay_flight_data('vertexai-endpoint-monitor')
@@ -395,14 +400,21 @@ def test_vertexai_endpoint_monitor_no_schema(test):
          ],
          'actions': [
              {'type': 'monitor'}
-             # Note: No analysis_instance_schema_uri provided - will trigger warning log
          ]},
         session_factory=session_factory
     )
 
+    log_output = test.capture_logging('custodian.actions', level=logging.WARNING)
     resources = policy.run()
-    # Should still find endpoints even without schema
-    assert len(resources) >= 0
+
+    # Should still find endpoints and process the action without schema.
+    assert len(resources) >= 1
+    assert all(r.get('deployedModels') for r in resources)
+
+    # Verify we emit the expected warning about missing schema.
+    logs = log_output.getvalue()
+    assert 'No analysis_instance_schema_uri provided.' in logs
+    assert 'will remain in PENDING state' in logs
 
 
 # Batch Prediction Job Tests
@@ -1061,14 +1073,14 @@ def test_vertexai_endpoint_monitor_invalid_schema_uri(test):
 
     # Test 1: Invalid GCS URI format (not starting with gs://)
     try:
-        action.validate_schema_uri('https://invalid-url/schema.yaml')
+        action.validate_schema('https://invalid-url/schema.yaml')
         assert False, 'Should have raised ValueError for non-GCS URI'
     except ValueError as e:
         assert 'must be a GCS path' in str(e)
 
     # Test 2: Invalid file extension (not .yaml or .yml)
     try:
-        action.validate_schema_uri('gs://bucket/schema.json')
+        action.validate_schema('gs://bucket/schema.json')
         assert False, 'Should have raised ValueError for non-YAML file'
     except ValueError as e:
         assert 'must be YAML format' in str(e)
@@ -1108,7 +1120,7 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
         mock_blob.download_as_text.return_value = (
             'type: object\nproperties:\n  field1:\n    type: string'
         )
-        result = action.validate_schema_uri(
+        result = action.validate_schema(
             f'gs://{bucket_name}/schema/instance_schema.yaml'
         )
         assert result is True
@@ -1116,7 +1128,7 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
         # Test 1: Invalid YAML content
         mock_blob.download_as_text.return_value = 'invalid: yaml: content: ['
         try:
-            action.validate_schema_uri(f'gs://{bucket_name}/schema/invalid.yaml')
+            action.validate_schema(f'gs://{bucket_name}/schema/invalid.yaml')
             assert False, 'Should have raised ValueError for invalid YAML'
         except ValueError as e:
             assert 'is not valid YAML' in str(e)
@@ -1124,7 +1136,7 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
         # Test 2: Schema is not a dict (e.g., a list)
         mock_blob.download_as_text.return_value = '- item1\n- item2'
         try:
-            action.validate_schema_uri(f'gs://{bucket_name}/schema/list.yaml')
+            action.validate_schema(f'gs://{bucket_name}/schema/list.yaml')
             assert False, 'Should have raised ValueError for non-dict schema'
         except ValueError as e:
             assert 'Schema must be a YAML object (dict)' in str(e)
@@ -1132,11 +1144,11 @@ def test_vertexai_endpoint_monitor_schema_yaml_validation(test):
         # Test 3: Schema dict missing 'type' field
         mock_blob.download_as_text.return_value = 'properties:\n  field1:\n    type: string'
         try:
-            action.validate_schema_uri(f'gs://{bucket_name}/schema/no-type.yaml')
+            action.validate_schema(f'gs://{bucket_name}/schema/no-type.yaml')
             assert False, 'Should have raised ValueError for missing type field'
         except ValueError as e:
             assert 'Schema must have a "type" field' in str(e)
 
     # Test 4: No schema URI provided (should return True)
-    result = action.validate_schema_uri(None)
+    result = action.validate_schema(None)
     assert result is True
