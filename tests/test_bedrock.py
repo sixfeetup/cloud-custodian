@@ -609,7 +609,9 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify tags were added
-        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tags = client.list_tags_for_resource(
+            resourceARN=resources[0]['inferenceProfileArn']
+        )['tags']
         tag_dict = {t['key']: t['value'] for t in tags}
         self.assertEqual(tag_dict['NewTag'], 'NewValue')
         self.assertEqual(tag_dict['AnotherTag'], 'AnotherValue')
@@ -640,7 +642,9 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify tags were removed
-        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tags = client.list_tags_for_resource(
+            resourceARN=resources[0]['inferenceProfileArn']
+        )['tags']
         tag_dict = {t['key']: t['value'] for t in tags}
         self.assertNotIn('AnotherTag', tag_dict)
         self.assertNotIn('Owner', tag_dict)
@@ -691,7 +695,9 @@ class BedrockApplicationInferenceProfile(BaseTest):
         self.assertEqual(len(resources), 1)
 
         # Verify mark-for-op tag was added
-        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tags = client.list_tags_for_resource(
+            resourceARN=resources[0]['inferenceProfileArn']
+        )['tags']
         tag_dict = {t['key']: t['value'] for t in tags}
         self.assertIn('maid_status', tag_dict)
 
