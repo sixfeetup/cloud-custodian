@@ -4,11 +4,6 @@ resource "random_pet" "network" {
 
 resource "aws_vpclattice_service_network" "test" {
   name = random_pet.network.id
-
-  tags = {
-    Environment = "Test"
-    ASV         = "PolicyTestASV"
-  }
 }
 
 data "aws_vpc" "default" {

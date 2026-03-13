@@ -33,31 +33,25 @@
         },
         "aws_vpclattice_service_network": {
             "test": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:servicenetwork/sn-06c0b9919c1ed90d5",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:servicenetwork/sn-0ab42a03731b11e17",
                 "auth_type": "NONE",
-                "id": "sn-06c0b9919c1ed90d5",
-                "name": "c7n-test-network-ace-primate",
+                "id": "sn-0ab42a03731b11e17",
+                "name": "c7n-test-network-big-herring",
                 "region": "us-east-1",
-                "tags": {
-                    "ASV": "PolicyTestASV",
-                    "Environment": "Test"
-                },
-                "tags_all": {
-                    "ASV": "PolicyTestASV",
-                    "Environment": "Test"
-                }
+                "tags": null,
+                "tags_all": {}
             }
         },
         "aws_vpclattice_service_network_vpc_association": {
             "test": {
-                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:servicenetworkvpcassociation/snva-0ffb1fcf0dfbbf68e",
+                "arn": "arn:aws:vpc-lattice:us-east-1:644160558196:servicenetworkvpcassociation/snva-00b7af8c4603042e9",
                 "created_by": "644160558196",
                 "dns_options": [],
-                "id": "snva-0ffb1fcf0dfbbf68e",
+                "id": "snva-00b7af8c4603042e9",
                 "private_dns_enabled": false,
                 "region": "us-east-1",
                 "security_group_ids": null,
-                "service_network_identifier": "sn-06c0b9919c1ed90d5",
+                "service_network_identifier": "sn-0ab42a03731b11e17",
                 "status": "ACTIVE",
                 "tags": {
                     "ASV": "PolicyTestASV",
@@ -73,7 +67,7 @@
         },
         "random_pet": {
             "network": {
-                "id": "c7n-test-network-ace-primate",
+                "id": "c7n-test-network-big-herring",
                 "keepers": null,
                 "length": 2,
                 "prefix": "c7n-test-network",

@@ -6,10 +6,8 @@ from c7n.manager import resources
 from c7n.query import (
     ChildDescribeSource,
     ChildResourceManager,
-    DescribeSource,
     DescribeWithResourceTags,
     QueryResourceManager,
-    ResourceQuery,
     TypeInfo,
 )
 from c7n.tags import universal_augment
@@ -119,28 +117,13 @@ class VPCLatticeListener(ChildResourceManager):
         permissions_enum = ('vpc-lattice:ListListeners',)
 
 
-class ServiceNetworkAssociationQuery(ResourceQuery):
-    """Custom query that iterates through service networks to find all associations."""
-
-    def filter(self, resource_manager, **params):
-        client = local_session(self.session_factory).client('vpc-lattice')
-
-        # Get all service networks
-        paginator = client.get_paginator('list_service_networks')
-        networks = []
-        for page in paginator.paginate():
-            networks.extend(page.get('items', []))
-
-
-@resources.register('describe-service-network-association')
-class DescribeServiceNetworkAssociation(DescribeSource):
-    """Custom source that lists associations by iterating through service networks."""
-
-    resource_query_factory = ServiceNetworkAssociationQuery
+class DescribeServiceNetworkAssociation(ChildDescribeSource):
+    def augment(self, resources):
+        return universal_augment(self.manager, resources)
 
 
 @resources.register('vpc-lattice-service-network-association')
-class VPCLatticeServiceNetworkAssociation(QueryResourceManager):
+class VPCLatticeServiceNetworkAssociation(ChildResourceManager):
     """VPC Lattice Service Network VPC Association Resource
 
     Resource to list the lattice service network to VPC associations
@@ -159,12 +142,13 @@ class VPCLatticeServiceNetworkAssociation(QueryResourceManager):
     """
 
     source_mapping = {
-        'describe': DescribeServiceNetworkAssociation,
+        'describe-child': DescribeServiceNetworkAssociation,
     }
 
     class resource_type(TypeInfo):
         service = 'vpc-lattice'
         enum_spec = ('list_service_network_vpc_associations', 'items', None)
+        parent_spec = ('vpc-lattice-service-network', 'serviceNetworkIdentifier', True)
         arn = 'arn'
         id = 'id'
         name = 'id'
