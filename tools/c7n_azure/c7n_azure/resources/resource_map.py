@@ -25,6 +25,10 @@ ResourceMap = {
         "c7n_azure.resources.cognitive_service_deployment."
         "CognitiveServiceDeployment"
     ),
+    "azure.ai-foundry-deployment": (
+        "c7n_azure.resources.ai_foundry_deployment."
+        "AiFoundryDeployment"
+    ),
     "azure.container-group": "c7n_azure.resources.aci.ContainerGroup",
     "azure.containerregistry": "c7n_azure.resources.container_registry.ContainerRegistry",
     "azure.container-registry": "c7n_azure.resources.container_registry.ContainerRegistry",
