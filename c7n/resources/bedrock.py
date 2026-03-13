@@ -304,6 +304,7 @@ class BedrockModelInvocationJob(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'bedrock'
         enum_spec = ('list_model_invocation_jobs', 'invocationJobSummaries[]', None)
+        detail_spec = ('get_model_invocation_job', 'jobIdentifier', 'jobArn', None)
         name = 'jobName'
         id = arn = 'jobArn'
         arn_type = 'model-invocation-job'
