@@ -9,7 +9,7 @@ import pytest
 
 
 @terraform('bedrock_model_invocation_job')
-def test_bedrock_model_invocation_job_fixture():  # pragma: no cover
+def test_bedrock_model_invocation_job_fixture():
     pass
 
 
@@ -20,7 +20,7 @@ class BedrockModelInvocationJob(BaseTest):
         self.bedrock_model_invocation_job = bedrock_model_invocation_job
 
     @staticmethod
-    def create_bedrock_invocation_job(session_factory, tf_fixture):  # pragma: no cover
+    def create_bedrock_invocation_job(session_factory, tf_fixture):
         """Helper to create a Bedrock model invocation job using Terraform resources."""
         # Extract outputs from the fixture's outputs attribute (fresh data from Terraform)
         role_arn = tf_fixture.outputs['role_arn']['value']
@@ -60,7 +60,7 @@ class BedrockModelInvocationJob(BaseTest):
         return job_arn, unique_id
 
     def test_bedrock_model_invocation_job(self):
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job', region='us-east-1'
             )
@@ -77,7 +77,7 @@ class BedrockModelInvocationJob(BaseTest):
             {'tag:Environment': 'test'},
         ]
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -100,12 +100,12 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_tag_actions(self):
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
-                'test_bedrock_model_invocation_job_tag_actions', region='us-east-1')
+                'test_bedrock_model_invocation_job_tag_actions_v2', region='us-east-1')
         else:
             session_factory = self.replay_flight_data(
-                'test_bedrock_model_invocation_job_tag_actions', region='us-east-1')
+                'test_bedrock_model_invocation_job_tag_actions_v2', region='us-east-1')
 
         client = session_factory().client('bedrock')
 
@@ -117,7 +117,7 @@ class BedrockModelInvocationJob(BaseTest):
         ]
 
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -155,12 +155,12 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_mark_for_op(self):
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
-                'test_bedrock_model_invocation_job_mark_for_op', region='us-east-1')
+                'test_bedrock_model_invocation_job_mark_for_op_v2', region='us-east-1')
         else:
             session_factory = self.replay_flight_data(
-                'test_bedrock_model_invocation_job_mark_for_op', region='us-east-1')
+                'test_bedrock_model_invocation_job_mark_for_op_v2', region='us-east-1')
 
         client = session_factory().client('bedrock')
 
@@ -172,7 +172,7 @@ class BedrockModelInvocationJob(BaseTest):
 
         unique_id = None  # Initialize for later use
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             _job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -197,6 +197,7 @@ class BedrockModelInvocationJob(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
+        target_job_arn = resources[0]['jobArn']
 
         # Verify mark-for-op tag was added
         tags = client.list_tags_for_resource(resourceARN=resources[0]['jobArn'])['tags']
@@ -211,10 +212,11 @@ class BedrockModelInvocationJob(BaseTest):
                 'type': 'marked-for-op',
                 'op': 'notify',
                 'skew': 7  # Match resources marked for action within next 7 days
-            }
+            },
+            {'jobArn': target_job_arn},
         ]
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             # Add unique filter only in functional mode to isolate this test run
             marked_filters.append({'tag:TestRunId': unique_id})
 
@@ -232,7 +234,7 @@ class BedrockModelInvocationJob(BaseTest):
 
     def test_bedrock_model_invocation_job_stop(self):
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
                 'test_bedrock_model_invocation_job_stop', region='us-east-1')
         else:
@@ -249,7 +251,7 @@ class BedrockModelInvocationJob(BaseTest):
 
         unique_id = None  # Initialize for later use
         # Create the job using the helper method with Terraform resources (only in recording mode)
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             job_arn, unique_id = self.create_bedrock_invocation_job(
                 session_factory, self.bedrock_model_invocation_job)
             # Add unique filter only in functional mode to isolate this test run
@@ -527,31 +529,21 @@ def test_bedrock_application_inference_profile_fixture():
     pass
 
 
-@terraform('bedrock_application_inference_profile_tag_actions')
-def test_bedrock_application_inference_profile_tag_actions_fixture():
-    pass
-
-
 class BedrockApplicationInferenceProfile(BaseTest):
     @pytest.fixture(autouse=True)
-    def setup(
-            self,
-            bedrock_application_inference_profile,
-            bedrock_application_inference_profile_tag_actions):
-        """Auto-use fixture to inject terraform fixtures into class."""
-        self.bedrock_application_inference_profile = \
-            bedrock_application_inference_profile
-        self.bedrock_application_inference_profile_tag_actions = \
-            bedrock_application_inference_profile_tag_actions
+    def setup(self, bedrock_application_inference_profile):
+        """Auto-use fixture to inject terraform fixture into class."""
+        self.bedrock_application_inference_profile = bedrock_application_inference_profile
 
     def test_bedrock_application_inference_profile(self):
-        session_factory = self.replay_flight_data(
-            'test_bedrock_application_inference_profile')
-
-        profile_arn = self.bedrock_application_inference_profile[
-            'aws_bedrock_inference_profile.test_profile.arn']
-        profile_name = self.bedrock_application_inference_profile[
-            'aws_bedrock_inference_profile.test_profile.name']
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(
+                'test_bedrock_application_inference_profile_v2',
+                region='us-east-1')
+        else:
+            session_factory = self.replay_flight_data(
+                'test_bedrock_application_inference_profile_v2',
+                region='us-east-1')
 
         p = self.load_policy(
             {
@@ -563,41 +555,48 @@ class BedrockApplicationInferenceProfile(BaseTest):
         )
         resources = p.run()
         self.assertEqual(len(resources), 1)
-        self.assertIn('Tags', resources[0])
-        self.assertEqual(resources[0]['inferenceProfileName'], profile_name)
-        self.assertEqual(resources[0]['inferenceProfileArn'], profile_arn)
+        target_resource = resources[0]
+        self.assertTrue(
+            target_resource['inferenceProfileArn'].startswith(
+                'arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/'))
+        self.assertTrue(target_resource['inferenceProfileName'].startswith('c7n-test-profile-'))
 
         # Verify tags are in correct format from universal_taggable
-        tags = {t['Key']: t['Value'] for t in resources[0]['Tags']}
+        self.assertIn('Tags', target_resource)
+        tags = {t['Key']: t['Value'] for t in target_resource['Tags']}
         self.assertEqual(tags['Environment'], 'test')
         self.assertEqual(tags['Owner'], 'c7n')
 
     def test_bedrock_application_inference_profile_tag_actions(self):
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
-                'test_bedrock_application_inference_profile_tag_actions',
+                'test_bedrock_application_inference_profile_tag_actions_v2',
                 region='us-east-1')
         else:
             session_factory = self.replay_flight_data(
-                'test_bedrock_application_inference_profile_tag_actions',
+                'test_bedrock_application_inference_profile_tag_actions_v2',
                 region='us-east-1')
 
         client = session_factory().client('bedrock')
 
-        profile_arn = self.bedrock_application_inference_profile_tag_actions[
+        profile_arn = self.bedrock_application_inference_profile[
             'aws_bedrock_inference_profile.test_profile.arn']
 
         # Test adding tags - use tag-based filtering that works in both modes
+        add_filters = [
+            {'tag:Owner': 'c7n'},
+            {'tag:Environment': 'test'},
+            {'tag:NewTag': 'absent'},
+        ]
+        if C7N_FUNCTIONAL:
+            add_filters.append({'inferenceProfileArn': profile_arn})
+
         p = self.load_policy(
             {
                 'name': 'bedrock-app-inference-profile-tag',
                 'resource': 'bedrock-inference-profile',
-                'filters': [
-                    {'tag:Owner': 'c7n'},
-                    {'tag:Environment': 'test'},
-                    {'tag:NewTag': 'absent'},
-                ],
+                'filters': add_filters,
                 'actions': [
                     {
                         'type': 'tag',
@@ -609,23 +608,26 @@ class BedrockApplicationInferenceProfile(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-        # Verify tags were added (only in functional mode where we have real ARN)
-        if C7N_FUNCTIONAL:  # pragma: no cover
-            tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
-            tag_dict = {t['key']: t['value'] for t in tags}
-            self.assertEqual(tag_dict['NewTag'], 'NewValue')
-            self.assertEqual(tag_dict['AnotherTag'], 'AnotherValue')
-            self.assertEqual(tag_dict['Environment'], 'test')  # Original tag still there
+        # Verify tags were added
+        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tag_dict = {t['key']: t['value'] for t in tags}
+        self.assertEqual(tag_dict['NewTag'], 'NewValue')
+        self.assertEqual(tag_dict['AnotherTag'], 'AnotherValue')
+        self.assertEqual(tag_dict['Environment'], 'test')  # Original tag still there
 
         # Test removing tags
+        remove_filters = [
+            {'tag:Owner': 'c7n'},
+            {'tag:NewTag': 'NewValue'},
+        ]
+        if C7N_FUNCTIONAL:
+            remove_filters.append({'inferenceProfileArn': profile_arn})
+
         p = self.load_policy(
             {
                 'name': 'bedrock-app-inference-profile-untag',
                 'resource': 'bedrock-inference-profile',
-                'filters': [
-                    {'tag:Owner': 'c7n'},
-                    {'tag:NewTag': 'NewValue'},
-                ],
+                'filters': remove_filters,
                 'actions': [
                     {
                         'type': 'remove-tag',
@@ -637,41 +639,43 @@ class BedrockApplicationInferenceProfile(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-        # Verify tags were removed (only in functional mode)
-        if C7N_FUNCTIONAL:  # pragma: no cover
-            tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
-            tag_dict = {t['key']: t['value'] for t in tags}
-            self.assertNotIn('AnotherTag', tag_dict)
-            self.assertNotIn('Owner', tag_dict)
-            self.assertEqual(tag_dict['NewTag'], 'NewValue')  # Still there
-            self.assertEqual(tag_dict['Environment'], 'test')  # Still there
+        # Verify tags were removed
+        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tag_dict = {t['key']: t['value'] for t in tags}
+        self.assertNotIn('AnotherTag', tag_dict)
+        self.assertNotIn('Owner', tag_dict)
+        self.assertEqual(tag_dict['NewTag'], 'NewValue')  # Still there
+        self.assertEqual(tag_dict['Environment'], 'test')  # Still there
 
     def test_bedrock_application_inference_profile_mark_for_op(self):
 
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
-                'test_bedrock_application_inference_profile_mark_for_op',
+                'test_bedrock_application_inference_profile_mark_for_op_v2',
                 region='us-east-1')
         else:
             session_factory = self.replay_flight_data(
-                'test_bedrock_application_inference_profile_mark_for_op',
+                'test_bedrock_application_inference_profile_mark_for_op_v2',
                 region='us-east-1')
 
         client = session_factory().client('bedrock')
 
-        profile_arn = self.bedrock_application_inference_profile_tag_actions[
+        profile_arn = self.bedrock_application_inference_profile[
             'aws_bedrock_inference_profile.test_profile.arn']
 
         # Mark resources for operation - use tag-based filtering
+        mark_filters = [
+            {'tag:Owner': 'c7n'},
+            {'tag:Environment': 'test'},
+            {'tag:maid_status': 'absent'},
+        ]
+        mark_filters.append({'inferenceProfileArn': profile_arn})
+
         p = self.load_policy(
             {
                 'name': 'bedrock-inference-profile-mark',
                 'resource': 'bedrock-inference-profile',
-                'filters': [
-                    {'tag:Owner': 'c7n'},
-                    {'tag:Environment': 'test'},
-                    {'tag:maid_status': 'absent'},
-                ],
+                'filters': mark_filters,
                 'actions': [
                     {
                         'type': 'mark-for-op',
@@ -686,24 +690,26 @@ class BedrockApplicationInferenceProfile(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-        # Verify mark-for-op tag was added (only in functional mode)
-        if C7N_FUNCTIONAL:  # pragma: no cover
-            tags = client.list_tags_for_resource(resourceARN=profile_arn)['tags']
-            tag_dict = {t['key']: t['value'] for t in tags}
-            self.assertIn('maid_status', tag_dict)
+        # Verify mark-for-op tag was added
+        tags = client.list_tags_for_resource(resourceARN=resources[0]['inferenceProfileArn'])['tags']
+        tag_dict = {t['key']: t['value'] for t in tags}
+        self.assertIn('maid_status', tag_dict)
 
         # Test marked-for-op filter
+        marked_filters = [
+            {
+                'type': 'marked-for-op',
+                'op': 'notify',
+                'skew': 7
+            }
+        ]
+        marked_filters.append({'inferenceProfileArn': profile_arn})
+
         p = self.load_policy(
             {
                 'name': 'bedrock-inference-profile-marked',
                 'resource': 'bedrock-inference-profile',
-                'filters': [
-                    {
-                        'type': 'marked-for-op',
-                        'op': 'notify',
-                        'skew': 7
-                    }
-                ]
+                'filters': marked_filters
             },
             session_factory=session_factory,
             config={'region': 'us-east-1'}
