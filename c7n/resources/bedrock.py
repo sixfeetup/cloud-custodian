@@ -345,8 +345,7 @@ class StopModelInvocationJob(BaseAction):
                 client.stop_model_invocation_job(jobIdentifier=r['jobArn'])
             except (client.exceptions.ResourceNotFoundException,
                     client.exceptions.ConflictException) as e:
-                self.log.warning(
-                    'Unable to stop job %s: %s', r['jobArn'], e)
+                self.log.warning('%s', e)
 
 
 @resources.register('bedrock-agent')

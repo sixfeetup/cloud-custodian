@@ -1,7 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import logging
-from .common import BaseTest, event_data
+from .common import ACCOUNT_ID, BaseTest, event_data
 from botocore.exceptions import ClientError
 from pytest_terraform import terraform
 from c7n.testing import C7N_FUNCTIONAL
@@ -817,3 +817,43 @@ def test_bedrock_inference_profile_delete_conflict(test, caplog):
         'Unable to delete inference profile arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/1jxlkskto2ug',  # noqa
         caplog.text
     )
+
+
+def test_bedrock_model_invocation_job_stop_not_found(test, caplog):
+    if C7N_FUNCTIONAL:
+        session_factory = test.record_flight_data(
+            'test_bedrock_model_invocation_job_stop_not_found',
+            region='us-east-1')
+    else:
+        session_factory = test.replay_flight_data(
+            'test_bedrock_model_invocation_job_stop_not_found',
+            region='us-east-1')
+
+    p = test.load_policy(
+        {
+            'name': 'bedrock-invocation-job-stop-not-found',
+            'resource': 'bedrock-model-invocation-job',
+            'actions': [
+                {
+                    'type': 'stop'
+                }
+            ]
+        },
+        session_factory=session_factory,
+        config={'region': 'us-east-1'}
+    )
+
+    account_id = ACCOUNT_ID
+    if C7N_FUNCTIONAL:
+        account_id = session_factory().client('sts').get_caller_identity()['Account']
+
+    # Generate a job ARN that doesn't exist
+    missing_job_arn = (
+        f'arn:aws:bedrock:us-east-1:{account_id}:model-invocation-job/abc123def456'
+    )
+
+    with caplog.at_level(logging.WARNING):
+        p.resource_manager.actions[0].process([{'jobArn': missing_job_arn}])
+
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    test.assertEqual(len(warnings), 1)
