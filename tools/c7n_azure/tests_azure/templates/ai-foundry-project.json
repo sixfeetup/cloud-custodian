@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "accountName": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "projectName": "cctest-aifoundry-project"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2025-06-01",
+            "name": "[parameters('accountName')]",
+            "location": "eastus",
+            "kind": "AIServices",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "sku": {
+                "name": "S0"
+            },
+            "properties": {
+                "allowProjectManagement": true,
+                "customSubDomainName": "[parameters('accountName')]"
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.CognitiveServices/accounts/projects",
+            "apiVersion": "2025-06-01",
+            "name": "[format('{0}/{1}', parameters('accountName'), variables('projectName'))]",
+            "location": "eastus",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {},
+            "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', parameters('accountName'))]"
+            ]
+        }
+    ]
+}
