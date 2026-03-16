@@ -117,6 +117,7 @@ ResourceMap = {
   "aws.ec2-reserved": "c7n.resources.ec2.ReservedInstance",
   "aws.ec2-spot-fleet-request": "c7n.resources.ec2.SpotFleetRequest",
   "aws.ec2-capacity-reservation": "c7n.resources.ec2.CapacityReservation",
+  "aws.ec2-instance-ami": "c7n.resources.ec2.EC2ImageMetadata",
   "aws.ecr": "c7n.resources.ecr.ECR",
   "aws.ecr-image": "c7n.resources.ecr.RepositoryImage",
   "aws.ecs": "c7n.resources.ecs.ECSCluster",
@@ -364,6 +365,8 @@ ResourceMap = {
   "aws.vpc-endpoint-service-configuration": "c7n.resources.vpc.VPCEndpointServiceConfiguration",
   "aws.vpc-lattice-service": "c7n.resources.lattice.VPCLatticeService",
   "aws.vpc-lattice-service-network": "c7n.resources.lattice.VPCLatticeServiceNetwork",
+  "aws.vpc-lattice-service-network-association":
+      "c7n.resources.lattice.VPCLatticeServiceNetworkAssociation",
   "aws.vpc-lattice-target-group": "c7n.resources.lattice.VPCLatticeTargetGroup",
   "aws.vpc-lattice-listener": "c7n.resources.lattice.VPCLatticeListener",
   "aws.vpc-lattice-rule": "c7n.resources.lattice.VPCLatticeRule",
