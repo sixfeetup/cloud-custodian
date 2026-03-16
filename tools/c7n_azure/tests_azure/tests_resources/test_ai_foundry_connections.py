@@ -57,6 +57,15 @@ class AIFoundryConnectionTest(BaseTest):
                 PolicyValidationError, self.load_policy, policy, validate=True
             )
 
+    def test_ai_foundry_connection_delete_schema_validate(self):
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-ai-foundry-connection-delete',
+                'resource': 'azure.ai-foundry-connection',
+                'actions': [{'type': 'delete'}]
+            }, validate=True)
+            self.assertTrue(p)
+
     @arm_template('ai-foundry-connection.json')
     @cassette_name('ai-foundry-connections')
     def test_ai_foundry_connection_query(self):
@@ -107,3 +116,25 @@ class AIFoundryConnectionTest(BaseTest):
         after = read_policy.run()
         self.assertEqual(len(after), 1)
         self.assertEqual(after[0].get('properties', {}).get('isSharedToAll'), updated)
+
+    @arm_template('ai-foundry-connection.json')
+    @cassette_name('ai-foundry-connections-delete')
+    def test_z_ai_foundry_connection_delete(self):
+        read_policy = self.load_policy({
+            'name': 'test-ai-foundry-connection-read-before-delete',
+            'resource': 'azure.ai-foundry-connection',
+        })
+
+        delete_policy = self.load_policy({
+            'name': 'test-ai-foundry-connection-delete',
+            'resource': 'azure.ai-foundry-connection',
+            'actions': [{'type': 'delete'}],
+        })
+
+        resources = read_policy.run()
+        self.assertEqual(len(resources), 1)
+        delete_policy.resource_manager.actions[0].process(resources)
+        self.sleep_in_live_mode(10)
+
+        remaining = read_policy.run()
+        self.assertEqual(len(remaining), 0)

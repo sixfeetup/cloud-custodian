@@ -109,9 +109,27 @@ class AIFoundryConnectionUpdateAction(AzureBaseAction):
         return "updated"
 
 
+class AIFoundryConnectionDeleteAction(AzureBaseAction):
+    """Delete an Azure AI Foundry project connection."""
+
+    schema = type_schema('delete')
+    schema_alias = True
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client('azure.mgmt.resource.ResourceManagementClient')
+
+    def _process_resource(self, resource):
+        self.client.resources.begin_delete_by_id(
+            resource['id'],
+            self.manager.resource_type.api_version,
+        )
+        return "deleted"
+
+
 def register_ai_foundry_connection_actions(registry, resource_class):
     if resource_class is AIFoundryConnection:
         resource_class.action_registry.register('update', AIFoundryConnectionUpdateAction)
+        resource_class.action_registry.register('delete', AIFoundryConnectionDeleteAction)
 
 
 resources.subscribe(register_ai_foundry_connection_actions)
