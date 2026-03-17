@@ -43,7 +43,6 @@ def get_test_model_id(project_id, location):
 
     model_id = os.environ[env_var]
     full_path = f'projects/{project_id}/locations/{location}/models/{model_id}'
-    print(f'Using model: {full_path} ({location})')
     return full_path
 
 
@@ -931,11 +930,23 @@ class VertexAIPublisherModelTest(BaseTest):
     or if v1 has gained list support (see vertexai.py VertexAIPublisherModel for migration path).
     """
 
+    def test_publisher_resource_query(self):
+        """Test listing synthetic Vertex AI publishers from JSON data."""
+        policy = self.load_policy(
+            {'name': 'vertex-ai-publishers',
+             'resource': 'gcp.vertex-ai-publisher'})
+
+        resources = policy.run()
+
+        self.assertGreaterEqual(len(resources), 1)
+        for resource in resources:
+            self.assertRegex(resource.get('name', ''), r'^publishers/[^/]+$')
+
     def test_publisher_model_query(self):
         """Test listing Vertex AI publisher models."""
 
         # Use record_flight_data in functional mode, replay_flight_data otherwise
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-query', project_id=project_id)
@@ -949,14 +960,11 @@ class VertexAIPublisherModelTest(BaseTest):
 
         resources = policy.run()
 
-        # Basic assertions
-        self.assertIsNotNone(resources)
-        if len(resources) > 0:
-            self.assertIn('name', resources[0])
+        self.assertGreaterEqual(len(resources), 1)
 
     def test_publisher_model_filter_by_launch_stage(self):
         """Test filtering publisher models by launch stage."""
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-filter-launch-stage', project_id=project_id)
@@ -976,10 +984,6 @@ class VertexAIPublisherModelTest(BaseTest):
 
         resources = policy.run()
 
-        print(f'\n=== Found {len(resources)} GA models ===')
-        if resources:
-            print(f'First GA model: {resources[0].get("name")}')
-
         # Verify all returned models are GA
         self.assertIsNotNone(resources)
         for resource in resources:
@@ -988,7 +992,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_filter_by_name_pattern(self):
         """Test filtering publisher models by name pattern."""
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-filter-name', project_id=project_id)
@@ -1009,11 +1013,6 @@ class VertexAIPublisherModelTest(BaseTest):
 
         resources = policy.run()
 
-        print(f'\n=== Found {len(resources)} Gemini models ===')
-        if resources:
-            for r in resources[:3]:
-                print(f'  - {r.get("name")}')
-
         # Verify all returned models have 'gemini' in the name
         self.assertIsNotNone(resources)
         for resource in resources:
@@ -1022,7 +1021,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_field_validation(self):
         """Test that expected fields are present in publisher model resources."""
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-fields', project_id=project_id)
@@ -1043,10 +1042,8 @@ class VertexAIPublisherModelTest(BaseTest):
         expected_fields = ['name', 'versionId', 'launchStage', 'publisherModelTemplate']
         model = resources[0]
 
-        print(f'\n=== Field Validation for {model.get("name")} ===')
         for field in expected_fields:
             self.assertIn(field, model, f'Missing expected field: {field}')
-            print(f'  ✓ {field}: {model.get(field)}')
 
         # Validate field types
         self.assertIsInstance(model.get('name'), str)
@@ -1055,7 +1052,7 @@ class VertexAIPublisherModelTest(BaseTest):
 
     def test_publisher_model_multiple_filters(self):
         """Test combining multiple filters on publisher models."""
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-multi-filter', project_id=project_id)
@@ -1079,14 +1076,11 @@ class VertexAIPublisherModelTest(BaseTest):
 
         resources = policy.run()
 
-        print(f'\n=== Found {len(resources)} GA Gemini models ===')
-
         # Verify all returned models match both filters
         self.assertIsNotNone(resources)
         for resource in resources:
             self.assertEqual(resource.get('launchStage'), 'GA')
             self.assertIn('gemini', resource.get('name', '').lower())
-            print(f'  - {resource.get("name")} (v{resource.get("versionId")})')
 
     def test_publisher_model_non_google_publisher(self):
         """Test filtering for non-Gemini publisher models.
@@ -1095,7 +1089,7 @@ class VertexAIPublisherModelTest(BaseTest):
         The resource currently queries publishers/google, which may include models
         from various publishers in the Google catalog.
         """
-        if C7N_FUNCTIONAL:  # pragma: no cover
+        if C7N_FUNCTIONAL:
             project_id = get_default_project()
             session_factory = self.record_flight_data(
                 'vertex-ai-publisher-model-non-google', project_id=project_id)
@@ -1118,7 +1112,13 @@ class VertexAIPublisherModelTest(BaseTest):
 
         resources = policy.run()
 
-        print(f'\n=== Found {len(resources)} non-Gemini models ===')
-        if resources:
-            for r in resources[:5]:
-                print(f'  - {r.get("name")}')
+        self.assertIsNotNone(resources)
+        self.assertGreater(
+            len(resources), 0, 'Expected at least one non-Gemini publisher model')
+
+        for resource in resources:
+            self.assertNotIn(
+                'gemini',
+                resource.get('name', '').lower(),
+                f'Model {resource.get("name")} unexpectedly matched Gemini pattern'
+            )

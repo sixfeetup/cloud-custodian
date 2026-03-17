@@ -14,6 +14,7 @@ from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, 
 
 REGION_DATA_PATH = Path(__file__).parent.parent / 'regions.json'
 VERTEXAI_REGION_DATA_PATH = Path(__file__).parent.parent / 'vertexai_regions.json'
+VERTEXAI_PUBLISHER_DATA_PATH = Path(__file__).parent.parent / 'vertexai_publishers.json'
 
 
 @resources.register('vertex-ai-location')
@@ -597,28 +598,23 @@ class VertexAIBatchPredictionJobStop(MethodAction):
             self.process_resource_set(location_client, model, location_resources)
 
 
-# Known Vertex AI Model Garden publishers
-# This list is maintained based on available publishers in the Model Garden
-# Add new publishers as they become available
-VERTEX_AI_PUBLISHERS = [
-    'google',
-    'anthropic',
-    'meta',
-    'mistralai',
-    'cohere',
-    # Add more publishers as they become available in Model Garden
-]
+def get_vertex_ai_publishers():
+    """Load Vertex AI Model Garden publishers from generated JSON data."""
+    with open(VERTEXAI_PUBLISHER_DATA_PATH) as fh:
+        publishers = json.load(fh)
+
+    return publishers
 
 
 @resources.register('vertex-ai-publisher')
 class VertexAIPublisher(QueryResourceManager):
     """GCP Resource for Vertex AI Model Garden Publishers
 
-    This resource provides a list of known publishers in Vertex AI Model Garden.
+    This resource provides a list of publishers in Vertex AI Model Garden.
     It serves as a parent resource for vertex-ai-publisher-model.
 
-    Note: This is a synthetic resource based on known publishers, not an API endpoint.
-    The list of publishers is maintained in the VERTEX_AI_PUBLISHERS constant.
+    Note: This is a synthetic resource based on generated publisher data,
+    loaded from vertexai_publishers.json.
 
     :example: List all Vertex AI publishers
 
@@ -641,8 +637,7 @@ class VertexAIPublisher(QueryResourceManager):
 
     def resources(self, query=None):
         """Return synthetic publisher resources."""
-        # Create synthetic resources for each known publisher
-        return [{'name': f'publishers/{publisher}'} for publisher in VERTEX_AI_PUBLISHERS]
+        return [{'name': f'publishers/{publisher}'} for publisher in get_vertex_ai_publishers()]
 
 
 @resources.register('vertex-ai-publisher-model')
@@ -652,7 +647,7 @@ class VertexAIPublisherModel(ChildResourceManager):
     https://cloud.google.com/vertex-ai/docs/reference/rest/v1beta1/publishers.models
 
     This resource provides access to the Vertex AI Model Garden catalog of
-    publisher models from all known publishers (Google, Anthropic, Meta, etc.).
+    publisher models from all configured publishers (Google, Anthropic, Meta, etc.).
 
     Note: Uses v1beta1 API because v1 does not support list operations.
     As of 2026-03, the v1 API only has 'get' method for publishers.models.
