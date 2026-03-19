@@ -1,0 +1,800 @@
+{
+    "version": 1,
+    "interactions": [
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.CognitiveServices/accounts?api-version=2017-04-18",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: 92E0429172A14314A58FB055F9EFB156 Ref B: CHI261140509060 Ref C: 2026-03-19T21:37:24Z"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:24 GMT"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-envoy-upstream-service-time": [
+                        "25"
+                    ],
+                    "content-length": [
+                        "3990"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "3c4768d7-b300-4cbc-b7cd-a5ce7aad6496"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074",
+                                "name": "cctestaifoundry093541471074",
+                                "type": "Microsoft.CognitiveServices/accounts",
+                                "etag": "\"1f006e81-0000-0100-0000-69bc6c410000\"",
+                                "location": "eastus",
+                                "sku": {
+                                    "name": "S0"
+                                },
+                                "kind": "AIServices",
+                                "properties": {
+                                    "endpoint": "https://cctestaifoundry093541471074.cognitiveservices.azure.com/",
+                                    "provisioningState": "Succeeded",
+                                    "internalId": "233ef8aae5ab4710acf96524ed64091c",
+                                    "dateCreated": "2026-03-19T21:35:01.7780743Z",
+                                    "apiProperties": {
+                                        "qnaAzureSearchEndpointKey": null
+                                    },
+                                    "isMigrated": false,
+                                    "customSubDomainName": "cctestaifoundry093541471074",
+                                    "privateEndpointConnections": [],
+                                    "publicNetworkAccess": "Enabled",
+                                    "capabilities": [
+                                        {
+                                            "name": "VirtualNetworks"
+                                        },
+                                        {
+                                            "name": "EnabledApimVnet",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "TrustedServices",
+                                            "value": "Microsoft.CognitiveServices,Microsoft.MachineLearningServices,Microsoft.Search,Microsoft.CognitiveServices,Microsoft.MachineLearningServices,Microsoft.Search,Microsoft.VideoIndexer,Microsoft.CognitiveServices"
+                                        },
+                                        {
+                                            "name": "CustomerManagedKey"
+                                        },
+                                        {
+                                            "name": "CustomerManagedStorage"
+                                        },
+                                        {
+                                            "name": "MaxFineTuneCount",
+                                            "value": "500"
+                                        },
+                                        {
+                                            "name": "MaxRunningFineTuneCount",
+                                            "value": "3"
+                                        },
+                                        {
+                                            "name": "MaxUserFileCount",
+                                            "value": "100"
+                                        },
+                                        {
+                                            "name": "MaxTrainingFileSize",
+                                            "value": "512000000"
+                                        },
+                                        {
+                                            "name": "MaxUserFileImportDurationInHours",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "name": "MaxFineTuneJobDurationInHours",
+                                            "value": "720"
+                                        },
+                                        {
+                                            "name": "MaxEvaluationRunDurationInHours",
+                                            "value": "5"
+                                        },
+                                        {
+                                            "name": "MaxRunningEvaluationCount",
+                                            "value": "5"
+                                        },
+                                        {
+                                            "name": "NetworkSecurityPerimeter"
+                                        },
+                                        {
+                                            "name": "useEndpointRateLimiter",
+                                            "value": "Enabled"
+                                        },
+                                        {
+                                            "name": "MaxRunningGlobalStandardFineTuneCount",
+                                            "value": "3"
+                                        },
+                                        {
+                                            "name": "RaiMonitor"
+                                        },
+                                        {
+                                            "name": "quotaRefundsEnabled",
+                                            "value": "false"
+                                        },
+                                        {
+                                            "name": "audio",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "imageGenerations",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "chatCompletion",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "fineTune",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "imageEdits",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "Container",
+                                            "value": "ContentSafety.TextAnalyze,ContentSafety.ImageAnalyze,ContentSafety.Jailbreak,ContentSafety.jailbreakanalyze,ComputerVision.ComputerVisionRead,ComputerVision.ocr,ComputerVision.readfile,ComputerVision.readfiledsd,ComputerVision.recognizetext,ComputerVision.ComputerVision,ComputerVision.ocrlayoutworker,ComputerVision.ocrcontroller,ComputerVision.ocrdispatcher,ComputerVision.ocrbillingprocessor,ComputerVision.ocranalyzer,ComputerVision.ocrpagesplitter,ComputerVision.ocrapi,ComputerVision.ocrengineworker,FormRecognizer.Forms,FormRecognizer.FormRecognizerCustomSupervised,FormRecognizer.FormRecognizerLayout,FormRecognizer.formrecognizerreadlayout,FormRecognizer.FormRecognizerId,FormRecognizer.FormRecognizerInvoice,FormRecognizer.FormRecognizerReceipt,FormRecognizer.FormRecognizerBusinessCard,FormRecognizer.FormRecognizerRead,FormRecognizer.FormRecognizerKvp,SpeechServices.CustomSpeechToText,SpeechServices.NeuralTextToSpeechOnPrem,SpeechServices.DPP,SpeechServices.SpeechToText,SpeechServices.ctsdiarizer,SpeechServices.diarization,TextAnalytics.Healthcare,TextAnalytics.EntityV3,TextAnalytics.EntityONNX,TextAnalytics.Keyphrase,TextAnalytics.KeyphraseV2,TextAnalytics.KeyPhraseONNX,TextAnalytics.LanguageFastText,TextAnalytics.Language,TextAnalytics.LanguageV2,TextAnalytics.Sentiment,TextAnalytics.SentimentV2,TextAnalytics.SentimentV3,TextAnalytics.SentimentV3Preview,TextAnalytics.SentimentONNX,TextAnalytics.CustomNER,TextAnalytics.textanalyticsdispatcher,TextAnalytics.SummarizationFrontend,TextAnalytics.SummarizationWorker,TextAnalytics.PII,TextAnalytics.CluRuntime,TextAnalytics.CluContainer,TextAnalytics.NER"
+                                        },
+                                        {
+                                            "name": "DynamicThrottling"
+                                        },
+                                        {
+                                            "name": "CommitmentPlan"
+                                        },
+                                        {
+                                            "name": "Cloud",
+                                            "value": "TextAnalytics.Healthcare,TextAnalytics.Analyze,QuestionAnswer.AllApis,LanguageService.QuestionAnsweringApis"
+                                        }
+                                    ],
+                                    "armFeatures": []
+                                },
+                                "identity": {
+                                    "principalId": "7d0babcf-89a1-4d37-b921-e368e8431456",
+                                    "tenantId": "00000000-0000-0000-0000-000000000003",
+                                    "type": "SystemAssigned"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/resources?$filter=resourceType%20eq%20%27Microsoft.CognitiveServices%2Faccounts%2Fprojects%27&api-version=2025-03-01",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: 92D9BC887E4942BF92279D089D5415D6 Ref B: CH1AA2020620027 Ref C: 2026-03-19T21:37:25Z"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:24 GMT"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "771"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project",
+                                "name": "cctestaifoundry093541471074/cctest-ai-foundry-application-project",
+                                "type": "Microsoft.CognitiveServices/accounts/projects",
+                                "kind": "AIServices",
+                                "location": "eastus",
+                                "identity": {
+                                    "principalId": "a109abc0-3c0d-4e7a-8b5a-3f035fde790d",
+                                    "tenantId": "00000000-0000-0000-0000-000000000003",
+                                    "type": "SystemAssigned"
+                                },
+                                "systemData": {
+                                    "createdBy": "kcm0790@gmail.com",
+                                    "createdByType": "User",
+                                    "createdAt": "2026-03-19T21:35:21.165986Z",
+                                    "lastModifiedBy": "kcm0790@gmail.com",
+                                    "lastModifiedByType": "User",
+                                    "lastModifiedAt": "2026-03-19T21:35:21.165986Z"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project/applications?api-version=2025-10-01-preview",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: 226C7B52CF3B49D9BDB9D596B8B64129 Ref B: CHI261140505025 Ref C: 2026-03-19T21:37:25Z"
+                    ],
+                    "azureml-served-by-cluster": [
+                        "vienna-eastus-01"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-response-type": [
+                        "standard"
+                    ],
+                    "x-ms-operation-identifier": [
+                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/southcentralus/93dfe6c0-ed5b-4201-a79f-321a84093eb4"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-request-time": [
+                        "0.192"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:25 GMT"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "request-context": [
+                        "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
+                    ],
+                    "content-length": [
+                        "1933"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project/applications/cctest-aifoundry-application",
+                                "name": "cctest-aifoundry-application",
+                                "type": "Microsoft.CognitiveServices/accounts/projects/applications",
+                                "properties": {
+                                    "description": null,
+                                    "tags": {
+                                        "environment": "test",
+                                        "owner": "cloud-custodian"
+                                    },
+                                    "properties": null,
+                                    "applicationId": "a3cdac5a-aace-47b8-b92d-432935b005c4",
+                                    "displayName": "cctest-aifoundry-application",
+                                    "baseUrl": "https://cctestaifoundry093541471074.services.ai.azure.com/api/projects/cctest-ai-foundry-application-project/applications/cctest-aifoundry-application",
+                                    "agents": [
+                                        {
+                                            "agentId": "azureml://subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/workspaces/cctestaifoundry093541471074@cctest-ai-foundry-application-project@AML/applications/cctest-aifoundry-application/agents/cctest-aifoundry-agent-093541471074",
+                                            "agentName": "cctest-aifoundry-agent-093541471074"
+                                        }
+                                    ],
+                                    "agentIdentityBlueprint": {
+                                        "kind": "AgentBlueprint",
+                                        "type": "System",
+                                        "clientId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "principalId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "tenantId": "00000000-0000-0000-0000-000000000003",
+                                        "subject": null,
+                                        "provisioningState": "Creating"
+                                    },
+                                    "defaultInstanceIdentity": {
+                                        "kind": "AgentInstance",
+                                        "type": "System",
+                                        "clientId": "6fbb11dd-5273-4676-8d1a-ba9a84917dda",
+                                        "principalId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "tenantId": "00000000-0000-0000-0000-000000000003",
+                                        "subject": null,
+                                        "provisioningState": "Creating"
+                                    },
+                                    "authorizationPolicy": {
+                                        "authorizationScheme": "Default"
+                                    },
+                                    "trafficRoutingPolicy": {
+                                        "protocol": "FixedRatio",
+                                        "rules": [
+                                            {
+                                                "ruleId": "default",
+                                                "description": "Default rule routing all traffic to the first deployment",
+                                                "deploymentId": "",
+                                                "trafficPercentage": 100
+                                            }
+                                        ]
+                                    },
+                                    "provisioningState": "Succeeded",
+                                    "isEnabled": true
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.CognitiveServices/accounts?api-version=2017-04-18",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: 08EF723FF5E44102A99EA1CDF1278F87 Ref B: CHI261140502023 Ref C: 2026-03-19T21:37:26Z"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:25 GMT"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-envoy-upstream-service-time": [
+                        "30"
+                    ],
+                    "content-length": [
+                        "3990"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "a98f45d4-4743-44a8-9c4e-66e3598ee19b"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074",
+                                "name": "cctestaifoundry093541471074",
+                                "type": "Microsoft.CognitiveServices/accounts",
+                                "etag": "\"1f006e81-0000-0100-0000-69bc6c410000\"",
+                                "location": "eastus",
+                                "sku": {
+                                    "name": "S0"
+                                },
+                                "kind": "AIServices",
+                                "properties": {
+                                    "endpoint": "https://cctestaifoundry093541471074.cognitiveservices.azure.com/",
+                                    "provisioningState": "Succeeded",
+                                    "internalId": "233ef8aae5ab4710acf96524ed64091c",
+                                    "dateCreated": "2026-03-19T21:35:01.7780743Z",
+                                    "apiProperties": {
+                                        "qnaAzureSearchEndpointKey": null
+                                    },
+                                    "isMigrated": false,
+                                    "customSubDomainName": "cctestaifoundry093541471074",
+                                    "privateEndpointConnections": [],
+                                    "publicNetworkAccess": "Enabled",
+                                    "capabilities": [
+                                        {
+                                            "name": "VirtualNetworks"
+                                        },
+                                        {
+                                            "name": "EnabledApimVnet",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "TrustedServices",
+                                            "value": "Microsoft.CognitiveServices,Microsoft.MachineLearningServices,Microsoft.Search,Microsoft.CognitiveServices,Microsoft.MachineLearningServices,Microsoft.Search,Microsoft.VideoIndexer,Microsoft.CognitiveServices"
+                                        },
+                                        {
+                                            "name": "CustomerManagedKey"
+                                        },
+                                        {
+                                            "name": "CustomerManagedStorage"
+                                        },
+                                        {
+                                            "name": "MaxFineTuneCount",
+                                            "value": "500"
+                                        },
+                                        {
+                                            "name": "MaxRunningFineTuneCount",
+                                            "value": "3"
+                                        },
+                                        {
+                                            "name": "MaxUserFileCount",
+                                            "value": "100"
+                                        },
+                                        {
+                                            "name": "MaxTrainingFileSize",
+                                            "value": "512000000"
+                                        },
+                                        {
+                                            "name": "MaxUserFileImportDurationInHours",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "name": "MaxFineTuneJobDurationInHours",
+                                            "value": "720"
+                                        },
+                                        {
+                                            "name": "MaxEvaluationRunDurationInHours",
+                                            "value": "5"
+                                        },
+                                        {
+                                            "name": "MaxRunningEvaluationCount",
+                                            "value": "5"
+                                        },
+                                        {
+                                            "name": "NetworkSecurityPerimeter"
+                                        },
+                                        {
+                                            "name": "useEndpointRateLimiter",
+                                            "value": "Enabled"
+                                        },
+                                        {
+                                            "name": "MaxRunningGlobalStandardFineTuneCount",
+                                            "value": "3"
+                                        },
+                                        {
+                                            "name": "RaiMonitor"
+                                        },
+                                        {
+                                            "name": "quotaRefundsEnabled",
+                                            "value": "false"
+                                        },
+                                        {
+                                            "name": "audio",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "imageGenerations",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "chatCompletion",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "fineTune",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "imageEdits",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "name": "Container",
+                                            "value": "ContentSafety.TextAnalyze,ContentSafety.ImageAnalyze,ContentSafety.Jailbreak,ContentSafety.jailbreakanalyze,ComputerVision.ComputerVisionRead,ComputerVision.ocr,ComputerVision.readfile,ComputerVision.readfiledsd,ComputerVision.recognizetext,ComputerVision.ComputerVision,ComputerVision.ocrlayoutworker,ComputerVision.ocrcontroller,ComputerVision.ocrdispatcher,ComputerVision.ocrbillingprocessor,ComputerVision.ocranalyzer,ComputerVision.ocrpagesplitter,ComputerVision.ocrapi,ComputerVision.ocrengineworker,FormRecognizer.Forms,FormRecognizer.FormRecognizerCustomSupervised,FormRecognizer.FormRecognizerLayout,FormRecognizer.formrecognizerreadlayout,FormRecognizer.FormRecognizerId,FormRecognizer.FormRecognizerInvoice,FormRecognizer.FormRecognizerReceipt,FormRecognizer.FormRecognizerBusinessCard,FormRecognizer.FormRecognizerRead,FormRecognizer.FormRecognizerKvp,SpeechServices.CustomSpeechToText,SpeechServices.NeuralTextToSpeechOnPrem,SpeechServices.DPP,SpeechServices.SpeechToText,SpeechServices.ctsdiarizer,SpeechServices.diarization,TextAnalytics.Healthcare,TextAnalytics.EntityV3,TextAnalytics.EntityONNX,TextAnalytics.Keyphrase,TextAnalytics.KeyphraseV2,TextAnalytics.KeyPhraseONNX,TextAnalytics.LanguageFastText,TextAnalytics.Language,TextAnalytics.LanguageV2,TextAnalytics.Sentiment,TextAnalytics.SentimentV2,TextAnalytics.SentimentV3,TextAnalytics.SentimentV3Preview,TextAnalytics.SentimentONNX,TextAnalytics.CustomNER,TextAnalytics.textanalyticsdispatcher,TextAnalytics.SummarizationFrontend,TextAnalytics.SummarizationWorker,TextAnalytics.PII,TextAnalytics.CluRuntime,TextAnalytics.CluContainer,TextAnalytics.NER"
+                                        },
+                                        {
+                                            "name": "DynamicThrottling"
+                                        },
+                                        {
+                                            "name": "CommitmentPlan"
+                                        },
+                                        {
+                                            "name": "Cloud",
+                                            "value": "TextAnalytics.Healthcare,TextAnalytics.Analyze,QuestionAnswer.AllApis,LanguageService.QuestionAnsweringApis"
+                                        }
+                                    ],
+                                    "armFeatures": []
+                                },
+                                "identity": {
+                                    "principalId": "7d0babcf-89a1-4d37-b921-e368e8431456",
+                                    "tenantId": "00000000-0000-0000-0000-000000000003",
+                                    "type": "SystemAssigned"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/resources?$filter=resourceType%20eq%20%27Microsoft.CognitiveServices%2Faccounts%2Fprojects%27&api-version=2025-03-01",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: ABBC9BBBCF9F4776B558CD6A35BA4BAC Ref B: CH1AA2020610037 Ref C: 2026-03-19T21:37:26Z"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:26 GMT"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "771"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project",
+                                "name": "cctestaifoundry093541471074/cctest-ai-foundry-application-project",
+                                "type": "Microsoft.CognitiveServices/accounts/projects",
+                                "kind": "AIServices",
+                                "location": "eastus",
+                                "identity": {
+                                    "principalId": "a109abc0-3c0d-4e7a-8b5a-3f035fde790d",
+                                    "tenantId": "00000000-0000-0000-0000-000000000003",
+                                    "type": "SystemAssigned"
+                                },
+                                "systemData": {
+                                    "createdBy": "kcm0790@gmail.com",
+                                    "createdByType": "User",
+                                    "createdAt": "2026-03-19T21:35:21.165986Z",
+                                    "lastModifiedBy": "kcm0790@gmail.com",
+                                    "lastModifiedByType": "User",
+                                    "lastModifiedAt": "2026-03-19T21:35:21.165986Z"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project/applications?api-version=2025-10-01-preview",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-msedge-ref": [
+                        "Ref A: 738F0E254A3D487D9EAEDA2D15B59A65 Ref B: CH1AA2020603039 Ref C: 2026-03-19T21:37:27Z"
+                    ],
+                    "azureml-served-by-cluster": [
+                        "vienna-eastus-02"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-response-type": [
+                        "standard"
+                    ],
+                    "x-ms-operation-identifier": [
+                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/southcentralus/c7408662-3d74-4f64-8820-be8b72b23988"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-request-time": [
+                        "0.167"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:26 GMT"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "request-context": [
+                        "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
+                    ],
+                    "content-length": [
+                        "1933"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/projects/cctest-ai-foundry-application-project/applications/cctest-aifoundry-application",
+                                "name": "cctest-aifoundry-application",
+                                "type": "Microsoft.CognitiveServices/accounts/projects/applications",
+                                "properties": {
+                                    "description": null,
+                                    "tags": {
+                                        "environment": "test",
+                                        "owner": "cloud-custodian"
+                                    },
+                                    "properties": null,
+                                    "applicationId": "a3cdac5a-aace-47b8-b92d-432935b005c4",
+                                    "displayName": "cctest-aifoundry-application",
+                                    "baseUrl": "https://cctestaifoundry093541471074.services.ai.azure.com/api/projects/cctest-ai-foundry-application-project/applications/cctest-aifoundry-application",
+                                    "agents": [
+                                        {
+                                            "agentId": "azureml://subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/workspaces/cctestaifoundry093541471074@cctest-ai-foundry-application-project@AML/applications/cctest-aifoundry-application/agents/cctest-aifoundry-agent-093541471074",
+                                            "agentName": "cctest-aifoundry-agent-093541471074"
+                                        }
+                                    ],
+                                    "agentIdentityBlueprint": {
+                                        "kind": "AgentBlueprint",
+                                        "type": "System",
+                                        "clientId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "principalId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "tenantId": "00000000-0000-0000-0000-000000000003",
+                                        "subject": null,
+                                        "provisioningState": "Creating"
+                                    },
+                                    "defaultInstanceIdentity": {
+                                        "kind": "AgentInstance",
+                                        "type": "System",
+                                        "clientId": "6fbb11dd-5273-4676-8d1a-ba9a84917dda",
+                                        "principalId": "abccc88b-7ead-451a-83b8-a1d2d9e747e4",
+                                        "tenantId": "00000000-0000-0000-0000-000000000003",
+                                        "subject": null,
+                                        "provisioningState": "Creating"
+                                    },
+                                    "authorizationPolicy": {
+                                        "authorizationScheme": "Default"
+                                    },
+                                    "trafficRoutingPolicy": {
+                                        "protocol": "FixedRatio",
+                                        "rules": [
+                                            {
+                                                "ruleId": "default",
+                                                "description": "Default rule routing all traffic to the first deployment",
+                                                "deploymentId": "",
+                                                "trafficPercentage": 100
+                                            }
+                                        ]
+                                    },
+                                    "provisioningState": "Succeeded",
+                                    "isEnabled": true
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://cctestaifoundry093541471074.services.ai.azure.com/api/projects/cctest-ai-foundry-application-project/agents?api-version=v1",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "x-ms-region": [
+                        "East US"
+                    ],
+                    "x-request-id": [
+                        "3c2c7f9778386ff4f653f57a813aa359"
+                    ],
+                    "date": [
+                        "Thu, 19 Mar 2026 21:37:28 GMT"
+                    ],
+                    "azureml-served-by-cluster": [
+                        "hyena-eastus-01"
+                    ],
+                    "apim-request-id": [
+                        "33442f2f-e94d-41ff-b7f0-4b37ccaf9b66"
+                    ],
+                    "request-context": [
+                        "appId="
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-ms-response-type": [
+                        "standard"
+                    ],
+                    "api-supported-versions": [
+                        "1.0,2025-05-15-preview,2025-11-15-preview"
+                    ],
+                    "content-length": [
+                        "899"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "data": [
+                            {
+                                "object": "agent",
+                                "id": "cctest-aifoundry-agent-093541471074",
+                                "name": "cctest-aifoundry-agent-093541471074",
+                                "versions": {
+                                    "latest": {
+                                        "metadata": {},
+                                        "object": "agent.version",
+                                        "id": "cctest-aifoundry-agent-093541471074:1",
+                                        "name": "cctest-aifoundry-agent-093541471074",
+                                        "version": "1",
+                                        "description": "Fixture agent for Cloud Custodian AI Foundry application tests.",
+                                        "created_at": 1773956140,
+                                        "definition": {
+                                            "kind": "prompt",
+                                            "model": "cctest-gpt4o-mini",
+                                            "instructions": "Fixture agent for Cloud Custodian AI Foundry application tests."
+                                        }
+                                    }
+                                }
+                            }
+                        ],
+                        "first_id": "cctest-aifoundry-agent-093541471074",
+                        "last_id": "cctest-aifoundry-agent-093541471074",
+                        "has_more": false,
+                        "object": "list"
+                    }
+                }
+            }
+        }
+    ]
+}
