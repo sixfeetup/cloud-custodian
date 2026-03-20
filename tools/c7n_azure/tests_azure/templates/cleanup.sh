@@ -9,16 +9,19 @@ templateDirectory="$( cd "$( dirname "$0" )" && pwd )"
 if [[ $# -eq 0 ]]; then
     # If there is no arguments -- deploy everything
     cleanup_all=1
+    skip_list=()
+    cleanup_list=()
 else
     if [[ $1 == "--skip" ]]; then
         # If we see option '--skip' -- deploy everything except for specific templates
         cleanup_all=1
-        skip_list="${@:2}"
-        echo $skip_list
+        skip_list=("${@:2}")
+        cleanup_list=()
     else
         # If there is no '--skip', deploy specific templates
         cleanup_all=0
-        cleanup_list="${@:1}"
+        cleanup_list=("${@:1}")
+        skip_list=()
     fi
 fi
 

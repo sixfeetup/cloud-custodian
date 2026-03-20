@@ -38,15 +38,19 @@ fi
 if [[ $# -eq 0 ]]; then
     # If there is no arguments -- deploy everything
     deploy_all=1
+    skip_list=()
+    deploy_list=()
 else
     if [[ $1 == "--skip" ]]; then
         # If we see option '--skip' -- deploy everything except for specific templates
         deploy_all=1
-        skip_list="${@:2}"
+        skip_list=("${@:2}")
+        deploy_list=()
     else
         # If there is no '--skip', deploy specific templates
         deploy_all=0
-        deploy_list="${@:1}"
+        deploy_list=("${@:1}")
+        skip_list=()
     fi
 fi
 
