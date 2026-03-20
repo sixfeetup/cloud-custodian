@@ -5,7 +5,6 @@ from gcp_common import BaseTest, event_data
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalAddress
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalForwardingRule
 from c7n_gcp.resources.loadbalancer import LoadBalancingForwardingRule
-from testing import effective_project_id
 
 
 class LoadBalancingAddressTest(BaseTest):
@@ -53,7 +52,7 @@ class LoadBalancingAddressTest(BaseTest):
 
     def test_loadbalancer_address_delete(self):
         region = 'us-central1'
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('lb-addresses-delete',
                                           project_id=project_id)
         policy = self.load_policy(
@@ -73,7 +72,7 @@ class LoadBalancingAddressTest(BaseTest):
         self.assertEqual(len(result['items']["regions/{}".format(region)]['addresses']), 0)
 
     def test_loadbalancer_address_filter_global_addresses(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         region = 'us-central1'
         factory = self.replay_flight_data('lb-addresses-global-addresses',
                                           project_id=project_id)
@@ -268,7 +267,7 @@ class LoadBalancingSslPolicyTest(BaseTest):
         )
 
     def test_loadbalancer_ssl_policy_delete(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         session_factory = self.replay_flight_data('lb-ssl-policy-delete',
                                                   project_id=project_id)
         base_policy = {'name': 'lb-ssl-policy-delete',
@@ -427,7 +426,7 @@ class LoadBalancingBackendBucketTest(BaseTest):
         )
 
     def test_loadbalancer_backend_bucket_delete(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         session_factory = self.replay_flight_data('lb-backend-buckets-delete',
                                                   project_id=project_id)
         base_policy = {'name': 'lb-addresses-delete',

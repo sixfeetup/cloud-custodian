@@ -2,12 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 from gcp_common import BaseTest, event_data
 from pytest_terraform import terraform
-from testing import effective_project_id
 
 
 class KmsKeyRingTest(BaseTest):
     def test_kms_keyring_query_unspecified_location(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         resource_name = 'projects/{}/locations/{}/keyRings/{}'.\
@@ -30,7 +29,7 @@ class KmsKeyRingTest(BaseTest):
         )
 
     def test_kms_keyring_query_array(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name_1 = 'asia-east1'
         location_name_2 = 'us-central1'
         keyring_name_1 = 'cloud-custodian-asia'
@@ -59,7 +58,7 @@ class KmsKeyRingTest(BaseTest):
         )
 
     def test_kms_keyring_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         resource_name = 'projects/{}/locations/{}/keyRings/{}'.\
@@ -82,7 +81,7 @@ class KmsKeyRingTest(BaseTest):
         )
 
     def test_kms_keyring_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         resource_name = 'projects/{}/locations/{}/keyRings/{}'. \
@@ -111,7 +110,7 @@ class KmsKeyRingTest(BaseTest):
         )
 
     def test_kms_keyring_filter_iam_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('kms-keyring-filter-iam', project_id=project_id)
         p = self.load_policy({
             'name': 'kms-keyring-filter-iam',
@@ -133,7 +132,7 @@ class KmsKeyRingTest(BaseTest):
 
 class KmsCryptoKeyTest(BaseTest):
     def test_kms_cryptokey_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         cryptokey_name = 'cloud-custodian'
@@ -170,7 +169,7 @@ class KmsCryptoKeyTest(BaseTest):
         )
 
     def test_kms_cryptokey_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         cryptokey_name = 'cloud-custodian'
@@ -265,7 +264,7 @@ class KmsCryptoKeyTest(BaseTest):
 
 class KmsCryptoKeyVersionTest(BaseTest):
     def test_kms_cryptokey_version_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         cryptokey_name = 'cloud-custodian'
@@ -306,7 +305,7 @@ class KmsCryptoKeyVersionTest(BaseTest):
         )
 
     def test_kms_cryptokey_version_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         location_name = 'us-central1'
         keyring_name = 'cloud-custodian'
         cryptokey_name = 'cloud-custodian'

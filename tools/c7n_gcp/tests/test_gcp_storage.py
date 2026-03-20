@@ -5,7 +5,6 @@ import time
 
 from gcp_common import BaseTest
 from pytest_terraform import terraform
-from testing import effective_project_id
 
 
 @terraform("bucket_set_iam_policy")
@@ -191,7 +190,7 @@ def test_bucket_set_iam_policy_remove_nonexistent_is_noop(test, bucket_set_iam_p
 class BucketTest(BaseTest):
 
     def test_bucket_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('bucket-query', project_id)
         p = self.load_policy(
             {'name': 'all-buckets',
@@ -210,7 +209,7 @@ class BucketTest(BaseTest):
         )
 
     def test_bucket_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         bucket_name = "staging.cloud-custodian.appspot.com"
         factory = self.replay_flight_data(
             'bucket-get-resource', project_id)
@@ -232,7 +231,7 @@ class BucketTest(BaseTest):
         )
 
     def test_enable_uniform_bucket_level_access(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         bucket_name = 'c7n-dev-test'
         factory = self.replay_flight_data(
             'bucket-uniform-bucket-access', project_id)
@@ -283,7 +282,7 @@ class BucketTest(BaseTest):
             self.assertTrue('allUsers' in members or 'allAuthenticatedUsers' in members)
 
     def test_bucket_scc_mode(self):
-        project_id = "cloud-custodian"
+        project_id = self.project_id()
         bucket_name = "staging.cloud-custodian.appspot.com"
         factory = self.replay_flight_data("bucket-get-resource", project_id)
         p = self.load_policy(

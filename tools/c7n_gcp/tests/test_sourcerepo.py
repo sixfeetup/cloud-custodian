@@ -3,13 +3,12 @@
 
 from gcp_common import BaseTest
 
-from testing import effective_project_id
 
 
 class SourceRepoTest(BaseTest):
 
     def test_sourcerepo_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         repo_name = 'projects/cloud-custodian/repos/test-repo'
         session_factory = self.replay_flight_data(
             'sourcerepo-query', project_id=project_id)
