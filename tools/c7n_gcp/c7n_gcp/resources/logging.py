@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from c7n.utils import local_session, type_schema
 from c7n.filters.core import ValueFilter
+from c7n.exceptions import PolicyValidationError
 
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
@@ -95,6 +96,84 @@ class DeletePubSubTopic(MethodAction):
         session = local_session(self.manager.session_factory)
         project = session.get_default_project()
         return {'sinkName': 'projects/{}/sinks/{}'.format(project, r['name'])}
+
+
+@resources.register('log-bucket')
+class LogBucket(QueryResourceManager):
+    """
+    https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.locations.buckets
+    """
+
+    class resource_type(TypeInfo):
+        service = 'logging'
+        version = 'v2'
+        component = 'projects.locations.buckets'
+        enum_spec = ('list', 'buckets[]', None)
+        scope_key = 'parent'
+        scope_template = 'projects/{}/locations/-'
+        name = id = 'resourceName'
+        default_report_fields = [
+            "name", "description", "retentionDays", "createTime", "locked"]
+        asset_type = "logging.googleapis.com/LogBucket"
+        permissions = ('logging.buckets.list',)
+        urn_component = "bucket"
+
+        @staticmethod
+        def get(client, resource_info):
+            name = resource_info['resourceName']
+            return client.execute_query('get', {'name': name})
+
+
+@LogBucket.action_registry.register('update')
+class UpdateLogBucket(MethodAction):
+    """Update editable fields for a Cloud Logging bucket.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-log-bucket-update
+            resource: gcp.log-bucket
+            filters:
+              - type: value
+                key: retentionDays
+                op: gt
+                value: 30
+            actions:
+              - type: update
+                retentionDays: 30
+                description: "30 day retention policy"
+    """
+
+    schema = type_schema(
+        'update',
+        aliases=['set-retention'],
+        retentionDays={'type': 'integer', 'minimum': 1},
+        description={'type': 'string'},
+        enableAnalytics={'type': 'boolean'},
+    )
+    method_spec = {'op': 'patch'}
+    method_perm = 'update'
+
+    editable_fields = ('retentionDays', 'description', 'enableAnalytics')
+
+    def validate(self):
+        data_fields = [k for k in self.data.keys() if k in self.editable_fields]
+        if not data_fields:
+            raise PolicyValidationError(
+                "update action requires at least one editable field: "
+                "retentionDays, description, enableAnalytics"
+            )
+        return self
+
+    def get_resource_params(self, model, resource):
+        body = {k: self.data[k] for k in self.editable_fields if k in self.data}
+        return {
+            'name': resource['name'],
+            'updateMask': ','.join(body.keys()),
+            'body': body,
+        }
 
 
 @resources.register('log-project-metric')

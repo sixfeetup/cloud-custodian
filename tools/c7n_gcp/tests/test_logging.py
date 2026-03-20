@@ -1,9 +1,128 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from c7n.testing import C7N_FUNCTIONAL
+from c7n.exceptions import PolicyValidationError
+from c7n_gcp.client import get_default_project
 from googleapiclient.errors import HttpError
+from pytest_terraform import terraform
 
 from gcp_common import BaseTest, event_data
+
+
+@terraform('log_bucket_get')
+def test_log_bucket_get(test, log_bucket_get):
+    log_bucket_name = (
+        log_bucket_get.resources['google_logging_project_bucket_config']['test']['id']
+    )
+
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'log-bucket-get-resource', project_id=project_id
+        )
+    else:
+        session_factory = test.replay_flight_data('log-bucket-get-resource')
+
+    policy = test.load_policy(
+        {'name': 'log-bucket-get', 'resource': 'gcp.log-bucket'},
+        session_factory=session_factory,
+    )
+    log_bucket_resource = policy.resource_manager.get_resource(
+        {'resourceName': log_bucket_name}
+    )
+    assert log_bucket_resource['name'] == log_bucket_name
+
+
+@terraform('log_bucket_filter_name')
+def test_log_bucket_filter_name(test, log_bucket_filter_name):
+    log_bucket_name = (
+        log_bucket_filter_name.resources['google_logging_project_bucket_config']['test']['id']
+    )
+
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'log-bucket-filter-retention', project_id=project_id
+        )
+    else:
+        session_factory = test.replay_flight_data('log-bucket-filter-retention')
+
+    policy = test.load_policy(
+        {
+            'name': 'log-bucket-filter-retention',
+            'resource': 'gcp.log-bucket',
+            'filters': [
+                {'type': 'value', 'key': 'name', 'value': log_bucket_name}
+            ],
+        },
+        session_factory=session_factory,
+    )
+    resources = policy.run()
+
+    assert len(resources) == 1
+    assert resources[0]['name'] == log_bucket_name
+
+
+@terraform('log_bucket_set_retention')
+def test_log_bucket_set_retention(test, log_bucket_set_retention):
+    log_bucket_name = (
+        log_bucket_set_retention.resources['google_logging_project_bucket_config']['test']['id']
+    )
+    retention_days = (
+        log_bucket_set_retention.resources['google_logging_project_bucket_config']['test']['retention_days']
+    )
+
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'log-bucket-set-retention', project_id=project_id
+        )
+    else:
+        session_factory = test.replay_flight_data('log-bucket-set-retention')
+
+    policy = test.load_policy(
+        {
+            'name': 'log-bucket-set-retention',
+            'resource': 'gcp.log-bucket',
+            'filters': [{'type': 'value', 'key': 'name', 'value': log_bucket_name}],
+            'actions': [{'type': 'update', 'retentionDays': 7}],
+        },
+        session_factory=session_factory,
+    )
+
+    resources = policy.run()
+    assert len(resources) == 1
+    assert resources[0]['name'] == log_bucket_name
+    assert resources[0]['retentionDays'] == retention_days
+
+    client = policy.resource_manager.get_client()
+    updated = client.execute_query('get', {'name': log_bucket_name})
+    assert updated['retentionDays'] == 7
+
+
+def test_log_bucket_update_requires_editable_fields(test):
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            'log-bucket-update-invalid', project_id=project_id
+        )
+    else:
+        session_factory = test.replay_flight_data('log-bucket-update-invalid')
+    with test.assertRaises(PolicyValidationError) as ctx:
+        test.load_policy(
+            {
+                'name': 'log-bucket-update-invalid',
+                'resource': 'gcp.log-bucket',
+                'actions': [{'type': 'update'}],
+            },
+            session_factory=session_factory,
+        )
+
+    test.assertIn(
+        'update action requires at least one editable field:',
+        str(ctx.exception),
+    )
 
 
 class LogProjectSinkTest(BaseTest):
