@@ -1198,15 +1198,6 @@ class PolicyMeta(BaseTest):
 
 
 class TestPolicyCollection(BaseTest):
-    @classmethod
-    def setUpClass(cls):
-        super(TestPolicyCollection, cls).setUpClass()
-        # Ensure AWS resources are registered for this class. These tests
-        # construct policies via PolicyCollection.from_data() and can fail with
-        # "Resource:aws.lambda not loaded" when executed in isolation or in
-        # orders that skip earlier tests which preload resources.
-        load_available()
-
     def test_expand_partitions(self):
         cfg = Config.empty(regions=["us-gov-west-1", "cn-north-1", "us-west-2"])
         original = policy.PolicyCollection.from_data(

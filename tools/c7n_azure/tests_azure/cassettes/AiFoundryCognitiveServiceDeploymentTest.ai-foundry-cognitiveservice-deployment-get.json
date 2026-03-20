@@ -14,32 +14,32 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-ms-original-request-ids": [
-                        "52e3c0b3-3e11-40c9-8f3e-f36023ba262f"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 01E4DB3AF6ED4976A6BA1B16B17D95D0 Ref B: CH1AA2020620029 Ref C: 2026-03-20T18:52:33Z"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "x-envoy-upstream-service-time": [
-                        "32"
-                    ],
-                    "date": [
-                        "Fri, 20 Mar 2026 18:52:33 GMT"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
                     "content-length": [
                         "43492"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
+                    ],
+                    "date": [
+                        "Fri, 20 Mar 2026 19:05:03 GMT"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "74333018-ef93-415c-9adf-81b799b0bf80"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-envoy-upstream-service-time": [
+                        "23"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: F46A257EBF5548BFBD208F252AA07BAF Ref B: CHI261140512031 Ref C: 2026-03-20T19:05:04Z"
                     ]
                 },
                 "body": {
@@ -49,7 +49,7 @@
                                 "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074",
                                 "name": "cctestaifoundry093541471074",
                                 "type": "Microsoft.CognitiveServices/accounts",
-                                "etag": "\"1f006e81-0000-0100-0000-69bc6c410000\"",
+                                "etag": "\"2700a840-0000-0100-0000-69bd980e0000\"",
                                 "location": "eastus",
                                 "sku": {
                                     "name": "S0"
@@ -2232,7 +2232,7 @@
                                 "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_cognitive-service-deployment/providers/Microsoft.CognitiveServices/accounts/cctestcogdeploy",
                                 "name": "cctestcogdeploy",
                                 "type": "Microsoft.CognitiveServices/accounts",
-                                "etag": "\"2700892e-0000-0100-0000-69bd951d0000\"",
+                                "etag": "\"2700bf4d-0000-0100-0000-69bd99e10000\"",
                                 "location": "eastus",
                                 "sku": {
                                     "name": "S0"
@@ -2240,6 +2240,7 @@
                                 "kind": "OpenAI",
                                 "properties": {
                                     "endpoint": "https://cctestcogdeploy.openai.azure.com/",
+                                    "provisioningState": "Succeeded",
                                     "internalId": "ec7ef3d35dcd40ae81124f33e161170a",
                                     "dateCreated": "2026-03-20T18:42:05.8451734Z",
                                     "apiProperties": {},
@@ -2538,8 +2539,7 @@
                                         "OpenAI Realtime API": "https://cctestcogdeploy.openai.azure.com/",
                                         "Token Service API": "https://cctestcogdeploy.openai.azure.com/",
                                         "Azure OpenAI Legacy API - Latest moniker": "https://cctestcogdeploy.openai.azure.com/"
-                                    },
-                                    "provisioningState": "Succeeded"
+                                    }
                                 },
                                 "systemData": {
                                     "createdBy": "kcm0790@gmail.com",
@@ -2547,7 +2547,7 @@
                                     "createdAt": "2026-03-20T18:42:05.1384444Z",
                                     "lastModifiedBy": "kcm0790@gmail.com",
                                     "lastModifiedByType": "User",
-                                    "lastModifiedAt": "2026-03-20T18:42:05.1384444Z"
+                                    "lastModifiedAt": "2026-03-20T19:02:24.0347693Z"
                                 }
                             }
                         ]
@@ -2568,90 +2568,37 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-msedge-ref": [
-                        "Ref A: 547257A6C2AD4673A24123CD4B1F4B56 Ref B: CHI261140506034 Ref C: 2026-03-20T18:52:33Z"
+                    "content-length": [
+                        "12"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-operation-identifier": [
+                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/southcentralus/1eae9151-4b8e-451c-b294-597f00523d14"
                     ],
                     "cache-control": [
                         "no-cache"
                     ],
-                    "x-ms-operation-identifier": [
-                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/southcentralus/db09c5f6-2336-4ce9-892d-09b083036d6c"
-                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
-                    ],
-                    "x-envoy-upstream-service-time": [
-                        "21"
-                    ],
-                    "date": [
-                        "Fri, 20 Mar 2026 18:52:33 GMT"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "content-length": [
-                        "1221"
+                    "x-msedge-ref": [
+                        "Ref A: C7D99AD031E649859279986535139A68 Ref B: CHI261140513023 Ref C: 2026-03-20T19:05:04Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "x-envoy-upstream-service-time": [
+                        "18"
+                    ],
+                    "date": [
+                        "Fri, 20 Mar 2026 19:05:04 GMT"
                     ]
                 },
                 "body": {
                     "data": {
-                        "value": [
-                            {
-                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_ai-foundry-application/providers/Microsoft.CognitiveServices/accounts/cctestaifoundry093541471074/deployments/cctest-gpt4o-mini",
-                                "type": "Microsoft.CognitiveServices/accounts/deployments",
-                                "name": "cctest-gpt4o-mini",
-                                "sku": {
-                                    "name": "Standard",
-                                    "capacity": 1
-                                },
-                                "properties": {
-                                    "model": {
-                                        "format": "OpenAI",
-                                        "name": "gpt-4o-mini",
-                                        "version": "2024-07-18"
-                                    },
-                                    "versionUpgradeOption": "OnceNewDefaultVersionAvailable",
-                                    "currentCapacity": 1,
-                                    "capabilities": {
-                                        "area": "US",
-                                        "chatCompletion": "true",
-                                        "jsonObjectResponse": "true",
-                                        "maxContextToken": "128000",
-                                        "maxOutputToken": "16384",
-                                        "assistants": "true",
-                                        "responses": "true",
-                                        "agentsV2": "true",
-                                        "_H_azureml-throttling-key": "oai-e7e03403afce44e4bae9c3d7d690665c"
-                                    },
-                                    "raiPolicyName": "Microsoft.DefaultV2",
-                                    "provisioningState": "Succeeded",
-                                    "rateLimits": [
-                                        {
-                                            "key": "request",
-                                            "renewalPeriod": 60,
-                                            "count": 10
-                                        },
-                                        {
-                                            "key": "token",
-                                            "renewalPeriod": 60,
-                                            "count": 1000
-                                        }
-                                    ]
-                                },
-                                "systemData": {
-                                    "createdBy": "kcm0790@gmail.com",
-                                    "createdByType": "User",
-                                    "createdAt": "2026-03-19T21:35:21.1034248Z",
-                                    "lastModifiedBy": "kcm0790@gmail.com",
-                                    "lastModifiedByType": "User",
-                                    "lastModifiedAt": "2026-03-19T21:36:01.5455476Z"
-                                },
-                                "etag": "\"12567a99-dae8-49f4-ac02-f4b8dce17ead\""
-                            }
-                        ]
+                        "value": []
                     }
                 }
             }
@@ -2669,32 +2616,32 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-msedge-ref": [
-                        "Ref A: 8397AA8EEF624D9D96A2646166C0D479 Ref B: CHI261140501042 Ref C: 2026-03-20T18:52:34Z"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-operation-identifier": [
-                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/northcentralus/03b29b9b-1bf9-45be-973e-0905d2d93734"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "x-envoy-upstream-service-time": [
-                        "38"
-                    ],
-                    "date": [
-                        "Fri, 20 Mar 2026 18:52:34 GMT"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
                     "content-length": [
                         "1215"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
+                    ],
+                    "x-ms-operation-identifier": [
+                        "tenantId=d0353a14-7287-437b-a609-2ae66308ff96,objectId=55930176-0a87-4f7a-a039-6825cd33ab38/southcentralus/569509a6-a0a5-4ffb-a0f5-1d168bcfc5d1"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 262650275E654002A98903DC6174005A Ref B: CHI261140510034 Ref C: 2026-03-20T19:05:05Z"
+                    ],
+                    "x-envoy-upstream-service-time": [
+                        "22"
+                    ],
+                    "date": [
+                        "Fri, 20 Mar 2026 19:05:05 GMT"
                     ]
                 },
                 "body": {
@@ -2725,7 +2672,7 @@
                                         "assistants": "true",
                                         "responses": "true",
                                         "agentsV2": "true",
-                                        "_H_azureml-throttling-key": "oai-93ca5dc28a494372b00cf3c543a383fd"
+                                        "_H_azureml-throttling-key": "oai-03729a77593c4c649fbe72a5cee7fdf8"
                                     },
                                     "raiPolicyName": "Microsoft.DefaultV2",
                                     "provisioningState": "Succeeded",
@@ -2745,12 +2692,12 @@
                                 "systemData": {
                                     "createdBy": "kcm0790@gmail.com",
                                     "createdByType": "User",
-                                    "createdAt": "2026-03-20T18:42:36.7085705Z",
+                                    "createdAt": "2026-03-20T19:02:56.4979712Z",
                                     "lastModifiedBy": "kcm0790@gmail.com",
                                     "lastModifiedByType": "User",
-                                    "lastModifiedAt": "2026-03-20T18:42:36.7085705Z"
+                                    "lastModifiedAt": "2026-03-20T19:02:56.4979712Z"
                                 },
-                                "etag": "\"5e57ea99-d0d5-457f-a892-0c7a77e2f8d6\""
+                                "etag": "\"9901dbe6-4eb0-4bfd-8719-41e136438903\""
                             }
                         ]
                     }
