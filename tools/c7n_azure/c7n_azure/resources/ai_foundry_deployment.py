@@ -30,7 +30,9 @@ def register_ai_foundry_deployment_actions(registry, resource_class):
     ``session.resource_api_version(resource['id'])``.
     """
     if resource_class is AiFoundryDeployment:
-        resource_class.action_registry.register('delete', AiFoundryCognitiveServiceDeploymentDeleteAction)
+        resource_class.action_registry.register(
+            'delete', AiFoundryCognitiveServiceDeploymentDeleteAction
+        )
 
 
 resources.subscribe(register_ai_foundry_deployment_actions)
