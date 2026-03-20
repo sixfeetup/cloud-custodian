@@ -308,7 +308,9 @@ def test_lattice_rule_query_listener(test, lattice_rule_query_listener):
         },
     )
 
-    with pytest.raises(ValueError, match='Do not pass listenerId without serviceId in the query'):
+    with pytest.raises(
+        ValueError, match='Do not pass listenerIdentifier without serviceIdentifier in the query'
+    ):
         p.run()
 
 

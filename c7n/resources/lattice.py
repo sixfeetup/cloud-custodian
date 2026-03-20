@@ -172,8 +172,8 @@ class VPCLatticeRuleQuery(ChildResourceQuery):
             # Query listeners and then rules
             if listener_id:
                 raise ValueError(
-                    'Do not pass listenerId without serviceId in the query block. Either pass'
-                    ' serviceId too or use listenerId as a filter.'
+                    'Do not pass listenerIdentifier without serviceIdentifier in the query block.'
+                    ' Either pass serviceIdentifier too or use listenerIdentifier as a filter.'
                 )
             listeners = self._list_listeners(service_id)
             rules = []
