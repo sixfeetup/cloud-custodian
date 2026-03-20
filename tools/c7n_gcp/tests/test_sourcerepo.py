@@ -4,7 +4,6 @@
 from gcp_common import BaseTest
 
 
-
 class SourceRepoTest(BaseTest):
 
     def test_sourcerepo_query(self):
