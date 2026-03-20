@@ -16,7 +16,7 @@ from c7n.testing import (
     C7N_FUNCTIONAL,
 )
 
-from c7n_gcp.client import Session, LOCAL_THREAD
+from c7n_gcp.client import Session, LOCAL_THREAD, get_default_project
 
 from recorder import (
     HttpRecorder,
@@ -131,3 +131,8 @@ class BaseTest(FlightRecorderTest):
     @property
     def account_id(self):
         return ""
+
+    def project_id(self):
+        if C7N_FUNCTIONAL:
+            return get_default_project()
+        return PROJECT_ID

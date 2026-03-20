@@ -3,12 +3,11 @@
 import time
 
 from gcp_common import BaseTest
-from testing import effective_project_id
 
 
 class DMDeploymentTest(BaseTest):
     def test_deployment_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         session_factory = self.replay_flight_data('dm-deployment-query', project_id=project_id)
 
         policy = {
@@ -30,7 +29,7 @@ class DMDeploymentTest(BaseTest):
         )
 
     def test_deployment_augment(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         session_factory = self.replay_flight_data('dm-deployment-augment', project_id=project_id)
 
         policy = self.load_policy(
@@ -48,7 +47,7 @@ class DMDeploymentTest(BaseTest):
         assert resources[0]['labels'] == {'environment': 'production', 'storage': 'media'}
 
     def test_deployment_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         session_factory = self.replay_flight_data('dm-deployment-get', project_id=project_id)
 
         policy = {
@@ -74,7 +73,7 @@ class DMDeploymentTest(BaseTest):
         )
 
     def test_deployment_delete(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('dm-deployment-delete', project_id=project_id)
 
         p = self.load_policy(

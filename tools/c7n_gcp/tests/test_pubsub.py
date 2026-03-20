@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from gcp_common import BaseTest, event_data
-from testing import effective_project_id
 from pytest_terraform import terraform
 
 
@@ -18,7 +17,7 @@ def test_pubsub_topic_query(test, pubsub_topic):
         session_factory=session_factory)
 
     resource = policy.resource_manager.get_resource(
-        {'project_id': test.project_id, 'topic_id': topic_name}
+        {'project_id': test.project_id(), 'topic_id': topic_name}
     )
     test.assertEqual(resource['name'], topic_name)
 
@@ -54,7 +53,7 @@ def test_pubsub_subscription_query(test, pubsub_subscription):
 
 class PubSubSubscriptionTest(BaseTest):
     def test_pubsub_subscription_get(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         subscription_name = 'custodian'
         resource_name = 'projects/{}/subscriptions/{}'.format(project_id, subscription_name)
         session_factory = self.replay_flight_data(
@@ -82,7 +81,7 @@ class PubSubSubscriptionTest(BaseTest):
 class PubSubSnapshotTest(BaseTest):
 
     def test_pubsub_snapshot_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         pubsub_snapshot_name = 'projects/cloud-custodian/snapshots/custodian'
         session_factory = self.replay_flight_data(
             'pubsub-snapshot-query', project_id=project_id)
@@ -103,7 +102,7 @@ class PubSubSnapshotTest(BaseTest):
 class PubSubTopicTest(BaseTest):
 
     def test_pubsub_topic_filter_iam_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('pubsub-topic-filter-iam', project_id=project_id)
         p = self.load_policy({
             'name': 'pubsub-topic-filter-iam',

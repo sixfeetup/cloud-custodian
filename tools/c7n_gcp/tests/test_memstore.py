@@ -1,13 +1,12 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 from gcp_common import BaseTest
-from testing import effective_project_id
 
 
 class RedisInstanceTest(BaseTest):
 
     def test_redis_instance_query(self):
-        project_id = effective_project_id()
+        project_id = self.project_id()
         factory = self.replay_flight_data('test_redis_instance_list_query', project_id=project_id)
         p = self.load_policy(
             {'name': 'redis-instance-query',
