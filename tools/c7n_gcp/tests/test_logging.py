@@ -102,13 +102,6 @@ def test_log_bucket_set_retention(test, log_bucket_set_retention):
 
 
 def test_log_bucket_update_requires_editable_fields(test):
-    if C7N_FUNCTIONAL:
-        project_id = get_default_project()
-        session_factory = test.record_flight_data(
-            'log-bucket-update-invalid', project_id=project_id
-        )
-    else:
-        session_factory = test.replay_flight_data('log-bucket-update-invalid')
     with test.assertRaises(PolicyValidationError) as ctx:
         test.load_policy(
             {
@@ -116,7 +109,6 @@ def test_log_bucket_update_requires_editable_fields(test):
                 'resource': 'gcp.log-bucket',
                 'actions': [{'type': 'update'}],
             },
-            session_factory=session_factory,
         )
 
     test.assertIn(
