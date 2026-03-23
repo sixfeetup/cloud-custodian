@@ -1,9 +1,49 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from ..azure_common import BaseTest, arm_template, cassette_name
 from c7n.exceptions import PolicyValidationError
 
-from ..azure_common import BaseTest, arm_template, cassette_name
+
+class AIFoundryProjectTest(BaseTest):
+
+    def test_ai_foundry_project_schema_validate(self):
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-ai-foundry-project',
+                'resource': 'azure.ai-foundry-project'
+            }, validate=True)
+            self.assertTrue(p)
+
+    @arm_template('ai-foundry-project.json')
+    @cassette_name('ai-foundry-projects-query')
+    def test_ai_foundry_project_query(self):
+        p = self.load_policy({
+            'name': 'test-ai-foundry-project-query',
+            'resource': 'azure.ai-foundry-project',
+        })
+
+        resources = p.run()
+        self.assertGreaterEqual(len(resources), 1)
+        self.assertIn('/projects/', resources[0].get('id', '').lower())
+
+    @arm_template('ai-foundry-project.json')
+    @cassette_name('ai-foundry-projects-filter')
+    def test_ai_foundry_project_filter(self):
+        p = self.load_policy({
+            'name': 'test-ai-foundry-project-filter',
+            'resource': 'azure.ai-foundry-project',
+            'filters': [{
+                'type': 'value',
+                'key': 'id',
+                'op': 'contains',
+                'value': '/projects/cctest-aifoundry-project'
+            }]
+        })
+
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertIn('/projects/cctest-aifoundry-project', resources[0].get('id', '').lower())
 
 
 class AIFoundryConnectionTest(BaseTest):
@@ -85,6 +125,33 @@ class AIFoundryConnectionTest(BaseTest):
         resources = p.run()
         self.assertGreaterEqual(len(resources), 1)
         self.assertIn('/connections/', resources[0].get('id', '').lower())
+
+    @arm_template('ai-foundry-connection.json')
+    @cassette_name('ai-foundry-connections-filter')
+    def test_ai_foundry_connection_filter(self):
+        read_policy = self.load_policy({
+            'name': 'test-ai-foundry-connection-read-for-filter',
+            'resource': 'azure.ai-foundry-connection',
+        })
+
+        resources = read_policy.run()
+        self.assertGreaterEqual(len(resources), 1)
+
+        target_name = resources[0]['name']
+        filter_policy = self.load_policy({
+            'name': 'test-ai-foundry-connection-filter',
+            'resource': 'azure.ai-foundry-connection',
+            'filters': [{
+                'type': 'value',
+                'key': 'name',
+                'op': 'eq',
+                'value': target_name
+            }]
+        })
+
+        filtered = filter_policy.run()
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['name'], target_name)
 
     @arm_template('ai-foundry-connection.json')
     @cassette_name('ai-foundry-connections-update')
