@@ -6,6 +6,9 @@ from c7n_azure.resources.arm import ArmResourceManager
 class Budget(ArmResourceManager):
     """Budget Resource
 
+    Cost budgets are augmented with a computed ``c7n:percent-used`` field, which is the
+    percentage of ``properties.currentSpend.amount`` relative to ``properties.amount``.
+
     :example:
 
     Find budgets with amount > $1000:
@@ -21,9 +24,22 @@ class Budget(ArmResourceManager):
                 key: properties.amount
                 op: greater-than
                 value: 1000
+
+    Find cost budgets that have used at least 80% of their configured amount:
+
+    .. code-block:: yaml
+
+        policies:
+        - name: azure-budget-high-utilization
+            resource: azure.budget
+            filters:
+            - properties.category: Cost
+            - type: value
+                key: c7n:percent-used
+                op: greater-than
+                value: 80
     """
 
-    # TODO: I don't actually know if ArmResourceManager is the right base class here
     class resource_type(ArmResourceManager.resource_type):
         service = 'azure.mgmt.consumption'
         client = 'ConsumptionManagementClient'
@@ -33,27 +49,27 @@ class Budget(ArmResourceManager):
             'name',
             'properties.category',
         )
-        resource_type = 'Microsoft.CostManagement/budgets'
-        # TODO: There may be other attributes to utilize here. Docs are sparse.
+        resource_type = 'Microsoft.Consumption/budgets'
 
         @classmethod
         def extra_args(cls, resource_manager):
-            # TODO: This is somewhat inflexible, but see cost_management_export module for precedent
-            # Should we accept this as a parameter in the policy definition?
             scope = '/subscriptions/' + resource_manager.get_session().get_subscription_id()
             return {'scope': scope}
 
-    def percent_used(self, resource):
+    @staticmethod
+    def percent_used(resource):
+        """Returns what percentage of the budget has already been spent. If the budget is not a Cost
+        budget, returns None."""
         props = resource['properties']
-        return props['currentSpend']['amount'] / props['amount'] * 100
+        if props['category'] == 'Cost':
+            return props['currentSpend']['amount'] / props['amount'] * 100
 
     def augment(self, resources):
         resources = super().augment(resources)
 
         for resource in resources:
-            props = resource['properties']
-            if props['category'] == 'Cost':
-                # TODO: do we prefix fields we envision using in filters with 'c7n:'?
-                resource['c7n:percent-used'] = self.percent_used(resource)
+            percent_used = self.percent_used(resource)
+            if percent_used is not None:
+                resource['c7n:percent-used'] = percent_used
 
         return resources
