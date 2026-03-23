@@ -1,7 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import random
 import time
 
 import requests
@@ -95,10 +94,7 @@ class ArmResourceManager(QueryResourceManager, metaclass=QueryMeta):
                     if retry_after and retry_after.isdigit():
                         sleep_seconds = int(retry_after)
                     else:
-                        sleep_seconds = max(
-                            constants.DEFAULT_MAX_RETRY_AFTER,
-                            constants.DEFAULT_RETRY_AFTER * attempt
-                        ) + random.randint(1, constants.DEFAULT_RETRY_AFTER)
+                        sleep_seconds = constants.DEFAULT_RETRY_AFTER
                     time.sleep(sleep_seconds)
                     attempt += 1
                     continue
