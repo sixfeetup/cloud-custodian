@@ -1,5 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+
+from c7n.testing import C7N_FUNCTIONAL
+from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
 
 
@@ -21,3 +24,51 @@ class RedisInstanceTest(BaseTest):
         assert p.resource_manager.get_urns(resources) == [
             "gcp:redis:us-central1:gcp-lab-custodian:instance/instance-test"
         ]
+
+    def test_redis_cluster_query(self):
+        if C7N_FUNCTIONAL:
+            project_id = get_default_project()
+            session_factory = self.record_flight_data(
+                "redis-cluster-query", project_id=project_id
+            )
+        else:
+            session_factory = self.replay_flight_data("redis-cluster-query")
+
+        policy = self.load_policy(
+            {"name": "redis-cluster-query", "resource": "gcp.redis-cluster"},
+            session_factory=session_factory,
+        )
+        resources = policy.run()
+
+        self.assertEqual(len(resources), 2)
+
+    def test_redis_cluster_filter(self):
+        if C7N_FUNCTIONAL:
+            project_id = get_default_project()
+            session_factory = self.record_flight_data(
+                "redis-cluster-filter", project_id=project_id
+            )
+        else:
+            session_factory = self.replay_flight_data("redis-cluster-filter")
+
+        policy = self.load_policy(
+            {
+                "name": "redis-cluster-filter-auth-mode",
+                "resource": "gcp.redis-cluster",
+                "filters": [
+                    {
+                        "type": "value",
+                        "key": "authorizationMode",
+                        "value": "AUTH_MODE_IAM_AUTH",
+                    }
+                ],
+            },
+            session_factory=session_factory,
+        )
+        resources = policy.run()
+
+        self.assertEqual(len(resources), 1)
+        self.assertEqual(
+            resources[0]["name"],
+            "projects/cloud-custodian/locations/us-central1/clusters/c7n-redis-cluster-primary"
+        )
