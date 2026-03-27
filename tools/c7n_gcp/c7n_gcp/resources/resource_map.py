@@ -99,6 +99,7 @@ ResourceMap = {
     "gcp.pubsub-topic": "c7n_gcp.resources.pubsub.PubSubTopic",
     "gcp.redis": "c7n_gcp.resources.memstore.RedisInstance",
     "gcp.region": "c7n_gcp.region.Region",
+    "gcp.region-commitment": "c7n_gcp.resources.compute.RegionCommitment",
     "gcp.route": "c7n_gcp.resources.network.Route",
     "gcp.router": "c7n_gcp.resources.network.Router",
     "gcp.service": "c7n_gcp.resources.service.Service",

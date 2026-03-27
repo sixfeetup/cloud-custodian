@@ -3,6 +3,7 @@
 
 import re
 import time
+from unittest.mock import Mock, patch
 
 from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
@@ -724,3 +725,154 @@ class TestInstanceGroupManager(BaseTest):
 
         self.assertEqual(1, len(resources))
         self.assertEqual('instance-group-2', resources[0]['name'])
+
+
+class RegionCommitmentUnitTest(BaseTest):
+
+    def _get_region_commitment_manager(self):
+        policy = self.load_policy({
+            'name': 'region-commitment-unit',
+            'resource': 'gcp.region-commitment'
+        })
+        return policy.resource_manager
+
+    @staticmethod
+    def _get_insert_action_data():
+        return {
+            'name': 'c7n-region-commitment',
+            'region': 'us-central1',
+            'plan': 'TWELVE_MONTH',
+            'type': 'GENERAL_PURPOSE_E2',
+            'resources': [
+                {'type': 'VCPU', 'amount': '1'},
+                {'type': 'MEMORY', 'amount': '1024'}
+            ]
+        }
+
+    def test_region_commitment_model_metadata(self):
+        model = self._get_region_commitment_manager().resource_type
+
+        self.assertEqual(model.service, 'compute')
+        self.assertEqual(model.version, 'v1')
+        self.assertEqual(model.component, 'regionCommitments')
+        self.assertEqual(model.enum_spec, ('aggregatedList', 'items.*.commitments[]', None))
+        self.assertEqual(model.name, 'name')
+        self.assertEqual(model.id, 'name')
+        self.assertEqual(model.urn_component, 'region-commitment')
+
+    def test_region_commitment_get_parses_resource_name(self):
+        class DummyClient:
+            def __init__(self):
+                self.calls = []
+
+            def execute_command(self, op, params):
+                self.calls.append((op, params))
+                return {'name': params['commitment'], 'status': 'ACTIVE'}
+
+        client = DummyClient()
+        resource_info = {
+            'resourceName': 'projects/cloud-custodian/regions/us-central1/commitments/c7n-test'
+        }
+
+        result = self._get_region_commitment_manager().resource_type.get(client, resource_info)
+
+        self.assertEqual(result['name'], 'c7n-test')
+        self.assertEqual(result['status'], 'ACTIVE')
+        self.assertEqual(
+            client.calls,
+            [('get', {
+                'project': 'cloud-custodian',
+                'region': 'us-central1',
+                'commitment': 'c7n-test'
+            })]
+        )
+
+    def test_region_commitment_get_urns(self):
+        resources = [{
+            'name': 'c7n-test',
+            'region': 'https://www.googleapis.com/compute/v1/projects/cloud-custodian/regions/us-central1'
+        }]
+        urns = self._get_region_commitment_manager().resource_type.get_urns(
+            resources, 'cloud-custodian')
+        self.assertEqual(
+            urns,
+            ['gcp:compute:us-central1:cloud-custodian:region-commitment/c7n-test']
+        )
+
+    def test_region_commitment_insert_builds_machine_body(self):
+        action_cls = self._get_region_commitment_manager().action_registry.get('insert')
+        body_data = self._get_insert_action_data()
+        body_data.update({
+            'description': 'c7n test commitment',
+            'category': 'MACHINE',
+            'auto_renew': True
+        })
+        body = action_cls.get_insert_body(body_data)
+
+        self.assertEqual(body['name'], 'c7n-region-commitment')
+        self.assertEqual(body['plan'], 'TWELVE_MONTH')
+        self.assertEqual(body['type'], 'GENERAL_PURPOSE_E2')
+        self.assertEqual(body['category'], 'MACHINE')
+        self.assertEqual(body['description'], 'c7n test commitment')
+        self.assertEqual(body['resources'][0]['type'], 'VCPU')
+        self.assertEqual(body['resources'][0]['amount'], '1')
+        self.assertTrue(body['autoRenew'])
+
+    def test_region_commitment_insert_builds_license_body(self):
+        action_cls = self._get_region_commitment_manager().action_registry.get('insert')
+        body = action_cls.get_insert_body({
+            'name': 'c7n-license-commitment',
+            'plan': 'TWELVE_MONTH',
+            'category': 'LICENSE',
+            'license_resource': {
+                'amount': '1',
+                'cores-per-license': '2',
+                'license': 'projects/example/global/licenses/sles-15'
+            }
+        })
+
+        self.assertEqual(body['category'], 'LICENSE')
+        self.assertEqual(body['licenseResource']['amount'], '1')
+        self.assertEqual(body['licenseResource']['coresPerLicense'], '2')
+        self.assertEqual(body['licenseResource']['license'],
+                         'projects/example/global/licenses/sles-15')
+        self.assertNotIn('type', body)
+        self.assertNotIn('resources', body)
+
+    @patch('c7n_gcp.resources.compute.local_session')
+    def test_region_commitment_insert_process_calls_insert(self, local_session_mock):
+        resource_manager = self._get_region_commitment_manager()
+        action_cls = resource_manager.action_registry.get('insert')
+
+        manager = Mock()
+        manager.get_model.return_value = Mock()
+        manager.session_factory = Mock()
+
+        session = Mock()
+        session.get_default_project.return_value = 'cloud-custodian'
+        local_session_mock.return_value = session
+
+        action = action_cls({'type': 'insert'}, manager)
+        action.data.update(self._get_insert_action_data())
+        action.get_client = Mock(return_value='client')
+        action.invoke_api = Mock()
+
+        action.process([])
+
+        action.invoke_api.assert_called_once_with(
+            'client',
+            'insert',
+            {
+                'project': 'cloud-custodian',
+                'region': 'us-central1',
+                'body': {
+                    'name': 'c7n-region-commitment',
+                    'plan': 'TWELVE_MONTH',
+                    'type': 'GENERAL_PURPOSE_E2',
+                    'resources': [
+                        {'type': 'VCPU', 'amount': '1'},
+                        {'type': 'MEMORY', 'amount': '1024'}
+                    ]
+                }
+            }
+        )
