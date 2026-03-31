@@ -5,8 +5,9 @@ from c7n_gcp.provider import resources
 from c7n_gcp.query import (
     QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo
 )
-from c7n.utils import local_session
+from c7n.utils import local_session, type_schema
 from c7n_gcp.filters.timerange import TimeRangeFilter
+from c7n.filters.core import ValueFilter
 
 
 @resources.register('bigtable-instance')
@@ -121,6 +122,8 @@ class TimeRange(TimeRangeFilter):
 class BigTableInstanceTable(ChildResourceManager):
     """ GC resource:
     https://cloud.google.com/bigtable/docs/reference/admin/rest/v2/projects.instances.tables"""
+    table_detail_annotation_key = 'c7n:table-detail'
+
     class resource_type(ChildTypeInfo):
         service = 'bigtableadmin'
         version = 'v2'
@@ -146,7 +149,52 @@ class BigTableInstanceTable(ChildResourceManager):
             )
         }
 
+    @staticmethod
+    def _get_table_get_args(resource):
+        return {'name': resource['name']}
+
+    def get_table_detail(self, resource):
+        annotation_key = self.table_detail_annotation_key
+        client = self.get_client()
+        detail = client.execute_command('get', self._get_table_get_args(resource))
+        resource[annotation_key] = detail
+        return detail
+
+    def enrich_table_details(self, resources):
+        for resource in resources:
+            self.get_table_detail(resource)
+
+        return resources
+
 
 @BigTableInstanceTable.filter_registry.register('iam-policy')
 class BigTableInstanceTableIamPolicyFilter(IamPolicyFilter):
     permissions = ('resourcemanager.projects.getIamPolicy',)
+
+
+@BigTableInstanceTable.filter_registry.register('gc-rule')
+class BigTableInstanceTableGcRuleFilter(ValueFilter):
+    """Filter Bigtable tables by GC rule fields from table detail payloads.
+
+    This filter evaluates against the table `get` response, allowing value
+    expressions that reference `columnFamilies`.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: bigtable-table-gc-rules
+            resource: gcp.bigtable-instance-table
+            filters:
+              - type: gc-rule
+                key: columnFamilies.*.gcRule.maxAge
+                op: ne
+                value: null
+    """
+
+    schema = type_schema('gc-rule', rinherit=ValueFilter.schema)
+    permissions = ('bigtable.tables.get',)
+
+    def process(self, resources, event=None):
+        annotation_key = self.manager.table_detail_annotation_key
+        self.manager.enrich_table_details(resources)
+        return [r for r in resources if self.match(r[annotation_key])]
