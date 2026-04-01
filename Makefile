@@ -48,14 +48,6 @@ test-coverage:
             tests tools $(ARGS)
 
 diff-coverage:
-	@echo "Checking for diff-cover..."
-	# This overcomes dependency issues with packages in pyproject.toml
-	@if ! uv tool list | grep -q "^diff-cover"; then \
-		echo "diff-cover not found. Installing as a tool..."; \
-		uv tool install diff-cover; \
-	else \
-		echo "diff-cover is already installed"; \
-	fi
 	@echo "Running tests with coverage for changed files..."
 	@CHANGED_TEST_FILES=$$(git diff --name-only origin/main | grep -E "test_.*\.py$$" || true); \
 	if [ -z "$$CHANGED_TEST_FILES" ]; then \
@@ -81,12 +73,18 @@ diff-coverage:
 		-v
 	@echo ""
 	@echo "Generating diff coverage report..."
-	@uv tool run diff-cover coverage.xml --compare-branch=origin/main --html-report htmlcov/diff-coverage.html
+	@uv tool run diff-cover coverage.xml \
+		--compare-branch=origin/main \
+		--src-roots . \
+		--exclude "tests/**" \
+		--exclude "tools/**/tests/**" \
+		--exclude "**/test_*.py" \
+		--html-report htmlcov/diff-coverage.html
 	@echo ""
 	@echo "HTML report generated: htmlcov/diff-coverage.html"
-	@echo "Run 'make view-diff-coverage' to open the report in your browser"
+	@echo "Run 'make view-diff-coverage-linux' to open the report in your browser"
 
-view-coverage:
+view-coverage-linux:
 	@if [ ! -f htmlcov/index.html ]; then \
 		echo "Error: htmlcov/index.html not found"; \
 		echo "Run 'make test-coverage' first to generate the full coverage report"; \
@@ -94,10 +92,10 @@ view-coverage:
 	fi
 	@xdg-open htmlcov/index.html 2>/dev/null || open htmlcov/index.html 2>/dev/null || echo "Please open htmlcov/index.html manually"
 
-view-diff-coverage:
+view-diff-coverage-linux:
 	@if [ ! -f htmlcov/diff-coverage.html ]; then \
 		echo "Error: htmlcov/diff-coverage.html not found"; \
-		echo "Run 'make diff-coverage' or 'make diff-coverage-full' first to generate the diff coverage report"; \
+		echo "Run 'make diff-coverage' first to generate the diff coverage report"; \
 		exit 1; \
 	fi
 	@xdg-open htmlcov/diff-coverage.html 2>/dev/null || open htmlcov/diff-coverage.html 2>/dev/null || echo "Please open htmlcov/diff-coverage.html manually"
