@@ -60,6 +60,12 @@ class DataSet(QueryResourceManager):
                     'get', verb_arguments=ref))
         return results
 
+    def get_resource_query(self):
+        if 'query' in self.data:
+            for child in self.data.get('query'):
+                if 'filter' in child:
+                    return {'filter': child['filter']}
+
 
 @resources.register('bq-job')
 class BigQueryJob(QueryResourceManager):
@@ -117,7 +123,8 @@ class BigQueryTable(ChildResourceManager):
             'parent_get_params': [
                 ('tableReference.projectId', 'projectId'),
                 ('tableReference.datasetId', 'datasetId'),
-            ]
+            ],
+            'use_child_query': True,
         }
         asset_type = "bigquery.googleapis.com/Table"
         urn_component = "table"
@@ -147,10 +154,17 @@ class BigQueryTable(ChildResourceManager):
         results = []
         for r in resources:
             ref = r['tableReference']
-            results.append(
-                client.execute_query(
-                    'get', verb_arguments=ref))
+            table = client.execute_query('get', verb_arguments=ref)
+            # RecommenderFilter.match_ids expects a 'name' field; BigQuery tables may
+            # only return selfLink/id, so provide a stable fallback for matching.
+            table.setdefault('name', table.get('selfLink') or table.get('id'))
+            results.append(table)
         return results
+
+    def get_resource_query(self):
+        # Allow query values to be consumed by parent dataset listing only.
+        # BigQuery tables.list does not accept a top-level "filter" argument.
+        return None
 
 
 @BigQueryTable.action_registry.register('delete')
