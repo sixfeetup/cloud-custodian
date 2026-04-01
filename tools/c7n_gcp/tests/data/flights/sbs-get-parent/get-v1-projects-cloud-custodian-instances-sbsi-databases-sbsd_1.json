@@ -2,24 +2,24 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 01 Apr 2026 17:58:57 GMT",
+    "date": "Wed, 01 Apr 2026 18:46:14 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
-    "server-timing": "gfet4t7; dur=190",
+    "server-timing": "gfet4t7; dur=51",
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "399",
+    "content-length": "367",
     "-content-encoding": "gzip",
-    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database?alt=json"
+    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/sbsi/databases/sbsd?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database",
+    "name": "projects/cloud-custodian/instances/sbsi/databases/sbsd",
     "state": "READY",
-    "createTime": "2026-04-01T17:58:53.590329Z",
+    "createTime": "2026-04-01T18:46:10.872026Z",
     "versionRetentionPeriod": "1h",
-    "earliestVersionTime": "2026-04-01T17:58:53.590329Z",
+    "earliestVersionTime": "2026-04-01T18:46:10.872026Z",
     "encryptionInfo": [
       {
         "encryptionType": "GOOGLE_DEFAULT_ENCRYPTION"

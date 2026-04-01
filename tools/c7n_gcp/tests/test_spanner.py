@@ -485,14 +485,13 @@ def test_spanner_backup_iam(test):
 
 class TestSpannerBackup(BaseTest):
     def test_spanner_backup_schedule_query(self):
-        flight_name = 'spanner-backup-schedule-query'
+        flight_name = 'sbs-qry'
         project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
 
         if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(flight_name, project_id=project_id)
         else:
             session_factory = self.replay_flight_data(flight_name, project_id=project_id)
-
         policy = self.load_policy(
             {
                 'name': 'spanner-backup-schedule-query',
@@ -506,17 +505,16 @@ class TestSpannerBackup(BaseTest):
 
         # Spanner also exposes a default full backup schedule for the database.
         self.assertIn('default_daily_full_backup_schedule', resource_names)
-        self.assertIn('c7n-backup-schedule-long-retention', resource_names)
+        self.assertIn('sbsl', resource_names)
 
     def test_spanner_backup_schedule_filter_retention_exceeds_limit(self):
-        flight_name = 'spanner-backup-schedule-filter-retention-exceeds-limit'
+        flight_name = 'sbs-ret-gt'
         project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
 
         if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(flight_name, project_id=project_id)
         else:
             session_factory = self.replay_flight_data(flight_name, project_id=project_id)
-
         policy = self.load_policy(
             {
                 'name': 'gcp-spanner-backup-schedule-retention-exceeds-limit',
@@ -537,35 +535,33 @@ class TestSpannerBackup(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertTrue(resources[0]['retentionDuration'] > '2592000s')
 
+    def test_spanner_backup_schedule_get_parent_resolution(self):
+        flight_name = 'sbs-get-parent'
+        project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
 
-@terraform('spanner_backup_schedule')
-def test_spanner_backup_schedule_get_parent_resolution(test, spanner_backup_schedule):
-    flight_name = 'spanner-backup-schedule-get-parent-resolution'
-    project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(flight_name, project_id=project_id)
+        else:
+            session_factory = self.replay_flight_data(flight_name, project_id=project_id)
 
-    if C7N_FUNCTIONAL:
-        session_factory = test.record_flight_data(flight_name, project_id=project_id)
-    else:
-        session_factory = test.replay_flight_data(flight_name, project_id=project_id)
+        policy = self.load_policy(
+            {
+                'name': 'spanner-backup-schedule-get-parent-resolution',
+                'resource': 'gcp.spanner-backup-schedule',
+            },
+            session_factory=session_factory
+        )
 
-    policy = test.load_policy(
-        {
-            'name': 'spanner-backup-schedule-get-parent-resolution',
-            'resource': 'gcp.spanner-backup-schedule',
-        },
-        session_factory=session_factory
-    )
+        schedule_name = (
+            f'projects/{project_id}/instances/sbsi/'
+            'databases/sbsd/'
+            'backupSchedules/sbsl'
+        )
+        schedule = policy.resource_manager.get_resource({'resourceName': schedule_name})
 
-    schedule_name = (
-        f'projects/{project_id}/instances/c7n-spanner-instance/'
-        'databases/c7n-spanner-database/'
-        'backupSchedules/c7n-backup-schedule-long-retention'
-    )
-    schedule = policy.resource_manager.get_resource({'resourceName': schedule_name})
-
-    test.assertEqual(schedule['name'], schedule_name)
-    test.assertTrue('c7n:spanner-database-instance' in schedule)
-    test.assertEqual(
-        schedule['c7n:spanner-database-instance']['name'],
-        f'projects/{project_id}/instances/c7n-spanner-instance/databases/c7n-spanner-database'
-    )
+        self.assertEqual(schedule['name'], schedule_name)
+        self.assertTrue('c7n:spanner-database-instance' in schedule)
+        self.assertEqual(
+            schedule['c7n:spanner-database-instance']['name'],
+            f'projects/{project_id}/instances/sbsi/databases/sbsd'
+        )

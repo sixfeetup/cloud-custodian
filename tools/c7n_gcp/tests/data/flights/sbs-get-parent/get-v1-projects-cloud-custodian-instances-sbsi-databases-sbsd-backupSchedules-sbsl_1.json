@@ -2,20 +2,20 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 01 Apr 2026 17:58:57 GMT",
+    "date": "Wed, 01 Apr 2026 18:46:14 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
-    "server-timing": "gfet4t7; dur=239",
+    "server-timing": "gfet4t7; dur=120",
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "467",
+    "content-length": "405",
     "-content-encoding": "gzip",
-    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database/backupSchedules/c7n-backup-schedule-long-retention?alt=json"
+    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/sbsi/databases/sbsd/backupSchedules/sbsl?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database/backupSchedules/c7n-backup-schedule-long-retention",
+    "name": "projects/cloud-custodian/instances/sbsi/databases/sbsd/backupSchedules/sbsl",
     "retentionDuration": "2678400s",
     "encryptionConfig": {
       "encryptionType": "USE_DATABASE_ENCRYPTION"
@@ -28,6 +28,6 @@
       }
     },
     "fullBackupSpec": {},
-    "updateTime": "2026-04-01T17:58:54.784377Z"
+    "updateTime": "2026-04-01T18:46:12.394157Z"
   }
 }

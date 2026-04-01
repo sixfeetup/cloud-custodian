@@ -2,22 +2,38 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 01 Apr 2026 17:20:01 GMT",
+    "date": "Wed, 01 Apr 2026 18:45:10 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
-    "server-timing": "gfet4t7; dur=55",
+    "server-timing": "gfet4t7; dur=52",
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1094",
+    "content-length": "1001",
     "-content-encoding": "gzip",
-    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database/backupSchedules?alt=json"
+    "content-location": "https://spanner.googleapis.com/v1/projects/cloud-custodian/instances/sbsi/databases/sbsd/backupSchedules?alt=json"
   },
   "body": {
     "backupSchedules": [
       {
-        "name": "projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database/backupSchedules/c7n-backup-schedule-long-retention",
+        "name": "projects/cloud-custodian/instances/sbsi/databases/sbsd/backupSchedules/default_daily_full_backup_schedule",
+        "retentionDuration": "604800s",
+        "encryptionConfig": {
+          "encryptionType": "USE_DATABASE_ENCRYPTION"
+        },
+        "spec": {
+          "cronSpec": {
+            "text": "31 21 * * *",
+            "timeZone": "UTC",
+            "creationWindow": "14400s"
+          }
+        },
+        "fullBackupSpec": {},
+        "updateTime": "2026-04-01T18:45:07.536266Z"
+      },
+      {
+        "name": "projects/cloud-custodian/instances/sbsi/databases/sbsd/backupSchedules/sbsl",
         "retentionDuration": "2678400s",
         "encryptionConfig": {
           "encryptionType": "USE_DATABASE_ENCRYPTION"
@@ -30,23 +46,7 @@
           }
         },
         "fullBackupSpec": {},
-        "updateTime": "2026-04-01T17:19:59.206199Z"
-      },
-      {
-        "name": "projects/cloud-custodian/instances/c7n-spanner-instance/databases/c7n-spanner-database/backupSchedules/default_daily_full_backup_schedule",
-        "retentionDuration": "604800s",
-        "encryptionConfig": {
-          "encryptionType": "USE_DATABASE_ENCRYPTION"
-        },
-        "spec": {
-          "cronSpec": {
-            "text": "45 7 * * *",
-            "timeZone": "UTC",
-            "creationWindow": "14400s"
-          }
-        },
-        "fullBackupSpec": {},
-        "updateTime": "2026-04-01T17:19:57.578545Z"
+        "updateTime": "2026-04-01T18:45:08.813782Z"
       }
     ]
   }

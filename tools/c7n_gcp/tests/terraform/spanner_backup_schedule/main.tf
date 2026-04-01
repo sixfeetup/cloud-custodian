@@ -2,22 +2,22 @@ provider "google" {}
 
 
 resource "google_spanner_instance" "c7n" {
-  name         = "c7n-spanner-instance"
-  display_name = "c7n-spanner-instance"
+  name         = "sbsi"
+  display_name = "sbsi"
   config       = "regional-us-central1"
   num_nodes    = 1
 }
 
 resource "google_spanner_database" "c7n" {
   instance            = google_spanner_instance.c7n.name
-  name                = "c7n-spanner-database"
+  name                = "sbsd"
   deletion_protection = false
 }
 
 resource "google_spanner_backup_schedule" "c7n_long_retention" {
   instance           = google_spanner_instance.c7n.name
   database           = google_spanner_database.c7n.name
-  name               = "c7n-backup-schedule-long-retention"
+  name               = "sbsl"
   retention_duration = "2678400s"
 
   spec {

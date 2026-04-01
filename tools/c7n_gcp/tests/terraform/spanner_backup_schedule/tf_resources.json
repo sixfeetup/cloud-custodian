@@ -4,7 +4,7 @@
     "resources": {
         "google_spanner_backup_schedule": {
             "c7n_long_retention": {
-                "database": "c7n-spanner-database",
+                "database": "sbsd",
                 "encryption_config": [
                     {
                         "encryption_type": "USE_DATABASE_ENCRYPTION",
@@ -15,10 +15,10 @@
                 "full_backup_spec": [
                     {}
                 ],
-                "id": "c7n-spanner-instance/c7n-spanner-database/c7n-backup-schedule-long-retention",
+                "id": "sbsi/sbsd/sbsl",
                 "incremental_backup_spec": [],
-                "instance": "c7n-spanner-instance",
-                "name": "c7n-backup-schedule-long-retention",
+                "instance": "sbsi",
+                "name": "sbsl",
                 "project": "stacklet-personal-2",
                 "retention_duration": "2678400s",
                 "spec": [
@@ -41,9 +41,9 @@
                 "deletion_protection": false,
                 "enable_drop_protection": false,
                 "encryption_config": [],
-                "id": "c7n-spanner-instance/c7n-spanner-database",
-                "instance": "c7n-spanner-instance",
-                "name": "c7n-spanner-database",
+                "id": "sbsi/sbsd",
+                "instance": "sbsi",
+                "name": "sbsd",
                 "project": "stacklet-personal-2",
                 "state": "READY",
                 "timeouts": null,
@@ -55,16 +55,16 @@
                 "autoscaling_config": [],
                 "config": "projects/cloud-custodian/instanceConfigs/regional-us-central1",
                 "default_backup_schedule_type": "AUTOMATIC",
-                "display_name": "c7n-spanner-instance",
+                "display_name": "sbsi",
                 "edition": "STANDARD",
                 "effective_labels": {
                     "goog-terraform-provisioned": "true"
                 },
                 "force_destroy": false,
-                "id": "stacklet-personal-2/c7n-spanner-instance",
+                "id": "stacklet-personal-2/sbsi",
                 "instance_type": "PROVISIONED",
                 "labels": null,
-                "name": "c7n-spanner-instance",
+                "name": "sbsi",
                 "num_nodes": 1,
                 "processing_units": 1000,
                 "project": "stacklet-personal-2",
