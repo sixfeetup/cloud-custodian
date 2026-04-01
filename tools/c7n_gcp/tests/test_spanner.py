@@ -1,10 +1,13 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from gcp_common import BaseTest, event_data
 import time
 
+from c7n.testing import C7N_FUNCTIONAL
+from c7n_gcp.client import get_default_project
+from gcp_common import BaseTest, event_data
 from pytest_terraform import terraform
+from recorder import PROJECT_ID
 
 
 class SpannerInstanceTest(BaseTest):
@@ -478,3 +481,91 @@ def test_spanner_backup_iam(test):
     resources = policy.run()
     assert len(resources) == 1
     assert resources[0]['c7n:iamPolicy']['bindings'][0]['role'] == 'roles/editor'
+
+
+class TestSpannerBackup(BaseTest):
+    def test_spanner_backup_schedule_query(self):
+        flight_name = 'spanner-backup-schedule-query'
+        project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
+
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(flight_name, project_id=project_id)
+        else:
+            session_factory = self.replay_flight_data(flight_name, project_id=project_id)
+
+        policy = self.load_policy(
+            {
+                'name': 'spanner-backup-schedule-query',
+                'resource': 'gcp.spanner-backup-schedule',
+            },
+            session_factory=session_factory
+        )
+
+        resources = policy.run()
+        resource_names = {r['name'].rsplit('/', 1)[-1] for r in resources}
+
+        # Spanner also exposes a default full backup schedule for the database.
+        self.assertIn('default_daily_full_backup_schedule', resource_names)
+        self.assertIn('c7n-backup-schedule-long-retention', resource_names)
+
+    def test_spanner_backup_schedule_filter_retention_exceeds_limit(self):
+        flight_name = 'spanner-backup-schedule-filter-retention-exceeds-limit'
+        project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
+
+        if C7N_FUNCTIONAL:
+            session_factory = self.record_flight_data(flight_name, project_id=project_id)
+        else:
+            session_factory = self.replay_flight_data(flight_name, project_id=project_id)
+
+        policy = self.load_policy(
+            {
+                'name': 'gcp-spanner-backup-schedule-retention-exceeds-limit',
+                'resource': 'gcp.spanner-backup-schedule',
+                'filters': [
+                    {
+                        'type': 'value',
+                        'key': 'retentionDuration',
+                        'op': 'gt',
+                        'value': '2592000s'
+                    }
+                ]
+            },
+            session_factory=session_factory
+        )
+
+        resources = policy.run()
+        self.assertEqual(len(resources), 1)
+        self.assertTrue(resources[0]['retentionDuration'] > '2592000s')
+
+
+@terraform('spanner_backup_schedule')
+def test_spanner_backup_schedule_get_parent_resolution(test, spanner_backup_schedule):
+    flight_name = 'spanner-backup-schedule-get-parent-resolution'
+    project_id = get_default_project() if C7N_FUNCTIONAL else PROJECT_ID
+
+    if C7N_FUNCTIONAL:
+        session_factory = test.record_flight_data(flight_name, project_id=project_id)
+    else:
+        session_factory = test.replay_flight_data(flight_name, project_id=project_id)
+
+    policy = test.load_policy(
+        {
+            'name': 'spanner-backup-schedule-get-parent-resolution',
+            'resource': 'gcp.spanner-backup-schedule',
+        },
+        session_factory=session_factory
+    )
+
+    schedule_name = (
+        f'projects/{project_id}/instances/c7n-spanner-instance/'
+        'databases/c7n-spanner-database/'
+        'backupSchedules/c7n-backup-schedule-long-retention'
+    )
+    schedule = policy.resource_manager.get_resource({'resourceName': schedule_name})
+
+    test.assertEqual(schedule['name'], schedule_name)
+    test.assertTrue('c7n:spanner-database-instance' in schedule)
+    test.assertEqual(
+        schedule['c7n:spanner-database-instance']['name'],
+        f'projects/{project_id}/instances/c7n-spanner-instance/databases/c7n-spanner-database'
+    )
