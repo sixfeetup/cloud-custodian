@@ -6,6 +6,7 @@ from c7n_gcp.actions import MethodAction, SetIamPolicy
 from c7n_gcp.filters import IamPolicyFilter, TimeRangeFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildTypeInfo, ChildResourceManager
+from c7n_gcp.utils import parse_protobuf_duration_to_seconds
 
 
 @resources.register('spanner-instance')
@@ -283,11 +284,6 @@ class SpannerDatabaseBackupScheduleValueFilter(ValueFilter):
     _retention_key = 'retentionDuration'
     _seconds_key = 'c7n:retentionDurationSeconds'
 
-    @staticmethod
-    def _parse_duration_seconds(duration):
-        value = duration[:-1]
-        return int(value)
-
     def _normalize_filter_data(self):
         if getattr(self, '_normalized_filter_data', False):
             return
@@ -295,7 +291,7 @@ class SpannerDatabaseBackupScheduleValueFilter(ValueFilter):
         data = dict(self.data)
         if data.get('key') == self._retention_key:
             data['key'] = self._seconds_key
-            parsed_value = self._parse_duration_seconds(data.get('value'))
+            parsed_value = parse_protobuf_duration_to_seconds(data.get('value'))
             if parsed_value is not None:
                 data['value'] = parsed_value
                 data.setdefault('value_type', 'integer')
@@ -307,7 +303,7 @@ class SpannerDatabaseBackupScheduleValueFilter(ValueFilter):
 
         transformed = dict(resource)
         if self.data.get('key') == self._seconds_key:
-            transformed[self._seconds_key] = self._parse_duration_seconds(
+            transformed[self._seconds_key] = parse_protobuf_duration_to_seconds(
                 resource.get(self._retention_key))
 
         return super().__call__(transformed)
