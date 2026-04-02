@@ -4,6 +4,7 @@
 from c7n.testing import C7N_FUNCTIONAL
 from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
+from pytest_terraform import terraform
 
 
 class RedisInstanceTest(BaseTest):
@@ -25,50 +26,51 @@ class RedisInstanceTest(BaseTest):
             "gcp:redis:us-central1:gcp-lab-custodian:instance/instance-test"
         ]
 
-    def test_redis_cluster_query(self):
-        if C7N_FUNCTIONAL:
-            project_id = get_default_project()
-            session_factory = self.record_flight_data(
-                "redis-cluster-query", project_id=project_id
-            )
-        else:
-            session_factory = self.replay_flight_data("redis-cluster-query")
 
-        policy = self.load_policy(
-            {"name": "redis-cluster-query", "resource": "gcp.redis-cluster"},
-            session_factory=session_factory,
+@terraform('redis_cluster')
+def test_redis_cluster_query(test, redis_cluster):
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            "redis-cluster-query", project_id=project_id
         )
-        resources = policy.run()
+    else:
+        session_factory = test.replay_flight_data("redis-cluster-query")
+    policy = test.load_policy(
+        {"name": "redis-cluster-query", "resource": "gcp.redis-cluster"},
+        session_factory=session_factory,
+    )
+    resources = policy.run()
+    test.assertEqual(len(resources), 2)
 
-        self.assertEqual(len(resources), 2)
 
-    def test_redis_cluster_filter(self):
-        if C7N_FUNCTIONAL:
-            project_id = get_default_project()
-            session_factory = self.record_flight_data(
-                "redis-cluster-filter", project_id=project_id
-            )
-        else:
-            session_factory = self.replay_flight_data("redis-cluster-filter")
-
-        policy = self.load_policy(
-            {
-                "name": "redis-cluster-filter-auth-mode",
-                "resource": "gcp.redis-cluster",
-                "filters": [
-                    {
-                        "type": "value",
-                        "key": "authorizationMode",
-                        "value": "AUTH_MODE_IAM_AUTH",
-                    }
-                ],
-            },
-            session_factory=session_factory,
+@terraform('redis_cluster')
+def test_redis_cluster_filter(test, redis_cluster):
+    primary_cluster_name = redis_cluster["google_redis_cluster.c7n_redis_cluster_primary.id"]
+    if C7N_FUNCTIONAL:
+        project_id = get_default_project()
+        session_factory = test.record_flight_data(
+            "redis-cluster-filter", project_id=project_id
         )
-        resources = policy.run()
-
-        self.assertEqual(len(resources), 1)
-        self.assertEqual(
-            resources[0]["name"],
-            "projects/cloud-custodian/locations/us-central1/clusters/c7n-redis-cluster-primary"
-        )
+    else:
+        session_factory = test.replay_flight_data("redis-cluster-filter")
+    policy = test.load_policy(
+        {
+            "name": "redis-cluster-filter-auth-mode",
+            "resource": "gcp.redis-cluster",
+            "filters": [
+                {
+                    "type": "value",
+                    "key": "authorizationMode",
+                    "value": "AUTH_MODE_IAM_AUTH",
+                }
+            ],
+        },
+        session_factory=session_factory,
+    )
+    resources = policy.run()
+    test.assertEqual(len(resources), 1)
+    test.assertEqual(
+        resources[0]["name"],
+        primary_cluster_name,
+    )
