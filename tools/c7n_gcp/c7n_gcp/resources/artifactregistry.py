@@ -64,7 +64,7 @@ class SetCleanupPolicy(MethodAction):
           filters:
             - type: value
               key: cleanupPolicies
-              op: absent
+              value: absent
           actions:
             - type: set-cleanup-policy
               cleanup-policies:
