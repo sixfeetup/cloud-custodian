@@ -1,6 +1,5 @@
 from c7n.utils import local_session
 from c7n.utils import type_schema
-from c7n.exceptions import PolicyValidationError
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
 from c7n_gcp.query import RegionalResourceManager, ChildTypeInfo
@@ -64,8 +63,8 @@ class SetCleanupPolicy(MethodAction):
           resource: gcp.artifact-repository
           filters:
             - type: value
-              key: name
-              value: projects/my-project/locations/us-central1/repositories/my-repo
+              key: cleanupPolicies
+              op: absent
           actions:
             - type: set-cleanup-policy
               cleanup-policies:
@@ -78,29 +77,16 @@ class SetCleanupPolicy(MethodAction):
 
     schema = type_schema(
         'set-cleanup-policy',
+        required=['cleanup-policies'],
         **{
             'cleanup-policies': {'type': 'object'},
         })
     method_spec = {'op': 'patch'}
     method_perm = 'update'
 
-    def validate(self):
-        if 'cleanup-policies' not in self.data:
-            raise PolicyValidationError(
-                "policy:%s set-cleanup-policy requires cleanup-policies"
-                % self.manager.ctx.policy.name)
-        return self
-
     def get_resource_params(self, model, resource):
-        body = {}
-        update_mask = []
-
-        if 'cleanup-policies' in self.data:
-            body['cleanupPolicies'] = self.data['cleanup-policies']
-            update_mask.append('cleanupPolicies')
-
         return {
             'name': resource['name'],
-            'body': body,
-            'updateMask': ','.join(update_mask)
+            'body': {'cleanupPolicies': self.data['cleanup-policies']},
+            'updateMask': 'cleanupPolicies',
         }
