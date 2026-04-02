@@ -257,6 +257,7 @@ def test_table_recommend_partition_cluster_permissions(test, bigquery):
 
     table_ref = baseline_resources[0]['tableReference']
     table_rid = (
+        "//bigquery.googleapis.com/"
         f"projects/{table_ref['projectId']}/"
         f"datasets/{table_ref['datasetId']}/"
         f"tables/{table_ref['tableId']}"
