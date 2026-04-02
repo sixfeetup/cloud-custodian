@@ -1,10 +1,12 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 from c7n.utils import type_schema, local_session
+from c7n.filters.core import ValueFilter
 from c7n_gcp.actions import MethodAction, SetIamPolicy
 from c7n_gcp.filters import IamPolicyFilter, TimeRangeFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildTypeInfo, ChildResourceManager
+from c7n_gcp.utils import parse_protobuf_duration_to_seconds
 
 
 @resources.register('spanner-instance')
@@ -225,6 +227,86 @@ class SpannerDatabaseInstance(ChildResourceManager):
                 'get', {
                     'name': resource_info['resourceName']}
             )
+
+
+@resources.register('spanner-backup-schedule')
+class SpannerDatabaseBackupSchedule(ChildResourceManager):
+    """GCP resource:
+    https://cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.databases.backupSchedules
+    """
+    def _get_parent_resource_info(self, child_instance):
+        resource_name = None
+        if child_instance['name'] is not None:
+            resource_names = child_instance['name'].split('/backupSchedules')
+            if len(resource_names) > 0:
+                resource_name = resource_names[0]
+        return {
+            'resourceName': resource_name
+        }
+
+    class resource_type(ChildTypeInfo):
+        service = 'spanner'
+        version = 'v1'
+        component = 'projects.instances.databases.backupSchedules'
+        enum_spec = ('list', 'backupSchedules[]', None)
+        name = id = 'name'
+        scope = None
+        parent_spec = {
+            'resource': 'spanner-database-instance',
+            'child_enum_params': [
+                ('name', 'parent')
+            ]
+        }
+        default_report_fields = ['name']
+        permissions = ('spanner.backupSchedules.list',)
+        asset_type = 'spanner.googleapis.com/BackupSchedule'
+        urn_component = 'backupSchedule'
+        urn_id_segments = (3, 5, 7)
+        allow_metrics_filters = False
+
+        @staticmethod
+        def get(client, resource_info):
+            return client.execute_command(
+                'get', {
+                    'name': resource_info['resourceName']}
+            )
+
+
+@SpannerDatabaseBackupSchedule.filter_registry.register('value')
+class SpannerDatabaseBackupScheduleValueFilter(ValueFilter):
+    """Resource-specific value filter.
+
+    For ``retentionDuration`` comparisons we normalize duration strings
+    (for example ``2592000s``) to integer seconds, so operators like ``gt``
+    use numeric comparison instead of lexical string comparison.
+    """
+
+    _retention_key = 'retentionDuration'
+    _seconds_key = 'c7n:retentionDurationSeconds'
+
+    def _normalize_filter_data(self):
+        if getattr(self, '_normalized_filter_data', False):
+            return
+
+        data = dict(self.data)
+        if data.get('key') == self._retention_key:
+            data['key'] = self._seconds_key
+            parsed_value = parse_protobuf_duration_to_seconds(data.get('value'))
+            if parsed_value is not None:
+                data['value'] = parsed_value
+                data.setdefault('value_type', 'integer')
+        self.data = data
+        self._normalized_filter_data = True
+
+    def __call__(self, resource):
+        self._normalize_filter_data()
+
+        transformed = dict(resource)
+        if self.data.get('key') == self._seconds_key:
+            transformed[self._seconds_key] = parse_protobuf_duration_to_seconds(
+                resource.get(self._retention_key))
+
+        return super().__call__(transformed)
 
 
 @SpannerDatabaseInstance.filter_registry.register('iam-policy')
