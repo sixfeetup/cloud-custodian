@@ -141,6 +141,10 @@ class BigTableInstanceTable(ChildResourceManager):
         permissions = ('bigtable.tables.list',)
         asset_type = "bigtableadmin.googleapis.com/Table"
 
+        @staticmethod
+        def get(client, resource_info):
+            return client.execute_command('get', {'name': resource_info['name']})
+
     def _get_child_enum_args(self, parent_instance):
         return {
             'parent': 'projects/{}/instances/{}'.format(
@@ -149,14 +153,10 @@ class BigTableInstanceTable(ChildResourceManager):
             )
         }
 
-    @staticmethod
-    def _get_table_get_args(resource):
-        return {'name': resource['name']}
-
     def get_table_detail(self, resource):
         annotation_key = self.table_detail_annotation_key
         client = self.get_client()
-        detail = client.execute_command('get', self._get_table_get_args(resource))
+        detail = self.resource_type.get(client, resource)
         resource[annotation_key] = detail
         return detail
 
