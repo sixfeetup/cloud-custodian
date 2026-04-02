@@ -31,7 +31,7 @@ def test_log_bucket_get(test, log_bucket_get):
     log_bucket_resource = policy.resource_manager.get_resource(
         {'resourceName': log_bucket_name}
     )
-    assert log_bucket_resource['name'] == log_bucket_name
+    test.assertEqual(log_bucket_resource['name'], log_bucket_name)
 
 
 @terraform('log_bucket_filter_name')
@@ -60,8 +60,8 @@ def test_log_bucket_filter_name(test, log_bucket_filter_name):
     )
     resources = policy.run()
 
-    assert len(resources) == 1
-    assert resources[0]['name'] == log_bucket_name
+    test.assertEqual(len(resources), 1)
+    test.assertEqual(resources[0]['name'], log_bucket_name)
 
 
 @terraform('log_bucket_set_retention')
@@ -86,35 +86,32 @@ def test_log_bucket_set_retention(test, log_bucket_set_retention):
             'name': 'log-bucket-set-retention',
             'resource': 'gcp.log-bucket',
             'filters': [{'type': 'value', 'key': 'name', 'value': log_bucket_name}],
-            'actions': [{'type': 'update', 'retentionDays': 7}],
+            'actions': [{'type': 'set-retention', 'retentionDays': 7}],
         },
         session_factory=session_factory,
     )
 
     resources = policy.run()
-    assert len(resources) == 1
-    assert resources[0]['name'] == log_bucket_name
-    assert resources[0]['retentionDays'] == retention_days
+    test.assertEqual(len(resources), 1)
+    test.assertEqual(resources[0]['name'], log_bucket_name)
+    test.assertEqual(resources[0]['retentionDays'], retention_days)
 
     client = policy.resource_manager.get_client()
     updated = client.execute_query('get', {'name': log_bucket_name})
-    assert updated['retentionDays'] == 7
+    test.assertEqual(updated['retentionDays'], 7)
 
 
-def test_log_bucket_update_requires_editable_fields(test):
+def test_log_bucket_set_retention_requires_retention_days(test):
     with test.assertRaises(PolicyValidationError) as ctx:
         test.load_policy(
             {
-                'name': 'log-bucket-update-invalid',
+                'name': 'log-bucket-set-retention-invalid',
                 'resource': 'gcp.log-bucket',
-                'actions': [{'type': 'update'}],
+                'actions': [{'type': 'set-retention'}],
             },
         )
 
-    test.assertIn(
-        'update action requires at least one editable field:',
-        str(ctx.exception),
-    )
+    test.assertIn('retentionDays', str(ctx.exception))
 
 
 class LogProjectSinkTest(BaseTest):

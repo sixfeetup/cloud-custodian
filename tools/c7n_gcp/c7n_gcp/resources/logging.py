@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from c7n.utils import local_session, type_schema
 from c7n.filters.core import ValueFilter
-from c7n.exceptions import PolicyValidationError
 
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.provider import resources
@@ -124,55 +123,47 @@ class LogBucket(QueryResourceManager):
             return client.execute_query('get', {'name': name})
 
 
-@LogBucket.action_registry.register('update')
-class UpdateLogBucket(MethodAction):
-    """Update editable fields for a Cloud Logging bucket.
+@LogBucket.action_registry.register('set-retention')
+class SetLogBucketRetention(MethodAction):
+    """Set retention for a Cloud Logging bucket.
 
     :example:
 
     .. code-block:: yaml
 
         policies:
-          - name: gcp-log-bucket-update
+          - name: gcp-log-bucket-set-retention
             resource: gcp.log-bucket
             filters:
               - type: value
                 key: retentionDays
                 op: gt
                 value: 30
+              - type: value
+                key: lifecycleState
+                op: ne
+                value: DELETE_REQUESTED
+              - type: value
+                key: locked
+                value: false
             actions:
-              - type: update
+              - type: set-retention
                 retentionDays: 30
-                description: "30 day retention policy"
     """
 
     schema = type_schema(
-        'update',
-        aliases=['set-retention'],
-        retentionDays={'type': 'integer', 'minimum': 1},
-        description={'type': 'string'},
-        enableAnalytics={'type': 'boolean'},
+        'set-retention',
+        required=['retentionDays'],
+        retentionDays={'type': 'integer', 'minimum': 1}
     )
     method_spec = {'op': 'patch'}
     method_perm = 'update'
 
-    editable_fields = ('retentionDays', 'description', 'enableAnalytics')
-
-    def validate(self):
-        data_fields = [k for k in self.data.keys() if k in self.editable_fields]
-        if not data_fields:
-            raise PolicyValidationError(
-                "update action requires at least one editable field: "
-                "retentionDays, description, enableAnalytics"
-            )
-        return self
-
     def get_resource_params(self, model, resource):
-        body = {k: self.data[k] for k in self.editable_fields if k in self.data}
         return {
             'name': resource['name'],
-            'updateMask': ','.join(body.keys()),
-            'body': body,
+            'updateMask': 'retentionDays',
+            'body': {'retentionDays': self.data['retentionDays']},
         }
 
 
