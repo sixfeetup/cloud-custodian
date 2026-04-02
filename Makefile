@@ -60,17 +60,7 @@ diff-coverage:
 	uv run pytest $$CHANGED_TEST_FILES -n auto \
 		--cov-config .coveragerc \
 		--cov-report xml \
-		--cov-report term-missing \
-		--cov c7n \
-		--cov tools/c7n_azure/c7n_azure \
-		--cov tools/c7n_gcp/c7n_gcp \
-		--cov tools/c7n_kube/c7n_kube \
-		--cov tools/c7n_left/c7n_left \
-		--cov tools/c7n_mailer/c7n_mailer \
-		--cov tools/c7n_policystream/c7n_policystream \
-		--cov tools/c7n_tencentcloud/c7n_tencentcloud \
-		--cov tools/c7n_oci/c7n_oci \
-		-v
+		--cov .
 	@echo ""
 	@echo "Generating diff coverage report..."
 	@uv tool run diff-cover coverage.xml \
