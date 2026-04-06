@@ -85,9 +85,6 @@ class AiFoundryDeploymentTest(BaseTest):
 
 
 class CognitiveServiceTest(BaseTest):
-    def setUp(self):
-        super(CognitiveServiceTest, self).setUp()
-
     def test_cognitive_service_schema_validate(self):
         with self.sign_out_patch():
             p = self.load_policy({

@@ -1198,6 +1198,7 @@ class PolicyMeta(BaseTest):
 
 
 class TestPolicyCollection(BaseTest):
+
     def test_expand_partitions(self):
         cfg = Config.empty(regions=["us-gov-west-1", "cn-north-1", "us-west-2"])
         original = policy.PolicyCollection.from_data(

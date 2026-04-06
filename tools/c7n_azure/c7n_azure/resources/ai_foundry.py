@@ -48,13 +48,29 @@ class CognitiveService(ArmResourceManager):
 class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
     """AI Foundry deployment resource using Cognitive Services list API.
 
-    This resource exists for side-by-side comparison with the REST-based
-    implementation in ``azure.ai-foundry-deployment``.
+    Uses the Azure AI Services account-management surface
+    (``Microsoft.CognitiveServices/accounts/deployments``) with API version
+    ``2024-10-01``.
+
+    :example:
+
+    This policy will find failed or canceled AI Foundry model deployments.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: ai-foundry-cognitiveservice-deployments-find-failed
+            resource: azure.ai-foundry-cognitiveservice-deployment
+            filters:
+              - type: value
+                key: properties.provisioningState
+                op: in
+                value: [Failed, Canceled]
     """
 
     class resource_type(ChildArmResourceManager.resource_type):
         doc_groups = ['AI + Machine Learning']
-        api_version = '2025-06-01'
+        api_version = '2024-10-01'
 
         service = 'azure.mgmt.cognitiveservices'
         client = 'CognitiveServicesManagementClient'
@@ -77,7 +93,13 @@ class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
 
 
 class AiFoundryCognitiveServiceDeploymentDeleteAction(AzureBaseAction):
-    """Delete AI Foundry Cognitive Services deployments."""
+    """Delete AI Foundry Cognitive Services deployments.
+
+    A custom delete action is required for this child resource because the
+    generic ARM delete path resolves api-version from the resource id. For
+    deployment ids this can select an incompatible version, so we always call
+    ``begin_delete_by_id`` with the resource's explicit api_version.
+    """
 
     schema = type_schema('delete')
     schema_alias = True
@@ -97,7 +119,9 @@ def register_ai_foundry_cognitive_service_deployment_actions(registry, resource_
     """Register explicit delete action for nested deployment resources.
 
     The default ARM delete action resolves api-version from resource id via
-    ``session.resource_api_version(resource['id'])``.
+    ``session.resource_api_version(resource['id'])``. This runs as a
+    ``resources.subscribe`` callback so it overrides the generic ARM delete
+    action when this specific resource class is registered.
     """
     if resource_class is AiFoundryCognitiveServiceDeployment:
         resource_class.action_registry.register(
@@ -110,14 +134,16 @@ resources.subscribe(register_ai_foundry_cognitive_service_deployment_actions)
 
 
 # Reuse the Cognitive Services deployment implementation for AI Foundry.
-# The behavioral delta is API version only, so this subclass isolates that
-# version override without changing the base deployment resource behavior.
+# Both resources use the same ARM endpoint path; AI Foundry differs by
+# api-version only. This subclass isolates that version override without
+# changing the base deployment resource behavior.
 @resources.register('ai-foundry-deployment')
 class AiFoundryDeployment(AiFoundryCognitiveServiceDeployment):
     """Azure AI Foundry Deployment Resource.
 
-    Shares implementation with ``azure.cognitiveservice-deployment`` but uses
-    the AI Foundry API version.
+    Shares the same endpoint path as
+    ``azure.ai-foundry-cognitiveservice-deployment`` but uses the AI Foundry
+    API version ``2025-06-01``.
     """
 
     class resource_type(AiFoundryCognitiveServiceDeployment.resource_type):
@@ -128,7 +154,9 @@ def register_ai_foundry_deployment_actions(registry, resource_class):
     """Register explicit delete action for nested deployment resources.
 
     The default ARM delete action resolves api-version from resource id via
-    ``session.resource_api_version(resource['id'])``.
+    ``session.resource_api_version(resource['id'])``. This runs as a
+    ``resources.subscribe`` callback so it overrides the generic ARM delete
+    action when this specific resource class is registered.
     """
     if resource_class is AiFoundryDeployment:
         resource_class.action_registry.register(
