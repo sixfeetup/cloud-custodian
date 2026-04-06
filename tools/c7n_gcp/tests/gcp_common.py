@@ -132,6 +132,7 @@ class BaseTest(FlightRecorderTest):
     def account_id(self):
         return ""
 
+    @property
     def project_id(self):
         if C7N_FUNCTIONAL:
             return get_default_project()

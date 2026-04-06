@@ -6,7 +6,7 @@ from gcp_common import BaseTest
 class RedisInstanceTest(BaseTest):
 
     def test_redis_instance_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('test_redis_instance_list_query', project_id=project_id)
         p = self.load_policy(
             {'name': 'redis-instance-query',

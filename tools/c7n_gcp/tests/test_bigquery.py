@@ -7,7 +7,7 @@ import time
 
 class BigQueryDataSetTest(BaseTest):
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-dataset-query')
         p = self.load_policy({
             'name': 'bq-get',
@@ -27,7 +27,7 @@ class BigQueryDataSetTest(BaseTest):
         )
 
     def test_dataset_delete(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-dataset-delete', project_id=project_id)
         p = self.load_policy(
             {
@@ -77,7 +77,7 @@ class BigQueryDataSetTest(BaseTest):
 
 class BigQueryJobTest(BaseTest):
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-job-query')
         p = self.load_policy({
             'name': 'bq-job-get',
@@ -96,7 +96,7 @@ class BigQueryJobTest(BaseTest):
         )
 
     def test_job_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         job_id = 'bquxjob_4c28c9a7_16958c2791d'
         location = 'US'
         factory = self.replay_flight_data('bq-job-get', project_id=project_id)
@@ -125,7 +125,7 @@ class BigQueryJobTest(BaseTest):
 
 class BigQueryTableTest(BaseTest):
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-table-query')
         p = self.load_policy({
             'name': 'bq-table-query',
@@ -141,7 +141,7 @@ class BigQueryTableTest(BaseTest):
         )
 
     def test_table_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-table-get')
         p = self.load_policy({
             'name': 'bq-table-get',
@@ -162,7 +162,7 @@ class BigQueryTableTest(BaseTest):
         )
 
     def test_table_delete(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('bq-table-delete', project_id=project_id)
         p = self.load_policy(
             {

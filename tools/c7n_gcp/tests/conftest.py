@@ -31,6 +31,7 @@ def set_working_directory():
 
 
 class CustodianGCPTesting(PyTestUtils, GoogleFlightRecorder):
+    @property
     def project_id(self):
         if C7N_FUNCTIONAL:
             return get_default_project()

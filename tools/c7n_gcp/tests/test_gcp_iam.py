@@ -171,7 +171,7 @@ class ServiceAccountTest(BaseTest):
 
 class ServiceAccountKeyTest(BaseTest):
     def test_service_account_key_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
 
         session_factory = self.replay_flight_data("iam-service-account-key-query", project_id)
 
@@ -235,7 +235,7 @@ class ServiceAccountKeyTest(BaseTest):
 
 class IAMRoleTest(BaseTest):
     def test_iam_role_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
 
         session_factory = self.replay_flight_data("ami-role-query", project_id)
 
@@ -254,7 +254,7 @@ class IAMRoleTest(BaseTest):
         )
 
     def test_iam_role_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         name = "accesscontextmanager.policyAdmin"
 
         session_factory = self.replay_flight_data("ami-role-query-get", project_id)
@@ -281,7 +281,7 @@ class IAMRoleTest(BaseTest):
 
 class ApiKeyTest(BaseTest):
     def test_api_key_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data("api-key-list", project_id)
         p = self.load_policy(
             {
@@ -295,7 +295,7 @@ class ApiKeyTest(BaseTest):
         self.assertEqual(len(resources), 1)
 
     def test_api_key_time_range(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data("gcp-apikeys-time-range", project_id)
         p = self.load_policy(
             {
