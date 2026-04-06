@@ -103,7 +103,6 @@ To run with additional arguments:
 Note: When running tests directly (not via `make test`), you need to manually source
 the environment variables:
 
-    source test.env
     uv run pytest -n auto tools/c7n_gcp/tests
 
 ### Using the virtual environment directly
@@ -111,7 +110,6 @@ the environment variables:
 Alternatively, you can activate the virtual environment:
 
     source .venv/bin/activate
-    source test.env
     pytest -n auto tools/c7n_gcp/tests
 
 

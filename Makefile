@@ -57,7 +57,7 @@ test-functional-azure:
 
 test-gcp:
 # run only the GCP test suite
-	. $(PWD)/test.env && uv run pytest -n auto tools/c7n_gcp/tests $(ARGS)
+	. uv run pytest -n auto tools/c7n_gcp/tests $(ARGS)
 
 sphinx:
 	make -f docs/Makefile.sphinx html
