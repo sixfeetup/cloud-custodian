@@ -9,7 +9,7 @@ from gcp_common import BaseTest, event_data
 class LogProjectSinkTest(BaseTest):
 
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('log-project-sink-query', project_id)
         p = self.load_policy({
             'name': 'log-project-sink',
@@ -25,7 +25,7 @@ class LogProjectSinkTest(BaseTest):
         )
 
     def test_get_project_sink(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         sink_name = "testqqqqqqqqqqqqqqqqq"
         factory = self.replay_flight_data(
             'log-project-sink-resource', project_id)
@@ -49,7 +49,7 @@ class LogProjectSinkTest(BaseTest):
         )
 
     def test_delete_project_sink(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         resource_name = "test-sink"
         factory = self.replay_flight_data(
             'log-project-sink-delete', project_id)
@@ -96,7 +96,7 @@ class LogProjectSinkTest(BaseTest):
 class LogProjectMetricTest(BaseTest):
 
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('log-project-metric-get', project_id)
         p = self.load_policy({
             'name': 'log-project-metric',
@@ -112,7 +112,7 @@ class LogProjectMetricTest(BaseTest):
         )
 
     def test_get_project_metric(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         metric_name = "test_name"
         factory = self.replay_flight_data(
             'log-project-metric-query', project_id)
@@ -139,7 +139,7 @@ class LogProjectMetricTest(BaseTest):
 class LogExclusionTest(BaseTest):
 
     def test_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('log-exclusion', project_id)
         p = self.load_policy({
             'name': 'log-exclusion',
@@ -155,7 +155,7 @@ class LogExclusionTest(BaseTest):
         )
 
     def test_get_project_exclusion(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         exclusion_name = "qwerty"
         factory = self.replay_flight_data(
             'log-exclusion-get', project_id)

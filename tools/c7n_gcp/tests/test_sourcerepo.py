@@ -7,7 +7,7 @@ from gcp_common import BaseTest
 class SourceRepoTest(BaseTest):
 
     def test_sourcerepo_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         repo_name = 'projects/cloud-custodian/repos/test-repo'
         session_factory = self.replay_flight_data(
             'sourcerepo-query', project_id=project_id)

@@ -11,7 +11,7 @@ from pytest_terraform import terraform
 class FirewallTest(BaseTest):
 
     def test_firewall_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data(
             'firewall-get', project_id=project_id)
         p = self.load_policy({'name': 'fw', 'resource': 'gcp.firewall'},
@@ -27,7 +27,7 @@ class FirewallTest(BaseTest):
         )
 
     def test_firewall_modify(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('firewall-modify', project_id=project_id)
         p = self.load_policy(
             {'name': 'fdelete',
@@ -46,7 +46,7 @@ class FirewallTest(BaseTest):
         self.assertEqual(result["priority"], 500)
 
     def test_firewall_delete(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('firewall-delete', project_id=project_id)
         p = self.load_policy(
             {'name': 'fdelete',
@@ -71,7 +71,7 @@ class FirewallTest(BaseTest):
 class NetworkTest(BaseTest):
 
     def test_network_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data(
             'network-get-resource', project_id=project_id)
         p = self.load_policy({'name': 'network', 'resource': 'gcp.vpc'},
@@ -93,7 +93,7 @@ class NetworkTest(BaseTest):
 class SubnetTest(BaseTest):
 
     def test_subnet_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data(
             'subnet-get-resource', project_id=project_id)
         p = self.load_policy({'name': 'subnet', 'resource': 'gcp.subnet'},
@@ -113,7 +113,7 @@ class SubnetTest(BaseTest):
         )
 
     def test_subnet_set_flow(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('subnet-set-flow', project_id=project_id)
         p = self.load_policy({
             'name': 'all-subnets',
@@ -136,7 +136,7 @@ class SubnetTest(BaseTest):
         self.assertEqual(result['enableFlowLogs'], True)
 
     def test_subnet_set_private_api(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('subnet-set-private-api', project_id=project_id)
         p = self.load_policy({
             'name': 'one-subnet',
@@ -161,7 +161,7 @@ class SubnetTest(BaseTest):
 
 class RouterTest(BaseTest):
     def test_router_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         session_factory = self.replay_flight_data('router-query', project_id=project_id)
 
         policy = {
@@ -181,7 +181,7 @@ class RouterTest(BaseTest):
         )
 
     def test_router_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('router-get', project_id=project_id)
 
         p = self.load_policy({
@@ -204,7 +204,7 @@ class RouterTest(BaseTest):
         )
 
     def test_router_delete(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('router-delete', project_id=project_id)
 
         p = self.load_policy(
@@ -231,7 +231,7 @@ class RouterTest(BaseTest):
 
 class RouteTest(BaseTest):
     def test_route_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         session_factory = self.replay_flight_data('route-query', project_id=project_id)
 
         policy = {
@@ -251,7 +251,7 @@ class RouteTest(BaseTest):
         )
 
     def test_route_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data('route-get', project_id=project_id)
 
         p = self.load_policy({
@@ -277,7 +277,7 @@ class RouteTest(BaseTest):
 class TestVPCFirewallFilter(BaseTest):
 
     def test_vpc_firewall_filter_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         factory = self.replay_flight_data(
             'test_vpc_firewall_filter_query', project_id=project_id)
         p = self.load_policy(

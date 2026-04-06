@@ -7,7 +7,7 @@ from gcp_common import BaseTest, event_data
 class MLModelTest(BaseTest):
 
     def test_models_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
 
         session_factory = self.replay_flight_data(
             'ml-models-query', project_id)
@@ -29,7 +29,7 @@ class MLModelTest(BaseTest):
         )
 
     def test_models_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         name = "test_model"
 
         factory = self.replay_flight_data('ml-model-get', project_id=project_id)
@@ -56,7 +56,7 @@ class MLModelTest(BaseTest):
 class MLJobTest(BaseTest):
 
     def test_jobs_query(self):
-        project_id = self.project_id()
+        project_id = self.project_id
 
         session_factory = self.replay_flight_data(
             'ml-jobs-query', project_id)
@@ -78,7 +78,7 @@ class MLJobTest(BaseTest):
         )
 
     def test_jobs_get(self):
-        project_id = self.project_id()
+        project_id = self.project_id
         name = "test_job"
 
         factory = self.replay_flight_data('ml-job-get', project_id=project_id)
