@@ -728,6 +728,9 @@ class TestInstanceGroupManager(BaseTest):
         self.assertEqual('instance-group-2', resources[0]['name'])
 
 
+# NOTE: Flight data for Region Commitment tests was manually modified because
+# we cannot reliably test against actual commitments in the test project. Since the
+# minimum is a 12 month commitment
 class RegionCommitmentTest(BaseTest):
 
     def test_region_commitment_query(self):
