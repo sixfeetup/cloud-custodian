@@ -5,33 +5,9 @@ import json
 import pickle
 from unittest.mock import Mock, patch, MagicMock
 
+from c7n.cache import InMemoryCache
 from c7n.config import Bag
 from c7n.resolver import URIResolver, ValuesFrom
-
-
-class FakeCache:
-    """Test cache implementation for integration testing."""
-
-    def __init__(self):
-        self.state = {}
-
-    def get(self, key):
-        return self.state.get(pickle.dumps(key))
-
-    def save(self, key, data):
-        self.state[pickle.dumps(key)] = data
-
-    def load(self):
-        return True
-
-    def close(self):
-        pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args, **kw):
-        return
 
 
 class TestAzureBlobResolverIntegration:
@@ -65,7 +41,7 @@ class TestAzureBlobResolverIntegration:
         mock_session_factory = Mock(return_value=mock_session)
 
         # Create resolver and test
-        cache = FakeCache()
+        cache = InMemoryCache(config=None)
         resolver = URIResolver(mock_session_factory, cache)
         uri = "azure://myaccount.blob.core.windows.net/mycontainer/test.json"
 
@@ -92,7 +68,7 @@ class TestAzureBlobResolverIntegration:
         mock_session_factory = Mock(return_value=mock_session)
 
         # Create ValuesFrom instance
-        cache = FakeCache()
+        cache = InMemoryCache(config=None)
         manager = Bag(
             session_factory=mock_session_factory,
             _cache=cache,
@@ -135,7 +111,7 @@ class TestAzureBlobResolverIntegration:
         mock_session_factory = Mock(return_value=mock_session)
 
         # Create ValuesFrom instance with JMESPath expression
-        cache = FakeCache()
+        cache = InMemoryCache(config=None)
         manager = Bag(
             session_factory=mock_session_factory,
             _cache=cache,
@@ -173,7 +149,7 @@ class TestAzureBlobResolverIntegration:
         mock_session_factory = Mock(return_value=mock_session)
 
         # Create ValuesFrom instance for CSV (single column, no header)
-        cache = FakeCache()
+        cache = InMemoryCache(config=None)
         manager = Bag(
             session_factory=mock_session_factory,
             _cache=cache,
@@ -211,7 +187,7 @@ class TestAzureBlobResolverIntegration:
         mock_session_factory = Mock(return_value=mock_session)
 
         # Shared cache
-        cache = FakeCache()
+        cache = InMemoryCache(config=None)
         manager = Bag(
             session_factory=mock_session_factory,
             _cache=cache,
