@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Integration tests for Azure Blob Storage resolver with c7n core."""
 import json
-import pickle
 from unittest.mock import Mock, patch, MagicMock
 
 from c7n.cache import InMemoryCache
