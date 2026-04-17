@@ -482,7 +482,6 @@ def test_spanner_backup_iam(test):
     assert resources[0]['c7n:iamPolicy']['bindings'][0]['role'] == 'roles/editor'
 
 
-
 @terraform('spanner_backup_schedule')
 def test_spanner_backup_schedule_query(test, spanner_backup_schedule):
     flight_name = 'sbs-qry'
