@@ -482,6 +482,7 @@ def test_spanner_backup_iam(test):
     assert resources[0]['c7n:iamPolicy']['bindings'][0]['role'] == 'roles/editor'
 
 
+
 @terraform('spanner_backup_schedule')
 def test_spanner_backup_schedule_query(test, spanner_backup_schedule):
     flight_name = 'sbs-qry'
@@ -495,17 +496,22 @@ def test_spanner_backup_schedule_query(test, spanner_backup_schedule):
     policy = test.load_policy(
         {
             'name': 'spanner-backup-schedule-query',
-            'resource': 'gcp.spanner-backup-schedule',
+            'resource': 'gcp.spanner-database-instance',
+            'filters': [
+                {'type': 'backup-schedule'}
+            ],
         },
         session_factory=session_factory
     )
 
     resources = policy.run()
-    resource_names = {r['name'].rsplit('/', 1)[-1] for r in resources}
-
+    # The one database (sbsd) has backup schedules so it should be returned.
+    test.assertEqual(len(resources), 1)
+    matched_schedules = resources[0]['c7n:ListItemMatches']
+    schedule_names = {s['name'].rsplit('/', 1)[-1] for s in matched_schedules}
     # Spanner also exposes a default full backup schedule for the database.
-    test.assertIn('default_daily_full_backup_schedule', resource_names)
-    test.assertIn('sbsl', resource_names)
+    test.assertIn('default_daily_full_backup_schedule', schedule_names)
+    test.assertIn('sbsl', schedule_names)
 
 
 @terraform('spanner_backup_schedule')
@@ -521,53 +527,29 @@ def test_spanner_backup_schedule_filter_retention_exceeds_limit(test, spanner_ba
     policy = test.load_policy(
         {
             'name': 'gcp-spanner-backup-schedule-retention-exceeds-limit',
-            'resource': 'gcp.spanner-backup-schedule',
+            'resource': 'gcp.spanner-database-instance',
             'filters': [
                 {
-                    'type': 'value',
-                    'key': 'retentionDuration',
-                    'op': 'gt',
-                    'value': '2592000s'
+                    'type': 'backup-schedule',
+                    'attrs': [
+                        {
+                            'type': 'value',
+                            'key': 'retentionDuration',
+                            'op': 'gt',
+                            'value': 2592000,
+                        }
+                    ],
                 }
-            ]
+            ],
         },
         session_factory=session_factory
     )
 
     resources = policy.run()
+    # sbsl has retentionDuration 2678400s (> 2592000); default_daily has 604800s (< 2592000).
+    # Only the database containing sbsl should match.
     test.assertEqual(len(resources), 1)
-    test.assertTrue(resources[0]['retentionDuration'] > '2592000s')
-
-
-@terraform('spanner_backup_schedule')
-def test_spanner_backup_schedule_get_parent_resolution(test, spanner_backup_schedule):
-    flight_name = 'sbs-get-parent'
-
-    if C7N_FUNCTIONAL:
-        project_id = get_default_project()
-        session_factory = test.record_flight_data(flight_name, project_id=project_id)
-    else:
-        session_factory = test.replay_flight_data(flight_name)
-        project_id = session_factory.keywords['project_id']
-
-    policy = test.load_policy(
-        {
-            'name': 'spanner-backup-schedule-get-parent-resolution',
-            'resource': 'gcp.spanner-backup-schedule',
-        },
-        session_factory=session_factory
-    )
-
-    schedule_name = (
-        f'projects/{project_id}/instances/sbsi/'
-        'databases/sbsd/'
-        'backupSchedules/sbsl'
-    )
-    schedule = policy.resource_manager.get_resource({'resourceName': schedule_name})
-
-    test.assertEqual(schedule['name'], schedule_name)
-    test.assertIn('c7n:spanner-database-instance', schedule)
-    test.assertEqual(
-        schedule['c7n:spanner-database-instance']['name'],
-        f'projects/{project_id}/instances/sbsi/databases/sbsd'
-    )
+    matched_schedules = resources[0]['c7n:ListItemMatches']
+    matched_names = {s['name'].rsplit('/', 1)[-1] for s in matched_schedules}
+    test.assertIn('sbsl', matched_names)
+    test.assertNotIn('default_daily_full_backup_schedule', matched_names)

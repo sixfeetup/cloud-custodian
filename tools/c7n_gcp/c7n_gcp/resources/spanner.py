@@ -1,7 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 from c7n.utils import type_schema, local_session
-from c7n.filters.core import ValueFilter
+from c7n.filters.core import ListItemFilter
 from c7n_gcp.actions import MethodAction, SetIamPolicy
 from c7n_gcp.filters import IamPolicyFilter, TimeRangeFilter
 from c7n_gcp.provider import resources
@@ -229,84 +229,55 @@ class SpannerDatabaseInstance(ChildResourceManager):
             )
 
 
-@resources.register('spanner-backup-schedule')
-class SpannerDatabaseBackupSchedule(ChildResourceManager):
-    """GCP resource:
-    https://cloud.google.com/spanner/docs/reference/rest/v1/projects.instances.databases.backupSchedules
+@SpannerDatabaseInstance.filter_registry.register('backup-schedule')
+class SpannerDatabaseBackupScheduleFilter(ListItemFilter):
+    """Filter Spanner database instances by their backup schedules.
+
+    Fetches all backup schedules for each database and matches them against
+    the given ``attrs``.  The ``retentionDuration`` field is normalized
+    from a protobuf duration string (for example ``"2592000s"``) to integer
+    seconds so that numeric operators (``gt``, ``lt``, etc.) work correctly.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: spanner-database-excessive-backup-retention
+            resource: gcp.spanner-database-instance
+            filters:
+              - type: backup-schedule
+                attrs:
+                  - type: value
+                    key: retentionDuration
+                    op: gt
+                    value: 2592000
     """
-    def _get_parent_resource_info(self, child_instance):
-        resource_name = None
-        if child_instance['name'] is not None:
-            resource_names = child_instance['name'].split('/backupSchedules')
-            if len(resource_names) > 0:
-                resource_name = resource_names[0]
-        return {
-            'resourceName': resource_name
-        }
 
-    class resource_type(ChildTypeInfo):
-        service = 'spanner'
-        version = 'v1'
-        component = 'projects.instances.databases.backupSchedules'
-        enum_spec = ('list', 'backupSchedules[]', None)
-        name = id = 'name'
-        scope = None
-        parent_spec = {
-            'resource': 'spanner-database-instance',
-            'child_enum_params': [
-                ('name', 'parent')
-            ]
-        }
-        default_report_fields = ['name']
-        permissions = ('spanner.backupSchedules.list',)
-        asset_type = 'spanner.googleapis.com/BackupSchedule'
-        urn_component = 'backupSchedule'
-        urn_id_segments = (3, 5, 7)
-        allow_metrics_filters = False
+    schema = type_schema(
+        'backup-schedule',
+        attrs={'$ref': '#/definitions/filters_common/list_item_attrs'}
+    )
+    annotate_items = True
+    permissions = ('spanner.backupSchedules.list',)
 
-        @staticmethod
-        def get(client, resource_info):
-            return client.execute_command(
-                'get', {
-                    'name': resource_info['resourceName']}
+    def get_item_values(self, resource):
+        session = local_session(self.manager.session_factory)
+        client = session.client(
+            service_name='spanner',
+            version='v1',
+            component='projects.instances.databases.backupSchedules'
+        )
+        schedules = client.execute_command(
+            'list', {'parent': resource['name']}
+        ).get('backupSchedules', [])
+
+        for schedule in schedules:
+            schedule['retentionDuration'] = parse_protobuf_duration_to_seconds(
+                schedule.get('retentionDuration')
             )
 
-
-@SpannerDatabaseBackupSchedule.filter_registry.register('value')
-class SpannerDatabaseBackupScheduleValueFilter(ValueFilter):
-    """Resource-specific value filter.
-
-    For ``retentionDuration`` comparisons we normalize duration strings
-    (for example ``2592000s``) to integer seconds, so operators like ``gt``
-    use numeric comparison instead of lexical string comparison.
-    """
-
-    _retention_key = 'retentionDuration'
-    _seconds_key = 'c7n:retentionDurationSeconds'
-
-    def _normalize_filter_data(self):
-        if getattr(self, '_normalized_filter_data', False):
-            return
-
-        data = dict(self.data)
-        if data.get('key') == self._retention_key:
-            data['key'] = self._seconds_key
-            parsed_value = parse_protobuf_duration_to_seconds(data.get('value'))
-            if parsed_value is not None:
-                data['value'] = parsed_value
-                data.setdefault('value_type', 'integer')
-        self.data = data
-        self._normalized_filter_data = True
-
-    def __call__(self, resource):
-        self._normalize_filter_data()
-
-        transformed = dict(resource)
-        if self.data.get('key') == self._seconds_key:
-            transformed[self._seconds_key] = parse_protobuf_duration_to_seconds(
-                resource.get(self._retention_key))
-
-        return super().__call__(transformed)
+        return schedules
 
 
 @SpannerDatabaseInstance.filter_registry.register('iam-policy')
