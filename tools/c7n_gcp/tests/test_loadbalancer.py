@@ -4,6 +4,7 @@ from time import sleep
 from gcp_common import BaseTest, event_data
 from pytest_terraform import terraform
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalAddress
+from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalForwardingRule
 from c7n_gcp.resources.loadbalancer import LoadBalancingForwardingRule
 
 
@@ -953,5 +954,43 @@ def test_loadbalancer_global_address_labels(test, loadbalancer_global_address_la
 
     client = policy.resource_manager.get_client()
     resource = LoadBalancingGlobalAddress.resource_type.refresh(client, resources[0])
+    assert resource['labels']['env'] == 'not-the-default'
+    assert resource['labelFingerprint'] != label_fingerprint
+
+
+@terraform('loadbalancer_global_forwarding_rule_labels')
+def test_loadbalancer_global_forwarding_rule_labels(
+        test, loadbalancer_global_forwarding_rule_labels):
+    global_forwarding_rule = loadbalancer_global_forwarding_rule_labels.resources[
+        'google_compute_global_forwarding_rule']['default']
+    project_id = global_forwarding_rule['project']
+    name = global_forwarding_rule['name']
+    label_fingerprint = global_forwarding_rule['label_fingerprint']
+    labels = global_forwarding_rule['labels']
+
+    assert labels['env'] == 'default'
+
+    factory = test.replay_flight_data(
+        'loadbalancer-global-forwarding-rule-labels',
+        project_id=project_id,
+    )
+    policy = test.load_policy(
+        {
+            'name': 'loadbalancer-global-forwarding-rule-labels',
+            'resource': 'gcp.loadbalancer-global-forwarding-rule',
+            'filters': [{'name': name}],
+            'actions': [
+                {'type': 'set-labels',
+                 'labels': {'env': 'not-the-default'}}
+            ],
+        },
+        session_factory=factory,
+    )
+
+    resources = policy.run()
+    assert len(resources) == 1
+
+    client = policy.resource_manager.get_client()
+    resource = LoadBalancingGlobalForwardingRule.resource_type.refresh(client, resources[0])
     assert resource['labels']['env'] == 'not-the-default'
     assert resource['labelFingerprint'] != label_fingerprint
