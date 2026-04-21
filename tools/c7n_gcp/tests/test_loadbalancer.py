@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from time import sleep
 from gcp_common import BaseTest, event_data
+from pytest_terraform import terraform
+from c7n_gcp.resources.loadbalancer import LoadBalancingForwardingRule
 
 
 class LoadBalancingAddressTest(BaseTest):
@@ -884,3 +886,37 @@ class LoadBalancingGlobalAddressTest(BaseTest):
                 'gcp:compute::cloud-custodian:global-address/custodian-global-address-0',
             ],
         )
+
+
+@terraform('loadbalancer_forwarding_rule_labels')
+def test_loadbalancer_forwarding_rule_labels(test, loadbalancer_forwarding_rule_labels):
+    forwarding_rule = loadbalancer_forwarding_rule_labels.resources[
+        'google_compute_forwarding_rule']['default']
+    project_id = forwarding_rule['project']
+    name = forwarding_rule['name']
+    label_fingerprint = forwarding_rule['label_fingerprint']
+    labels = forwarding_rule['labels']
+
+    assert labels['env'] == 'default'
+
+    factory = test.replay_flight_data('loadbalancer-forwarding-rule-labels', project_id=project_id)
+    policy = test.load_policy(
+        {
+            'name': 'loadbalancer-forwarding-rule-labels',
+            'resource': 'gcp.loadbalancer-forwarding-rule',
+            'filters': [{'name': name}],
+            'actions': [
+                {'type': 'set-labels',
+                 'labels': {'env': 'not-the-default'}}
+            ],
+        },
+        session_factory=factory,
+    )
+
+    resources = policy.run()
+    assert len(resources) == 1
+
+    client = policy.resource_manager.get_client()
+    resource = LoadBalancingForwardingRule.resource_type.refresh(client, resources[0])
+    assert resource['labels']['env'] == 'not-the-default'
+    assert resource['labelFingerprint'] != label_fingerprint
