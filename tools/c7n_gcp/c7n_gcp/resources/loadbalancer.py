@@ -523,6 +523,8 @@ class LoadBalancingForwardingRule(QueryResourceManager):
 
         @classmethod
         def refresh(cls, client, resource):
+            """This method is used to refresh labelFingerprint when a label action fails because the
+            fingerprint was stale."""
             return cls.get(client, {'resourceName': resource['selfLink']})
 
 
@@ -572,6 +574,8 @@ class LoadBalancingGlobalForwardingRule(QueryResourceManager):
 
         @classmethod
         def refresh(cls, client, resource):
+            """This method is used to refresh labelFingerprint when a label action fails because the
+            fingerprint was stale."""
             return cls.get(client, {'resourceName': resource['selfLink']})
 
 
@@ -598,7 +602,7 @@ class LoadBalancingGlobalAddress(QueryResourceManager):
         def parse_params(resc_name):
             """Takes resourceName (from a log) or selfLink (from a resource) and parses from it the
             parameters needed to make a request (project and address)"""
-            exp = r".*projects/(.*)/global/addresses\/(.*)"
+            exp = r".*projects/(.*)/global/addresses/(.*)"
             return re.match(exp, resc_name).groups()
 
         @classmethod
@@ -620,4 +624,6 @@ class LoadBalancingGlobalAddress(QueryResourceManager):
 
         @classmethod
         def refresh(cls, client, resource):
+            """This method is used to refresh labelFingerprint when a label action fails because the
+            fingerprint was stale."""
             return cls.get(client, {'resourceName': resource['selfLink']})

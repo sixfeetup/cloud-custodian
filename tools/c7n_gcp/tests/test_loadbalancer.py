@@ -899,8 +899,10 @@ def test_loadbalancer_forwarding_rule_labels(test, loadbalancer_forwarding_rule_
     label_fingerprint = forwarding_rule['label_fingerprint']
     labels = forwarding_rule['labels']
 
+    # Confirm the starting label
     assert labels['env'] == 'default'
 
+    # Update the label using the action
     factory = test.replay_flight_data('loadbalancer-forwarding-rule-labels', project_id=project_id)
     policy = test.load_policy(
         {
@@ -914,10 +916,10 @@ def test_loadbalancer_forwarding_rule_labels(test, loadbalancer_forwarding_rule_
         },
         session_factory=factory,
     )
-
     resources = policy.run()
     assert len(resources) == 1
 
+    # Refresh and confirm that the label and fingerprint updated
     client = policy.resource_manager.get_client()
     resource = LoadBalancingForwardingRule.resource_type.refresh(client, resources[0])
     assert resource['labels']['env'] == 'not-the-default'
@@ -933,8 +935,10 @@ def test_loadbalancer_global_address_labels(test, loadbalancer_global_address_la
     label_fingerprint = global_address['label_fingerprint']
     labels = global_address['labels']
 
+    # Confirm the starting label
     assert labels['env'] == 'default'
 
+    # Update the label using the action
     factory = test.replay_flight_data('loadbalancer-global-address-labels', project_id=project_id)
     policy = test.load_policy(
         {
@@ -948,10 +952,10 @@ def test_loadbalancer_global_address_labels(test, loadbalancer_global_address_la
         },
         session_factory=factory,
     )
-
     resources = policy.run()
     assert len(resources) == 1
 
+    # Refresh and confirm that the label and fingerprint updated
     client = policy.resource_manager.get_client()
     resource = LoadBalancingGlobalAddress.resource_type.refresh(client, resources[0])
     assert resource['labels']['env'] == 'not-the-default'
@@ -968,8 +972,10 @@ def test_loadbalancer_global_forwarding_rule_labels(
     label_fingerprint = global_forwarding_rule['label_fingerprint']
     labels = global_forwarding_rule['labels']
 
+    # Confirm the starting label
     assert labels['env'] == 'default'
 
+    # Update the label using an action
     factory = test.replay_flight_data(
         'loadbalancer-global-forwarding-rule-labels',
         project_id=project_id,
@@ -986,10 +992,10 @@ def test_loadbalancer_global_forwarding_rule_labels(
         },
         session_factory=factory,
     )
-
     resources = policy.run()
     assert len(resources) == 1
 
+    # Refresh and confirm that the label and fingerprint updated
     client = policy.resource_manager.get_client()
     resource = LoadBalancingGlobalForwardingRule.resource_type.refresh(client, resources[0])
     assert resource['labels']['env'] == 'not-the-default'
