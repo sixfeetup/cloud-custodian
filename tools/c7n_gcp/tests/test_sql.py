@@ -8,6 +8,7 @@ from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
 from dateutil import parser
 from freezegun import freeze_time
+from pytest_terraform import terraform
 
 
 class SqlInstanceTest(BaseTest):

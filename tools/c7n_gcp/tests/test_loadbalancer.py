@@ -5,6 +5,7 @@ from gcp_common import BaseTest, event_data
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalAddress
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalForwardingRule
 from c7n_gcp.resources.loadbalancer import LoadBalancingForwardingRule
+from pytest_terraform import terraform
 
 
 class LoadBalancingAddressTest(BaseTest):

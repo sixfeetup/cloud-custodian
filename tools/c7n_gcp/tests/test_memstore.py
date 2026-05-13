@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from gcp_common import BaseTest
+from pytest_terraform import terraform
 
 
 class RedisInstanceTest(BaseTest):
