@@ -5,24 +5,12 @@ from .common import ACCOUNT_ID, BaseTest, event_data
 from botocore.exceptions import ClientError
 from pytest_terraform import terraform
 from c7n.testing import C7N_FUNCTIONAL
-import pytest
-
-
-@terraform('bedrock_model_invocation_job')
-def test_bedrock_model_invocation_job_fixture():
-    pass
 
 
 class BedrockModelInvocationJob(BaseTest):
-    @pytest.fixture(autouse=True)
-    def setup(self, bedrock_model_invocation_job):
-        """Auto-use fixture to inject terraform fixture into class."""
-        self.bedrock_model_invocation_job = bedrock_model_invocation_job
-
     @staticmethod
     def create_bedrock_invocation_job(session_factory, tf_fixture):
         """Helper to create a Bedrock model invocation job using Terraform resources."""
-        # Extract outputs from the fixture's outputs attribute (fresh data from Terraform)
         role_arn = tf_fixture.outputs['role_arn']['value']
         input_s3_uri = tf_fixture.outputs['input_s3_uri']['value']
         output_s3_uri = tf_fixture.outputs['output_s3_uri']['value']
@@ -524,17 +512,7 @@ class BedrockKnowledgeBase(BaseTest):
         self.assertEqual(len(knowledgebases), 0)
 
 
-@terraform('bedrock_application_inference_profile')
-def test_bedrock_application_inference_profile_fixture():
-    pass
-
-
 class BedrockApplicationInferenceProfile(BaseTest):
-    @pytest.fixture(autouse=True)
-    def setup(self, bedrock_application_inference_profile):
-        """Auto-use fixture to inject terraform fixture into class."""
-        self.bedrock_application_inference_profile = bedrock_application_inference_profile
-
     def test_bedrock_application_inference_profile(self):
         if C7N_FUNCTIONAL:
             session_factory = self.record_flight_data(
@@ -580,9 +558,6 @@ class BedrockApplicationInferenceProfile(BaseTest):
 
         client = session_factory().client('bedrock')
 
-        profile_arn = self.bedrock_application_inference_profile[
-            'aws_bedrock_inference_profile.test_profile.arn']
-
         # Test adding tags - use tag-based filtering that works in both modes
         add_filters = [
             {'tag:Owner': 'c7n'},
@@ -590,6 +565,8 @@ class BedrockApplicationInferenceProfile(BaseTest):
             {'tag:NewTag': 'absent'},
         ]
         if C7N_FUNCTIONAL:
+            profile_arn = self.bedrock_application_inference_profile[
+                'aws_bedrock_inference_profile.test_profile.arn']
             add_filters.append({'inferenceProfileArn': profile_arn})
 
         p = self.load_policy(
@@ -623,6 +600,8 @@ class BedrockApplicationInferenceProfile(BaseTest):
             {'tag:NewTag': 'NewValue'},
         ]
         if C7N_FUNCTIONAL:
+            profile_arn = self.bedrock_application_inference_profile[
+                'aws_bedrock_inference_profile.test_profile.arn']
             remove_filters.append({'inferenceProfileArn': profile_arn})
 
         p = self.load_policy(
@@ -664,16 +643,16 @@ class BedrockApplicationInferenceProfile(BaseTest):
 
         client = session_factory().client('bedrock')
 
-        profile_arn = self.bedrock_application_inference_profile[
-            'aws_bedrock_inference_profile.test_profile.arn']
-
         # Mark resources for operation - use tag-based filtering
         mark_filters = [
             {'tag:Owner': 'c7n'},
             {'tag:Environment': 'test'},
             {'tag:maid_status': 'absent'},
         ]
-        mark_filters.append({'inferenceProfileArn': profile_arn})
+        if C7N_FUNCTIONAL:
+            profile_arn = self.bedrock_application_inference_profile[
+                'aws_bedrock_inference_profile.test_profile.arn']
+            mark_filters.append({'inferenceProfileArn': profile_arn})
 
         p = self.load_policy(
             {
@@ -709,7 +688,8 @@ class BedrockApplicationInferenceProfile(BaseTest):
                 'skew': 7
             }
         ]
-        marked_filters.append({'inferenceProfileArn': profile_arn})
+        if C7N_FUNCTIONAL:
+            marked_filters.append({'inferenceProfileArn': profile_arn})
 
         p = self.load_policy(
             {
@@ -817,6 +797,7 @@ def test_bedrock_inference_profile_delete_conflict(test, caplog):
         'Unable to delete inference profile arn:aws:bedrock:us-east-1:644160558196:application-inference-profile/1jxlkskto2ug',  # noqa
         caplog.text
     )
+
 
 def test_bedrock_model_invocation_job_stop_not_found(test, caplog):
     if C7N_FUNCTIONAL:
