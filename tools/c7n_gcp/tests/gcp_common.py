@@ -16,7 +16,7 @@ from c7n.testing import (
     C7N_FUNCTIONAL,
 )
 
-from c7n_gcp.client import Session, LOCAL_THREAD
+from c7n_gcp.client import Session, LOCAL_THREAD, get_default_project
 
 from recorder import (
     HttpRecorder,
@@ -39,7 +39,10 @@ class GoogleFlightRecorder(CustodianTestCore):
     data_dir = Path(__file__).parent.parent / 'tests' / 'data' / 'flights'
 
     def cleanUp(self):
-        LOCAL_THREAD.http = None
+        # Remove the attribute entirely so future checks don't treat a stale
+        # None value as a valid cached http client.
+        if hasattr(LOCAL_THREAD, 'http'):
+            delattr(LOCAL_THREAD, 'http')
         return reset_session_cache()
 
     def record_flight_data(self, test_case, project_id=None):
@@ -87,7 +90,10 @@ class GoogleFlightRecorder(CustodianTestCore):
 class FlightRecorderTest(TestUtils):
 
     def cleanUp(self):
-        LOCAL_THREAD.http = None
+        # Remove the attribute entirely so future checks don't treat a stale
+        # None value as a valid cached http client.
+        if hasattr(LOCAL_THREAD, 'http'):
+            delattr(LOCAL_THREAD, 'http')
         return super(FlightRecorderTest, self).cleanUp()
 
     def record_flight_data(self, test_case, project_id=None):
@@ -131,3 +137,9 @@ class BaseTest(FlightRecorderTest):
     @property
     def account_id(self):
         return ""
+
+    @property
+    def project_id(self):
+        if C7N_FUNCTIONAL:
+            return get_default_project()
+        return PROJECT_ID

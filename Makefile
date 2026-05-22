@@ -53,7 +53,7 @@ test-functional:
 
 test-functional-azure:
 # note this will provision real resources in Azure's public cloud environment
-	C7N_FUNCTIONAL=yes uv run pytest tools/c7n_azure/tests_azure/tests_resources/test_entraid.py -k terraform -m functional $(ARGS)
+	C7N_FUNCTIONAL=yes uv run pytest tools/c7n_azure/tests_azure -k terraform -m functional $(ARGS)
 
 sphinx:
 	make -f docs/Makefile.sphinx html
@@ -134,6 +134,7 @@ data-update:
 	uv run python tools/dev/data_cftypedb.py -f tests/data/cfn-types.json
 	uv run python tools/dev/data_updatearnref.py > tests/data/arn-types.json
 	uv run python tools/dev/data_iamdb.py -f tests/data/iam-actions.json
+	uv run python tools/dev/data_awspartitions.py > c7n/data/aws_region_partition_map.json
 # gcp data sets
 	uv run python tools/dev/data_gcpiamdb.py -f tools/c7n_gcp/tests/data/iam-permissions.json
 	uv run python tools/dev/data_gcpregion.py -f tools/c7n_gcp/c7n_gcp/regions.json
