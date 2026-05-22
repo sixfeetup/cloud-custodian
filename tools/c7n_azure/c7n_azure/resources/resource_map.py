@@ -22,7 +22,7 @@ ResourceMap = {
     "azure.cdnprofile": "c7n_azure.resources.cdn.CdnProfile",
     "azure.cognitiveservice": "c7n_azure.resources.ai_foundry.CognitiveService",
     "azure.ai-foundry-deployment": "c7n_azure.resources.ai_foundry.AiFoundryDeployment",
-    "azure.ai-foundry-cognitiveservice-deployment": "c7n_azure.resources.ai_foundry.AiFoundryCognitiveServiceDeployment", # noqa
+    "azure.foundry-deployment": "c7n_azure.resources.ai_foundry.AiFoundryCognitiveServiceDeployment", # noqa
     "azure.container-group": "c7n_azure.resources.aci.ContainerGroup",
     "azure.containerregistry": "c7n_azure.resources.container_registry.ContainerRegistry",
     "azure.container-registry": "c7n_azure.resources.container_registry.ContainerRegistry",

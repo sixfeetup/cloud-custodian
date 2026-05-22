@@ -1,6 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import requests
+
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ArmResourceManager, ChildArmResourceManager
 from c7n_azure.actions.base import AzureBaseAction
@@ -44,7 +46,7 @@ class CognitiveService(ArmResourceManager):
         resource_type = 'Microsoft.CognitiveServices/accounts'
 
 
-@resources.register('ai-foundry-cognitiveservice-deployment')
+@resources.register('foundry-deployment')
 class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
     """AI Foundry deployment resource using Cognitive Services list API.
 
@@ -59,8 +61,8 @@ class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
     .. code-block:: yaml
 
         policies:
-          - name: ai-foundry-cognitiveservice-deployments-find-failed
-            resource: azure.ai-foundry-cognitiveservice-deployment
+          - name: foundry-deployments-find-failed
+            resource: azure.foundry-deployment
             filters:
               - type: value
                 key: properties.provisioningState
@@ -90,6 +92,30 @@ class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
                 'resource_group_name': parent_resource['resourceGroup'],
                 'account_name': parent_resource['name'],
             }
+
+    def enumerate_resources(self, parent_resource, type_info, vault_url=None, **params):
+        session = self.get_session()
+        scope = f'{session.resource_endpoint}.default'
+        token = session.credentials.get_token(scope)
+        url = (
+            f'{session.cloud_endpoints.endpoints.resource_manager}'
+            f'{parent_resource["id"]}/deployments'
+        )
+        response = requests.get(
+            url,
+            headers={'Authorization': f'Bearer {token.token}'},
+            params={'api-version': type_info.api_version},
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = response.json()
+
+        if 'value' not in payload:
+            raise TypeError(
+                'Enumerating AI Foundry deployments returned a payload without a value list.'
+            )
+
+        return payload['value']
 
 
 class AiFoundryCognitiveServiceDeploymentDeleteAction(AzureBaseAction):
@@ -142,8 +168,8 @@ class AiFoundryDeployment(AiFoundryCognitiveServiceDeployment):
     """Azure AI Foundry Deployment Resource.
 
     Shares the same endpoint path as
-    ``azure.ai-foundry-cognitiveservice-deployment`` but uses the AI Foundry
-    API version ``2025-06-01``.
+    ``azure.foundry-deployment`` but uses the AI Foundry API version
+    ``2025-06-01``.
     """
 
     class resource_type(AiFoundryCognitiveServiceDeployment.resource_type):

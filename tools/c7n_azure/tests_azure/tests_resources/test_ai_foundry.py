@@ -109,12 +109,12 @@ class CognitiveServiceTest(BaseTest):
 
 
 class AiFoundryCognitiveServiceDeploymentTest(BaseTest):
-    def test_ai_foundry_cognitiveservice_deployment_schema_validate(self):
+    def test_foundry_deployment_schema_validate(self):
         with self.sign_out_patch():
             p = self.load_policy(
                 {
-                    'name': 'test-azure-ai-foundry-cognitiveservice-deployment',
-                    'resource': 'azure.ai-foundry-cognitiveservice-deployment',
+                    'name': 'test-azure-foundry-deployment',
+                    'resource': 'azure.foundry-deployment',
                 },
                 validate=True,
             )
@@ -123,14 +123,14 @@ class AiFoundryCognitiveServiceDeploymentTest(BaseTest):
     @requires_arm_polling
     @arm_template('cognitive-service-deployment.json')
     @cassette_name('ai-foundry-cognitiveservice-deployment-get')
-    def test_ai_foundry_cognitiveservice_deployment_get_resources(self):
+    def test_foundry_deployment_get_resources(self):
         deployment_name = os.environ.get(
             'AZURE_OPENAI_DEPLOYMENT_NAME'
         )
         p = self.load_policy(
             {
-                'name': 'test-azure-ai-foundry-cognitiveservice-deployment-get',
-                'resource': 'azure.ai-foundry-cognitiveservice-deployment',
+                'name': 'test-azure-foundry-deployment-get',
+                'resource': 'azure.foundry-deployment',
             }
         )
 
@@ -139,12 +139,12 @@ class AiFoundryCognitiveServiceDeploymentTest(BaseTest):
         self.assertGreaterEqual(len(resources), 1)
         self.assertTrue(any(r['name'].endswith(deployment_name) for r in resources))
 
-    def test_ai_foundry_cognitiveservice_deployment_tagging_not_implemented(self):
+    def test_foundry_deployment_tagging_not_implemented(self):
         with self.assertRaises(PolicyValidationError):
             self.load_policy(
                 {
-                    'name': 'test-tag-ai-foundry-cognitiveservice-deployment',
-                    'resource': 'azure.ai-foundry-cognitiveservice-deployment',
+                    'name': 'test-tag-foundry-deployment',
+                    'resource': 'azure.foundry-deployment',
                     'actions': [
                         {
                             'type': 'tag',
@@ -159,18 +159,18 @@ class AiFoundryCognitiveServiceDeploymentTest(BaseTest):
     @requires_arm_polling
     @arm_template('cognitive-service-deployment.json')
     @cassette_name('ai-foundry-cognitiveservice-deployment-delete')
-    def test_z_ai_foundry_cognitiveservice_deployment_delete(self):
+    def test_z_foundry_deployment_delete(self):
         read_policy = self.load_policy(
             {
-                'name': 'test-azure-ai-foundry-cognitiveservice-deployment-read-before-delete',
-                'resource': 'azure.ai-foundry-cognitiveservice-deployment',
+                'name': 'test-azure-foundry-deployment-read-before-delete',
+                'resource': 'azure.foundry-deployment',
             }
         )
 
         delete_policy = self.load_policy(
             {
-                'name': 'test-azure-ai-foundry-cognitiveservice-deployment-delete',
-                'resource': 'azure.ai-foundry-cognitiveservice-deployment',
+                'name': 'test-azure-foundry-deployment-delete',
+                'resource': 'azure.foundry-deployment',
                 'actions': [{'type': 'delete'}],
             }
         )
