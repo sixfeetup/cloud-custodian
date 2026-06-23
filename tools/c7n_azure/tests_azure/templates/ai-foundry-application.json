@@ -7,15 +7,15 @@
         },
         "deploymentName": {
             "type": "string",
-            "defaultValue": "cctest-gpt4o-mini"
+            "defaultValue": "cctest-gpt41mini"
         },
         "modelName": {
             "type": "string",
-            "defaultValue": "gpt-4o-mini"
+            "defaultValue": "gpt-4.1-mini"
         },
         "modelVersion": {
             "type": "string",
-            "defaultValue": "2024-07-18"
+            "defaultValue": "2025-04-14"
         },
         "projectName": {
             "type": "string",

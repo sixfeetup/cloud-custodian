@@ -210,9 +210,9 @@ deploy_resource() {
 
         account_name="cctestaifoundry${unique_suffix}"
         project_name="${AZURE_AI_FOUNDRY_PROJECT_NAME:-cctest-${filenameNoExtension}-project}"
-        deployment_name="${AZURE_OPENAI_DEPLOYMENT_NAME:-cctest-gpt4o-mini}"
-        model_name="${AZURE_OPENAI_MODEL_NAME:-gpt-4o-mini}"
-        model_version="${AZURE_OPENAI_MODEL_VERSION:-2024-07-18}"
+        deployment_name="${AZURE_OPENAI_DEPLOYMENT_NAME:-cctest-gpt41mini}"
+        model_name="${AZURE_OPENAI_MODEL_NAME:-gpt-4.1-mini}"
+        model_version="${AZURE_OPENAI_MODEL_VERSION:-2025-04-14}"
         app_name="cctest-aifoundry-application"
         phase1_deployment_name="ai-foundry-application-phase1-${unique_suffix}"
         phase2_deployment_name="ai-foundry-application-phase2-${unique_suffix}"
@@ -236,7 +236,10 @@ deploy_resource() {
         if [[ ${is_user} -eq 1 ]]; then
             principal_type="User"
         fi
-        if ! ensure_role_for_active_principal "$rgName" "Azure AI User" "$principal_type"; then
+        if ! ensure_role_for_active_principal \
+            "$rgName" \
+            "eadc314b-1a2d-4efa-be10-5d325db5065e" \
+            "$principal_type"; then
             echo "Required role assignment check failed; cannot continue with agent creation."
             exit 1
         fi
