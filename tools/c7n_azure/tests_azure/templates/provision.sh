@@ -25,7 +25,18 @@ print_failed_group_deployment() {
             --resource-group "$rgName" \
             --name "$latest_deployment" \
             --query "[].{state:properties.provisioningState,status:properties.statusMessage}" \
-            --output jsonc || true
+            --output jsonc \
+            || az group deployment operation list \
+                --resource-group "$rgName" \
+                --name "$latest_deployment" \
+                --query "[].{state:properties.provisioningState,status:properties.statusMessage}" \
+                --output jsonc \
+            || az deployment group show \
+                --resource-group "$rgName" \
+                --name "$latest_deployment" \
+                --query "{state:properties.provisioningState,error:properties.error}" \
+                --output jsonc \
+            || true
     fi
 }
 
@@ -53,6 +64,19 @@ else
         skip_list=()
     fi
 fi
+
+# Append uniqueId parameter if template has "uniqueId" parameter defined to avoid conflicts with already 
+# existing resources in case of multiple deployments
+append_generated_unique_id_parameter() {
+    local template_file="$1"
+    local -n params_ref="$2"
+
+    if grep -q '"uniqueId"[[:space:]]*:' "$template_file"; then
+        local unique_suffix
+        unique_suffix="$(date +%s%N | tail -c 13)"
+        params_ref+=("uniqueId=${unique_suffix}")
+    fi
+}
 
 deploy_resource() {
     fileName=${1##*/}
@@ -200,7 +224,19 @@ deploy_resource() {
         rm -f cost-management.body
 
     else
-        az deployment group create --resource-group $rgName --template-file $file --mode Complete --output None
+        template_parameters=()
+        append_generated_unique_id_parameter "$file" template_parameters
+
+        if [[ ${#template_parameters[@]} -gt 0 ]]; then
+            az deployment group create \
+                --resource-group "$rgName" \
+                --template-file "$file" \
+                --parameters "${template_parameters[@]}" \
+                --mode Complete \
+                --output None
+        else
+            az deployment group create --resource-group $rgName --template-file $file --mode Complete --output None
+        fi
     fi
 
     if [[ "$fileName" == "cosmosdb.json" ]]; then
