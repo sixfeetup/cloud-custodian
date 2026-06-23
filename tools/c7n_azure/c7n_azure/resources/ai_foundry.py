@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from azure.mgmt.cognitiveservices.models import ConnectionPropertiesV2
 from azure.mgmt.resource.resources.models import GenericResource
 
 from c7n.utils import type_schema
@@ -10,16 +11,39 @@ from c7n_azure.resources.arm import ChildArmResourceManager
 from msrestazure.tools import parse_resource_id
 
 
+_MSREST_SCALARS = {
+    'str': {'type': 'string'},
+    'bool': {'type': 'boolean'},
+    'int': {'type': 'integer'},
+    'float': {'type': 'number'},
+    'iso-8601': {'type': ['string', 'null']},
+}
+
+
+def _msrest_type_to_jsonschema(msrest_type):
+    if msrest_type.startswith('[') and msrest_type.endswith(']'):
+        return {
+            'type': 'array',
+            'items': _msrest_type_to_jsonschema(msrest_type[1:-1])
+        }
+    if msrest_type.startswith('{') and msrest_type.endswith('}'):
+        return {
+            'type': 'object',
+            'additionalProperties': _msrest_type_to_jsonschema(msrest_type[1:-1])
+        }
+    return _MSREST_SCALARS.get(msrest_type, {'type': 'object'})
+
+
+_READONLY_CONNECTION_PROPERTIES = {
+    key for key, value in ConnectionPropertiesV2._validation.items()
+    if value.get('readonly')
+}
+
+
 WRITABLE_PROPERTIES_SCHEMA = {
-    'authType': {'type': 'string'},
-    'category': {'type': 'string'},
-    'target': {'type': 'string'},
-    'metadata': {'type': 'object'},
-    'isSharedToAll': {'type': 'boolean'},
-    'group': {'type': 'string'},
-    'expiryTime': {'type': ['string', 'null']},
-    'useWorkspaceManagedIdentity': {'type': 'boolean'},
-    'sharedUserList': {'type': 'array'},
+    info['key']: _msrest_type_to_jsonschema(info['type'])
+    for snake, info in ConnectionPropertiesV2._attribute_map.items()
+    if snake not in _READONLY_CONNECTION_PROPERTIES
 }
 
 
