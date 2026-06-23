@@ -1,8 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-from ..azure_common import BaseTest, arm_template, cassette_name
 from c7n.exceptions import PolicyValidationError
+
+from ..azure_common import BaseTest, arm_template, cassette_name
 
 
 class AIFoundryProjectTest(BaseTest):
@@ -107,7 +108,7 @@ class AIFoundryConnectionTest(BaseTest):
             self.assertTrue(p)
 
     @arm_template('ai-foundry-connection.json')
-    @cassette_name('ai-foundry-connections')
+    @cassette_name('ai-foundry-connections-query')
     def test_ai_foundry_connection_query(self):
         project_policy = self.load_policy({
             'name': 'test-ai-foundry-project-prereq',

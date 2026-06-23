@@ -145,7 +145,6 @@ ensure_role_for_active_principal() {
     echo "Role assignment did not appear after propagation checks."
     return 1
 }
-
 deploy_resource() {
     echo "Deployment for ${filenameNoExtension} started"
 
