@@ -282,6 +282,7 @@ class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
 
         return payload['value']
 
+
 @resources.register('ai-foundry-application')
 class AIFoundryApplication(ChildArmResourceManager):
     """Azure AI Foundry Application Resource."""
