@@ -1,14 +1,16 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import requests
+
 from azure.mgmt.cognitiveservices.models import ConnectionPropertiesV2
 from azure.mgmt.resource.resources.models import GenericResource
+from msrestazure.tools import parse_resource_id
 
 from c7n.utils import type_schema
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
-from c7n_azure.resources.arm import ChildArmResourceManager
-from msrestazure.tools import parse_resource_id
+from c7n_azure.resources.arm import ArmResourceManager, ChildArmResourceManager
 
 
 _MSREST_SCALARS = {
@@ -45,6 +47,85 @@ WRITABLE_PROPERTIES_SCHEMA = {
     for snake, info in ConnectionPropertiesV2._attribute_map.items()
     if snake not in _READONLY_CONNECTION_PROPERTIES
 }
+
+
+@resources.register('cognitiveservice')
+class CognitiveService(ArmResourceManager):
+    """Cognitive Services Resource
+
+    :example:
+
+    This policy will find all Cognitive Service accounts with 1000 or more
+    total errors over the 72 hours
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cogserv-many-failures
+            resource: azure.cognitiveservice
+            filters:
+              - type: metric
+                metric: TotalErrors
+                op: ge
+                aggregation: total
+                threshold: 1000
+                timeframe: 72
+    """
+
+    class resource_type(ArmResourceManager.resource_type):
+        doc_groups = ['AI + Machine Learning']
+        service = 'azure.mgmt.cognitiveservices'
+        client = 'CognitiveServicesManagementClient'
+        enum_spec = ('accounts', 'list', None)
+        default_report_fields = (
+            'name',
+            'location',
+            'resourceGroup',
+            'sku.name'
+        )
+        resource_type = 'Microsoft.CognitiveServices/accounts'
+
+
+@resources.register('ai-foundry-project')
+class AIFoundryProject(ChildArmResourceManager):
+    """AI Foundry Project Resource
+
+    :example:
+
+    Find AI Foundry projects in a specific resource group.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: ai-foundry-projects-in-rg
+            resource: azure.ai-foundry-project
+            filters:
+              - type: value
+                key: resourceGroup
+                op: eq
+                value: my-ai-rg
+    """
+
+    class resource_type(ChildArmResourceManager.resource_type):
+        doc_groups = ['AI + Machine Learning']
+        service = 'azure.mgmt.cognitiveservices'
+        client = 'CognitiveServicesManagementClient'
+        enum_spec = ('projects', 'list', None)
+        parent_manager_name = 'cognitiveservice'
+        resource_type = 'Microsoft.CognitiveServices/accounts/projects'
+        default_report_fields = (
+            'name',
+            'location',
+            'resourceGroup',
+            '"c7n:parent-id"'
+        )
+
+        @classmethod
+        def extra_args(cls, parent_resource):
+            return {
+                'resource_group_name': parent_resource['resourceGroup'],
+                'account_name': parent_resource['name'],
+            }
 
 
 @resources.register('ai-foundry-connection')
@@ -131,38 +212,43 @@ class AIFoundryConnectionUpdateAction(AzureBaseAction):
         return "updated"
 
 
-@resources.register('ai-foundry-project')
-class AIFoundryProject(ChildArmResourceManager):
-    """AI Foundry Project Resource
+@resources.register('cognitiveservice-deployment')
+class AiFoundryCognitiveServiceDeployment(ChildArmResourceManager):
+    """AI Foundry deployment resource using Cognitive Services list API.
+
+    Uses the Azure AI Services account-management surface
+    (``Microsoft.CognitiveServices/accounts/deployments``) with API version
+    ``2024-10-01``.
 
     :example:
 
-    Find AI Foundry projects in a specific resource group.
+    This policy will find failed or canceled AI Foundry model deployments.
 
     .. code-block:: yaml
 
         policies:
-          - name: ai-foundry-projects-in-rg
-            resource: azure.ai-foundry-project
+          - name: cognitiveservice-deployments-find-failed
+            resource: azure.cognitiveservice-deployment
             filters:
               - type: value
-                key: resourceGroup
-                op: eq
-                value: my-ai-rg
+                key: properties.provisioningState
+                op: in
+                value: [Failed, Canceled]
     """
 
     class resource_type(ChildArmResourceManager.resource_type):
         doc_groups = ['AI + Machine Learning']
+        api_version = '2024-10-01'
         service = 'azure.mgmt.cognitiveservices'
         client = 'CognitiveServicesManagementClient'
-        enum_spec = ('projects', 'list', None)
+        enum_spec = ('deployments', 'list', None)
         parent_manager_name = 'cognitiveservice'
-        resource_type = 'Microsoft.CognitiveServices/accounts/projects'
+        resource_type = 'Microsoft.CognitiveServices/accounts/deployments'
         default_report_fields = (
             'name',
             'location',
             'resourceGroup',
-            '"c7n:parent-id"'
+            'type'
         )
 
         @classmethod
@@ -172,6 +258,29 @@ class AIFoundryProject(ChildArmResourceManager):
                 'account_name': parent_resource['name'],
             }
 
+    def enumerate_resources(self, parent_resource, type_info, vault_url=None, **params):
+        session = self.get_session()
+        scope = f'{session.resource_endpoint}.default'
+        token = session.credentials.get_token(scope)
+        url = (
+            f'{session.cloud_endpoints.endpoints.resource_manager}'
+            f'{parent_resource["id"]}/deployments'
+        )
+        response = requests.get(
+            url,
+            headers={'Authorization': f'Bearer {token.token}'},
+            params={'api-version': type_info.api_version},
+            timeout=30,
+        )
+        response.raise_for_status()
+        payload = response.json()
+
+        if 'value' not in payload:
+            raise TypeError(
+                'Enumerating AI Foundry deployments returned a payload without a value list.'
+            )
+
+        return payload['value']
 
 @resources.register('ai-foundry-application')
 class AIFoundryApplication(ChildArmResourceManager):
@@ -254,3 +363,57 @@ class AIFoundryAgent(ChildArmResourceManager):
 
         normalized = [self._normalize_agent_reference(parent_resource, v) for v in app_agents]
         return [r for r in normalized if self._is_agent_of_parent(r, parent_resource['id'])]
+
+
+class AiFoundryCognitiveServiceDeploymentDeleteAction(AzureBaseAction):
+    """Delete AI Foundry Cognitive Services deployments."""
+
+    schema = type_schema('delete')
+    schema_alias = True
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client('azure.mgmt.resource.ResourceManagementClient')
+
+    def _process_resource(self, resource):
+        self.client.resources.begin_delete_by_id(
+            resource['id'],
+            self.manager.resource_type.api_version,
+        )
+        return "deleted"
+
+
+def register_ai_foundry_cognitive_service_deployment_actions(registry, resource_class):
+    """Register explicit delete action for nested deployment resources."""
+    if resource_class is AiFoundryCognitiveServiceDeployment:
+        resource_class.action_registry.register(
+            'delete',
+            AiFoundryCognitiveServiceDeploymentDeleteAction,
+        )
+
+
+resources.subscribe(register_ai_foundry_cognitive_service_deployment_actions)
+
+
+@resources.register('ai-foundry-deployment')
+class AiFoundryDeployment(AiFoundryCognitiveServiceDeployment):
+    """Azure AI Foundry Deployment Resource.
+
+    Shares the same endpoint path as
+    ``azure.cognitiveservice-deployment`` but uses the AI Foundry API version
+    ``2025-06-01``.
+    """
+
+    class resource_type(AiFoundryCognitiveServiceDeployment.resource_type):
+        api_version = '2025-06-01'
+
+
+def register_ai_foundry_deployment_actions(registry, resource_class):
+    """Register explicit delete action for nested deployment resources."""
+    if resource_class is AiFoundryDeployment:
+        resource_class.action_registry.register(
+            'delete',
+            AiFoundryCognitiveServiceDeploymentDeleteAction
+        )
+
+
+resources.subscribe(register_ai_foundry_deployment_actions)
