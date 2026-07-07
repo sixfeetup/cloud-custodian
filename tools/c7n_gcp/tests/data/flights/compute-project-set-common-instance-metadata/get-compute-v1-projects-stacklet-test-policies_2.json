@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Mon, 16 Mar 2026 17:39:36 GMT",
+    "date": "Tue, 07 Jul 2026 20:52:24 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -12,24 +12,24 @@
     "status": "200",
     "content-length": "5021",
     "-content-encoding": "gzip",
-    "content-location": "https://compute.googleapis.com/compute/v1/projects/cloud-custodian?alt=json"
+    "content-location": "https://compute.googleapis.com/compute/v1/projects/stacklet-test-policies?alt=json"
   },
   "body": {
     "kind": "compute#project",
     "id": "3099843102246789847",
     "creationTimestamp": "2024-06-17T18:00:40.463-07:00",
-    "name": "cloud-custodian",
+    "name": "stacklet-test-policies",
     "commonInstanceMetadata": {
       "kind": "compute#metadata",
-      "fingerprint": "uIRm46oOI3I=",
+      "fingerprint": "Z7CGr90YADM=",
       "items": [
+        {
+          "key": "c7n-test-key",
+          "value": "updated-value"
+        },
         {
           "key": "enable-oslogin",
           "value": "true"
-        },
-        {
-          "key": "c7n-test-key",
-          "value": "initial-value"
         }
       ]
     },
@@ -37,12 +37,12 @@
       {
         "metric": "SNAPSHOTS",
         "limit": 1000,
-        "usage": 1
+        "usage": 0
       },
       {
         "metric": "NETWORKS",
         "limit": 5,
-        "usage": 2
+        "usage": 1
       },
       {
         "metric": "FIREWALLS",
@@ -157,7 +157,7 @@
       {
         "metric": "CPUS_ALL_REGIONS",
         "limit": 32,
-        "usage": 1
+        "usage": 0
       },
       {
         "metric": "SECURITY_POLICIES",
@@ -197,7 +197,7 @@
       {
         "metric": "GLOBAL_INTERNAL_ADDRESSES",
         "limit": 5000,
-        "usage": 1
+        "usage": 0
       },
       {
         "metric": "VPN_GATEWAYS",
@@ -216,7 +216,7 @@
       },
       {
         "metric": "GPUS_ALL_REGIONS",
-        "limit": 0,
+        "limit": 1,
         "usage": 0
       },
       {
@@ -275,7 +275,7 @@
         "usage": 0
       }
     ],
-    "selfLink": "https://www.googleapis.com/compute/v1/projects/cloud-custodian",
+    "selfLink": "https://www.googleapis.com/compute/v1/projects/stacklet-test-policies",
     "defaultServiceAccount": "859150599087-compute@developer.gserviceaccount.com",
     "xpnProjectStatus": "UNSPECIFIED_XPN_PROJECT_STATUS",
     "defaultNetworkTier": "PREMIUM",

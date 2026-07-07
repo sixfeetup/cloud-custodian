@@ -1,9 +1,9 @@
 {
   "headers": {
-    "etag": "fWOyUjjxurJikUYbicpO3TcI_-Q=/G7ZYPPjclTpD7eMlZpxmvQ_U5W0=",
+    "etag": "Q2_cJcPJPCEfIymkZpf7crUz3go=/umLnjQKneJcY1JABTSBMrvYsLgI=",
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Thu, 12 Mar 2026 12:03:48 GMT",
+    "date": "Tue, 07 Jul 2026 20:56:24 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -11,7 +11,7 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "57161",
+    "content-length": "53687",
     "-content-encoding": "gzip",
     "content-location": "https://compute.googleapis.com/compute/v1/projects/cloud-custodian/aggregated/instances?alt=json"
   },
@@ -23,9 +23,9 @@
         "instances": [
           {
             "kind": "compute#instance",
-            "id": "7503065182057207138",
-            "creationTimestamp": "2026-03-12T05:03:26.576-07:00",
-            "name": "unique-weasel",
+            "id": "1726110852075018505",
+            "creationTimestamp": "2026-07-07T13:56:07.063-07:00",
+            "name": "distinct-lab",
             "tags": {
               "fingerprint": "42WmSpB8rSM="
             },
@@ -36,8 +36,8 @@
             "networkInterfaces": [
               {
                 "kind": "compute#networkInterface",
-                "network": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/global/networks/unique-weasel-vpc",
-                "subnetwork": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/regions/us-central1/subnetworks/unique-weasel-subnet",
+                "network": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/global/networks/distinct-lab-vpc",
+                "subnetwork": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/regions/us-central1/subnetworks/distinct-lab-subnet",
                 "networkIP": "10.2.0.2",
                 "name": "nic0",
                 "accessConfigs": [
@@ -45,11 +45,11 @@
                     "kind": "compute#accessConfig",
                     "type": "ONE_TO_ONE_NAT",
                     "name": "external-nat",
-                    "natIP": "104.198.150.238",
+                    "natIP": "34.136.100.111",
                     "networkTier": "PREMIUM"
                   }
                 ],
-                "fingerprint": "7oBziULyIcM=",
+                "fingerprint": "uGvsyFyDRNc=",
                 "stackType": "IPV4_ONLY"
               }
             ],
@@ -58,7 +58,7 @@
                 "kind": "compute#attachedDisk",
                 "type": "PERSISTENT",
                 "mode": "READ_WRITE",
-                "source": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/zones/us-central1-a/disks/unique-weasel",
+                "source": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/zones/us-central1-a/disks/distinct-lab",
                 "deviceName": "persistent-disk-0",
                 "index": 0,
                 "boot": true,
@@ -118,7 +118,7 @@
                 }
               ]
             },
-            "selfLink": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/zones/us-central1-a/instances/unique-weasel",
+            "selfLink": "https://www.googleapis.com/compute/v1/projects/cloud-custodian/zones/us-central1-a/instances/distinct-lab",
             "scheduling": {
               "onHostMaintenance": "MIGRATE",
               "automaticRestart": true,
@@ -140,8 +140,8 @@
             "shieldedInstanceIntegrityPolicy": {
               "updateAutoLearnPolicy": true
             },
-            "fingerprint": "TtYeAxVqmWA=",
-            "lastStartTimestamp": "2026-03-12T05:03:34.386-07:00",
+            "fingerprint": "jtn2HAgl_Qc=",
+            "lastStartTimestamp": "2026-07-07T13:56:15.147-07:00",
             "satisfiesPzi": true,
             "resourceStatus": {
               "effectiveInstanceMetadata": {
@@ -688,6 +688,18 @@
             {
               "key": "scope",
               "value": "zones/europe-west4-a"
+            }
+          ]
+        }
+      },
+      "zones/europe-west4-ai1a": {
+        "warning": {
+          "code": "NO_RESULTS_ON_PAGE",
+          "message": "No results for the scope 'zones/europe-west4-ai1a'.",
+          "data": [
+            {
+              "key": "scope",
+              "value": "zones/europe-west4-ai1a"
             }
           ]
         }
@@ -1372,6 +1384,18 @@
             {
               "key": "scope",
               "value": "zones/us-south1-b"
+            }
+          ]
+        }
+      },
+      "zones/us-south1-ai1b": {
+        "warning": {
+          "code": "NO_RESULTS_ON_PAGE",
+          "message": "No results for the scope 'zones/us-south1-ai1b'.",
+          "data": [
+            {
+              "key": "scope",
+              "value": "zones/us-south1-ai1b"
             }
           ]
         }
