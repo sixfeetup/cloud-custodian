@@ -1,12 +1,16 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import functools
+
 from c7n.manager import resources
-from c7n.query import ConfigSource, QueryResourceManager, TypeInfo, DescribeSource, ResourceQuery
+from c7n.query import ConfigSource, QueryResourceManager, TypeInfo, DescribeSource
 from c7n.tags import universal_augment
 from c7n.filters import ValueFilter, ListItemFilter
 from c7n.utils import type_schema, local_session
 from c7n.actions import BaseAction
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import ClientError, PolicyValidationError
+from c7n.resources.aws import shape_validate
+from c7n.utils import is_not_found
 
 
 class DescribeRegionalWaf(DescribeSource):
@@ -18,87 +22,6 @@ class DescribeRegionalWaf(DescribeSource):
     def augment(self, resources):
         resources = super().augment(resources)
         return universal_augment(self.manager, resources)
-
-
-class WafV2ResourceQuery(ResourceQuery):
-    """Custom query handler that uses us-east-1 for CLOUDFRONT scope WebACLs"""
-
-    def filter(self, resource_manager, **params):
-        """Query a set of resources, using us-east-1 for CLOUDFRONT scope."""
-        m = self.resolve(resource_manager.resource_type)
-
-        # CloudFront WebACLs must be queried from us-east-1
-        region = resource_manager.config.region
-        if params.get('Scope') == 'CLOUDFRONT':
-            region = 'us-east-1'
-
-        if resource_manager.get_client:
-            client = resource_manager.get_client()
-        else:
-            client = local_session(self.session_factory).client(m.service, region)
-
-        enum_op, path, extra_args = m.enum_spec
-        if extra_args:
-            params = {**extra_args, **params}
-        return (
-            self._invoke_client_enum(
-                client, enum_op, params, path, getattr(resource_manager, 'retry', None)
-            )
-            or []
-        )
-
-
-class DescribeWafV2(DescribeSource):
-    resource_query_factory = WafV2ResourceQuery
-
-    def get_permissions(self):
-        perms = super().get_permissions()
-        perms.remove('wafv2:GetWebAcl')
-        return perms
-
-    def augment(self, resources):
-        # CloudFront WebACLs (Scope=CLOUDFRONT) must be queried from us-east-1
-        region = self.manager.region
-        if resources and resources[0].get('Scope') == 'CLOUDFRONT':
-            region = 'us-east-1'
-
-        client = local_session(self.manager.session_factory).client('wafv2', region_name=region)
-
-        def _detail(webacl):
-            response = client.get_web_acl(
-                Name=webacl['Name'], Id=webacl['Id'], Scope=webacl['Scope']
-            )
-            detail = response.get('WebACL', {})
-
-            return {**webacl, **detail}
-
-        with_tags = universal_augment(self.manager, resources)
-
-        return list(map(_detail, with_tags))
-
-    # set REGIONAL for Scope as default
-    def get_query_params(self, query):
-        q = super(DescribeWafV2, self).get_query_params(query)
-        if q:
-            if 'Scope' not in q:
-                q['Scope'] = 'REGIONAL'
-        else:
-            q = {'Scope': 'REGIONAL'}
-        return q
-
-    def resources(self, query):
-        scope = (query or {}).get('Scope', 'REGIONAL')
-        # The AWS API does not include the scope as part of the WebACL information, but scope
-        # is a required parameter for most API calls - we augment the resource with the desired
-        # scope here in order to use it downstream for API calls
-        return [{'Scope': scope, **r} for r in super().resources(query)]
-
-    def get_resources(self, ids):
-        params = self.get_query_params(None)
-        scope = (params or {}).get('Scope', 'REGIONAL')
-
-        resources = self.query.filter(self.manager, **params)
-        return [{'Scope': scope, **r} for r in resources if r[self.manager.resource_type.id] in ids]
 
 
 class DescribeWaf(DescribeSource):
@@ -147,8 +70,83 @@ class RegionalWAF(QueryResourceManager):
     source_mapping = {'describe': DescribeRegionalWaf, 'config': ConfigSource}
 
 
+class DescribeWafV2(DescribeSource):
+
+    # Essentially a copy of DescribeSource.augment with the addition of Scope and Name parameters
+    def augment(self, resources):
+        client = self.manager.get_client()
+        scope = self.manager.scope
+        detail_op, param_name, param_key, detail_path = self.manager.resource_type.detail_spec
+
+        op = getattr(client, detail_op)
+        if self.manager.retry:
+            op = functools.partial(self.manager.retry, op)
+
+        def get_detail(r):
+            kwargs = {
+                param_name: r[param_key],
+                'Scope': scope,
+                'Name': r['Name']
+            }
+            try:
+                response = op(**kwargs)
+            except ClientError as e:
+                if not is_not_found(e):
+                    raise
+                self.manager.log.warning("Resource not found: %s id:%s" % (detail_op, r[param_key]))
+                return None
+            r.update(response.get(detail_path, {}))
+            r['Scope'] = scope
+            return r
+
+        resources = universal_augment(self.manager, resources)
+        return [r for r in map(get_detail, resources) if r is not None]
+
+    def get_resources(self, ids):
+        params = {'Scope': self.manager.scope}
+        resources = self.query.filter(self.manager, **params)
+        id_key = self.manager.resource_type.id
+        return [r for r in resources if r[id_key] in ids]
+
+    def get_permissions(self):
+        perms = super().get_permissions()
+        perms.remove('wafv2:GetWebAcl')
+        return perms
+
+    # set REGIONAL for Scope as default
+    def get_query_params(self, query_params):
+        query_params = query_params or {}
+        # Parse query from policy data
+        queries = self.manager.data.get('query', [])
+        for q in queries:
+            query_params.update(q)
+        query_params['Scope'] = self.manager.scope
+        return query_params
+
+
 @resources.register('wafv2')
 class WAFV2(QueryResourceManager):
+    """WAFv2 Web ACLs.
+
+    By default, queries REGIONAL scope Web ACLs. To query CloudFront (global)
+    Web ACLs, set the scope in the query block:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cloudfront-webacls
+            resource: aws.wafv2
+            query:
+              - Scope: CLOUDFRONT
+
+    CLOUDFRONT-scoped Web ACLs are global resources managed via us-east-1
+    regardless of the policy's configured region.
+    """
+
+    CLOUDFRONT = "CLOUDFRONT"
+    REGIONAL = "REGIONAL"
+    VALID_SCOPES = (CLOUDFRONT, REGIONAL)
+
     class resource_type(TypeInfo):
         service = "wafv2"
         enum_spec = ("list_web_acls", "WebACLs", None)
@@ -163,8 +161,48 @@ class WAFV2(QueryResourceManager):
         permissions_enum = ('wafv2:ListWebACLs',)
         permissions_augment = ('wafv2:GetWebACL', "wafv2:ListTagsForResource")
         universal_taggable = object()
+        global_resource = False
+
+    class cloudfront_resource_type(resource_type):
+        global_resource = True
 
     source_mapping = {'describe': DescribeWafV2, 'config': ConfigSource}
+
+    def __init__(self, ctx, data):
+        super().__init__(ctx, data)
+        self._client = None
+        if self.scope == self.CLOUDFRONT:
+            self.resource_type = self.cloudfront_resource_type
+
+    def validate(self):
+        for q in self.data.get('query', []):
+            if 'Scope' in q and q['Scope'] not in self.VALID_SCOPES:
+                raise PolicyValidationError(
+                    f"Invalid Scope: {q['Scope']}.  Must be one of {self.VALID_SCOPES}"
+                )
+
+    @property
+    def scope(self):
+        for q in self.data.get('query', []):
+            if 'Scope' in q:
+                return q['Scope']
+        return self.REGIONAL
+
+    @property
+    def scope_region(self):
+        """Region to use for wafv2 API calls given a WebACL's Scope.
+
+        CLOUDFRONT WebACLs are global resources addressed via us-east-1; all other
+        (REGIONAL) WebACLs use the policy's region.
+        """
+        return 'us-east-1' if self.scope == self.CLOUDFRONT else self.region
+
+    def get_client(self):
+        if self._client is None:
+            self._client = local_session(self.session_factory).client(
+                self.resource_type.service, region_name=self.scope_region)
+
+        return self._client
 
 
 @WAFV2.filter_registry.register('logging')
@@ -200,9 +238,7 @@ class WAFV2LoggingFilter(ValueFilter):
     annotation_key = 'c7n:WafV2LoggingConfiguration'
 
     def process(self, resources, event=None):
-        client = local_session(self.manager.session_factory).client(
-            'wafv2', region_name=self.manager.region
-        )
+        client = self.manager.get_client()
         logging_confs = client.list_logging_configurations(Scope='REGIONAL')[
             'LoggingConfigurations'
         ]
@@ -219,7 +255,7 @@ class WAFV2LoggingFilter(ValueFilter):
 @WAFV2.action_registry.register('set-logging')
 class WAFV2SetLogging(BaseAction):
     """
-    Action to enable logging for a WAFv2 Web ACL.
+    Action to enable logging for a WAFv2 Web ACL with optional attributes.
 
     :example:
 
@@ -235,9 +271,28 @@ class WAFV2SetLogging(BaseAction):
             actions:
               - type: set-logging
                 destination: "arn:aws:s3:::aws-waf-logs-bucket"
+
+          - name: enable-wafv2-logging-with-redacted-fields
+            resource: aws.wafv2
+            filters:
+              - type: value
+                key: Name
+                value: my-web-acl
+            actions:
+              - type: set-logging
+                destination: "arn:aws:s3:::aws-waf-logs-bucket"
+                attributes:
+                  RedactedFields:
+                    - SingleHeader:
+                        Name: user-agent
+                    - Method: {}
     """
 
-    schema = type_schema('set-logging', required=['destination'], destination={'type': 'string'})
+    schema = type_schema(
+        'set-logging',
+        required=['destination'],
+        destination={'type': 'string'},
+        attributes={'type': 'object'})
 
     permissions = ('wafv2:PutLoggingConfiguration',)
 
@@ -255,17 +310,33 @@ class WAFV2SetLogging(BaseAction):
                     raise PolicyValidationError(
                         f"Destination resource must start with aws-waf-logs, got {resource_name}"
                     )
+
+        # Validate attributes against AWS API schema
+        if 'attributes' in self.data:
+            cfg = {
+                'LoggingConfiguration': {
+                    'ResourceArn': 'arn:aws:wafv2:us-east-1:644160558196:regional/webacl/tester/1',
+                    'LogDestinationConfigs': [destination]
+                }
+            }
+            cfg['LoggingConfiguration'].update(self.data['attributes'])
+            shape_validate(
+                cfg, 'PutLoggingConfigurationRequest', 'wafv2'
+            )
         return self
 
     def process(self, resources):
-        client = local_session(self.manager.session_factory).client(
-            'wafv2', region_name=self.manager.region
-        )
+        client = self.manager.get_client()
         destination = self.data['destination']
+        attributes = self.data.get('attributes', {})
 
         for r in resources:
             resource_arn = r['ARN']
-            logging_config = {'ResourceArn': resource_arn, 'LogDestinationConfigs': [destination]}
+            logging_config = {
+                'ResourceArn': resource_arn,
+                'LogDestinationConfigs': [destination]
+            }
+            logging_config.update(attributes)
 
             self.manager.retry(
                 client.put_logging_configuration,
@@ -371,9 +442,7 @@ class WAFV2ListAllRulesFilter(ListItemFilter):
         return mgcache
 
     def get_item_values(self, resource):
-        client = local_session(self.manager.session_factory).client(
-            'wafv2', region_name=self.manager.region
-        )
+        client = self.manager.get_client()
 
         rule_groups = []
         managed_groups = []
