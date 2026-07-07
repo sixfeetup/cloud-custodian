@@ -54,7 +54,7 @@
                         "view": []
                     }
                 ],
-                "creation_time": 1774650697765,
+                "creation_time": 1775017375484,
                 "dataset_id": "c7n_bq_dataset",
                 "default_collation": "",
                 "default_encryption_configuration": [],
@@ -63,21 +63,23 @@
                 "delete_contents_on_destroy": false,
                 "description": "",
                 "effective_labels": {
-                    "c7n_test": "bq_dataset_update",
+                    "c7n_test": "bq_table_recommend_partition_cluster",
+                    "c7n_test_update": "bq_dataset_update",
                     "env": "default",
                     "goog-terraform-provisioned": "true"
                 },
-                "etag": "VMUHDYc1YagKV+vsT2p9eQ==",
+                "etag": "AzCihPuSDIxIjcOo3x/LSg==",
                 "external_catalog_dataset_options": [],
                 "external_dataset_reference": [],
                 "friendly_name": "",
                 "id": "projects/cloud-custodian/datasets/c7n_bq_dataset",
                 "is_case_insensitive": false,
                 "labels": {
-                    "c7n_test": "bq_dataset_update",
+                    "c7n_test": "bq_table_recommend_partition_cluster",
+                    "c7n_test_update": "bq_dataset_update",
                     "env": "default"
                 },
-                "last_modified_time": 1774650697765,
+                "last_modified_time": 1775017375484,
                 "location": "US",
                 "max_time_travel_hours": "168",
                 "project": "stacklet-personal-2",
@@ -85,7 +87,8 @@
                 "self_link": "https://bigquery.googleapis.com/bigquery/v2/projects/cloud-custodian/datasets/c7n_bq_dataset",
                 "storage_billing_model": "",
                 "terraform_labels": {
-                    "c7n_test": "bq_dataset_update",
+                    "c7n_test": "bq_table_recommend_partition_cluster",
+                    "c7n_test_update": "bq_dataset_update",
                     "env": "default",
                     "goog-terraform-provisioned": "true"
                 },
@@ -96,7 +99,7 @@
             "table": {
                 "biglake_configuration": [],
                 "clustering": null,
-                "creation_time": 1774650698321,
+                "creation_time": 1775017375848,
                 "dataset_id": "c7n_bq_dataset",
                 "deletion_protection": false,
                 "description": "",
@@ -105,7 +108,7 @@
                     "goog-terraform-provisioned": "true"
                 },
                 "encryption_configuration": [],
-                "etag": "wMDX9jS8lDkeShhsvXZpUQ==",
+                "etag": "c4tZRHFeYNdRCQucBdKjAA==",
                 "expiration_time": 0,
                 "external_catalog_table_options": [],
                 "external_data_configuration": [],
@@ -117,7 +120,7 @@
                 "labels": {
                     "env": "default"
                 },
-                "last_modified_time": 1774650698629,
+                "last_modified_time": 1775017375942,
                 "location": "US",
                 "materialized_view": [],
                 "max_staleness": "",
