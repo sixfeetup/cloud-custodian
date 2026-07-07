@@ -3,7 +3,6 @@
 
 from gcp_common import BaseTest, event_data
 from c7n.exceptions import PolicyValidationError
-from c7n.testing import C7N_FUNCTIONAL
 from c7n_gcp.client import get_default_project
 from c7n_gcp.filters.recommender import RecommenderFilter
 from unittest.mock import patch
@@ -215,6 +214,7 @@ class BigQueryTableTest(BaseTest):
         result = client.execute_query('get', resources[0]['tableReference'])
         self.assertEqual(result['labels']['env'], 'not-the-default')
 
+
 def test_dataset_update_validation_error(test):
     with test.assertRaisesRegex(
         PolicyValidationError,
@@ -235,12 +235,8 @@ def test_dataset_update(test, bigquery):
     project_id = get_default_project()
     dataset_id = 'c7n_bq_dataset'
 
-    if C7N_FUNCTIONAL:
-        session_factory = test.record_flight_data(
-            'bq-dataset-update', project_id=project_id)
-    else:
-        session_factory = test.replay_flight_data(
-            'bq-dataset-update', project_id=project_id)
+    session_factory = test.replay_flight_data(
+        'bq-dataset-update', project_id=project_id)
 
     policy = test.load_policy(
         {
@@ -291,12 +287,9 @@ def test_dataset_update(test, bigquery):
 @terraform("bigquery")
 def test_table_recommend_partition_cluster_permissions(test, bigquery):
     project_id = get_default_project()
-    if C7N_FUNCTIONAL:
-        session_factory = test.record_flight_data(
-            'bq-table-recommend-partition-cluster', project_id=project_id)
-    else:
-        session_factory = test.replay_flight_data(
-            'bq-table-recommend-partition-cluster', project_id=project_id)
+    session_factory = test.replay_flight_data(
+        'bq-table-recommend-partition-cluster', project_id=project_id)
+
     # Baseline state prior to policy run:
     baseline_policy = test.load_policy(
         {
