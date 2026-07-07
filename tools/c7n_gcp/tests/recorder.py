@@ -36,7 +36,8 @@ class FlightRecorder(Http):
         # We don't record authentication
         if (base_name.startswith('post-oauth2-v4') or
                 base_name.startswith('post-o-oauth2') or
-                base_name.startswith('post-token')):
+                base_name.startswith('post-token') or
+                ':generateAccessToken' in uri):
             return
         # Use a common directory for discovery metadata across tests.
         if base_name.startswith('get-discovery'):
@@ -112,6 +113,17 @@ class HttpReplay(FlightRecorder):
                     'status': '200',
                     'content-type': 'application/json; charset=UTF-8'}),
                 self.static_responses[(method, uri)])
+
+        # Service account impersonation token requests aren't recorded
+        # (see FlightRecorder.get_next_file_path), so stub them here too.
+        if method == 'POST' and ':generateAccessToken' in uri:
+            expire_time = '2099-01-01T00:00:00Z'
+            return (
+                Response({
+                    'status': '200',
+                    'content-type': 'application/json; charset=UTF-8'}),
+                json.dumps({
+                    'accessToken': 'ya29', 'expireTime': expire_time}).encode('utf8'))
 
         fpath = self.get_next_file_path(uri, method, record=False)
         fopen = open

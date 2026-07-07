@@ -1,0 +1,152 @@
+{
+  "headers": {
+    "content-type": "application/json; charset=UTF-8",
+    "vary": "Origin, X-Origin, Referer",
+    "date": "Tue, 07 Jul 2026 19:49:18 GMT",
+    "server": "ESF",
+    "x-xss-protection": "0",
+    "x-frame-options": "SAMEORIGIN",
+    "x-content-type-options": "nosniff",
+    "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
+    "transfer-encoding": "chunked",
+    "status": "200",
+    "content-length": "3965",
+    "-content-encoding": "gzip",
+    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/customJobs?alt=json"
+  },
+  "body": {
+    "customJobs": [
+      {
+        "name": "projects/cloud-custodian/locations/us-central1/customJobs/2075605832703148032",
+        "displayName": "c7n-test-custom-job-9617",
+        "jobSpec": {
+          "workerPoolSpecs": [
+            {
+              "machineSpec": {
+                "machineType": "n1-standard-4"
+              },
+              "replicaCount": "1",
+              "diskSpec": {
+                "bootDiskType": "pd-ssd",
+                "bootDiskSizeGb": 100
+              },
+              "containerSpec": {
+                "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
+                "command": [
+                  "echo"
+                ],
+                "args": [
+                  "hello from c7n test"
+                ]
+              }
+            }
+          ]
+        },
+        "state": "JOB_STATE_QUEUED",
+        "createTime": "2026-07-07T19:49:17.080838Z",
+        "startTime": "2026-07-07T19:49:17.685105Z",
+        "updateTime": "2026-07-07T19:49:17.826764Z"
+      },
+      {
+        "name": "projects/cloud-custodian/locations/us-central1/customJobs/8243285522387042304",
+        "displayName": "c7n-test-custom-job-12d2",
+        "jobSpec": {
+          "workerPoolSpecs": [
+            {
+              "machineSpec": {
+                "machineType": "n1-standard-4"
+              },
+              "replicaCount": "1",
+              "diskSpec": {
+                "bootDiskType": "pd-ssd",
+                "bootDiskSizeGb": 100
+              },
+              "containerSpec": {
+                "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
+                "command": [
+                  "echo"
+                ],
+                "args": [
+                  "hello from c7n test"
+                ]
+              }
+            }
+          ]
+        },
+        "state": "JOB_STATE_CANCELLED",
+        "createTime": "2026-07-07T19:48:09.479281Z",
+        "startTime": "2026-07-07T19:48:09.606460Z",
+        "endTime": "2026-07-07T19:48:15.201869Z",
+        "updateTime": "2026-07-07T19:48:15.201869Z",
+        "error": {
+          "code": 1,
+          "message": "CANCELED"
+        }
+      },
+      {
+        "name": "projects/cloud-custodian/locations/us-central1/customJobs/7435452339227459584",
+        "displayName": "c7n-test-custom-job-528a",
+        "jobSpec": {
+          "workerPoolSpecs": [
+            {
+              "machineSpec": {
+                "machineType": "n1-standard-4"
+              },
+              "replicaCount": "1",
+              "diskSpec": {
+                "bootDiskType": "pd-ssd",
+                "bootDiskSizeGb": 100
+              },
+              "containerSpec": {
+                "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
+                "command": [
+                  "echo"
+                ],
+                "args": [
+                  "hello from c7n test"
+                ]
+              }
+            }
+          ]
+        },
+        "state": "JOB_STATE_SUCCEEDED",
+        "createTime": "2026-07-07T19:15:53.717842Z",
+        "startTime": "2026-07-07T19:27:34Z",
+        "endTime": "2026-07-07T19:27:34Z",
+        "updateTime": "2026-07-07T19:27:57.949874Z"
+      },
+      {
+        "name": "projects/cloud-custodian/locations/us-central1/customJobs/1215981253828804608",
+        "displayName": "c7n-test-custom-job-ad85",
+        "jobSpec": {
+          "workerPoolSpecs": [
+            {
+              "machineSpec": {
+                "machineType": "n1-standard-4"
+              },
+              "replicaCount": "1",
+              "diskSpec": {
+                "bootDiskType": "pd-ssd",
+                "bootDiskSizeGb": 100
+              },
+              "containerSpec": {
+                "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
+                "command": [
+                  "echo"
+                ],
+                "args": [
+                  "hello from c7n test"
+                ]
+              }
+            }
+          ]
+        },
+        "state": "JOB_STATE_SUCCEEDED",
+        "createTime": "2026-07-07T19:13:38.390371Z",
+        "startTime": "2026-07-07T19:26:40Z",
+        "endTime": "2026-07-07T19:26:41Z",
+        "updateTime": "2026-07-07T19:26:57.896763Z"
+      }
+    ]
+  }
+}
