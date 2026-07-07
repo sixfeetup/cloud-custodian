@@ -4,6 +4,7 @@ from c7n.utils import type_schema, jmespath_search
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildTypeInfo, ChildResourceManager
 from c7n_gcp.provider import resources
 from c7n_gcp.actions import MethodAction
+from c7n_gcp.filters.recommender import RecommenderFilter
 
 
 @resources.register('bq-dataset')
@@ -29,6 +30,9 @@ class DataSet(QueryResourceManager):
         permissions = ('bigquery.datasets.get',)
         urn_component = "dataset"
         urn_id_path = "datasetReference.datasetId"
+        labels = True
+        labels_op = 'patch'
+        labels_perm = 'update'
 
         @staticmethod
         def get(client, event):
@@ -44,6 +48,10 @@ class DataSet(QueryResourceManager):
                 ref = event
             return client.execute_query('get', verb_arguments=ref)
 
+        @staticmethod
+        def get_label_params(resource, all_labels):
+            return {**resource['datasetReference'], 'body': {'labels': all_labels}}
+
     def augment(self, resources):
         client = self.get_client()
         results = []
@@ -53,6 +61,12 @@ class DataSet(QueryResourceManager):
                 client.execute_query(
                     'get', verb_arguments=ref))
         return results
+
+    def get_resource_query(self):
+        if 'query' in self.data:
+            for child in self.data.get('query'):
+                if 'filter' in child:
+                    return {'filter': child['filter']}
 
 
 @resources.register('bq-job')
@@ -71,6 +85,7 @@ class BigQueryJob(QueryResourceManager):
         name = id = 'id'
         default_report_fields = ["id", "user_email", "status.state"]
         urn_component = "job"
+        # Jobs have labels but no update method, so no labels action
 
         @staticmethod
         def get(client, event):
@@ -110,11 +125,15 @@ class BigQueryTable(ChildResourceManager):
             'parent_get_params': [
                 ('tableReference.projectId', 'projectId'),
                 ('tableReference.datasetId', 'datasetId'),
-            ]
+            ],
+            'use_child_query': True,
         }
         asset_type = "bigquery.googleapis.com/Table"
         urn_component = "table"
         urn_id_path = "tableReference.tableId"
+        labels = True
+        labels_op = 'patch'
+        labels_perm = 'update'
 
         @classmethod
         def _get_urn_id(cls, resource):
@@ -129,15 +148,22 @@ class BigQueryTable(ChildResourceManager):
                 'tableId': event['resourceName'].rsplit('/', 1)[-1]
             })
 
+        @staticmethod
+        def get_label_params(resource, all_labels):
+            return {**resource['tableReference'], 'body': {'labels': all_labels}}
+
     def augment(self, resources):
         client = self.get_client()
         results = []
         for r in resources:
             ref = r['tableReference']
-            results.append(
-                client.execute_query(
-                    'get', verb_arguments=ref))
+            results.append(client.execute_query('get', verb_arguments=ref))
         return results
+
+    def get_resource_query(self):
+        # Allow query values to be consumed by parent dataset listing only.
+        # BigQuery tables.list does not accept a top-level "filter" argument.
+        return None
 
 
 @BigQueryTable.action_registry.register('delete')
@@ -153,6 +179,25 @@ class DeleteBQTable(MethodAction):
             'datasetId': r['tableReference']['datasetId'],
             'tableId': r['tableReference']['tableId']
         }
+
+
+@BigQueryTable.filter_registry.register('recommend')
+class BigQueryTableRecommenderFilter(RecommenderFilter):
+
+    def match_ids(self, rids, resources):
+        normalized_rids = set()
+        for rid in rids:
+            normalized_rids.add('projects/{}'.format(rid.split('/projects/', 1)[1]))
+
+        for resource in resources:
+            table_ref = resource.get('tableReference', {})
+            table_rid = "projects/{}/datasets/{}/tables/{}".format(
+                table_ref.get('projectId', ''),
+                table_ref.get('datasetId', ''),
+                table_ref.get('tableId', '')
+            )
+            if table_rid in normalized_rids:
+                yield resource
 
 
 @DataSet.action_registry.register('delete')

@@ -13,6 +13,7 @@ from c7n import policy, manager
 from c7n.config import Config
 from c7n.provider import clouds
 from c7n.exceptions import ResourceLimitExceeded, PolicyValidationError
+from c7n.filters.policystatement import HasStatementFilter
 from c7n.resources import aws, load_available
 from c7n.resources.aws import AWS, Arn, fake_session
 from c7n.resources.ec2 import EC2
@@ -252,6 +253,10 @@ class PolicyMetaLint(BaseTest):
         for rtype in resource_cfn_types:
             if rtype not in cfn_types:
                 missing.add(rtype)
+
+        # Service no longer available but still present in c7n for policy compatibility
+        missing.remove("AWS::OpsWorksCM::Server")
+
         if missing:
             raise AssertionError("Bad cfn types:\n %s" % (
                 "\n".join(sorted(missing))))
@@ -379,11 +384,91 @@ class PolicyMetaLint(BaseTest):
         # of a resource.
 
         whitelist = {
+            # q1 2026
+            "AWS::ApiGateway::Method",
+            "AWS::ApiGateway::UsagePlan",
+            "AWS::ApiGatewayV2::Integration",
+            "AWS::AppConfig::Extension",
+            "AWS::AppStream::AppBlockBuilder",
+            "AWS::B2BI::Capability",
+            "AWS::BCMDataExports::Export",
+            "AWS::Backup::RestoreTestingPlan",
+            "AWS::BackupGateway::Hypervisor",
+            "AWS::Bedrock::ApplicationInferenceProfile",
+            "AWS::Bedrock::Prompt",
+            "AWS::BedrockAgentCore::BrowserCustom",
+            "AWS::BedrockAgentCore::Runtime",
+            "AWS::CleanRoomsML::TrainingDataset",
+            "AWS::CloudFormation::GuardHook",
+            "AWS::CloudFormation::LambdaHook",
+            "AWS::CloudFormation::StackSet",
+            "AWS::CloudFront::KeyValueStore",
+            "AWS::CloudFront::PublicKey",
+            "AWS::CloudFront::RealtimeLogConfig",
+            "AWS::CloudTrail::EventDataStore",
+            "AWS::Config::AggregationAuthorization",
+            "AWS::Config::ConformancePack",
+            "AWS::Config::StoredQuery",
+            "AWS::Connect::SecurityProfile",
+            "AWS::Deadline::Fleet",
+            "AWS::Deadline::Monitor",
+            "AWS::Deadline::QueueFleetAssociation",
+            "AWS::EC2::IPAMPoolCidr",
+            "AWS::EC2::SecurityGroupVpcAssociation",
+            "AWS::EC2::SubnetCidrBlock",
+            "AWS::EC2::SubnetNetworkAclAssociation",
+            "AWS::EC2::VPCGatewayAttachment",
+            "AWS::EC2::VerifiedAccessInstance",
+            "AWS::ECR::ReplicationConfiguration",
+            "AWS::ECR::RepositoryCreationTemplate",
+            "AWS::EMR::Studio",
+            "AWS::EMRContainers::VirtualCluster",
+            "AWS::EMRServerless::Application",
+            "AWS::EntityResolution::IdMappingWorkflow",
+            "AWS::EntityResolution::MatchingWorkflow",
+            "AWS::EntityResolution::SchemaMapping",
+            "AWS::GameLift::Build",
+            "AWS::GuardDuty::MalwareProtectionPlan",
+            "AWS::ImageBuilder::LifecyclePolicy",
+            "AWS::IoT::DomainConfiguration",
+            "AWS::IoT::ThingGroup",
+            "AWS::IoTCoreDeviceAdvisor::SuiteDefinition",
+            "AWS::IoTSiteWise::Asset",
+            "AWS::KafkaConnect::CustomPlugin",
+            "AWS::Location::APIKey",
+            "AWS::MSK::ServerlessCluster",
+            "AWS::MediaPackageV2::Channel",
+            "AWS::MediaPackageV2::OriginEndpoint",
+            "AWS::MediaTailor::LiveSource",
+            "AWS::NetworkManager::TransitGatewayPeering",
+            "AWS::OpenSearchServerless::SecurityConfig",
+            "AWS::Organizations::OrganizationalUnit",
+            "AWS::PCAConnectorAD::Connector",
+            "AWS::PCAConnectorAD::DirectoryRegistration",
+            "AWS::RDS::Integration",
+            "AWS::Redshift::Integration",
+            "AWS::RolesAnywhere::Profile",
+            "AWS::RolesAnywhere::TrustAnchor",
+            "AWS::Route53::DNSSEC",
+            "AWS::Route53Profiles::ProfileAssociation",
+            "AWS::S3::AccessGrant",
+            "AWS::S3::AccessGrantsInstance",
+            "AWS::S3::AccessGrantsLocation",
+            "AWS::S3Tables::TableBucket",
+            "AWS::S3Tables::TableBucketPolicy",
+            "AWS::SES::MailManagerTrafficPolicy",
+            "AWS::SSM::ResourceDataSync",
+            "AWS::SSMContacts::Contact",
+            "AWS::SSMIncidents::ResponsePlan",
+            "AWS::SageMaker::MlflowTrackingServer",
+            "AWS::SageMaker::StudioLifecycleConfig",
+            "AWS::SageMaker::UserProfile",
+            "AWS::SecretsManager::ResourcePolicy",
+            "AWS::SecretsManager::RotationSchedule",
             # q2 2025
             "AWS::AppConfig::ExtensionAssociation",
             "AWS::AppIntegrations::Application",
             "AWS::AppSync::ApiCache",
-            "AWS::Bedrock::Guardrail",
             "AWS::Bedrock::KnowledgeBase",
             "AWS::Connect::Rule",
             "AWS::Connect::User",
@@ -567,7 +652,6 @@ class PolicyMetaLint(BaseTest):
             'AWS::EventSchemas::Registry',
             'AWS::EventSchemas::RegistryPolicy',
             'AWS::EventSchemas::Schema',
-            'AWS::Events::ApiDestination',
             'AWS::Events::Archive',
             'AWS::Events::Connection',
             'AWS::Events::Endpoint',
@@ -802,6 +886,7 @@ class PolicyMetaLint(BaseTest):
             'rrset',
             'redshift-reserved',
             'elasticsearch-reserved',
+            'opensearch-reserved',
             'ses-receipt-rule-set',
             'iam-access-key',
         ))
@@ -906,7 +991,8 @@ class PolicyMetaLint(BaseTest):
             'snowball-cluster', 'snowball', 'ssm-activation',
             'healthcheck', 'event-rule-target', 'log-metric',
             'support-case', 'transit-attachment', 'config-recorder',
-            'apigw-domain-name', 'backup-job', 'quicksight-account', 'codedeploy-config'}
+            'apigw-domain-name', 'backup-job', 'quicksight-account', 'codedeploy-config',
+            'cleanrooms-collaboration-member'}
 
         missing_method = []
         for k, v in manager.resources.items():
@@ -1065,6 +1151,49 @@ class PolicyMetaLint(BaseTest):
                 "Deprecation validation issues with \n\t%s" %
                 "\n\t".join(sorted(issues))
             )
+
+
+class PolicyStatementTest(BaseTest):
+
+    def get_filter(self, statements):
+        f = HasStatementFilter(
+            {'type': 'has-statement', 'statements': statements}, None)
+        f.get_std_format_args = lambda resource: {}
+        return f
+
+    def test_has_statement_condition_keys_case_insensitive(self):
+        resource = {
+            'Policy': json.dumps({
+                'Statement': [{
+                    'Effect': 'Allow',
+                    'Condition': {
+                        'Bool': {
+                            'aws:SECURETRANSPORT': 'true',
+                            'elasticfilesystem:ACCESSEDVIAMOUNTTARGET': 'true'}}
+                }]})}
+        f = self.get_filter([{
+            'Effect': 'Allow',
+            'Condition': {
+                'Bool': {
+                    'aws:SecureTransport': 'true',
+                    'elasticfilesystem:AccessedViaMountTarget': 'true'}}}])
+
+        self.assertIsNotNone(f.process_resource(resource))
+
+    def test_has_statement_partial_condition_keys_case_insensitive(self):
+        resource = {
+            'Policy': json.dumps({
+                'Statement': [{
+                    'Effect': 'Allow',
+                    'Condition': {
+                        'StringNotLike': {'AWS:SourceArn': 'arn:aws:s3:::example'}}}]})}
+        f = self.get_filter([{
+            'Effect': 'Allow',
+            'Condition': {
+                'StringNotLike': {'aws:sourcearn': 'arn:aws:s3:::example'}},
+            'PartialMatch': 'Condition'}])
+
+        self.assertIsNotNone(f.process_resource(resource))
 
 
 class PolicyMeta(BaseTest):
