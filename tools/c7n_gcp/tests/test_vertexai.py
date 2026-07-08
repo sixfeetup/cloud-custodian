@@ -1373,7 +1373,7 @@ def create_hp_job(test):
                 print(f'Warning: failed to delete {name} during cleanup: {e}')
 
 
-@terraform('vertexai_hyperparameter_tuning_job')
+@terraform('vertexai_hyperparameter_tuning_job', scope='module')
 def test_vertexai_hp_tuning_job_query(test, vertexai_hyperparameter_tuning_job, create_hp_job):
     """Test creating, listing, filtering, and generating URNs for a Hyperparameter
     Tuning Job.
@@ -1409,7 +1409,7 @@ def test_vertexai_hp_tuning_job_query(test, vertexai_hyperparameter_tuning_job, 
     assert ':hyperparameter-tuning-job/' in urns[0]
 
 
-@terraform('vertexai_hyperparameter_tuning_job')
+@terraform('vertexai_hyperparameter_tuning_job', scope='module')
 def test_vertexai_hp_tuning_job_cancel_and_delete(
         test, vertexai_hyperparameter_tuning_job, create_hp_job):
     """Test cancelling and deleting a Hyperparameter Tuning Job via the c7n actions.
@@ -1462,7 +1462,7 @@ def test_vertexai_hp_tuning_job_cancel_and_delete(
         client.execute_query('get', {'name': job_name})
 
 
-@terraform('vertexai_hyperparameter_tuning_job')
+@terraform('vertexai_hyperparameter_tuning_job', scope='module')
 def test_vertexai_hp_tuning_job_field_filters(
         test, vertexai_hyperparameter_tuning_job, create_hp_job):
     """Test filtering Hyperparameter Tuning Jobs on the fields called out in the

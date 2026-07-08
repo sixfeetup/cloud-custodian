@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 08 Jul 2026 13:56:04 GMT",
+    "date": "Wed, 08 Jul 2026 17:54:34 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,12 +10,12 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1129",
+    "content-length": "1137",
     "-content-encoding": "gzip"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/5269695907485450240",
-    "displayName": "c7n-test-hp-job-7178",
+    "name": "projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/6931889207845584896",
+    "displayName": "c7n-test-hp-job-default-ee2e",
     "studySpec": {
       "metrics": [
         {
@@ -61,7 +61,7 @@
       ]
     },
     "state": "JOB_STATE_PENDING",
-    "createTime": "2026-07-08T13:56:04.205395Z",
-    "updateTime": "2026-07-08T13:56:04.205395Z"
+    "createTime": "2026-07-08T17:54:34.363472Z",
+    "updateTime": "2026-07-08T17:54:34.363472Z"
   }
 }

@@ -5,5 +5,5 @@ resource "random_id" "suffix" {
 }
 
 output "job_display_name" {
-  value = "c7n-test-hp-job-${random_id.suffix.hex}"
+  value = "c7n-test-hp-job-${terraform.workspace}-${random_id.suffix.hex}"
 }

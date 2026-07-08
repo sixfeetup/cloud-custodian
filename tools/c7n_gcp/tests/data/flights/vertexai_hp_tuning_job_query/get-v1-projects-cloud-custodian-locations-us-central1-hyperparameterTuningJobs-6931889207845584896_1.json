@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 08 Jul 2026 13:56:56 GMT",
+    "date": "Wed, 08 Jul 2026 17:54:36 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,13 +10,13 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1170",
+    "content-length": "1183",
     "-content-encoding": "gzip",
-    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/5667420049577607168?alt=json"
+    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/6931889207845584896?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/5667420049577607168",
-    "displayName": "c7n-test-hp-job-7178-lifecycle",
+    "name": "projects/cloud-custodian/locations/us-central1/hyperparameterTuningJobs/6931889207845584896",
+    "displayName": "c7n-test-hp-job-default-ee2e",
     "studySpec": {
       "metrics": [
         {
@@ -52,18 +52,18 @@
           "containerSpec": {
             "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
             "command": [
-              "sleep"
+              "echo"
             ],
             "args": [
-              "120"
+              "hello from c7n test"
             ]
           }
         }
       ]
     },
     "state": "JOB_STATE_PENDING",
-    "createTime": "2026-07-08T13:56:54.733985Z",
-    "startTime": "2026-07-08T13:56:54.840924Z",
-    "updateTime": "2026-07-08T13:56:56.145521Z"
+    "createTime": "2026-07-08T17:54:34.363472Z",
+    "startTime": "2026-07-08T17:54:34.483936Z",
+    "updateTime": "2026-07-08T17:54:35.772918Z"
   }
 }
