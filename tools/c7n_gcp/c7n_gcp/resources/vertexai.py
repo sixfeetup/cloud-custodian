@@ -941,6 +941,292 @@ class VertexAIBatchPredictionJobStop(MethodAction):
             self.process_resource_set(location_client, model, location_resources)
 
 
+@resources.register('vertex-ai-hyperparameter-tuning-job')
+class VertexAIHyperparameterTuningJob(QueryResourceManager):
+    """GCP Vertex AI Hyperparameter Tuning Job Resource
+
+    Vertex AI Hyperparameter Tuning Jobs are used to run automated
+    hyperparameter search workloads for machine learning training.
+
+    :example:
+
+    List all Hyperparameter Tuning Jobs in specific locations:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertexai-hyperparameter-tuning-jobs-inventory
+            resource: gcp.vertex-ai-hyperparameter-tuning-job
+            query:
+              - location: us-central1
+              - location: us-east1
+
+    :example:
+
+    Find Hyperparameter Tuning Jobs with a large number of parallel trials:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-vertex-ai-hyperparameter-tuning-jobs-parallel-trials
+            resource: gcp.vertex-ai-hyperparameter-tuning-job
+            filters:
+              - type: value
+                key: parallelTrialCount
+                op: gt
+                value: 10
+
+    :example:
+
+    Find running Hyperparameter Tuning Jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-vertex-ai-hyperparameter-tuning-jobs-running
+            resource: gcp.vertex-ai-hyperparameter-tuning-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+    """
+
+    class resource_type(TypeInfo):
+        service = 'aiplatform'
+        version = 'v1'
+        component = 'projects.locations.hyperparameterTuningJobs'
+        enum_spec = ('list', 'hyperparameterTuningJobs[]', None)
+        scope = 'project'
+        scope_key = 'parent'
+        scope_template = None  # Handled dynamically per location
+        name = id = 'name'
+        default_report_fields = [
+            'name', 'displayName', 'state', 'createTime', 'updateTime',
+            'parallelTrialCount', 'maxTrialCount'
+        ]
+        asset_type = 'aiplatform.googleapis.com/HyperparameterTuningJob'
+        permissions = ('aiplatform.hyperparameterTuningJobs.list',)
+        urn_component = 'hyperparameter-tuning-job'
+        urn_id_segments = (-1,)
+
+        @staticmethod
+        def get(client, resource_info):
+            # Resource name format:
+            # projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
+            return client.execute_query(
+                'get', {'name': resource_info['resourceName']})
+
+        @classmethod
+        def _get_location(cls, resource):
+            """Extract location from resource name."""
+            # Resource name format:
+            # projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
+            return resource['name'].split('/')[3]
+
+    def _fetch_resources(self, query):
+        """Override to handle location-specific API endpoints and multi-location enumeration.
+
+        Vertex AI requires:
+        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
+        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
+        3. Enumeration across multiple locations (similar to RegionalResourceManager)
+        """
+
+        session = local_session(self.session_factory)
+        project = session.get_default_project()
+
+        # Get locations to query
+        location_query = self._get_location_query()
+        location_manager = self.get_resource_manager(
+            resource_type='vertex-ai-location',
+            data=({'query': location_query} if location_query else {})
+        )
+
+        all_resources = []
+        annotation_key = 'c7n:location'
+
+        # Enumerate resources in each location
+        for location_instance in location_manager.resources():
+            location = location_instance['name']
+
+            # Get client with location-specific endpoint
+            client = VertexAIEndpoint.get_location_client(
+                session, location, self.resource_type.component
+            )
+
+            # Build the parent scope with project and location
+            parent = f'projects/{project}/locations/{location}'
+
+            # Execute the list operation for this location
+            enum_op, path, _ = self.resource_type.enum_spec
+            params = {'parent': parent}
+
+            # Invoke the client enumeration (Vertex AI API supports pagination)
+            location_resources = []
+            for page in client.execute_paged_query(enum_op, params):
+                page_items = jmespath_search(path, page)
+                if page_items:
+                    location_resources.extend(page_items)
+
+            # Annotate resources with their location
+            for resource in location_resources:
+                resource[annotation_key] = location_instance
+
+            all_resources.extend(location_resources)
+
+        return all_resources
+
+    def _get_location_query(self):
+        """Get location query for multi-location enumeration.
+
+        Returns query to pass to vertex-ai-location resource manager.
+        If policy has 'query' specified, use that to filter locations.
+        Otherwise, return None to use default location logic.
+
+        Returns:
+            list or None: Location query list or None for defaults
+        """
+        # If policy has query specified, pass it through to location manager
+        if 'query' in self.data:
+            return self.data['query']
+
+        # Otherwise, let location manager use config.regions or config.region
+        return None
+
+
+@VertexAIHyperparameterTuningJob.action_registry.register('delete')
+class VertexAIHyperparameterTuningJobDelete(MethodAction):
+    """Delete Vertex AI Hyperparameter Tuning Jobs
+
+    Deletes a Vertex AI Hyperparameter Tuning Job. Note that this is an
+    asynchronous operation that returns a long-running operation. The job
+    will be deleted in the background.
+
+    :example:
+
+    Delete failed hyperparameter tuning jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-failed-hyperparameter-tuning-jobs
+            resource: gcp.vertex-ai-hyperparameter-tuning-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_FAILED
+            actions:
+              - type: delete
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.hyperparameterTuningJobs/delete
+    """
+
+    schema = type_schema('delete')
+    method_spec = {'op': 'delete'}
+    permissions = ('aiplatform.hyperparameterTuningJobs.delete',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+    def process(self, resources):
+        """Process resources by grouping them by location.
+
+        Override to group resources by location and create one client per location
+        """
+        # Group resources by location
+        resources_by_location = defaultdict(list)
+
+        for resource in resources:
+            # Extract location from resource name
+            # Format: projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
+            location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
+
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
+            # Create location-specific client
+            location_client = VertexAIEndpoint.get_location_client(
+                session, location, model.component
+            )
+
+            # Use parent's process_resource_set with location-specific client
+            self.process_resource_set(location_client, model, location_resources)
+
+
+@VertexAIHyperparameterTuningJob.action_registry.register('cancel')
+class VertexAIHyperparameterTuningJobCancel(MethodAction):
+    """Cancel Vertex AI Hyperparameter Tuning Jobs
+
+    Cancels a running Vertex AI Hyperparameter Tuning Job. This is useful for
+    cost control and incident response when jobs are running longer than
+    expected or consuming unexpected resources.
+
+    **Note**: Only jobs in JOB_STATE_RUNNING or JOB_STATE_PENDING can be
+    cancelled. Completed, failed, or already cancelled jobs cannot be
+    cancelled.
+
+    :example:
+
+    Cancel long-running hyperparameter tuning jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cancel-long-running-hyperparameter-tuning-jobs
+            resource: gcp.vertex-ai-hyperparameter-tuning-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+              - type: value
+                key: createTime
+                value_type: age
+                op: greater-than
+                value: 24
+            actions:
+              - type: cancel
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.hyperparameterTuningJobs/cancel
+    """
+
+    schema = type_schema('cancel')
+    method_spec = {'op': 'cancel'}
+    permissions = ('aiplatform.hyperparameterTuningJobs.cancel',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+    def process(self, resources):
+        """Process resources by grouping them by location.
+
+        Override to group resources by location and create one client per location.
+        """
+        # Group resources by location
+        resources_by_location = defaultdict(list)
+
+        for resource in resources:
+            # Extract location from resource name
+            # Format: projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
+            location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
+
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
+            # Create location-specific client
+            location_client = VertexAIEndpoint.get_location_client(
+                session, location, model.component
+            )
+
+            # Use parent's process_resource_set with location-specific client
+            self.process_resource_set(location_client, model, location_resources)
+
+
 def get_vertex_ai_publishers():
     """Load Vertex AI Model Garden publishers from generated JSON data."""
     with open(VERTEXAI_PUBLISHER_DATA_PATH) as fh:
