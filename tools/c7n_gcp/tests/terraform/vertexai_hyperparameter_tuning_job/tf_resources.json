@@ -1,0 +1,23 @@
+{
+    "pytest-terraform": 1,
+    "outputs": {
+        "job_display_name": {
+            "value": "c7n-test-hp-job-7178",
+            "type": "string"
+        }
+    },
+    "resources": {
+        "random_id": {
+            "suffix": {
+                "b64_std": "cXg=",
+                "b64_url": "cXg",
+                "byte_length": 2,
+                "dec": "29048",
+                "hex": "7178",
+                "id": "cXg",
+                "keepers": null,
+                "prefix": null
+            }
+        }
+    }
+}
