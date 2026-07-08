@@ -20,6 +20,133 @@ VERTEXAI_REGION_DATA_PATH = Path(__file__).parent.parent / 'vertexai_regions.jso
 VERTEXAI_PUBLISHER_DATA_PATH = Path(__file__).parent.parent / 'vertexai_publishers.json'
 
 
+class VertexAILocationalQueryManager:
+    """Mixin for Vertex AI resources scoped to a location.
+
+    Vertex AI requires location-specific hostnames (e.g.
+    us-central1-aiplatform.googleapis.com), so resources can't be listed
+    with a single global request. This mixin enumerates the resource across
+    every applicable location (see VertexAILocation), used by resources
+    like endpoints, batch prediction jobs, and custom jobs.
+    """
+
+    @staticmethod
+    def get_location_client(
+        session,
+        location,
+        component='projects.locations.modelDeploymentMonitoringJobs'
+    ):
+        """Helper method to create a location-specific client.
+
+        Args:
+            session: GCP session
+            location: GCP location/region
+            component: API component path
+
+        Returns:
+            Location-specific client
+        """
+        api_endpoint = f'https://{location}-aiplatform.googleapis.com'
+        client_options = ClientOptions(api_endpoint=api_endpoint)
+        return session.client('aiplatform', 'v1', component, client_options=client_options)
+
+    def _fetch_resources(self, query):
+        """Override to handle location-specific API endpoints and multi-location enumeration.
+
+        Vertex AI requires:
+        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
+        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
+        3. Enumeration across multiple locations (similar to RegionalResourceManager)
+        """
+
+        session = local_session(self.session_factory)
+        project = session.get_default_project()
+
+        # Get locations to query
+        location_query = self._get_location_query()
+        location_manager = self.get_resource_manager(
+            resource_type='vertex-ai-location',
+            data=({'query': location_query} if location_query else {})
+        )
+
+        all_resources = []
+        annotation_key = 'c7n:location'
+
+        # Enumerate resources in each location
+        for location_instance in location_manager.resources():
+            location = location_instance['name']
+
+            # Get client with location-specific endpoint
+            client = self.get_location_client(session, location, self.resource_type.component)
+
+            # Build the parent scope with project and location
+            parent = f'projects/{project}/locations/{location}'
+
+            # Execute the list operation for this location
+            enum_op, path, _ = self.resource_type.enum_spec
+            params = {'parent': parent}
+
+            # Invoke the client enumeration (Vertex AI API supports pagination)
+            location_resources = []
+            for page in client.execute_paged_query(enum_op, params):
+                page_items = jmespath_search(path, page)
+                if page_items:
+                    location_resources.extend(page_items)
+
+            # Annotate resources with their location
+            for resource in location_resources:
+                resource[annotation_key] = location_instance
+
+            all_resources.extend(location_resources)
+
+        return all_resources
+
+    def _get_location_query(self):
+        """Get location query for multi-location enumeration.
+
+        Returns query to pass to vertex-ai-location resource manager.
+        If policy has 'query' specified, use that to filter locations.
+        Otherwise, return None to use default location logic.
+
+        Returns:
+            list or None: Location query list or None for defaults
+        """
+        # If policy has query specified, pass it through to location manager
+        if 'query' in self.data:
+            return self.data['query']
+
+        # Otherwise, let location manager use config.regions or config.region
+        return None
+
+
+class VertexAILocationalMethodAction:
+    """Mixin for actions on Vertex AI resources scoped to a location.
+
+    Groups resources by location (parsed from the resource name) and
+    dispatches to process_resource_set with a location-specific client,
+    since Vertex AI requires location-specific API endpoints.
+    """
+
+    def process(self, resources):
+        # Group resources by location
+        resources_by_location = defaultdict(list)
+
+        for resource in resources:
+            # Resource name format: projects/{project}/locations/{location}/...
+            location = resource['name'].split('/')[3]
+            resources_by_location[location].append(resource)
+
+        # Process each location's resources with a location-specific client
+        session = local_session(self.manager.session_factory)
+        model = self.manager.resource_type
+
+        for location, location_resources in resources_by_location.items():
+            location_client = self.manager.get_location_client(
+                session, location, model.component
+            )
+            self.process_resource_set(location_client, model, location_resources)
+
+
 @resources.register('vertex-ai-location')
 class VertexAILocation:
     """Vertex AI Location pseudo-resource for multi-location enumeration.
@@ -75,7 +202,7 @@ class VertexAILocation:
 
 
 @resources.register('vertex-ai-endpoint')
-class VertexAIEndpoint(QueryResourceManager):
+class VertexAIEndpoint(VertexAILocationalQueryManager, QueryResourceManager):
     """GCP Vertex AI Endpoint Resource
 
     Vertex AI Endpoints are used to deploy machine learning models for online prediction.
@@ -136,98 +263,6 @@ class VertexAIEndpoint(QueryResourceManager):
             """Extract location from resource name."""
             # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
             return resource['name'].split('/')[3]
-
-    @staticmethod
-    def get_location_client(
-        session,
-        location,
-        component='projects.locations.modelDeploymentMonitoringJobs'
-    ):
-        """Helper method to create a location-specific client.
-
-        This is a common pattern used across monitoring actions.
-
-        Args:
-            session: GCP session
-            location: GCP location/region
-            component: API component path
-
-        Returns:
-            Location-specific client
-        """
-        api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-        client_options = ClientOptions(api_endpoint=api_endpoint)
-        return session.client('aiplatform', 'v1', component, client_options=client_options)
-
-    def _fetch_resources(self, query):
-        """Override to handle location-specific API endpoints and multi-location enumeration.
-
-        Vertex AI requires:
-        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
-        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
-        3. Enumeration across multiple locations (similar to RegionalResourceManager)
-        """
-
-        session = local_session(self.session_factory)
-        project = session.get_default_project()
-
-        # Get locations to query
-        location_query = self._get_location_query()
-        location_manager = self.get_resource_manager(
-            resource_type='vertex-ai-location',
-            data=({'query': location_query} if location_query else {})
-        )
-
-        all_resources = []
-        annotation_key = 'c7n:location'
-
-        # Enumerate resources in each location
-        for location_instance in location_manager.resources():
-            location = location_instance['name']
-
-            # Get client with location-specific endpoint
-            client = VertexAIEndpoint.get_location_client(
-                session, location, self.resource_type.component
-            )
-
-            # Build the parent scope with project and location
-            parent = f'projects/{project}/locations/{location}'
-
-            # Execute the list operation for this location
-            enum_op, path, _ = self.resource_type.enum_spec
-            params = {'parent': parent}
-
-            # Invoke the client enumeration (Vertex AI API supports pagination)
-            location_resources = []
-            for page in client.execute_paged_query(enum_op, params):
-                page_items = jmespath_search(path, page)
-                if page_items:
-                    location_resources.extend(page_items)
-
-            # Annotate resources with their location
-            for resource in location_resources:
-                resource[annotation_key] = location_instance
-
-            all_resources.extend(location_resources)
-
-        return all_resources
-
-    def _get_location_query(self):
-        """Get location query for multi-location enumeration.
-
-        Returns query to pass to vertex-ai-location resource manager.
-        If policy has 'query' specified, use that to filter locations.
-        Otherwise, return None to use default location logic.
-
-        Returns:
-            list or None: Location query list or None for defaults
-        """
-        # If policy has query specified, pass it through to location manager
-        if 'query' in self.data:
-            return self.data['query']
-
-        # Otherwise, let location manager use config.regions or config.region
-        return None
 
 
 @VertexAIEndpoint.action_registry.register('monitor')
@@ -572,7 +607,7 @@ class VertexAIEndpointMonitor(MethodAction):
 
 
 @VertexAIEndpoint.action_registry.register('delete')
-class VertexAIEndpointDelete(MethodAction):
+class VertexAIEndpointDelete(VertexAILocationalMethodAction, MethodAction):
     """Delete Vertex AI Endpoints
 
     Deletes a Vertex AI Endpoint. Note that this is an asynchronous operation
@@ -607,36 +642,9 @@ class VertexAIEndpointDelete(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process(self, resources):
-        """Process resources by grouping them by location.
-
-        Override to group resources by location and create one client per location
-        """
-        # Group resources by location
-        resources_by_location = defaultdict(list)
-
-        for resource in resources:
-            # Extract location from resource name
-            # Format: projects/{project}/locations/{location}/endpoints/{endpoint}
-            location = resource['name'].split('/')[3]
-            resources_by_location[location].append(resource)
-
-        # Process each location's resources with a location-specific client
-        session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
-
-        for location, location_resources in resources_by_location.items():
-            # Create location-specific client
-            location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.component
-            )
-
-            # Use parent's process_resource_set with location-specific client
-            self.process_resource_set(location_client, model, location_resources)
-
 
 @resources.register('vertex-ai-batch-prediction-job')
-class VertexAIBatchPredictionJob(QueryResourceManager):
+class VertexAIBatchPredictionJob(VertexAILocationalQueryManager, QueryResourceManager):
     """GCP Vertex AI Batch Prediction Job Resource
 
     Vertex AI Batch Prediction Jobs are used to run batch inference workloads
@@ -720,79 +728,9 @@ class VertexAIBatchPredictionJob(QueryResourceManager):
             # projects/{project}/locations/{location}/batchPredictionJobs/{job}
             return resource['name'].split('/')[3]
 
-    def _fetch_resources(self, query):
-        """Override to handle location-specific API endpoints and multi-location enumeration.
-
-        Vertex AI requires:
-        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
-        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
-        3. Enumeration across multiple locations (similar to RegionalResourceManager)
-        """
-
-        session = local_session(self.session_factory)
-        project = session.get_default_project()
-
-        # Get locations to query
-        location_query = self._get_location_query()
-        location_manager = self.get_resource_manager(
-            resource_type='vertex-ai-location',
-            data=({'query': location_query} if location_query else {})
-        )
-
-        all_resources = []
-        annotation_key = 'c7n:location'
-
-        # Enumerate resources in each location
-        for location_instance in location_manager.resources():
-            location = location_instance['name']
-
-            # Get client with location-specific endpoint
-            client = VertexAIEndpoint.get_location_client(
-                session, location, self.resource_type.component
-            )
-
-            # Build the parent scope with project and location
-            parent = f'projects/{project}/locations/{location}'
-
-            # Execute the list operation for this location
-            enum_op, path, _ = self.resource_type.enum_spec
-            params = {'parent': parent}
-
-            # Invoke the client enumeration (Vertex AI API supports pagination)
-            location_resources = []
-            for page in client.execute_paged_query(enum_op, params):
-                page_items = jmespath_search(path, page)
-                if page_items:
-                    location_resources.extend(page_items)
-
-            # Annotate resources with their location
-            for resource in location_resources:
-                resource[annotation_key] = location_instance
-
-            all_resources.extend(location_resources)
-
-        return all_resources
-
-    def _get_location_query(self):
-        """Get location query for multi-location enumeration.
-
-        Returns query to pass to vertex-ai-location resource manager.
-        If policy has 'query' specified, use that to filter locations.
-        Otherwise, return None to use default location logic.
-
-        Returns:
-            list or None: Location query list or None for defaults
-        """
-        # If policy has query specified, pass it through to location manager
-        if 'query' in self.data:
-            return self.data['query']
-
-        # Otherwise, let location manager use config.regions or config.region
-        return None
-
 
 @VertexAIBatchPredictionJob.action_registry.register('delete')
-class VertexAIBatchPredictionJobDelete(MethodAction):
+class VertexAIBatchPredictionJobDelete(VertexAILocationalMethodAction, MethodAction):
     """Delete Vertex AI Batch Prediction Jobs
 
     Deletes a Vertex AI Batch Prediction Job. Note that this is an asynchronous operation
@@ -827,36 +765,9 @@ class VertexAIBatchPredictionJobDelete(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process(self, resources):
-        """Process resources by grouping them by location.
-
-        Override to group resources by location and create one client per location
-        """
-        # Group resources by location
-        resources_by_location = defaultdict(list)
-
-        for resource in resources:
-            # Extract location from resource name
-            # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
-            location = resource['name'].split('/')[3]
-            resources_by_location[location].append(resource)
-
-        # Process each location's resources with a location-specific client
-        session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
-
-        for location, location_resources in resources_by_location.items():
-            # Create location-specific client
-            location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.component
-            )
-
-            # Use parent's process_resource_set with location-specific client
-            self.process_resource_set(location_client, model, location_resources)
-
 
 @VertexAIBatchPredictionJob.action_registry.register('stop')
-class VertexAIBatchPredictionJobStop(MethodAction):
+class VertexAIBatchPredictionJobStop(VertexAILocationalMethodAction, MethodAction):
     """Stop (Cancel) Vertex AI Batch Prediction Jobs
 
     Cancels a running Vertex AI Batch Prediction Job. This is useful for cost control
@@ -913,36 +824,9 @@ class VertexAIBatchPredictionJobStop(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process(self, resources):
-        """Process resources by grouping them by location.
-
-        Override to group resources by location and create one client per location.
-        """
-        # Group resources by location
-        resources_by_location = defaultdict(list)
-
-        for resource in resources:
-            # Extract location from resource name
-            # Format: projects/{project}/locations/{location}/batchPredictionJobs/{job}
-            location = resource['name'].split('/')[3]
-            resources_by_location[location].append(resource)
-
-        # Process each location's resources with a location-specific client
-        session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
-
-        for location, location_resources in resources_by_location.items():
-            # Create location-specific client
-            location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.component
-            )
-
-            # Use parent's process_resource_set with location-specific client
-            self.process_resource_set(location_client, model, location_resources)
-
 
 @resources.register('vertex-ai-custom-job')
-class VertexAICustomJob(QueryResourceManager):
+class VertexAICustomJob(VertexAILocationalQueryManager, QueryResourceManager):
     """GCP Vertex AI Custom Job Resource
 
     Vertex AI Custom Jobs are used to run custom machine learning training
@@ -1022,79 +906,9 @@ class VertexAICustomJob(QueryResourceManager):
             # projects/{project}/locations/{location}/customJobs/{job}
             return resource['name'].split('/')[3]
 
-    def _fetch_resources(self, query):
-        """Override to handle location-specific API endpoints and multi-location enumeration.
-
-        Vertex AI requires:
-        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
-        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
-        3. Enumeration across multiple locations (similar to RegionalResourceManager)
-        """
-
-        session = local_session(self.session_factory)
-        project = session.get_default_project()
-
-        # Get locations to query
-        location_query = self._get_location_query()
-        location_manager = self.get_resource_manager(
-            resource_type='vertex-ai-location',
-            data=({'query': location_query} if location_query else {})
-        )
-
-        all_resources = []
-        annotation_key = 'c7n:location'
-
-        # Enumerate resources in each location
-        for location_instance in location_manager.resources():
-            location = location_instance['name']
-
-            # Get client with location-specific endpoint
-            client = VertexAIEndpoint.get_location_client(
-                session, location, self.resource_type.component
-            )
-
-            # Build the parent scope with project and location
-            parent = f'projects/{project}/locations/{location}'
-
-            # Execute the list operation for this location
-            enum_op, path, _ = self.resource_type.enum_spec
-            params = {'parent': parent}
-
-            # Invoke the client enumeration (Vertex AI API supports pagination)
-            location_resources = []
-            for page in client.execute_paged_query(enum_op, params):
-                page_items = jmespath_search(path, page)
-                if page_items:
-                    location_resources.extend(page_items)
-
-            # Annotate resources with their location
-            for resource in location_resources:
-                resource[annotation_key] = location_instance
-
-            all_resources.extend(location_resources)
-
-        return all_resources
-
-    def _get_location_query(self):
-        """Get location query for multi-location enumeration.
-
-        Returns query to pass to vertex-ai-location resource manager.
-        If policy has 'query' specified, use that to filter locations.
-        Otherwise, return None to use default location logic.
-
-        Returns:
-            list or None: Location query list or None for defaults
-        """
-        # If policy has query specified, pass it through to location manager
-        if 'query' in self.data:
-            return self.data['query']
-
-        # Otherwise, let location manager use config.regions or config.region
-        return None
-
 
 @VertexAICustomJob.action_registry.register('delete')
-class VertexAICustomJobDelete(MethodAction):
+class VertexAICustomJobDelete(VertexAILocationalMethodAction, MethodAction):
     """Delete Vertex AI Custom Jobs
 
     Deletes a Vertex AI Custom Job. Note that this is an asynchronous operation
@@ -1126,36 +940,9 @@ class VertexAICustomJobDelete(MethodAction):
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
 
-    def process(self, resources):
-        """Process resources by grouping them by location.
-
-        Override to group resources by location and create one client per location
-        """
-        # Group resources by location
-        resources_by_location = defaultdict(list)
-
-        for resource in resources:
-            # Extract location from resource name
-            # Format: projects/{project}/locations/{location}/customJobs/{job}
-            location = resource['name'].split('/')[3]
-            resources_by_location[location].append(resource)
-
-        # Process each location's resources with a location-specific client
-        session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
-
-        for location, location_resources in resources_by_location.items():
-            # Create location-specific client
-            location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.component
-            )
-
-            # Use parent's process_resource_set with location-specific client
-            self.process_resource_set(location_client, model, location_resources)
-
 
 @VertexAICustomJob.action_registry.register('cancel')
-class VertexAICustomJobCancel(MethodAction):
+class VertexAICustomJobCancel(VertexAILocationalMethodAction, MethodAction):
     """Cancel Vertex AI Custom Jobs
 
     Cancels a running Vertex AI Custom Job. This is useful for cost control
@@ -1195,33 +982,6 @@ class VertexAICustomJobCancel(MethodAction):
 
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
-
-    def process(self, resources):
-        """Process resources by grouping them by location.
-
-        Override to group resources by location and create one client per location.
-        """
-        # Group resources by location
-        resources_by_location = defaultdict(list)
-
-        for resource in resources:
-            # Extract location from resource name
-            # Format: projects/{project}/locations/{location}/customJobs/{job}
-            location = resource['name'].split('/')[3]
-            resources_by_location[location].append(resource)
-
-        # Process each location's resources with a location-specific client
-        session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
-
-        for location, location_resources in resources_by_location.items():
-            # Create location-specific client
-            location_client = VertexAIEndpoint.get_location_client(
-                session, location, model.component
-            )
-
-            # Use parent's process_resource_set with location-specific client
-            self.process_resource_set(location_client, model, location_resources)
 
 
 def get_vertex_ai_publishers():
