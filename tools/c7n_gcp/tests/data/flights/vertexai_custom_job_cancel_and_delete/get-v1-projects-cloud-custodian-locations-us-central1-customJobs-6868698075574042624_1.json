@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Tue, 07 Jul 2026 20:18:38 GMT",
+    "date": "Wed, 08 Jul 2026 18:43:38 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,13 +10,13 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "924",
+    "content-length": "813",
     "-content-encoding": "gzip",
-    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/customJobs/6073957876878016512?alt=json"
+    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/customJobs/6868698075574042624?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/customJobs/6073957876878016512",
-    "displayName": "c7n-test-custom-job-9617-filters",
+    "name": "projects/cloud-custodian/locations/us-central1/customJobs/6868698075574042624",
+    "displayName": "c7n-test-custom-job-default-9b09-lifecycle",
     "jobSpec": {
       "workerPoolSpecs": [
         {
@@ -31,23 +31,18 @@
           "containerSpec": {
             "imageUri": "gcr.io/google.com/cloudsdktool/cloud-sdk:slim",
             "command": [
-              "echo"
+              "sleep"
             ],
             "args": [
-              "hello from c7n test"
+              "120"
             ]
           }
         }
       ]
     },
-    "state": "JOB_STATE_CANCELLED",
-    "createTime": "2026-07-07T20:18:27.166423Z",
-    "startTime": "2026-07-07T20:18:27.321355Z",
-    "endTime": "2026-07-07T20:18:30.818517Z",
-    "updateTime": "2026-07-07T20:18:30.818517Z",
-    "error": {
-      "code": 1,
-      "message": "CANCELED"
-    }
+    "state": "JOB_STATE_QUEUED",
+    "createTime": "2026-07-08T18:43:36.654698Z",
+    "startTime": "2026-07-08T18:43:36.811116Z",
+    "updateTime": "2026-07-08T18:43:37.012060Z"
   }
 }

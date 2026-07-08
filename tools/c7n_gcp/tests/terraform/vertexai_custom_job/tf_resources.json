@@ -2,19 +2,19 @@
     "pytest-terraform": 1,
     "outputs": {
         "job_display_name": {
-            "value": "c7n-test-custom-job-9617",
+            "value": "c7n-test-custom-job-default-9b09",
             "type": "string"
         }
     },
     "resources": {
         "random_id": {
             "suffix": {
-                "b64_std": "lhc=",
-                "b64_url": "lhc",
+                "b64_std": "mwk=",
+                "b64_url": "mwk",
                 "byte_length": 2,
-                "dec": "38423",
-                "hex": "9617",
-                "id": "lhc",
+                "dec": "39689",
+                "hex": "9b09",
+                "id": "mwk",
                 "keepers": null,
                 "prefix": null
             }

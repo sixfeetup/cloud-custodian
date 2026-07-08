@@ -1363,7 +1363,7 @@ def create_job(test):
                 print(f'Warning: failed to delete {name} during cleanup: {e}')
 
 
-@terraform('vertexai_custom_job')
+@terraform('vertexai_custom_job', scope='module')
 def test_vertexai_custom_job_query(test, vertexai_custom_job, create_job):
     """Test creating, listing, filtering, and generating URNs for a Custom Job.
 
@@ -1397,7 +1397,7 @@ def test_vertexai_custom_job_query(test, vertexai_custom_job, create_job):
     assert ':custom-job/' in urns[0]
 
 
-@terraform('vertexai_custom_job')
+@terraform('vertexai_custom_job', scope='module')
 def test_vertexai_custom_job_cancel_and_delete(test, vertexai_custom_job, create_job):
     """Test cancelling and deleting a Custom Job via the c7n actions.
 
@@ -1448,7 +1448,7 @@ def test_vertexai_custom_job_cancel_and_delete(test, vertexai_custom_job, create
         client.execute_query('get', {'name': job_name})
 
 
-@terraform('vertexai_custom_job')
+@terraform('vertexai_custom_job', scope='module')
 def test_vertexai_custom_job_field_filters(test, vertexai_custom_job, create_job):
     """Test filtering Custom Jobs on the fields called out in the feature request.
 

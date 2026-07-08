@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Tue, 07 Jul 2026 20:18:28 GMT",
+    "date": "Wed, 08 Jul 2026 18:43:24 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -12,11 +12,11 @@
     "status": "200",
     "content-length": "818",
     "-content-encoding": "gzip",
-    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/customJobs/6073957876878016512?alt=json"
+    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/customJobs/2406756744756723712?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/customJobs/6073957876878016512",
-    "displayName": "c7n-test-custom-job-9617-filters",
+    "name": "projects/cloud-custodian/locations/us-central1/customJobs/2406756744756723712",
+    "displayName": "c7n-test-custom-job-default-9b09",
     "jobSpec": {
       "workerPoolSpecs": [
         {
@@ -41,8 +41,8 @@
       ]
     },
     "state": "JOB_STATE_QUEUED",
-    "createTime": "2026-07-07T20:18:27.166423Z",
-    "startTime": "2026-07-07T20:18:27.321355Z",
-    "updateTime": "2026-07-07T20:18:27.495673Z"
+    "createTime": "2026-07-08T18:43:23.250091Z",
+    "startTime": "2026-07-08T18:43:23.379923Z",
+    "updateTime": "2026-07-08T18:43:23.530756Z"
   }
 }
