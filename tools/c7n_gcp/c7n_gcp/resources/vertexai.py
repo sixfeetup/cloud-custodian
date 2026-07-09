@@ -856,19 +856,19 @@ class VertexAICustomJob(VertexAIQueryManager):
 
     :example:
 
-    Find Custom Jobs using accelerators:
+    Find Custom Jobs with no accelerators:
 
     .. code-block:: yaml
 
         policies:
-          - name: gcp-vertex-ai-custom-jobs-with-accelerators
+          - name: gcp-vertex-ai-custom-jobs-without-accelerators
             resource: gcp.vertex-ai-custom-job
             filters:
               - type: value
                 key: >-
                   length(jobSpec.workerPoolSpecs[?machineSpec.acceleratorType
                   && machineSpec.acceleratorType != 'ACCELERATOR_TYPE_UNSPECIFIED'])
-                op: gt
+                op: eq
                 value: 0
     """
 
