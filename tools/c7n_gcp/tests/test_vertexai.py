@@ -203,9 +203,7 @@ def test_vertexai_endpoint_metric_resource_name():
 @terraform("vertexai_endpoint_metrics")
 def test_vertexai_endpoint_metrics(test, vertexai_endpoint_metrics):
     """
-    Testing this in record mode requires deploying a model to the endpoint and running predictions
-    in order to generate the required metrics. The terraform only sets up the required endpoint
-    and storage bucket.
+    Running this test in record mode is involved. See the readme in the terraform directory.
     """
     project_id = get_default_project()
     endpoint = vertexai_endpoint_metrics.resources["google_vertex_ai_endpoint"]["default"]
