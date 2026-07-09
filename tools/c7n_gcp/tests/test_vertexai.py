@@ -7,6 +7,7 @@ import time
 import logging
 from unittest.mock import Mock, patch
 from google.api_core.client_options import ClientOptions
+from pytest_terraform import terraform
 from gcp_common import BaseTest
 
 
@@ -1258,3 +1259,53 @@ class VertexAIPublisherModelTest(BaseTest):
                 resource.get('name', '').lower(),
                 f'Model {resource.get("name")} unexpectedly matched Gemini pattern'
             )
+
+
+@terraform('vertexai_endpoint_get_resource')
+def test_vertexai_endpoint_get_resource(test, vertexai_endpoint_get_resource):
+    """Test fetching a single Vertex AI Endpoint via get_resource().
+
+    Exercises the resource manager's get_resource(), used by event-driven
+    policies (e.g. gcp-audit mode), which must build a location-scoped
+    client rather than the base class's global one (see PR #10889 review).
+    """
+    display_name = vertexai_endpoint_get_resource.outputs['endpoint_display_name']['value']
+    location = 'us-central1'
+
+    session_factory = test.replay_flight_data('vertexai_endpoint_get_resource')
+    session = session_factory()
+    project = session.get_default_project()
+
+    client = session.client(
+        'aiplatform', 'v1', 'projects.locations.endpoints',
+        client_options=ClientOptions(api_endpoint=f'https://{location}-aiplatform.googleapis.com'))
+    op_client = session.client(
+        'aiplatform', 'v1', 'projects.locations.endpoints.operations',
+        client_options=ClientOptions(api_endpoint=f'https://{location}-aiplatform.googleapis.com'))
+
+    # Endpoint creation is a long-running operation; poll until done to get
+    # the endpoint's actual resource name.
+    op = client.execute_command(
+        'create',
+        {'parent': f'projects/{project}/locations/{location}',
+         'body': {'displayName': display_name}})
+    for _ in range(20):
+        op = op_client.execute_query('get', {'name': op['name']})
+        if op.get('done'):
+            break
+        if test.recording:
+            time.sleep(10)
+    assert op.get('done'), 'Endpoint creation operation did not complete in time'
+    job_name = op['response']['name']
+
+    try:
+        policy = test.load_policy(
+            {'name': 'vertexai-endpoint-get-resource',
+             'resource': 'gcp.vertex-ai-endpoint'},
+            session_factory=session_factory)
+
+        resource = policy.resource_manager.get_resource({'resourceName': job_name})
+        assert resource['name'] == job_name
+        assert resource['displayName'] == display_name
+    finally:
+        client.execute_command('delete', {'name': job_name})

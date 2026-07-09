@@ -1,0 +1,23 @@
+{
+    "pytest-terraform": 1,
+    "outputs": {
+        "endpoint_display_name": {
+            "value": "c7n-test-get-resource-endpoint-default-0916",
+            "type": "string"
+        }
+    },
+    "resources": {
+        "random_id": {
+            "suffix": {
+                "b64_std": "CRY=",
+                "b64_url": "CRY",
+                "byte_length": 2,
+                "dec": "2326",
+                "hex": "0916",
+                "id": "CRY",
+                "keepers": null,
+                "prefix": null
+            }
+        }
+    }
+}
