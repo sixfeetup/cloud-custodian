@@ -20,22 +20,18 @@ VERTEXAI_REGION_DATA_PATH = Path(__file__).parent.parent / 'vertexai_regions.jso
 VERTEXAI_PUBLISHER_DATA_PATH = Path(__file__).parent.parent / 'vertexai_publishers.json'
 
 
-class VertexAILocationalQueryManager:
-    """Mixin for Vertex AI resources scoped to a location.
+class VertexAIQueryManager(QueryResourceManager):
+    """Base class for Vertex AI resources scoped to a location.
 
     Vertex AI requires location-specific hostnames (e.g.
     us-central1-aiplatform.googleapis.com), so resources can't be listed
-    with a single global request. This mixin enumerates the resource across
+    with a single global request. This enumerates the resource across
     every applicable location (see VertexAILocation), used by resources
     like endpoints, batch prediction jobs, and custom jobs.
     """
 
     @staticmethod
-    def get_location_client(
-        session,
-        location,
-        component='projects.locations.modelDeploymentMonitoringJobs'
-    ):
+    def get_location_client(session, location, component):
         """Helper method to create a location-specific client.
 
         Args:
@@ -119,8 +115,8 @@ class VertexAILocationalQueryManager:
         return None
 
 
-class VertexAILocationalMethodAction:
-    """Mixin for actions on Vertex AI resources scoped to a location.
+class VertexAIMethodAction(MethodAction):
+    """Base class for actions on Vertex AI resources scoped to a location.
 
     Groups resources by location (parsed from the resource name) and
     dispatches to process_resource_set with a location-specific client,
@@ -128,17 +124,16 @@ class VertexAILocationalMethodAction:
     """
 
     def process(self, resources):
+        model = self.manager.resource_type
+
         # Group resources by location
         resources_by_location = defaultdict(list)
-
         for resource in resources:
-            # Resource name format: projects/{project}/locations/{location}/...
-            location = resource['name'].split('/')[3]
+            location = model._get_location(resource)
             resources_by_location[location].append(resource)
 
         # Process each location's resources with a location-specific client
         session = local_session(self.manager.session_factory)
-        model = self.manager.resource_type
 
         for location, location_resources in resources_by_location.items():
             location_client = self.manager.get_location_client(
@@ -202,7 +197,7 @@ class VertexAILocation:
 
 
 @resources.register('vertex-ai-endpoint')
-class VertexAIEndpoint(VertexAILocationalQueryManager, QueryResourceManager):
+class VertexAIEndpoint(VertexAIQueryManager):
     """GCP Vertex AI Endpoint Resource
 
     Vertex AI Endpoints are used to deploy machine learning models for online prediction.
@@ -549,7 +544,7 @@ class VertexAIEndpointMonitor(MethodAction):
 
             # Create location-specific client using helper
             location_client = VertexAIEndpoint.get_location_client(
-                session, location
+                session, location, 'projects.locations.modelDeploymentMonitoringJobs'
             )
 
             # Try to create monitoring job
@@ -607,7 +602,7 @@ class VertexAIEndpointMonitor(MethodAction):
 
 
 @VertexAIEndpoint.action_registry.register('delete')
-class VertexAIEndpointDelete(VertexAILocationalMethodAction, MethodAction):
+class VertexAIEndpointDelete(VertexAIMethodAction):
     """Delete Vertex AI Endpoints
 
     Deletes a Vertex AI Endpoint. Note that this is an asynchronous operation
@@ -644,7 +639,7 @@ class VertexAIEndpointDelete(VertexAILocationalMethodAction, MethodAction):
 
 
 @resources.register('vertex-ai-batch-prediction-job')
-class VertexAIBatchPredictionJob(VertexAILocationalQueryManager, QueryResourceManager):
+class VertexAIBatchPredictionJob(VertexAIQueryManager):
     """GCP Vertex AI Batch Prediction Job Resource
 
     Vertex AI Batch Prediction Jobs are used to run batch inference workloads
@@ -730,7 +725,7 @@ class VertexAIBatchPredictionJob(VertexAILocationalQueryManager, QueryResourceMa
 
 
 @VertexAIBatchPredictionJob.action_registry.register('delete')
-class VertexAIBatchPredictionJobDelete(VertexAILocationalMethodAction, MethodAction):
+class VertexAIBatchPredictionJobDelete(VertexAIMethodAction):
     """Delete Vertex AI Batch Prediction Jobs
 
     Deletes a Vertex AI Batch Prediction Job. Note that this is an asynchronous operation
@@ -767,7 +762,7 @@ class VertexAIBatchPredictionJobDelete(VertexAILocationalMethodAction, MethodAct
 
 
 @VertexAIBatchPredictionJob.action_registry.register('stop')
-class VertexAIBatchPredictionJobStop(VertexAILocationalMethodAction, MethodAction):
+class VertexAIBatchPredictionJobStop(VertexAIMethodAction):
     """Stop (Cancel) Vertex AI Batch Prediction Jobs
 
     Cancels a running Vertex AI Batch Prediction Job. This is useful for cost control
@@ -826,7 +821,7 @@ class VertexAIBatchPredictionJobStop(VertexAILocationalMethodAction, MethodActio
 
 
 @resources.register('vertex-ai-custom-job')
-class VertexAICustomJob(VertexAILocationalQueryManager, QueryResourceManager):
+class VertexAICustomJob(VertexAIQueryManager):
     """GCP Vertex AI Custom Job Resource
 
     Vertex AI Custom Jobs are used to run custom machine learning training
@@ -870,9 +865,11 @@ class VertexAICustomJob(VertexAILocationalQueryManager, QueryResourceManager):
             resource: gcp.vertex-ai-custom-job
             filters:
               - type: value
-                key: jobSpec.workerPoolSpecs[].machineSpec.acceleratorType
-                op: ne
-                value: ACCELERATOR_TYPE_UNSPECIFIED
+                key: >-
+                  length(jobSpec.workerPoolSpecs[?machineSpec.acceleratorType
+                  && machineSpec.acceleratorType != 'ACCELERATOR_TYPE_UNSPECIFIED'])
+                op: gt
+                value: 0
     """
 
     class resource_type(TypeInfo):
@@ -908,7 +905,7 @@ class VertexAICustomJob(VertexAILocationalQueryManager, QueryResourceManager):
 
 
 @VertexAICustomJob.action_registry.register('delete')
-class VertexAICustomJobDelete(VertexAILocationalMethodAction, MethodAction):
+class VertexAICustomJobDelete(VertexAIMethodAction):
     """Delete Vertex AI Custom Jobs
 
     Deletes a Vertex AI Custom Job. Note that this is an asynchronous operation
@@ -942,7 +939,7 @@ class VertexAICustomJobDelete(VertexAILocationalMethodAction, MethodAction):
 
 
 @VertexAICustomJob.action_registry.register('cancel')
-class VertexAICustomJobCancel(VertexAILocationalMethodAction, MethodAction):
+class VertexAICustomJobCancel(VertexAIMethodAction):
     """Cancel Vertex AI Custom Jobs
 
     Cancels a running Vertex AI Custom Job. This is useful for cost control

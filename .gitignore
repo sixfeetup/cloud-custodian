@@ -51,7 +51,6 @@ docs/source/*/resources
 docs/source/tools/assets/
 .tfcache
 .env
-test-override.env
 .venv
 .python-version
 # files generated during "make test"

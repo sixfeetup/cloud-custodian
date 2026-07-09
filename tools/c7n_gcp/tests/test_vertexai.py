@@ -1474,9 +1474,14 @@ def test_vertexai_custom_job_field_filters(test, vertexai_custom_job, create_job
              {'type': 'value', 'key': 'createTime', 'value_type': 'age',
               'op': 'less-than', 'value': 1},
              {'type': 'value', 'key': 'labels.env', 'value': 'absent'},
+             # This job has no accelerators; assert that the nested
+             # jmespath filter expression correctly evaluates to zero,
+             # rather than trivially matching (see PR #10891 review).
              {'type': 'value',
-              'key': 'jobSpec.workerPoolSpecs[].machineSpec.acceleratorType',
-              'op': 'ne', 'value': 'ACCELERATOR_TYPE_UNSPECIFIED'}
+              'key': (
+                  "length(jobSpec.workerPoolSpecs[?machineSpec.acceleratorType && "
+                  "machineSpec.acceleratorType != 'ACCELERATOR_TYPE_UNSPECIFIED'])"),
+              'op': 'eq', 'value': 0}
          ]},
         session_factory=test.session_factory)
 
