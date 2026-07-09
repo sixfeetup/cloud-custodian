@@ -155,6 +155,36 @@ class VertexAIMethodAction(MethodAction):
             self.process_resource_set(location_client, model, location_resources)
 
 
+class VertexAITypeInfo(TypeInfo):
+    """Base resource_type for Vertex AI resources scoped to a location.
+
+    Holds the attributes and methods shared by every regional Vertex AI
+    resource_type (endpoints, batch prediction jobs, custom jobs,
+    hyperparameter tuning jobs). Resource-specific resource_type classes
+    still need to set component, enum_spec, default_report_fields,
+    asset_type, permissions, and urn_component.
+    """
+    service = 'aiplatform'
+    version = 'v1'
+    scope = 'project'
+    scope_key = 'parent'
+    scope_template = None  # Handled dynamically per location
+    name = id = 'name'
+    urn_id_segments = (-1,)
+
+    @staticmethod
+    def get(client, resource_info):
+        # Resource name format: projects/{project}/locations/{location}/<component>/<id>
+        return client.execute_query(
+            'get', {'name': resource_info['resourceName']})
+
+    @classmethod
+    def _get_location(cls, resource):
+        """Extract location from resource name."""
+        # Resource name format: projects/{project}/locations/{location}/<component>/<id>
+        return resource['name'].split('/')[3]
+
+
 @resources.register('vertex-ai-location')
 class VertexAILocation:
     """Vertex AI Location pseudo-resource for multi-location enumeration.
@@ -243,34 +273,15 @@ class VertexAIEndpoint(VertexAIQueryManager):
             resource: gcp.vertex-ai-endpoint
     """
 
-    class resource_type(TypeInfo):
-        service = 'aiplatform'
-        version = 'v1'
+    class resource_type(VertexAITypeInfo):
         component = 'projects.locations.endpoints'
         enum_spec = ('list', 'endpoints[]', None)
-        scope = 'project'
-        scope_key = 'parent'
-        scope_template = None  # Handled dynamically per location
-        name = id = 'name'
         default_report_fields = [
             'name', 'displayName', 'deployedModels[].displayName', 'createTime', 'updateTime'
         ]
         asset_type = 'aiplatform.googleapis.com/Endpoint'
         permissions = ('aiplatform.endpoints.list',)
         urn_component = 'endpoint'
-        urn_id_segments = (-1,)
-
-        @staticmethod
-        def get(client, resource_info):
-            # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
-            return client.execute_query(
-                'get', {'name': resource_info['resourceName']})
-
-        @classmethod
-        def _get_location(cls, resource):
-            """Extract location from resource name."""
-            # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
-            return resource['name'].split('/')[3]
 
 
 @VertexAIEndpoint.action_registry.register('monitor')
@@ -705,36 +716,15 @@ class VertexAIBatchPredictionJob(VertexAIQueryManager):
                 value: JOB_STATE_FAILED
     """
 
-    class resource_type(TypeInfo):
-        service = 'aiplatform'
-        version = 'v1'
+    class resource_type(VertexAITypeInfo):
         component = 'projects.locations.batchPredictionJobs'
         enum_spec = ('list', 'batchPredictionJobs[]', None)
-        scope = 'project'
-        scope_key = 'parent'
-        scope_template = None  # Handled dynamically per location
-        name = id = 'name'
         default_report_fields = [
             'name', 'displayName', 'state', 'createTime', 'updateTime'
         ]
         asset_type = 'aiplatform.googleapis.com/BatchPredictionJob'
         permissions = ('aiplatform.batchPredictionJobs.list',)
         urn_component = 'batch-prediction-job'
-        urn_id_segments = (-1,)
-
-        @staticmethod
-        def get(client, resource_info):
-            # Resource name format:
-            # projects/{project}/locations/{location}/batchPredictionJobs/{job}
-            return client.execute_query(
-                'get', {'name': resource_info['resourceName']})
-
-        @classmethod
-        def _get_location(cls, resource):
-            """Extract location from resource name."""
-            # Resource name format:
-            # projects/{project}/locations/{location}/batchPredictionJobs/{job}
-            return resource['name'].split('/')[3]
 
 
 @VertexAIBatchPredictionJob.action_registry.register('delete')
@@ -883,15 +873,9 @@ class VertexAIHyperparameterTuningJob(VertexAIQueryManager):
                 value: JOB_STATE_RUNNING
     """
 
-    class resource_type(TypeInfo):
-        service = 'aiplatform'
-        version = 'v1'
+    class resource_type(VertexAITypeInfo):
         component = 'projects.locations.hyperparameterTuningJobs'
         enum_spec = ('list', 'hyperparameterTuningJobs[]', None)
-        scope = 'project'
-        scope_key = 'parent'
-        scope_template = None  # Handled dynamically per location
-        name = id = 'name'
         default_report_fields = [
             'name', 'displayName', 'state', 'createTime', 'updateTime',
             'parallelTrialCount', 'maxTrialCount'
@@ -899,21 +883,6 @@ class VertexAIHyperparameterTuningJob(VertexAIQueryManager):
         asset_type = 'aiplatform.googleapis.com/HyperparameterTuningJob'
         permissions = ('aiplatform.hyperparameterTuningJobs.list',)
         urn_component = 'hyperparameter-tuning-job'
-        urn_id_segments = (-1,)
-
-        @staticmethod
-        def get(client, resource_info):
-            # Resource name format:
-            # projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
-            return client.execute_query(
-                'get', {'name': resource_info['resourceName']})
-
-        @classmethod
-        def _get_location(cls, resource):
-            """Extract location from resource name."""
-            # Resource name format:
-            # projects/{project}/locations/{location}/hyperparameterTuningJobs/{job}
-            return resource['name'].split('/')[3]
 
 
 @VertexAIHyperparameterTuningJob.action_registry.register('delete')
