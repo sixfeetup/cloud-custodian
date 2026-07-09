@@ -7,7 +7,7 @@ import time
 import logging
 from unittest.mock import Mock, patch
 from google.api_core.client_options import ClientOptions
-from c7n.exceptions import PolicyExecutionError
+from c7n.filters.core import FilterValidationError
 from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
 from c7n_gcp.resources.vertexai import VertexAIEndpoint
@@ -193,11 +193,26 @@ def test_vertexai_endpoint_metric_resource_name():
         == '1234567890123456789'
     )
 
-    # Passing a bad metric key doesn't work
-    with pytest.raises(PolicyExecutionError):
-        VertexAIEndpoint.resource_type.get_metric_resource_name(
-            resource, metric_key='metric.labels.deployed_model_id'
-        )
+
+def test_vertexai_endpoint_metrics_invalid_metric_key(test):
+    with pytest.raises(
+        FilterValidationError,
+        match="only supports metric-key 'resource.labels.endpoint_id'",
+    ):
+        test.load_policy({
+            'name': 'vertexai-endpoint-invalid-metric-key',
+            'resource': 'gcp.vertex-ai-endpoint',
+            'filters': [
+                {'type': 'value', 'key': 'displayName', 'value': 'does-not-match'},
+                {
+                    'type': 'metrics',
+                    'name': 'aiplatform.googleapis.com/prediction/online/prediction_count',
+                    'metric-key': 'metric.labels.deployed_model_id',
+                    'op': 'greater-than',
+                    'value': 0,
+                },
+            ],
+        }, validate=True)
 
 
 @terraform("vertexai_endpoint_metrics")

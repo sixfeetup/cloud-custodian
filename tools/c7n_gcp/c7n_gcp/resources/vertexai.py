@@ -9,9 +9,10 @@ from google.cloud import storage
 from googleapiclient.errors import HttpError
 import yaml
 
-from c7n.exceptions import PolicyExecutionError
+from c7n.filters.core import FilterValidationError
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
+from c7n_gcp.filters.metrics import GCPMetricsFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo
 
@@ -141,15 +142,6 @@ class VertexAIEndpoint(QueryResourceManager):
 
         @classmethod
         def get_metric_resource_name(cls, resource, metric_key=None):
-            # The Endpoint monitored resource only exposes endpoint_id as a
-            # per-resource identifier, so that's the only key we can map back
-            # to a resource. Fail loudly rather than silently return no metrics
-            # if a policy overrides metric-key with something unsupported.
-            if metric_key and metric_key != cls.metric_key:
-                raise PolicyExecutionError(
-                    "vertex-ai-endpoint metrics filter only supports "
-                    f"metric-key '{cls.metric_key}', got '{metric_key}'")
-
             # Endpoint metrics are keyed by the terminal endpoint id.
             return resource['name'].split('/')[-1]
 
@@ -244,6 +236,19 @@ class VertexAIEndpoint(QueryResourceManager):
 
         # Otherwise, let location manager use config.regions or config.region
         return None
+
+
+@VertexAIEndpoint.filter_registry.register('metrics')
+class VertexAIEndpointMetricsFilter(GCPMetricsFilter):
+
+    def validate(self):
+        super().validate()
+        metric_key = self.data.get('metric-key')
+        if metric_key and metric_key != self.manager.resource_type.metric_key:
+            raise FilterValidationError(
+                "vertex-ai-endpoint metrics filter only supports "
+                f"metric-key '{self.manager.resource_type.metric_key}', got '{metric_key}'")
+        return self
 
 
 @VertexAIEndpoint.action_registry.register('monitor')
