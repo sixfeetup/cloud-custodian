@@ -7,9 +7,11 @@ import time
 import logging
 from unittest.mock import Mock, patch
 from google.api_core.client_options import ClientOptions
+from c7n.exceptions import PolicyExecutionError
 from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
 from c7n_gcp.resources.vertexai import VertexAIEndpoint
+import pytest
 from pytest_terraform import terraform
 
 
@@ -177,11 +179,25 @@ def test_vertexai_endpoint_metric_resource_name():
         )
     }
 
-    assert VertexAIEndpoint.resource_type.metric_key == 'resource.labels.endpoint_id'
+    # Proper default metric key
     assert (
         VertexAIEndpoint.resource_type.get_metric_resource_name(resource)
         == '1234567890123456789'
     )
+
+    # Explicitly passing the metric key works too
+    assert (
+        VertexAIEndpoint.resource_type.get_metric_resource_name(
+            resource, metric_key='resource.labels.endpoint_id'
+        )
+        == '1234567890123456789'
+    )
+
+    # Passing a bad metric key doesn't work
+    with pytest.raises(PolicyExecutionError):
+        VertexAIEndpoint.resource_type.get_metric_resource_name(
+            resource, metric_key='metric.labels.deployed_model_id'
+        )
 
 
 @terraform("vertexai_endpoint_metrics")
