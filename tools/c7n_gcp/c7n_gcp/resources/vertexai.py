@@ -124,6 +124,7 @@ class VertexAIEndpoint(QueryResourceManager):
         permissions = ('aiplatform.endpoints.list',)
         urn_component = 'endpoint'
         urn_id_segments = (-1,)
+        metric_key = 'resource.labels.endpoint_id'
 
         @staticmethod
         def get(client, resource_info):
@@ -136,6 +137,11 @@ class VertexAIEndpoint(QueryResourceManager):
             """Extract location from resource name."""
             # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
             return resource['name'].split('/')[3]
+
+        @classmethod
+        def get_metric_resource_name(cls, resource, metric_key=None):
+            # Endpoint metrics are keyed by the terminal endpoint id.
+            return resource['name'].split('/')[-1]
 
     @staticmethod
     def get_location_client(
