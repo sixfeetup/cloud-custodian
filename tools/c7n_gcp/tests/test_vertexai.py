@@ -1489,8 +1489,10 @@ def test_vertexai_hp_tuning_job_field_filters(
              {'type': 'value', 'key': 'maxTrialCount', 'value': 1},
              {'type': 'value', 'key': 'state', 'op': 'in',
               'value': ['JOB_STATE_PENDING', 'JOB_STATE_QUEUED']},
+             # Using a very big number because time advances and we only
+             # care here that we can make the query.
              {'type': 'value', 'key': 'createTime', 'value_type': 'age',
-              'op': 'less-than', 'value': 1},
+              'op': 'less-than', 'value': 99999},
              {'type': 'value', 'key': 'labels.env', 'value': 'absent'}
          ]},
         session_factory=test.session_factory)
