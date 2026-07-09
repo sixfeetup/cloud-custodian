@@ -46,6 +46,18 @@ class VertexAIQueryManager(QueryResourceManager):
         client_options = ClientOptions(api_endpoint=api_endpoint)
         return session.client('aiplatform', 'v1', component, client_options=client_options)
 
+    def get_resource(self, resource_info):
+        """Override to use a location-specific client.
+
+        The base implementation's get_client() builds a client against the
+        global endpoint, which Vertex AI rejects for regional resources
+        (used by event-driven policies, e.g. gcp-audit mode).
+        """
+        session = local_session(self.session_factory)
+        location = resource_info['resourceName'].split('/')[3]
+        client = self.get_location_client(session, location, self.resource_type.component)
+        return self.resource_type.get(client, resource_info)
+
     def _fetch_resources(self, query):
         """Override to handle location-specific API endpoints and multi-location enumeration.
 
