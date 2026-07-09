@@ -1471,8 +1471,12 @@ def test_vertexai_custom_job_field_filters(test, vertexai_custom_job, create_job
              {'type': 'value', 'key': 'name', 'value': job_name},
              {'type': 'value', 'key': 'state', 'op': 'in',
               'value': ['JOB_STATE_PENDING', 'JOB_STATE_QUEUED']},
+             # A generous threshold: 'age' is measured in days, and this
+             # only needs to demonstrate that createTime is filterable, not
+             # pin down an exact age (the recorded fixture's timestamp is
+             # fixed, but the test may run long after it was recorded).
              {'type': 'value', 'key': 'createTime', 'value_type': 'age',
-              'op': 'less-than', 'value': 1},
+              'op': 'less-than', 'value': 3650},
              {'type': 'value', 'key': 'labels.env', 'value': 'absent'},
              # This job has no accelerators; assert that the nested
              # jmespath filter expression correctly evaluates to zero,
