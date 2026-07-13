@@ -36,7 +36,7 @@ class FlightRecorder(Http):
         parsed = urlparse(uri)
         host_key = ''
         if self.include_host:
-            host_key = '-{}-{}'.format(parsed.scheme, parsed.netloc.replace(':', '-'))
+            host_key = '-{}'.format(parsed.netloc.replace(':', '-'))
         base_name = "%s%s%s" % (
             method.lower(), host_key, parsed.path.replace('/', '-').replace(':', '-'))
         data_dir = self._data_path
