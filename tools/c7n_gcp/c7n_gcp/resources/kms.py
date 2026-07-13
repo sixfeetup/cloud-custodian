@@ -3,11 +3,12 @@
 
 import re
 
+from c7n.exceptions import PolicyValidationError
 from c7n.utils import local_session, type_schema
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo, \
     GcpLocation
-from c7n_gcp.actions import SetIamPolicy
+from c7n_gcp.actions import MethodAction, SetIamPolicy
 from c7n_gcp.filters import IamPolicyFilter
 from c7n.filters import Filter
 
@@ -132,6 +133,59 @@ class KmsCryptoKey(ChildResourceManager):
         @classmethod
         def _get_location(cls, resource):
             return resource["name"].split('/')[3]
+
+
+@KmsCryptoKey.action_registry.register('update')
+class KmsCryptoKeyUpdate(MethodAction):
+    """Update mutable properties of a gcp.kms-cryptokey resource.
+
+    GCP action is https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/patch
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-kms-cryptokey-set-rotation
+            resource: gcp.kms-cryptokey
+            actions:
+              - type: update
+                rotationPeriod: 7776000s
+                nextRotationTime: "2027-01-01T00:00:00Z"
+    """
+    schema = type_schema(
+        'update',
+        **{
+            'rotationPeriod': {'type': 'string'},
+            'nextRotationTime': {'type': 'string'},
+            'destroyScheduledDuration': {'type': 'string'},
+            'versionTemplate': {
+                'type': 'object',
+                'additionalProperties': False,
+                'properties': {
+                    'algorithm': {'type': 'string'},
+                    'protectionLevel': {'type': 'string'},
+                },
+            },
+        })
+    method_spec = {'op': 'patch'}
+    method_perm = 'update'
+
+    def validate(self):
+        super().validate()
+        if not (self.data.keys() - {'type'}):
+            raise PolicyValidationError(
+                "policy:%s action:%s requires at least one field to update" % (
+                    self.manager.ctx.policy.name, self.type))
+        return self
+
+    def get_resource_params(self, model, resource):
+        fields = {k: v for k, v in self.data.items() if k != 'type'}
+        return {
+            'name': resource['name'],
+            'body': fields,
+            'updateMask': ','.join(fields),
+        }
 
 
 @KmsCryptoKey.filter_registry.register('iam-policy')

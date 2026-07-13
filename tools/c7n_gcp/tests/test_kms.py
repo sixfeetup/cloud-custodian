@@ -262,6 +262,35 @@ class KmsCryptoKeyTest(BaseTest):
         test.assertEqual(result['labels']['env'], 'production')
 
 
+    def test_kms_cryptokey_update(test):
+        factory = test.replay_flight_data('kms-cryptokey-update')
+        key_name = (
+            'projects/cloud-custodian/locations/us-central1/keyRings/'
+            'cloud-custodian/cryptoKeys/cloud-custodian'
+        )
+        p = test.load_policy(
+            {
+                'name': 'kms-cryptokey-update',
+                'resource': 'gcp.kms-cryptokey',
+                'query': [{'location': 'us-central1'}],
+                'actions': [
+                    {'type': 'update',
+                     'rotationPeriod': '7776000s',
+                     'nextRotationTime': '2027-01-01T00:00:00Z'}
+                ]
+            },
+            session_factory=factory,
+        )
+        resources = p.run()
+        test.assertEqual(len(resources), 1)
+        test.assertNotIn('rotationPeriod', resources[0])
+
+        client = p.resource_manager.get_client()
+        result = client.execute_query('get', {'name': key_name})
+        test.assertEqual(result['rotationPeriod'], '7776000s')
+        test.assertEqual(result['nextRotationTime'], '2027-01-01T00:00:00Z')
+
+
 class KmsCryptoKeyVersionTest(BaseTest):
     def test_kms_cryptokey_version_query(self):
         project_id = self.project_id
