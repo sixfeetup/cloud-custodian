@@ -1272,7 +1272,13 @@ def test_vertexai_endpoint_get_resource(test, vertexai_endpoint_get_resource):
     endpoint_name = vertexai_endpoint_get_resource.outputs['endpoint_name']['value']
     display_name = vertexai_endpoint_get_resource.outputs['endpoint_display_name']['value']
 
-    session_factory = test.replay_flight_data('vertexai_endpoint_get_resource')
+    # By default flight replay matches requests by HTTP method and URL path
+    # only, ignoring the hostname, so a client built against the wrong
+    # (global) endpoint would still replay successfully here. include_host
+    # additionally keys the flight data on scheme/host, so replay fails
+    # unless get_resource() actually builds a location-scoped client.
+    session_factory = test.replay_flight_data(
+        'vertexai_endpoint_get_resource', include_host=True)
 
     policy = test.load_policy(
         {'name': 'vertexai-endpoint-get-resource',
