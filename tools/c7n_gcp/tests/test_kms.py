@@ -262,7 +262,6 @@ class KmsCryptoKeyTest(BaseTest):
         test.assertEqual(result['labels']['env'], 'production')
 
 
-
 class KmsCryptoKeyVersionTest(BaseTest):
     def test_kms_cryptokey_version_query(self):
         project_id = self.project_id
