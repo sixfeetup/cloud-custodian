@@ -24,33 +24,40 @@ class FlightRecorder(Http):
         self._data_path = data_path
         self._discovery_path = discovery_path
         self._index = {}
-        # Opt-in: include the request scheme/host in the file key. Off by
-        # default since existing flight data was recorded keyed on path
-        # alone; enabling this for a test requires re-recording its flight
-        # data with host-qualified file names.
+        # Opt-in: include the request host in the file key, to disambiguate
+        # same-path requests to different hosts (e.g. Vertex AI's per-region
+        # endpoints). Off by default since existing flight data was recorded
+        # keyed on path alone. Doesn't apply to discovery requests (see
+        # get_next_file_path), which are host-invariant and shared across
+        # tests.
         self.include_host = include_host
         super(FlightRecorder, self).__init__()
 
     def get_next_file_path(self, uri, method, record=True):
         uri = sanitize_project_name(uri)
         parsed = urlparse(uri)
-        host_key = ''
-        if self.include_host:
-            host_key = '-{}'.format(parsed.netloc.replace(':', '-'))
-        base_name = "%s%s%s" % (
-            method.lower(), host_key, parsed.path.replace('/', '-').replace(':', '-'))
-        data_dir = self._data_path
+        base_name = "%s%s" % (
+            method.lower(), parsed.path.replace('/', '-').replace(':', '-'))
 
-        is_discovery = False
         # We don't record authentication
         if (base_name.startswith('post-oauth2-v4') or
                 base_name.startswith('post-o-oauth2') or
                 base_name.startswith('post-token')):
             return
+
+        data_dir = self._data_path
+        is_discovery = False
+
         # Use a common directory for discovery metadata across tests.
         if base_name.startswith('get-discovery'):
             data_dir = self._discovery_path
             is_discovery = True
+        elif self.include_host:
+            # Disambiguate resources reachable via multiple hosts (e.g.
+            # Vertex AI's per-region endpoints) sharing the same path.
+            base_name = "%s-%s%s" % (
+                method.lower(), parsed.netloc.replace(':', '-'),
+                parsed.path.replace('/', '-').replace(':', '-'))
 
         next_file = None
         while next_file is None:
