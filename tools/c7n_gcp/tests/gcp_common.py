@@ -45,7 +45,7 @@ class GoogleFlightRecorder(CustodianTestCore):
             delattr(LOCAL_THREAD, 'http')
         return reset_session_cache()
 
-    def record_flight_data(self, test_case, project_id=None):
+    def record_flight_data(self, test_case, project_id=None, include_host=False):
         test_dir = os.path.join(self.data_dir, test_case)
         discovery_dir = os.path.join(self.data_dir, "discovery")
         self.recording = True
@@ -55,13 +55,13 @@ class GoogleFlightRecorder(CustodianTestCore):
         os.makedirs(test_dir)
 
         self.addCleanup(self.cleanUp)
-        bound = {'http': HttpRecorder(test_dir, discovery_dir)}
+        bound = {'http': HttpRecorder(test_dir, discovery_dir, include_host=include_host)}
         if project_id:
             bound['project_id'] = project_id
 
         return functools.partial(Session, **bound)
 
-    def replay_flight_data(self, test_case, project_id=None):
+    def replay_flight_data(self, test_case, project_id=None, include_host=False):
 
         if C7N_FUNCTIONAL:
             self.recording = True
@@ -79,7 +79,7 @@ class GoogleFlightRecorder(CustodianTestCore):
 
         self.addCleanup(self.cleanUp)
         bound = {
-            'http': HttpReplay(test_dir, discovery_dir),
+            'http': HttpReplay(test_dir, discovery_dir, include_host=include_host),
             'project_id': project_id,
         }
         return functools.partial(Session, **bound)
@@ -94,7 +94,7 @@ class FlightRecorderTest(TestUtils):
             delattr(LOCAL_THREAD, 'http')
         return super(FlightRecorderTest, self).cleanUp()
 
-    def record_flight_data(self, test_case, project_id=None):
+    def record_flight_data(self, test_case, project_id=None, include_host=False):
         test_dir = os.path.join(DATA_DIR, test_case)
         discovery_dir = os.path.join(DATA_DIR, "discovery")
         self.recording = True
@@ -104,12 +104,12 @@ class FlightRecorderTest(TestUtils):
         os.makedirs(test_dir)
 
         self.addCleanup(self.cleanUp)
-        bound = {'http': HttpRecorder(test_dir, discovery_dir)}
+        bound = {'http': HttpRecorder(test_dir, discovery_dir, include_host=include_host)}
         if project_id:
             bound['project_id'] = project_id
         return functools.partial(Session, **bound)
 
-    def replay_flight_data(self, test_case, project_id=None):
+    def replay_flight_data(self, test_case, project_id=None, include_host=False):
         test_dir = os.path.join(DATA_DIR, test_case)
         discovery_dir = os.path.join(DATA_DIR, "discovery")
         self.recording = False
@@ -122,7 +122,7 @@ class FlightRecorderTest(TestUtils):
 
         self.addCleanup(self.cleanUp)
         bound = {
-            'http': HttpReplay(test_dir, discovery_dir),
+            'http': HttpReplay(test_dir, discovery_dir, include_host=include_host),
             'project_id': project_id,
         }
         return functools.partial(Session, **bound)

@@ -20,16 +20,25 @@ def sanitize_project_name(dirty_str):
 
 class FlightRecorder(Http):
 
-    def __init__(self, data_path=None, discovery_path=None):
+    def __init__(self, data_path=None, discovery_path=None, include_host=False):
         self._data_path = data_path
         self._discovery_path = discovery_path
         self._index = {}
+        # Opt-in: include the request scheme/host in the file key. Off by
+        # default since existing flight data was recorded keyed on path
+        # alone; enabling this for a test requires re-recording its flight
+        # data with host-qualified file names.
+        self.include_host = include_host
         super(FlightRecorder, self).__init__()
 
     def get_next_file_path(self, uri, method, record=True):
         uri = sanitize_project_name(uri)
-        base_name = "%s%s" % (
-            method.lower(), urlparse(uri).path.replace('/', '-').replace(':', '-'))
+        parsed = urlparse(uri)
+        host_key = ''
+        if self.include_host:
+            host_key = '-{}-{}'.format(parsed.scheme, parsed.netloc.replace(':', '-'))
+        base_name = "%s%s%s" % (
+            method.lower(), host_key, parsed.path.replace('/', '-').replace(':', '-'))
         data_dir = self._data_path
 
         is_discovery = False
