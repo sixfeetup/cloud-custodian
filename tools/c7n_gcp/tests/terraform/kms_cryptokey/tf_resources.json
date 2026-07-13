@@ -1,0 +1,45 @@
+{
+    "pytest-terraform": 1,
+    "outputs": {},
+    "resources": {
+        "google_kms_key_ring": {
+            "c7n_test": {
+                "id": "projects/cloud-custodian/locations/us-central1/keyRings/c7n-test-keyring-civil-lion",
+                "location": "us-central1",
+                "name": "c7n-test-keyring-civil-lion",
+                "project": "cloud-custodian"
+            }
+        },
+        "google_kms_crypto_key": {
+            "c7n_test_key": {
+                "destroy_scheduled_duration": "2592000s",
+                "id": "projects/cloud-custodian/locations/us-central1/keyRings/c7n-test-keyring-civil-lion/cryptoKeys/c7n-test-cryptokey",
+                "import_only": false,
+                "key_ring": "projects/cloud-custodian/locations/us-central1/keyRings/c7n-test-keyring-civil-lion",
+                "labels": {
+                    "env": "default"
+                },
+                "name": "c7n-test-cryptokey",
+                "purpose": "ENCRYPT_DECRYPT",
+                "rotation_period": "",
+                "skip_initial_version_creation": false,
+                "timeouts": null,
+                "version_template": [
+                    {
+                        "algorithm": "GOOGLE_SYMMETRIC_ENCRYPTION",
+                        "protection_level": "SOFTWARE"
+                    }
+                ]
+            }
+        },
+        "random_pet": {
+            "keyring": {
+                "id": "civil-lion",
+                "keepers": null,
+                "length": 1,
+                "prefix": null,
+                "separator": "-"
+            }
+        }
+    }
+}

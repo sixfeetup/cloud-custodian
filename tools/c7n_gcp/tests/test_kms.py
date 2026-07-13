@@ -262,34 +262,6 @@ class KmsCryptoKeyTest(BaseTest):
         test.assertEqual(result['labels']['env'], 'production')
 
 
-    def test_kms_cryptokey_update(test):
-        factory = test.replay_flight_data('kms-cryptokey-update')
-        key_name = (
-            'projects/cloud-custodian/locations/us-central1/keyRings/'
-            'cloud-custodian/cryptoKeys/cloud-custodian'
-        )
-        p = test.load_policy(
-            {
-                'name': 'kms-cryptokey-update',
-                'resource': 'gcp.kms-cryptokey',
-                'query': [{'location': 'us-central1'}],
-                'actions': [
-                    {'type': 'update',
-                     'rotationPeriod': '7776000s',
-                     'nextRotationTime': '2027-01-01T00:00:00Z'}
-                ]
-            },
-            session_factory=factory,
-        )
-        resources = p.run()
-        test.assertEqual(len(resources), 1)
-        test.assertNotIn('rotationPeriod', resources[0])
-
-        client = p.resource_manager.get_client()
-        result = client.execute_query('get', {'name': key_name})
-        test.assertEqual(result['rotationPeriod'], '7776000s')
-        test.assertEqual(result['nextRotationTime'], '2027-01-01T00:00:00Z')
-
 
 class KmsCryptoKeyVersionTest(BaseTest):
     def test_kms_cryptokey_version_query(self):
@@ -403,3 +375,35 @@ def test_kms_keyring_filter(test, kms_location):
     resources = policy.run()
     assert len(resources) == 1
     assert resources[0]['name'] == 'projects/cloud-custodian/locations/us-west1'
+
+
+@terraform('kms_cryptokey')
+def test_kms_cryptokey_update(test, kms_cryptokey):
+    key_name = kms_cryptokey['google_kms_crypto_key.c7n_test_key.id']
+    factory = test.replay_flight_data('kms-cryptokey-update')
+    policy = test.load_policy(
+        {
+            'name': 'kms-cryptokey-update',
+            'resource': 'gcp.kms-cryptokey',
+            'query': [{'location': 'us-central1'}],
+            'filters': [{
+                'type': 'value',
+                'key': 'name',
+                'value': key_name,
+            }],
+            'actions': [
+                {'type': 'update',
+                 'rotationPeriod': '7776000s',
+                 'nextRotationTime': '2027-01-01T00:00:00Z'}
+            ]
+        },
+        session_factory=factory,
+    )
+    resources = policy.run()
+    assert len(resources) == 1
+    assert 'rotationPeriod' not in resources[0]
+
+    client = policy.resource_manager.get_client()
+    result = client.execute_query('get', {'name': key_name})
+    assert result['rotationPeriod'] == '7776000s'
+    assert result['nextRotationTime'] == '2027-01-01T00:00:00Z'
