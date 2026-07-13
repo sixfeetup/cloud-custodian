@@ -16,7 +16,7 @@
   },
   "body": {
     "name": "projects/cloud-custodian/locations/us-central1/endpoints/8574775075432038400",
-    "displayName": "c7n-test-get-resource-endpoint-default-0916",
+    "displayName": "c7n-test-get-resource-default-0916",
     "etag": "AMEw9yOGbpiXdOPhE24OqGjRtwoJyIvKbe9zUCkRNTwv-bki_dj26uk6ian7kH6q3KOo",
     "createTime": "2026-07-09T23:07:13.905445Z",
     "updateTime": "2026-07-09T23:07:15.323602Z"
