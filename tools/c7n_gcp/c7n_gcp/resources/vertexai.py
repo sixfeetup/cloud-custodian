@@ -283,117 +283,12 @@ class VertexAIEndpoint(VertexAIQueryManager):
         asset_type = 'aiplatform.googleapis.com/Endpoint'
         permissions = ('aiplatform.endpoints.list',)
         urn_component = 'endpoint'
-        urn_id_segments = (-1,)
         metric_key = 'resource.labels.endpoint_id'
-
-        @staticmethod
-        def get(client, resource_info):
-            # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
-            return client.execute_query(
-                'get', {'name': resource_info['resourceName']})
-
-        @classmethod
-        def _get_location(cls, resource):
-            """Extract location from resource name."""
-            # Resource name format: projects/{project}/locations/{location}/endpoints/{endpoint}
-            return resource['name'].split('/')[3]
 
         @classmethod
         def get_metric_resource_name(cls, resource, metric_key=None):
             # Endpoint metrics are keyed by the terminal endpoint id.
             return resource['name'].split('/')[-1]
-
-    @staticmethod
-    def get_location_client(
-        session,
-        location,
-        component='projects.locations.modelDeploymentMonitoringJobs'
-    ):
-        """Helper method to create a location-specific client.
-
-        This is a common pattern used across monitoring actions.
-
-        Args:
-            session: GCP session
-            location: GCP location/region
-            component: API component path
-
-        Returns:
-            Location-specific client
-        """
-        api_endpoint = f'https://{location}-aiplatform.googleapis.com'
-        client_options = ClientOptions(api_endpoint=api_endpoint)
-        return session.client('aiplatform', 'v1', component, client_options=client_options)
-
-    def _fetch_resources(self, query):
-        """Override to handle location-specific API endpoints and multi-location enumeration.
-
-        Vertex AI requires:
-        1. Location-specific hostnames (e.g., us-central1-aiplatform.googleapis.com)
-        2. Location in the parent scope (e.g., projects/{project}/locations/{location})
-        3. Enumeration across multiple locations (similar to RegionalResourceManager)
-        """
-
-        session = local_session(self.session_factory)
-        project = session.get_default_project()
-
-        # Get locations to query
-        location_query = self._get_location_query()
-        location_manager = self.get_resource_manager(
-            resource_type='vertex-ai-location',
-            data=({'query': location_query} if location_query else {})
-        )
-
-        all_resources = []
-        annotation_key = 'c7n:location'
-
-        # Enumerate resources in each location
-        for location_instance in location_manager.resources():
-            location = location_instance['name']
-
-            # Get client with location-specific endpoint
-            client = VertexAIEndpoint.get_location_client(
-                session, location, self.resource_type.component
-            )
-
-            # Build the parent scope with project and location
-            parent = f'projects/{project}/locations/{location}'
-
-            # Execute the list operation for this location
-            enum_op, path, _ = self.resource_type.enum_spec
-            params = {'parent': parent}
-
-            # Invoke the client enumeration (Vertex AI API supports pagination)
-            location_resources = []
-            for page in client.execute_paged_query(enum_op, params):
-                page_items = jmespath_search(path, page)
-                if page_items:
-                    location_resources.extend(page_items)
-
-            # Annotate resources with their location
-            for resource in location_resources:
-                resource[annotation_key] = location_instance
-
-            all_resources.extend(location_resources)
-
-        return all_resources
-
-    def _get_location_query(self):
-        """Get location query for multi-location enumeration.
-
-        Returns query to pass to vertex-ai-location resource manager.
-        If policy has 'query' specified, use that to filter locations.
-        Otherwise, return None to use default location logic.
-
-        Returns:
-            list or None: Location query list or None for defaults
-        """
-        # If policy has query specified, pass it through to location manager
-        if 'query' in self.data:
-            return self.data['query']
-
-        # Otherwise, let location manager use config.regions or config.region
-        return None
 
 
 @VertexAIEndpoint.filter_registry.register('metrics')
