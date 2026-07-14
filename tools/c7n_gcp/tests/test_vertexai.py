@@ -14,8 +14,6 @@ from c7n.filters.core import FilterValidationError
 from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
 from c7n_gcp.resources.vertexai import VertexAIEndpoint
-import pytest
-from pytest_terraform import terraform
 
 
 def get_test_model_id(project_id, location):
