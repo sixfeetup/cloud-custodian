@@ -95,6 +95,7 @@ ResourceMap = {
     "gcp.ml-model": "c7n_gcp.resources.mlengine.MLModel",
     "gcp.ncc-spoke": "c7n_gcp.resources.ncc.NCCSpoke",
     "gcp.notebook": "c7n_gcp.resources.notebook.NotebookInstance",
+    "gcp.notebook-v2": "c7n_gcp.resources.notebook.NotebookInstanceV2",
     "gcp.organization": "c7n_gcp.resources.resourcemanager.Organization",
     "gcp.patch-deployment": "c7n_gcp.resources.osconfig.PatchDeployment",
     "gcp.project": "c7n_gcp.resources.resourcemanager.Project",
