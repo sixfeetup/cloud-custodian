@@ -125,6 +125,7 @@ ResourceMap = {
     "gcp.vertex-ai-publisher": "c7n_gcp.resources.vertexai.VertexAIPublisher",
     "gcp.vertex-ai-publisher-model": "c7n_gcp.resources.vertexai.VertexAIPublisherModel",
     "gcp.vertex-ai-batch-prediction-job": "c7n_gcp.resources.vertexai.VertexAIBatchPredictionJob",
+    "gcp.vertex-ai-custom-job": "c7n_gcp.resources.vertexai.VertexAICustomJob",
     "gcp.vertex-ai-endpoint": "c7n_gcp.resources.vertexai.VertexAIEndpoint",
     "gcp.vertex-ai-location": "c7n_gcp.resources.vertexai.VertexAILocation",
     "gcp.vpc": "c7n_gcp.resources.network.Network",
