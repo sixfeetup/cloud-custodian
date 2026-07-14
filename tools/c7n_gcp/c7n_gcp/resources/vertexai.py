@@ -9,8 +9,10 @@ from google.cloud import storage
 from googleapiclient.errors import HttpError
 import yaml
 
+from c7n.filters.core import FilterValidationError
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
+from c7n_gcp.filters.metrics import GCPMetricsFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo
 
@@ -27,7 +29,7 @@ class VertexAIQueryManager(QueryResourceManager):
     us-central1-aiplatform.googleapis.com), so resources can't be listed
     with a single global request. This enumerates the resource across
     every applicable location (see VertexAILocation), used by resources
-    like endpoints and batch prediction jobs.
+    like endpoints, batch prediction jobs, and custom jobs.
     """
 
     @staticmethod
@@ -280,6 +282,25 @@ class VertexAIEndpoint(VertexAIQueryManager):
         asset_type = 'aiplatform.googleapis.com/Endpoint'
         permissions = ('aiplatform.endpoints.list',)
         urn_component = 'endpoint'
+        metric_key = 'resource.labels.endpoint_id'
+
+        @classmethod
+        def get_metric_resource_name(cls, resource, metric_key=None):
+            # Endpoint metrics are keyed by the terminal endpoint id.
+            return resource['name'].split('/')[-1]
+
+
+@VertexAIEndpoint.filter_registry.register('metrics')
+class VertexAIEndpointMetricsFilter(GCPMetricsFilter):
+
+    def validate(self):
+        super().validate()
+        metric_key = self.data.get('metric-key')
+        if metric_key and metric_key != self.manager.resource_type.metric_key:
+            raise FilterValidationError(
+                "vertex-ai-endpoint metrics filter only supports "
+                f"metric-key '{self.manager.resource_type.metric_key}', got '{metric_key}'")
+        return self
 
 
 @VertexAIEndpoint.action_registry.register('monitor')
@@ -816,6 +837,146 @@ class VertexAIBatchPredictionJobStop(VertexAIMethodAction):
     schema = type_schema('stop')
     method_spec = {'op': 'cancel'}
     permissions = ('aiplatform.batchPredictionJobs.cancel',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+
+@resources.register('vertex-ai-custom-job')
+class VertexAICustomJob(VertexAIQueryManager):
+    """GCP Vertex AI Custom Job Resource
+
+    Vertex AI Custom Jobs are used to run custom machine learning training
+    workloads.
+
+    :example:
+
+    List all Custom Jobs in specific locations:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertexai-custom-jobs-inventory
+            resource: gcp.vertex-ai-custom-job
+            query:
+              - location: us-central1
+              - location: us-east1
+
+    :example:
+
+    Find running Custom Jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-vertex-ai-custom-jobs-running
+            resource: gcp.vertex-ai-custom-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+
+    :example:
+
+    Find Custom Jobs with no accelerators:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: gcp-vertex-ai-custom-jobs-without-accelerators
+            resource: gcp.vertex-ai-custom-job
+            filters:
+              - type: value
+                key: >-
+                  length(jobSpec.workerPoolSpecs[?machineSpec.acceleratorType
+                  && machineSpec.acceleratorType != 'ACCELERATOR_TYPE_UNSPECIFIED'])
+                op: eq
+                value: 0
+    """
+
+    class resource_type(VertexAITypeInfo):
+        component = 'projects.locations.customJobs'
+        enum_spec = ('list', 'customJobs[]', None)
+        default_report_fields = [
+            'name', 'displayName', 'state', 'createTime', 'updateTime'
+        ]
+        asset_type = 'aiplatform.googleapis.com/CustomJob'
+        permissions = ('aiplatform.customJobs.list',)
+        urn_component = 'custom-job'
+
+
+@VertexAICustomJob.action_registry.register('delete')
+class VertexAICustomJobDelete(VertexAIMethodAction):
+    """Delete Vertex AI Custom Jobs
+
+    Deletes a Vertex AI Custom Job. Note that this is an asynchronous operation
+    that returns a long-running operation. The job will be deleted in the background.
+
+    :example:
+
+    Delete failed custom jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: delete-failed-custom-jobs
+            resource: gcp.vertex-ai-custom-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_FAILED
+            actions:
+              - type: delete
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs/delete
+    """
+
+    schema = type_schema('delete')
+    method_spec = {'op': 'delete'}
+    permissions = ('aiplatform.customJobs.delete',)
+
+    def get_resource_params(self, model, resource):
+        return {'name': resource['name']}
+
+
+@VertexAICustomJob.action_registry.register('cancel')
+class VertexAICustomJobCancel(VertexAIMethodAction):
+    """Cancel Vertex AI Custom Jobs
+
+    Cancels a running Vertex AI Custom Job. This is useful for cost control
+    and incident response when jobs are running longer than expected or
+    consuming unexpected resources.
+
+    **Note**: Only jobs in JOB_STATE_RUNNING or JOB_STATE_PENDING can be cancelled.
+    Completed, failed, or already cancelled jobs cannot be cancelled.
+
+    :example:
+
+    Cancel long-running custom jobs:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: cancel-long-running-custom-jobs
+            resource: gcp.vertex-ai-custom-job
+            filters:
+              - type: value
+                key: state
+                value: JOB_STATE_RUNNING
+              - type: value
+                key: createTime
+                value_type: age
+                op: greater-than
+                value: 24
+            actions:
+              - type: cancel
+
+    https://cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.customJobs/cancel
+    """
+
+    schema = type_schema('cancel')
+    method_spec = {'op': 'cancel'}
+    permissions = ('aiplatform.customJobs.cancel',)
 
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
