@@ -29,6 +29,21 @@ class DataprocTest(BaseTest):
         self.assertEqual(1, len(resources))
         self.assertEqual('cluster-8065', resources[0]['clusterName'])
 
+    def test_dataproc_clusters_get(self):
+        factory = self.replay_flight_data(
+            'dataproc-clusters-get',
+            project_id='cloud-custodian',
+        )
+        p = self.load_policy({
+            'name': 'dataproc-get',
+            'resource': 'gcp.dataproc-clusters',
+        }, session_factory=factory)
+        resource = p.resource_manager.get_resource({
+            'resourceName':
+                'projects/cloud-custodian/regions/us-central1/clusters/cluster-test',
+        })
+        self.assertEqual('cluster-test', resource['clusterName'])
+
 
 @terraform('dataproc_cluster')
 def test_dataproc_clusters_get(test, dataproc_cluster):
