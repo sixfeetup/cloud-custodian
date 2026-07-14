@@ -10,7 +10,12 @@ import pytest
 from google.api_core.client_options import ClientOptions
 from googleapiclient.errors import HttpError
 from pytest_terraform import terraform
+from c7n.filters.core import FilterValidationError
+from c7n_gcp.client import get_default_project
 from gcp_common import BaseTest
+from c7n_gcp.resources.vertexai import VertexAIEndpoint
+import pytest
+from pytest_terraform import terraform
 
 
 def get_test_model_id(project_id, location):
@@ -167,6 +172,94 @@ def test_vertexai_endpoint_get_urns(test):
     for urn in urns:
         assert urn.startswith('gcp:aiplatform:us-central1:')
         assert ':endpoint/' in urn
+
+
+def test_vertexai_endpoint_metric_resource_name():
+    resource = {
+        'name': (
+            'projects/cloud-custodian/locations/us-central1/'
+            'endpoints/1234567890123456789'
+        )
+    }
+
+    # Proper default metric key
+    assert (
+        VertexAIEndpoint.resource_type.get_metric_resource_name(resource)
+        == '1234567890123456789'
+    )
+
+    # Explicitly passing the metric key works too
+    assert (
+        VertexAIEndpoint.resource_type.get_metric_resource_name(
+            resource, metric_key='resource.labels.endpoint_id'
+        )
+        == '1234567890123456789'
+    )
+
+
+def test_vertexai_endpoint_metrics_invalid_metric_key(test):
+    with pytest.raises(
+        FilterValidationError,
+        match="only supports metric-key 'resource.labels.endpoint_id'",
+    ):
+        test.load_policy({
+            'name': 'vertexai-endpoint-invalid-metric-key',
+            'resource': 'gcp.vertex-ai-endpoint',
+            'filters': [
+                {'type': 'value', 'key': 'displayName', 'value': 'does-not-match'},
+                {
+                    'type': 'metrics',
+                    'name': 'aiplatform.googleapis.com/prediction/online/prediction_count',
+                    'metric-key': 'metric.labels.deployed_model_id',
+                    'op': 'greater-than',
+                    'value': 0,
+                },
+            ],
+        }, validate=True)
+
+
+@terraform("vertexai_endpoint_metrics")
+def test_vertexai_endpoint_metrics(test, vertexai_endpoint_metrics):
+    """
+    Running this test in record mode is involved. See the readme in the terraform directory.
+    """
+    project_id = get_default_project()
+    endpoint = vertexai_endpoint_metrics.resources["google_vertex_ai_endpoint"]["default"]
+    endpoint_display_name = endpoint["display_name"]
+    location = endpoint["location"]
+    metric_type = "aiplatform.googleapis.com/prediction/online/prediction_count"
+    session_factory = test.replay_flight_data(
+        "vertexai_endpoint_metrics", project_id=project_id
+    )
+
+    policy = test.load_policy(
+        {
+            "name": "vertexai-endpoint-metrics",
+            "resource": "gcp.vertex-ai-endpoint",
+            "query": [{"location": location}],
+            "filters": [
+                {"type": "value", "key": "displayName", "value": endpoint_display_name},
+                {
+                    "type": "metrics",
+                    "name": metric_type,
+                    "aligner": "ALIGN_SUM",
+                    "days": 1,
+                    "op": "greater-than",
+                    "value": 0,
+                },
+            ],
+        },
+        session_factory=session_factory,
+    )
+
+    resources = policy.run()
+
+    assert len(resources) == 1
+    assert resources[0]["displayName"] == endpoint_display_name
+    metric_name = f"{metric_type}.ALIGN_SUM.REDUCE_NONE"
+    assert metric_name in resources[0]["c7n.metrics"]
+    assert resources[0]["c7n.metrics"][metric_name] is not None
+    assert resources[0]["c7n.metrics"][metric_name]["points"]
 
 
 def test_vertexai_endpoint_filtering(test,):
