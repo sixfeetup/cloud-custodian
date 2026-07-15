@@ -1261,3 +1261,98 @@ class SagemakerDomain(QueryResourceManager):
 @SagemakerDomain.filter_registry.register('kms-key')
 class SagemakerDomainKmsFilter(KmsRelatedFilter):
     RelatedIdsExpression = 'KmsKeyId'
+
+
+class SagemakerUserProfileDescribe(DescribeSource):
+
+    def augment(self, resources):
+        client = local_session(self.manager.session_factory).client('sagemaker')
+        resources = [
+            self.manager.retry(
+                client.describe_user_profile,
+                DomainId=r['DomainId'],
+                UserProfileName=r['UserProfileName'])
+            for r in resources]
+        return universal_augment(self.manager, resources)
+
+
+@resources.register('sagemaker-user-profile')
+class SagemakerUserProfile(QueryResourceManager):
+
+    class resource_type(TypeInfo):
+        service = 'sagemaker'
+        enum_spec = ('list_user_profiles', 'UserProfiles', None)
+        arn = 'UserProfileArn'
+        id = 'UserProfileName'
+        name = 'UserProfileName'
+        date = 'CreationTime'
+        cfn_type = 'AWS::SageMaker::UserProfile'
+        permission_prefix = 'sagemaker'
+        universal_taggable = object()
+
+    source_mapping = {'describe': SagemakerUserProfileDescribe}
+
+
+class SagemakerSpaceDescribe(DescribeSource):
+
+    def augment(self, resources):
+        client = local_session(self.manager.session_factory).client('sagemaker')
+        resources = [
+            self.manager.retry(
+                client.describe_space,
+                DomainId=r['DomainId'],
+                SpaceName=r['SpaceName'])
+            for r in resources]
+        return universal_augment(self.manager, resources)
+
+
+@resources.register('sagemaker-space')
+class SagemakerSpace(QueryResourceManager):
+
+    class resource_type(TypeInfo):
+        service = 'sagemaker'
+        enum_spec = ('list_spaces', 'Spaces', None)
+        arn = 'SpaceArn'
+        id = 'SpaceName'
+        name = 'SpaceName'
+        date = 'CreationTime'
+        cfn_type = 'AWS::SageMaker::Space'
+        permission_prefix = 'sagemaker'
+        universal_taggable = object()
+
+    source_mapping = {'describe': SagemakerSpaceDescribe}
+
+
+class SagemakerAppDescribe(DescribeSource):
+
+    def augment(self, resources):
+        client = local_session(self.manager.session_factory).client('sagemaker')
+
+        def _describe(r):
+            kw = dict(
+                DomainId=r['DomainId'], AppType=r['AppType'], AppName=r['AppName'])
+            if r.get('UserProfileName'):
+                kw['UserProfileName'] = r['UserProfileName']
+            if r.get('SpaceName'):
+                kw['SpaceName'] = r['SpaceName']
+            return self.manager.retry(client.describe_app, **kw)
+
+        resources = [_describe(r) for r in resources]
+        return universal_augment(self.manager, resources)
+
+
+@resources.register('sagemaker-app')
+class SagemakerApp(QueryResourceManager):
+
+    class resource_type(TypeInfo):
+        service = 'sagemaker'
+        enum_spec = ('list_apps', 'Apps', None)
+        arn = 'AppArn'
+        id = 'AppName'
+        name = 'AppName'
+        date = 'CreationTime'
+        cfn_type = 'AWS::SageMaker::App'
+        permission_prefix = 'sagemaker'
+        universal_taggable = object()
+
+    source_mapping = {'describe': SagemakerAppDescribe}

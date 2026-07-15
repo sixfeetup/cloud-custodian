@@ -1,0 +1,32 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-cdvywlci9fz9",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-cdvywlci9fz9/c7nspacerelativesatyr",
+        "SpaceName": "c7nspacerelativesatyr",
+        "HomeEfsFileSystemUid": "200005",
+        "Status": "InService",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 7,
+            "day": 14,
+            "hour": 15,
+            "minute": 36,
+            "second": 14,
+            "microsecond": 79000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 7,
+            "day": 14,
+            "hour": 15,
+            "minute": 36,
+            "second": 11,
+            "microsecond": 545000
+        },
+        "Url": "https://tlg8kekqirai7a5.studio.us-east-1.sagemaker.aws",
+        "ResponseMetadata": {}
+    }
+}

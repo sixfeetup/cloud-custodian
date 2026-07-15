@@ -1,0 +1,33 @@
+{
+    "status_code": 200,
+    "data": {
+        "Spaces": [
+            {
+                "DomainId": "d-cdvywlci9fz9",
+                "SpaceName": "c7nspacerelativesatyr",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 7,
+                    "day": 14,
+                    "hour": 15,
+                    "minute": 36,
+                    "second": 11,
+                    "microsecond": 545000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 7,
+                    "day": 14,
+                    "hour": 15,
+                    "minute": 36,
+                    "second": 14,
+                    "microsecond": 79000
+                }
+            }
+        ],
+        "ResponseMetadata": {}
+    }
+}

@@ -1,5 +1,8 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import pytest
+from pytest_terraform import terraform
+
 from .common import BaseTest
 
 from c7n.resources.sagemaker import SagemakerJobQueryParser, CompilationJobQueryParser
@@ -1535,3 +1538,62 @@ class CompilationJobQueryParse(BaseTest):
         self.assertRaises(
             PolicyValidationError, SagemakerJobQueryParser.parse, [
                 {'StatusEquals': ['INPROGRESS', 'COMPLETED']}])
+
+
+@pytest.mark.audited
+@terraform('sagemaker_studio', scope='module')
+def test_sagemaker_user_profile(test, sagemaker_studio):
+    factory = test.replay_flight_data('test_sagemaker_user_profile')
+    p = test.load_policy(
+        {
+            'name': 'sagemaker-user-profile',
+            'resource': 'sagemaker-user-profile',
+            'filters': [
+                {'UserProfileName': sagemaker_studio[
+                    'aws_sagemaker_user_profile.main.user_profile_name']},
+            ],
+        },
+        session_factory=factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['UserProfileArn'] == sagemaker_studio[
+        'aws_sagemaker_user_profile.main.arn']
+
+
+@pytest.mark.audited
+@terraform('sagemaker_studio', scope='module')
+def test_sagemaker_space(test, sagemaker_studio):
+    factory = test.replay_flight_data('test_sagemaker_space')
+    p = test.load_policy(
+        {
+            'name': 'sagemaker-space',
+            'resource': 'sagemaker-space',
+            'filters': [
+                {'SpaceName': sagemaker_studio['aws_sagemaker_space.main.space_name']},
+            ],
+        },
+        session_factory=factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['SpaceArn'] == sagemaker_studio['aws_sagemaker_space.main.arn']
+
+
+@pytest.mark.audited
+@terraform('sagemaker_studio', scope='module')
+def test_sagemaker_app(test, sagemaker_studio):
+    factory = test.replay_flight_data('test_sagemaker_app')
+    p = test.load_policy(
+        {
+            'name': 'sagemaker-app',
+            'resource': 'sagemaker-app',
+            'filters': [
+                {'AppName': sagemaker_studio['aws_sagemaker_app.main.app_name']},
+            ],
+        },
+        session_factory=factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['AppArn'] == sagemaker_studio['aws_sagemaker_app.main.arn']
