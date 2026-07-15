@@ -16,6 +16,88 @@ from gcp_common import BaseTest
 from c7n_gcp.resources.vertexai import VertexAIEndpoint
 
 
+class VertexAIJobs:
+    """Helper for creating/cleaning up ephemeral Vertex AI jobs in tests.
+
+    Builds clients from ``test.session_factory``, which the test must set
+    (typically via ``test.replay_flight_data(...)`` or
+    ``test.record_flight_data(...)``) before calling create(), so that job
+    creation shares the same recorded/replayed session as the rest of the
+    test.
+
+    Tracks every job created via create() and cleans them up (cancel, poll
+    for a terminal state, then delete) even if the test itself fails.
+    """
+    TERMINAL_STATES = {
+        'JOB_STATE_SUCCEEDED', 'JOB_STATE_FAILED',
+        'JOB_STATE_CANCELLED', 'JOB_STATE_EXPIRED'
+    }
+
+    def __init__(self, test, component, location='us-central1'):
+        self.test = test
+        self.component = component
+        self.location = location
+        self.created = []
+
+    def _client(self, session):
+        return session.client(
+            'aiplatform', 'v1', self.component,
+            client_options=ClientOptions(
+                api_endpoint=f'https://{self.location}-aiplatform.googleapis.com'))
+
+    def create(self, job_spec):
+        session = self.test.session_factory()
+        project = session.get_default_project()
+        client = self._client(session)
+        result = client.execute_command(
+            'create',
+            {'parent': f'projects/{project}/locations/{self.location}', 'body': job_spec})
+        self.created.append((client, result['name']))
+        return result
+
+    def poll_terminal_state(self, client, name, attempts=6):
+        """Poll a job until it reaches a terminal state.
+
+        Returns the last fetched job, or None if the job no longer exists
+        (a 404 while polling, e.g. it was already deleted).
+        """
+        job = None
+        for _ in range(attempts):
+            try:
+                job = client.execute_query('get', {'name': name})
+            except HttpError:
+                return None
+            if job.get('state') in self.TERMINAL_STATES:
+                return job
+            if self.test.recording:
+                time.sleep(10)
+        return job
+
+    def cleanup(self):
+        for client, name in self.created:
+            try:
+                client.execute_command('cancel', {'name': name})
+            except HttpError:
+                pass
+
+            # Cancellation is asynchronous, poll for a terminal state before
+            # attempting delete, otherwise delete fails with FAILED_PRECONDITION.
+            # The job may also already be gone if the test itself deleted it
+            # via a c7n action, in which case there's nothing left to clean up.
+            job = self.poll_terminal_state(client, name)
+            if job is None:
+                continue
+            if job.get('state') not in self.TERMINAL_STATES:
+                print(f'Warning: {name} did not reach a terminal state, '
+                      f'skipping delete cleanup')
+                continue
+
+            try:
+                client.execute_command('delete', {'name': name})
+            except HttpError as e:
+                print(f'Warning: failed to delete {name} during cleanup: {e}')
+
+
 def get_test_model_id(project_id, location):
     """Get full model resource name for testing.
 
@@ -1355,88 +1437,6 @@ class VertexAIPublisherModelTest(BaseTest):
 
 
 # Custom Job Tests
-
-class VertexAIJobs:
-    """Helper for creating/cleaning up ephemeral Vertex AI jobs in tests.
-
-    Builds clients from ``test.session_factory``, which the test must set
-    (typically via ``test.replay_flight_data(...)`` or
-    ``test.record_flight_data(...)``) before calling create(), so that job
-    creation shares the same recorded/replayed session as the rest of the
-    test.
-
-    Tracks every job created via create() and cleans them up (cancel, poll
-    for a terminal state, then delete) even if the test itself fails.
-    """
-    TERMINAL_STATES = {
-        'JOB_STATE_SUCCEEDED', 'JOB_STATE_FAILED',
-        'JOB_STATE_CANCELLED', 'JOB_STATE_EXPIRED'
-    }
-
-    def __init__(self, test, component, location='us-central1'):
-        self.test = test
-        self.component = component
-        self.location = location
-        self.created = []
-
-    def _client(self, session):
-        return session.client(
-            'aiplatform', 'v1', self.component,
-            client_options=ClientOptions(
-                api_endpoint=f'https://{self.location}-aiplatform.googleapis.com'))
-
-    def create(self, job_spec):
-        session = self.test.session_factory()
-        project = session.get_default_project()
-        client = self._client(session)
-        result = client.execute_command(
-            'create',
-            {'parent': f'projects/{project}/locations/{self.location}', 'body': job_spec})
-        self.created.append((client, result['name']))
-        return result
-
-    def poll_terminal_state(self, client, name, attempts=6):
-        """Poll a job until it reaches a terminal state.
-
-        Returns the last fetched job, or None if the job no longer exists
-        (a 404 while polling, e.g. it was already deleted).
-        """
-        job = None
-        for _ in range(attempts):
-            try:
-                job = client.execute_query('get', {'name': name})
-            except HttpError:
-                return None
-            if job.get('state') in self.TERMINAL_STATES:
-                return job
-            if self.test.recording:
-                time.sleep(10)
-        return job
-
-    def cleanup(self):
-        for client, name in self.created:
-            try:
-                client.execute_command('cancel', {'name': name})
-            except HttpError:
-                pass
-
-            # Cancellation is asynchronous, poll for a terminal state before
-            # attempting delete, otherwise delete fails with FAILED_PRECONDITION.
-            # The job may also already be gone if the test itself deleted it
-            # via a c7n action, in which case there's nothing left to clean up.
-            job = self.poll_terminal_state(client, name)
-            if job is None:
-                continue
-            if job.get('state') not in self.TERMINAL_STATES:
-                print(f'Warning: {name} did not reach a terminal state, '
-                      f'skipping delete cleanup')
-                continue
-
-            try:
-                client.execute_command('delete', {'name': name})
-            except HttpError as e:
-                print(f'Warning: failed to delete {name} during cleanup: {e}')
-
 
 @pytest.fixture
 def create_custom_job(test):
