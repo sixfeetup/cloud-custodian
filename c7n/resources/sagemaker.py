@@ -1288,7 +1288,7 @@ class SagemakerUserProfile(QueryResourceManager):
           - name: sagemaker-user-profile-untagged
             resource: aws.sagemaker-user-profile
             filters:
-              - tag:Owner: absent
+              - tag:favorite-color: absent
     """
 
     class resource_type(TypeInfo):
@@ -1330,7 +1330,7 @@ class SagemakerSpace(QueryResourceManager):
           - name: sagemaker-space-untagged
             resource: aws.sagemaker-space
             filters:
-              - tag:Owner: absent
+              - tag:favorite-color: absent
     """
 
     class resource_type(TypeInfo):
@@ -1374,12 +1374,10 @@ class SagemakerApp(QueryResourceManager):
     .. code-block:: yaml
 
         policies:
-          - name: sagemaker-app-jupyter-server
+          - name: sagemaker-app-untagged
             resource: aws.sagemaker-app
             filters:
-              - type: value
-                key: AppType
-                value: JupyterServer
+              - tag:favorite-color: absent
     """
 
     class resource_type(TypeInfo):

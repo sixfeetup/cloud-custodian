@@ -2,9 +2,9 @@
     "status_code": 200,
     "data": {
         "DomainId": "d-szjlsjfyqmaq",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-szjlsjfyqmaq/c7nspacecomicchicken",
-        "SpaceName": "c7nspacecomicchicken",
-        "HomeEfsFileSystemUid": "200015",
+        "UserProfileArn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-szjlsjfyqmaq/c7n-profile-untagged-comic-chicken",
+        "UserProfileName": "c7n-profile-untagged-comic-chicken",
+        "HomeEfsFileSystemUid": "200010",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
@@ -14,7 +14,7 @@
             "hour": 12,
             "minute": 20,
             "second": 50,
-            "microsecond": 150000
+            "microsecond": 755000
         },
         "CreationTime": {
             "__class__": "datetime",
@@ -24,9 +24,13 @@
             "hour": 12,
             "minute": 20,
             "second": 47,
-            "microsecond": 367000
+            "microsecond": 510000
         },
-        "Url": "https://fmbqtou3xkfhnso.studio.us-east-1.sagemaker.aws",
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-sagemaker-studio-comic-chicken",
+            "CustomFileSystemConfigs": [],
+            "AutoMountHomeEFS": "DefaultAsDomain"
+        },
         "ResponseMetadata": {}
     }
 }

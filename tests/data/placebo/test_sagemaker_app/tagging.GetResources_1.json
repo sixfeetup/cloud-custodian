@@ -2,7 +2,17 @@
     "status_code": 200,
     "data": {
         "PaginationToken": "",
-        "ResourceTagMappingList": [],
+        "ResourceTagMappingList": [
+            {
+                "ResourceARN": "arn:aws:sagemaker:us-east-1:644160558196:app/d-szjlsjfyqmaq/c7n-profile-comic-chicken/JupyterServer/c7n-app-comic-chicken",
+                "Tags": [
+                    {
+                        "Key": "favorite-color",
+                        "Value": "c7n"
+                    }
+                ]
+            }
+        ],
         "ResponseMetadata": {}
     }
 }

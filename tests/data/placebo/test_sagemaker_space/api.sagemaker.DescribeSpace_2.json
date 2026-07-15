@@ -2,9 +2,9 @@
     "status_code": 200,
     "data": {
         "DomainId": "d-szjlsjfyqmaq",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-szjlsjfyqmaq/c7nspacecomicchicken",
-        "SpaceName": "c7nspacecomicchicken",
-        "HomeEfsFileSystemUid": "200015",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-szjlsjfyqmaq/c7nspaceuntaggedcomicchicken",
+        "SpaceName": "c7nspaceuntaggedcomicchicken",
+        "HomeEfsFileSystemUid": "200005",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
@@ -13,8 +13,8 @@
             "day": 15,
             "hour": 12,
             "minute": 20,
-            "second": 50,
-            "microsecond": 150000
+            "second": 49,
+            "microsecond": 379000
         },
         "CreationTime": {
             "__class__": "datetime",
@@ -24,9 +24,9 @@
             "hour": 12,
             "minute": 20,
             "second": 47,
-            "microsecond": 367000
+            "microsecond": 199000
         },
-        "Url": "https://fmbqtou3xkfhnso.studio.us-east-1.sagemaker.aws",
+        "Url": "https://yri67bja2mhi76a.studio.us-east-1.sagemaker.aws",
         "ResponseMetadata": {}
     }
 }

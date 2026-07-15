@@ -1543,57 +1543,60 @@ class CompilationJobQueryParse(BaseTest):
 @pytest.mark.audited
 @terraform('sagemaker_studio', scope='module')
 def test_sagemaker_user_profile(test, sagemaker_studio):
+    # tests the sagemaker-user-profile-untagged example policy: verify the
+    # tagged profile is excluded and the untagged profile is included.
     factory = test.replay_flight_data('test_sagemaker_user_profile')
     p = test.load_policy(
         {
-            'name': 'sagemaker-user-profile',
+            'name': 'sagemaker-user-profile-untagged',
             'resource': 'sagemaker-user-profile',
-            'filters': [
-                {'UserProfileName': sagemaker_studio[
-                    'aws_sagemaker_user_profile.main.user_profile_name']},
-            ],
+            'filters': [{'tag:favorite-color': 'absent'}],
         },
         session_factory=factory,
     )
     resources = p.run()
-    assert len(resources) == 1
-    assert resources[0]['UserProfileArn'] == sagemaker_studio[
-        'aws_sagemaker_user_profile.main.arn']
+    names = {r['UserProfileName'] for r in resources}
+    assert sagemaker_studio[
+        'aws_sagemaker_user_profile.untagged.user_profile_name'] in names
+    assert sagemaker_studio[
+        'aws_sagemaker_user_profile.main.user_profile_name'] not in names
 
 
 @pytest.mark.audited
 @terraform('sagemaker_studio', scope='module')
 def test_sagemaker_space(test, sagemaker_studio):
+    # tests the sagemaker-space-untagged example policy: verify the tagged
+    # space is excluded and the untagged space is included.
     factory = test.replay_flight_data('test_sagemaker_space')
     p = test.load_policy(
         {
-            'name': 'sagemaker-space',
+            'name': 'sagemaker-space-untagged',
             'resource': 'sagemaker-space',
-            'filters': [
-                {'SpaceName': sagemaker_studio['aws_sagemaker_space.main.space_name']},
-            ],
+            'filters': [{'tag:favorite-color': 'absent'}],
         },
         session_factory=factory,
     )
     resources = p.run()
-    assert len(resources) == 1
-    assert resources[0]['SpaceArn'] == sagemaker_studio['aws_sagemaker_space.main.arn']
+    names = {r['SpaceName'] for r in resources}
+    assert sagemaker_studio['aws_sagemaker_space.untagged.space_name'] in names
+    assert sagemaker_studio['aws_sagemaker_space.main.space_name'] not in names
 
 
 @pytest.mark.audited
 @terraform('sagemaker_studio', scope='module')
 def test_sagemaker_app(test, sagemaker_studio):
+    # tests the sagemaker-app-untagged example policy: verify the tagged app
+    # is excluded and the untagged app is included.
     factory = test.replay_flight_data('test_sagemaker_app')
     p = test.load_policy(
         {
-            'name': 'sagemaker-app',
+            'name': 'sagemaker-app-untagged',
             'resource': 'sagemaker-app',
-            'filters': [
-                {'AppName': sagemaker_studio['aws_sagemaker_app.main.app_name']},
-            ],
+            'filters': [{'tag:favorite-color': 'absent'}],
         },
         session_factory=factory,
     )
     resources = p.run()
-    assert len(resources) == 1
-    assert resources[0]['AppArn'] == sagemaker_studio['aws_sagemaker_app.main.arn']
+    names = {r['AppName'] for r in resources}
+    assert sagemaker_studio['aws_sagemaker_app.untagged.app_name'] in names
+    assert sagemaker_studio['aws_sagemaker_app.main.app_name'] not in names

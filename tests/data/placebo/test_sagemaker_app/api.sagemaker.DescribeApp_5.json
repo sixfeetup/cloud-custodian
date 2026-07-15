@@ -1,11 +1,11 @@
 {
     "status_code": 200,
     "data": {
-        "AppArn": "arn:aws:sagemaker:us-east-1:644160558196:app/d-a056u6jhtsnr/c7n-profile-sound-beetle/JupyterServer/c7n-app-untagged-sound-beetle",
+        "AppArn": "arn:aws:sagemaker:us-east-1:644160558196:app/d-cdvywlci9fz9/c7n-profile-relative-satyr/JupyterServer/c7n-app-relative-satyr",
         "AppType": "JupyterServer",
-        "AppName": "c7n-app-untagged-sound-beetle",
-        "DomainId": "d-a056u6jhtsnr",
-        "UserProfileName": "c7n-profile-sound-beetle",
+        "AppName": "c7n-app-relative-satyr",
+        "DomainId": "d-cdvywlci9fz9",
+        "UserProfileName": "c7n-profile-relative-satyr",
         "Status": "Deleted",
         "EffectiveTrustedIdentityPropagationStatus": "DISABLED",
         "RecoveryMode": false,
@@ -13,31 +13,31 @@
             "__class__": "datetime",
             "year": 2026,
             "month": 7,
-            "day": 15,
-            "hour": 12,
-            "minute": 8,
-            "second": 1,
-            "microsecond": 159000
+            "day": 14,
+            "hour": 15,
+            "minute": 36,
+            "second": 15,
+            "microsecond": 690000
         },
         "LastUserActivityTimestamp": {
             "__class__": "datetime",
             "year": 2026,
             "month": 7,
-            "day": 15,
-            "hour": 12,
-            "minute": 8,
-            "second": 1,
-            "microsecond": 159000
+            "day": 14,
+            "hour": 15,
+            "minute": 36,
+            "second": 15,
+            "microsecond": 690000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 7,
-            "day": 15,
-            "hour": 12,
-            "minute": 8,
-            "second": 1,
-            "microsecond": 159000
+            "day": 14,
+            "hour": 15,
+            "minute": 36,
+            "second": 15,
+            "microsecond": 690000
         },
         "ResourceSpec": {
             "SageMakerImageArn": "arn:aws:ecr:us-east-1:644160558196:repository/looseleaf-jupyter-server-3",
