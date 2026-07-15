@@ -1554,12 +1554,9 @@ def test_sagemaker_user_profile(test, sagemaker_studio):
         },
         session_factory=factory,
     )
-    resources = p.run()
-    names = {r['UserProfileName'] for r in resources}
-    assert sagemaker_studio[
-        'aws_sagemaker_user_profile.untagged.user_profile_name'] in names
-    assert sagemaker_studio[
-        'aws_sagemaker_user_profile.main.user_profile_name'] not in names
+    [resource] = p.run()
+    assert resource['UserProfileName'] == sagemaker_studio[
+        'aws_sagemaker_user_profile.untagged.user_profile_name']
 
 
 @pytest.mark.audited
@@ -1576,10 +1573,9 @@ def test_sagemaker_space(test, sagemaker_studio):
         },
         session_factory=factory,
     )
-    resources = p.run()
-    names = {r['SpaceName'] for r in resources}
-    assert sagemaker_studio['aws_sagemaker_space.untagged.space_name'] in names
-    assert sagemaker_studio['aws_sagemaker_space.main.space_name'] not in names
+    [resource] = p.run()
+    assert resource['SpaceName'] == sagemaker_studio[
+        'aws_sagemaker_space.untagged.space_name']
 
 
 @pytest.mark.audited
@@ -1592,11 +1588,12 @@ def test_sagemaker_app(test, sagemaker_studio):
         {
             'name': 'sagemaker-app-untagged',
             'resource': 'sagemaker-app',
-            'filters': [{'tag:favorite-color': 'absent'}],
+            'filters': [
+                {'DomainId': sagemaker_studio['aws_sagemaker_domain.main.id']},
+                {'tag:favorite-color': 'absent'},
+            ],
         },
         session_factory=factory,
     )
-    resources = p.run()
-    names = {r['AppName'] for r in resources}
-    assert sagemaker_studio['aws_sagemaker_app.untagged.app_name'] in names
-    assert sagemaker_studio['aws_sagemaker_app.main.app_name'] not in names
+    [resource] = p.run()
+    assert resource['AppName'] == sagemaker_studio['aws_sagemaker_app.untagged.app_name']
