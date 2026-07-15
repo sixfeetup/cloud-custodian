@@ -1,0 +1,38 @@
+{
+    "status_code": 200,
+    "data": {
+        "ResponseMetadata": {},
+        "jobSummaries": [
+            {
+                "jobArn": "arn:aws:bedrock:us-east-1:644160558196:evaluation-job/ih2rimu36tzm",
+                "jobName": "c7n-evaluation-default-b28f",
+                "status": "InProgress",
+                "creationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 7,
+                    "day": 15,
+                    "hour": 20,
+                    "minute": 59,
+                    "second": 25,
+                    "microsecond": 458777
+                },
+                "jobType": "Automated",
+                "evaluationTaskTypes": [
+                    "QuestionAndAnswer"
+                ],
+                "modelIdentifiers": [
+                    "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0"
+                ],
+                "inferenceConfigSummary": {
+                    "modelConfigSummary": {
+                        "bedrockModelIdentifiers": [
+                            "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-micro-v1:0"
+                        ]
+                    }
+                },
+                "applicationType": "ModelEvaluation"
+            }
+        ]
+    }
+}

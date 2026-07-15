@@ -823,6 +823,43 @@ class InferenceProfileMetrics(MetricsFilter):
         return [{'Name': 'ModelId', 'Value': resource['inferenceProfileId']}]
 
 
+@resources.register('bedrock-evaluation-job')
+class BedrockEvaluationJob(QueryResourceManager):
+    """AWS Bedrock Evaluation Job
+
+    :example:
+
+    Find terminal evaluation jobs with an S3 output location:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: bedrock-terminal-evaluation-jobs
+            resource: aws.bedrock-evaluation-job
+            filters:
+              - type: value
+                key: status
+                op: in
+                value: [Completed, Failed, Stopped]
+              - type: value
+                key: outputDataConfig.s3Uri
+                value: present
+    """
+
+    class resource_type(TypeInfo):
+        service = 'bedrock'
+        enum_spec = ('list_evaluation_jobs', 'jobSummaries[]', None)
+        detail_spec = ('get_evaluation_job', 'jobIdentifier', 'jobArn', None)
+        name = 'jobName'
+        id = arn = 'jobArn'
+        arn_type = 'evaluation-job'
+        permission_prefix = 'bedrock'
+        universal_taggable = object()
+        permissions_augment = ('bedrock:ListTagsForResource',)
+
+    source_mapping = {'describe': DescribeWithResourceTags}
+
+
 @resources.register('bedrock-guardrail')
 class BedrockGuardrail(QueryResourceManager):
     class resource_type(TypeInfo):

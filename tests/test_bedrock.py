@@ -985,6 +985,85 @@ def test_bedrock_model_invocation_job_stop_not_found(test, caplog):
     test.assertEqual(len(warnings), 1)
 
 
+@terraform('bedrock_evaluation_job', scope='session')
+def test_bedrock_evaluation_job(test, bedrock_evaluation_job):
+    session_factory = test.replay_flight_data('bedrock_evaluation_job')
+    job_name = bedrock_evaluation_job.outputs['job_name']['value']
+    output_s3_uri = bedrock_evaluation_job.outputs['output_s3_uri']['value']
+
+    policy = test.load_policy(
+        {
+            'name': 'bedrock-evaluation-job',
+            'resource': 'bedrock-evaluation-job',
+            'filters': [
+                {'jobName': job_name},
+                {'tag:Owner': 'c7n'},
+            ],
+        },
+        session_factory=session_factory,
+        config={'region': 'us-east-1'},
+    )
+
+    resources = policy.run()
+    test.assertEqual(len(resources), 1)
+    test.assertEqual(resources[0]['jobName'], job_name)
+    test.assertEqual(resources[0]['outputDataConfig']['s3Uri'], output_s3_uri)
+    test.assertTrue(resources[0]['jobArn'].startswith('arn:aws:bedrock:'))
+    test.assertIn(resources[0]['status'], ('InProgress', 'Completed'))
+    test.assertIn({'Key': 'Owner', 'Value': 'c7n'}, resources[0]['Tags'])
+
+
+@terraform('bedrock_evaluation_job', scope='session')
+def test_bedrock_evaluation_job_tag_actions(test, bedrock_evaluation_job):
+    session_factory = test.replay_flight_data('bedrock_evaluation_job_tag_actions')
+    client = session_factory().client('bedrock')
+    job_name = bedrock_evaluation_job.outputs['job_name']['value']
+
+    policy = test.load_policy(
+        {
+            'name': 'bedrock-evaluation-job-tag',
+            'resource': 'bedrock-evaluation-job',
+            'filters': [
+                {'jobName': job_name},
+                {'tag:TestTag': 'absent'},
+            ],
+            'actions': [
+                {'type': 'tag', 'key': 'TestTag', 'value': 'TestValue'},
+            ],
+        },
+        session_factory=session_factory,
+        config={'region': 'us-east-1'},
+    )
+
+    resources = policy.run()
+    test.assertEqual(len(resources), 1)
+    job_arn = resources[0]['jobArn']
+    tags = client.list_tags_for_resource(resourceARN=job_arn)['tags']
+    test.assertIn({'key': 'TestTag', 'value': 'TestValue'}, tags)
+
+    policy = test.load_policy(
+        {
+            'name': 'bedrock-evaluation-job-remove-tag',
+            'resource': 'bedrock-evaluation-job',
+            'filters': [
+                {'jobName': job_name},
+                {'tag:TestTag': 'present'},
+            ],
+            'actions': [
+                {'type': 'remove-tag', 'tags': ['TestTag']},
+            ],
+        },
+        session_factory=session_factory,
+        config={'region': 'us-east-1'},
+    )
+
+    resources = policy.run()
+    test.assertEqual(len(resources), 1)
+    tags = client.list_tags_for_resource(resourceARN=job_arn)['tags']
+    test.assertNotIn('TestTag', {t['key'] for t in tags})
+    test.assertIn({'key': 'Owner', 'value': 'c7n'}, tags)
+
+
 @terraform('bedrock_guardrail')
 def test_bedrock_guardrail(test, bedrock_guardrail):
     session_factory = test.replay_flight_data('test_bedrock_guardrail')
