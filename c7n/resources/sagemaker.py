@@ -1278,6 +1278,18 @@ class SagemakerUserProfileDescribe(DescribeSource):
 
 @resources.register('sagemaker-user-profile')
 class SagemakerUserProfile(QueryResourceManager):
+    """AWS SageMaker Studio User Profile
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: sagemaker-user-profile-untagged
+            resource: aws.sagemaker-user-profile
+            filters:
+              - tag:Owner: absent
+    """
 
     class resource_type(TypeInfo):
         service = 'sagemaker'
@@ -1308,6 +1320,18 @@ class SagemakerSpaceDescribe(DescribeSource):
 
 @resources.register('sagemaker-space')
 class SagemakerSpace(QueryResourceManager):
+    """AWS SageMaker Studio Space
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: sagemaker-space-untagged
+            resource: aws.sagemaker-space
+            filters:
+              - tag:Owner: absent
+    """
 
     class resource_type(TypeInfo):
         service = 'sagemaker'
@@ -1343,6 +1367,20 @@ class SagemakerAppDescribe(DescribeSource):
 
 @resources.register('sagemaker-app')
 class SagemakerApp(QueryResourceManager):
+    """AWS SageMaker Studio App
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: sagemaker-app-jupyter-server
+            resource: aws.sagemaker-app
+            filters:
+              - type: value
+                key: AppType
+                value: JupyterServer
+    """
 
     class resource_type(TypeInfo):
         service = 'sagemaker'
