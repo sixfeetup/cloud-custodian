@@ -1300,6 +1300,7 @@ class SagemakerUserProfile(QueryResourceManager):
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::UserProfile'
         permission_prefix = 'sagemaker'
+        permissions_augment = ("sagemaker:DescribeUserProfile",)
         universal_taggable = object()
 
     source_mapping = {'describe': SagemakerUserProfileDescribe}
@@ -1342,6 +1343,7 @@ class SagemakerSpace(QueryResourceManager):
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::Space'
         permission_prefix = 'sagemaker'
+        permissions_augment = ("sagemaker:DescribeSpace",)
         universal_taggable = object()
 
     source_mapping = {'describe': SagemakerSpaceDescribe}
@@ -1389,6 +1391,7 @@ class SagemakerApp(QueryResourceManager):
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::App'
         permission_prefix = 'sagemaker'
+        permissions_augment = ("sagemaker:DescribeApp",)
         universal_taggable = object()
 
     source_mapping = {'describe': SagemakerAppDescribe}
