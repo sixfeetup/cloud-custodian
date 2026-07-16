@@ -169,10 +169,10 @@ if typing.TYPE_CHECKING:
 
 def type_schema(
         type_name: str,
-        inherits: typing.Optional[list[str]] = None,
-        rinherit: typing.Optional['ElementJSONSchema'] = None,
-        aliases: typing.Optional[list[str]] = None,
-        required: typing.Optional[list[str]] = None,
+        inherits: list[str] | None = None,
+        rinherit: 'ElementJSONSchema | None' = None,
+        aliases: list[str] | None = None,
+        required: list[str] | None = None,
         **props: typing.Any) -> 'ElementJSONSchema':
     """jsonschema generation helper
 
