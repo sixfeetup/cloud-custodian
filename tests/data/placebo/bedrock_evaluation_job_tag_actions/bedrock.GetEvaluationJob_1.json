@@ -2,11 +2,11 @@
     "status_code": 200,
     "data": {
         "ResponseMetadata": {},
-        "jobName": "c7n-evaluation-default-b28f",
+        "jobName": "c7n-evaluation-default-c377",
         "status": "InProgress",
-        "jobArn": "arn:aws:bedrock:us-east-1:644160558196:evaluation-job/ih2rimu36tzm",
+        "jobArn": "arn:aws:bedrock:us-east-1:644160558196:evaluation-job/psx8jeaen9yr",
         "jobDescription": "Cloud Custodian Bedrock evaluation job integration test",
-        "roleArn": "arn:aws:iam::644160558196:role/c7n-evaluation-default-b28f-role",
+        "roleArn": "arn:aws:iam::644160558196:role/c7n-evaluation-default-c377-role",
         "jobType": "Automated",
         "applicationType": "ModelEvaluation",
         "evaluationConfig": {
@@ -35,27 +35,27 @@
             ]
         },
         "outputDataConfig": {
-            "s3Uri": "s3://c7n-evaluation-default-b28f-output/evaluations/"
+            "s3Uri": "s3://c7n-evaluation-default-c377-output/evaluations/"
         },
         "creationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 7,
-            "day": 15,
-            "hour": 20,
-            "minute": 59,
-            "second": 25,
-            "microsecond": 458777
+            "day": 16,
+            "hour": 15,
+            "minute": 33,
+            "second": 20,
+            "microsecond": 522508
         },
         "lastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 7,
-            "day": 15,
-            "hour": 20,
-            "minute": 59,
-            "second": 25,
-            "microsecond": 458777
+            "day": 16,
+            "hour": 15,
+            "minute": 33,
+            "second": 20,
+            "microsecond": 522508
         }
     }
 }

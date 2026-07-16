@@ -1,14 +1,19 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
+from urllib.parse import urlsplit
+
 from c7n.manager import resources
 from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, DescribeWithResourceTags
 from c7n.tags import RemoveTag, Tag, TagActionFilter, TagDelayedAction, universal_augment
 from c7n.utils import local_session, type_schema, QueryParser
 from c7n.actions import BaseAction
 from c7n.filters.kms import KmsRelatedFilter
-from c7n.filters import MetricsFilter
+from c7n.filters import MetricsFilter, ValueFilter
+from c7n.exceptions import PolicyValidationError
 from c7n.resources.aws import shape_schema, shape_validate, Arn
+from c7n.resources.s3 import BucketAssembly, S3_AUGMENT_TABLE
 
 
 class FoundationModelQueryParser(QueryParser):
@@ -858,6 +863,208 @@ class BedrockEvaluationJob(QueryResourceManager):
         permissions_augment = ('bedrock:ListTagsForResource',)
 
     source_mapping = {'describe': DescribeWithResourceTags}
+
+
+BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS = (
+    'Acl', 'Policy', 'Replication', 'Versioning', 'Website', 'Logging',
+    'Notification', 'Lifecycle')
+BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS = ('Location', 'Tags')
+BEDROCK_OUTPUT_ANNOTATION = 'c7n:BedrockEvaluationOutput'
+
+
+class BedrockOutputBucketAssembly(BucketAssembly):
+
+    def __init__(self, manager):
+        super().__init__(manager)
+        self.not_found_buckets = set()
+
+    def handle_not_found(self, bucket, method_name):
+        if method_name == 'get_bucket_location':
+            self.not_found_buckets.add(bucket['Name'])
+
+
+def parse_bedrock_output_s3_uri(s3_uri):
+    """Return a bucket and prefix without decoding the URI path."""
+    if not s3_uri:
+        return None, None, 'missing-uri'
+    if not isinstance(s3_uri, str):
+        return None, None, 'invalid-uri'
+    try:
+        parsed = urlsplit(s3_uri)
+        invalid = (parsed.scheme != 's3' or not parsed.netloc or parsed.username or
+                   parsed.password or parsed.port is not None or
+                   parsed.query or parsed.fragment)
+    except ValueError:
+        return None, None, 'invalid-uri'
+    if invalid:
+        return None, None, 'invalid-uri'
+    return parsed.netloc, parsed.path.lstrip('/'), None
+
+
+def get_bedrock_output_artifact_prefix(output_prefix, resource):
+    """Return the common prefix under which Bedrock writes a job's artifacts."""
+    job_name = resource.get('jobName')
+    job_arn = resource.get('jobArn', '')
+    job_id = job_arn.rsplit('/', 1)[-1] if '/' in job_arn else None
+    if not job_name or not job_id:
+        return output_prefix
+    parent = output_prefix.rstrip('/')
+    return '/'.join(filter(None, (parent, job_name, job_id))) + '/'
+
+
+def _lifecycle_rule_prefix(rule):
+    rule_filter = rule.get('Filter')
+    if isinstance(rule_filter, dict):
+        if 'Prefix' in rule_filter:
+            return rule_filter.get('Prefix') or ''
+        rule_and = rule_filter.get('And')
+        if isinstance(rule_and, dict) and 'Prefix' in rule_and:
+            return rule_and.get('Prefix') or ''
+        # A filter containing only constraints still applies at the root.
+        return ''
+    return rule.get('Prefix') or ''
+
+
+def _lifecycle_rule_is_constrained(rule):
+    rule_filter = rule.get('Filter')
+    if not isinstance(rule_filter, dict):
+        return False
+    constraint_keys = {
+        'Tag', 'Tags', 'ObjectSizeGreaterThan', 'ObjectSizeLessThan'}
+    if constraint_keys.intersection(rule_filter):
+        return True
+    rule_and = rule_filter.get('And')
+    return isinstance(rule_and, dict) and bool(constraint_keys.intersection(rule_and))
+
+
+def get_bedrock_output_lifecycle(lifecycle, output_prefix):
+    """Calculate covering lifecycle rules and guaranteed expiration days."""
+    rules = lifecycle.get('Rules', []) if isinstance(lifecycle, dict) else []
+    matched = []
+    guaranteed = []
+    for rule in rules:
+        rule_prefix = _lifecycle_rule_prefix(rule)
+        if not isinstance(rule_prefix, str) or not output_prefix.startswith(rule_prefix):
+            continue
+        matched.append(rule)
+        expiration = rule.get('Expiration')
+        days = expiration.get('Days') if isinstance(expiration, dict) else None
+        if (rule.get('Status') == 'Enabled' and
+                isinstance(days, (int, float)) and not isinstance(days, bool) and
+                not _lifecycle_rule_is_constrained(rule)):
+            guaranteed.append(days)
+    return matched, min(guaranteed) if guaranteed else None
+
+
+@BedrockEvaluationJob.filter_registry.register('output-bucket')
+class BedrockEvaluationOutputBucket(ValueFilter):
+    """Filter evaluation jobs by their S3 output bucket and lifecycle context."""
+
+    schema = type_schema(
+        'output-bucket', rinherit=ValueFilter.schema,
+        **{'augment-keys': {
+            'oneOf': [
+                {'enum': ['all']},
+                {'type': 'array', 'items': {
+                    'enum': list(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)}}]}})
+    schema_alias = False
+
+    def get_augment_keys(self):
+        keys = self.data.get('augment-keys', ['Lifecycle'])
+        if keys == 'all':
+            return list(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)
+        return keys
+
+    def validate(self):
+        augment_keys = self.data.get('augment-keys', ['Lifecycle'])
+        if augment_keys in ('detect', 'none'):
+            raise PolicyValidationError(
+                "output-bucket augment-keys does not support '%s'" % augment_keys)
+        if augment_keys != 'all' and not isinstance(augment_keys, list):
+            raise PolicyValidationError(
+                'output-bucket augment-keys must be all or a list')
+        if isinstance(augment_keys, list):
+            invalid = set(augment_keys).difference(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)
+            if invalid:
+                raise PolicyValidationError(
+                    'output-bucket augment-keys contains invalid keys: %s' %
+                    sorted(invalid))
+        return super().validate()
+
+    def get_permissions(self):
+        fields = set(BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS)
+        fields.update(self.get_augment_keys())
+        return tuple(row[4] for row in S3_AUGMENT_TABLE if row[1] in fields)
+
+    def _augment_buckets(self, bucket_names):
+        if not bucket_names:
+            return {}
+        assembler = BedrockOutputBucketAssembly(self.manager)
+        assembler.initialize()
+        assembler.augment_fields = set(BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS)
+        assembler.augment_fields.update(self.get_augment_keys())
+        buckets = {}
+        for name in bucket_names:
+            bucket = assembler.assemble({'Name': name})
+            if name in assembler.not_found_buckets:
+                bucket['c7n:BedrockOutputBucketError'] = 'bucket-not-found'
+            buckets[name] = bucket
+        return buckets
+
+    def _get_context(
+            self, s3_uri, bucket, bucket_name, prefix, artifact_prefix, error):
+        context = copy.deepcopy(bucket) if bucket is not None else {}
+        if bucket_name is not None:
+            context.setdefault('Name', bucket_name)
+        output = {
+            'S3Uri': s3_uri,
+            'Prefix': prefix,
+            'ArtifactPrefix': artifact_prefix,
+            'PrefixMatchedLifecycleRules': [],
+            'Error': error,
+        }
+
+        denied = context.get('c7n:DeniedMethods', ())
+        if error is None and bucket is not None:
+            bucket_error = context.pop('c7n:BedrockOutputBucketError', None)
+            if bucket_error:
+                output['Error'] = bucket_error
+            elif ('Lifecycle' in self.get_augment_keys() and
+                    'get_bucket_lifecycle_configuration' in denied):
+                output['Error'] = 'lifecycle-access-denied'
+
+        if output['Error'] is None:
+            matched, effective = get_bedrock_output_lifecycle(
+                context.get('Lifecycle'), artifact_prefix)
+            output['PrefixMatchedLifecycleRules'] = matched
+            if effective is not None:
+                output['EffectiveExpirationDays'] = effective
+        context[BEDROCK_OUTPUT_ANNOTATION] = output
+        return context
+
+    def process(self, resources, event=None):
+        parsed = []
+        bucket_names = set()
+        for resource in resources:
+            s3_uri = resource.get('outputDataConfig', {}).get('s3Uri')
+            bucket_name, prefix, error = parse_bedrock_output_s3_uri(s3_uri)
+            parsed.append((resource, s3_uri, bucket_name, prefix, error))
+            if bucket_name is not None:
+                bucket_names.add(bucket_name)
+
+        buckets = self._augment_buckets(sorted(bucket_names))
+        results = []
+        for resource, s3_uri, bucket_name, prefix, error in parsed:
+            artifact_prefix = (
+                get_bedrock_output_artifact_prefix(prefix, resource)
+                if error is None else prefix)
+            context = self._get_context(
+                s3_uri, buckets.get(bucket_name), bucket_name, prefix,
+                artifact_prefix, error)
+            if self.match(context):
+                resource['c7n:OutputBucket'] = context
+                results.append(resource)
+        return results
 
 
 @resources.register('bedrock-guardrail')

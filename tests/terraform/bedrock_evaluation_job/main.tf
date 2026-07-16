@@ -21,6 +21,23 @@ resource "aws_s3_bucket" "output" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "output" {
+  bucket = aws_s3_bucket.output.id
+
+  rule {
+    id     = "evaluation-output-retention"
+    status = "Enabled"
+
+    filter {
+      prefix = "evaluations/"
+    }
+
+    expiration {
+      days = 30
+    }
+  }
+}
+
 data "aws_iam_policy_document" "assume_role" {
   statement {
     actions = ["sts:AssumeRole"]

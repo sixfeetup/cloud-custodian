@@ -4,7 +4,7 @@
         "PaginationToken": "",
         "ResourceTagMappingList": [
             {
-                "ResourceARN": "arn:aws:bedrock:us-east-1:644160558196:evaluation-job/ih2rimu36tzm",
+                "ResourceARN": "arn:aws:bedrock:us-east-1:644160558196:evaluation-job/psx8jeaen9yr",
                 "Tags": [
                     {
                         "Key": "Owner",
