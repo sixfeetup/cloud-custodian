@@ -21,8 +21,18 @@ resource "aws_s3_bucket" "output" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_versioning" "output" {
+  bucket = aws_s3_bucket.output.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
 resource "aws_s3_bucket_lifecycle_configuration" "output" {
   bucket = aws_s3_bucket.output.id
+
+  depends_on = [aws_s3_bucket_versioning.output]
 
   rule {
     id     = "evaluation-output-retention"
@@ -34,6 +44,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "output" {
 
     expiration {
       days = 30
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 10
     }
   }
 }

@@ -865,9 +865,6 @@ class BedrockEvaluationJob(QueryResourceManager):
     source_mapping = {'describe': DescribeWithResourceTags}
 
 
-BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS = (
-    'Acl', 'Policy', 'Replication', 'Versioning', 'Website', 'Logging',
-    'Notification', 'Lifecycle')
 BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS = ('Location', 'Tags')
 BEDROCK_OUTPUT_ANNOTATION = 'c7n:BedrockEvaluationOutput'
 
@@ -878,8 +875,8 @@ class BedrockOutputBucketAssembly(BucketAssembly):
         super().__init__(manager)
         self.not_found_buckets = set()
 
-    def handle_not_found(self, bucket, method_name):
-        if method_name == 'get_bucket_location':
+    def handle_not_found(self, bucket, method_name, error_code=None):
+        if error_code in ('NoSuchBucket', 'NotFound'):
             self.not_found_buckets.add(bucket['Name'])
 
 
@@ -937,63 +934,83 @@ def _lifecycle_rule_is_constrained(rule):
     return isinstance(rule_and, dict) and bool(constraint_keys.intersection(rule_and))
 
 
-def get_bedrock_output_lifecycle(lifecycle, output_prefix):
+def _lifecycle_expiration_days(rule):
+    expiration = rule.get('Expiration')
+    days = expiration.get('Days') if isinstance(expiration, dict) else None
+    if isinstance(days, (int, float)) and not isinstance(days, bool):
+        return days
+
+
+def _lifecycle_noncurrent_expiration_days(rule):
+    expiration = rule.get('NoncurrentVersionExpiration')
+    if isinstance(expiration, dict) and expiration.get('NewerNoncurrentVersions') is not None:
+        return None
+    days = expiration.get('NoncurrentDays') if isinstance(expiration, dict) else None
+    if isinstance(days, (int, float)) and not isinstance(days, bool):
+        return days
+
+
+def _bucket_is_versioned(versioning):
+    if not isinstance(versioning, dict):
+        return False
+    return versioning.get('Status') in ('Enabled', 'Suspended')
+
+
+def get_bedrock_output_lifecycle(lifecycle, output_prefix, versioning=None):
     """Calculate covering lifecycle rules and guaranteed expiration days."""
     rules = lifecycle.get('Rules', []) if isinstance(lifecycle, dict) else []
     matched = []
-    guaranteed = []
+    current_expiration = []
+    noncurrent_expiration = []
+    versioned = _bucket_is_versioned(versioning)
     for rule in rules:
         rule_prefix = _lifecycle_rule_prefix(rule)
         if not isinstance(rule_prefix, str) or not output_prefix.startswith(rule_prefix):
             continue
         matched.append(rule)
-        expiration = rule.get('Expiration')
-        days = expiration.get('Days') if isinstance(expiration, dict) else None
         if (rule.get('Status') == 'Enabled' and
-                isinstance(days, (int, float)) and not isinstance(days, bool) and
                 not _lifecycle_rule_is_constrained(rule)):
-            guaranteed.append(days)
-    return matched, min(guaranteed) if guaranteed else None
+            days = _lifecycle_expiration_days(rule)
+            if days is not None:
+                current_expiration.append(days)
+            days = _lifecycle_noncurrent_expiration_days(rule)
+            if days is not None:
+                noncurrent_expiration.append(days)
+    if not current_expiration:
+        return matched, None
+    if versioned:
+        if not noncurrent_expiration:
+            return matched, None
+        return matched, min(current_expiration) + min(noncurrent_expiration)
+    return matched, min(current_expiration)
 
 
-@BedrockEvaluationJob.filter_registry.register('output-bucket')
-class BedrockEvaluationOutputBucket(ValueFilter):
-    """Filter evaluation jobs by their S3 output bucket and lifecycle context."""
+@BedrockEvaluationJob.filter_registry.register('output-retention')
+class BedrockEvaluationOutputRetention(ValueFilter):
+    """Filter evaluation jobs by their S3 output artifact retention."""
+
+    DEFAULT_KEY = '"%s".EffectiveExpirationDays' % BEDROCK_OUTPUT_ANNOTATION
 
     schema = type_schema(
-        'output-bucket', rinherit=ValueFilter.schema,
-        **{'augment-keys': {
-            'oneOf': [
-                {'enum': ['all']},
-                {'type': 'array', 'items': {
-                    'enum': list(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)}}]}})
+        'output-retention', rinherit=ValueFilter.schema)
     schema_alias = False
 
-    def get_augment_keys(self):
-        keys = self.data.get('augment-keys', ['Lifecycle'])
-        if keys == 'all':
-            return list(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)
-        return keys
+    def __init__(self, data, manager=None):
+        data = dict(data)
+        data.setdefault('key', self.DEFAULT_KEY)
+        super().__init__(data, manager)
 
     def validate(self):
-        augment_keys = self.data.get('augment-keys', ['Lifecycle'])
-        if augment_keys in ('detect', 'none'):
+        key = self.data.get('key', self.DEFAULT_KEY)
+        if not key.startswith('"%s".' % BEDROCK_OUTPUT_ANNOTATION):
             raise PolicyValidationError(
-                "output-bucket augment-keys does not support '%s'" % augment_keys)
-        if augment_keys != 'all' and not isinstance(augment_keys, list):
-            raise PolicyValidationError(
-                'output-bucket augment-keys must be all or a list')
-        if isinstance(augment_keys, list):
-            invalid = set(augment_keys).difference(BEDROCK_OUTPUT_BUCKET_AUGMENT_KEYS)
-            if invalid:
-                raise PolicyValidationError(
-                    'output-bucket augment-keys contains invalid keys: %s' %
-                    sorted(invalid))
+                'output-retention key must reference "%s"' %
+                BEDROCK_OUTPUT_ANNOTATION)
         return super().validate()
 
     def get_permissions(self):
         fields = set(BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS)
-        fields.update(self.get_augment_keys())
+        fields.update(('Lifecycle', 'Versioning'))
         return tuple(row[4] for row in S3_AUGMENT_TABLE if row[1] in fields)
 
     def _augment_buckets(self, bucket_names):
@@ -1002,7 +1019,7 @@ class BedrockEvaluationOutputBucket(ValueFilter):
         assembler = BedrockOutputBucketAssembly(self.manager)
         assembler.initialize()
         assembler.augment_fields = set(BEDROCK_OUTPUT_BUCKET_MANDATORY_KEYS)
-        assembler.augment_fields.update(self.get_augment_keys())
+        assembler.augment_fields.update(('Lifecycle', 'Versioning'))
         buckets = {}
         for name in bucket_names:
             bucket = assembler.assemble({'Name': name})
@@ -1029,13 +1046,14 @@ class BedrockEvaluationOutputBucket(ValueFilter):
             bucket_error = context.pop('c7n:BedrockOutputBucketError', None)
             if bucket_error:
                 output['Error'] = bucket_error
-            elif ('Lifecycle' in self.get_augment_keys() and
-                    'get_bucket_lifecycle_configuration' in denied):
+            elif 'get_bucket_lifecycle_configuration' in denied:
                 output['Error'] = 'lifecycle-access-denied'
+            elif 'get_bucket_versioning' in denied:
+                output['Error'] = 'versioning-access-denied'
 
         if output['Error'] is None:
             matched, effective = get_bedrock_output_lifecycle(
-                context.get('Lifecycle'), artifact_prefix)
+                context.get('Lifecycle'), artifact_prefix, context.get('Versioning'))
             output['PrefixMatchedLifecycleRules'] = matched
             if effective is not None:
                 output['EffectiveExpirationDays'] = effective

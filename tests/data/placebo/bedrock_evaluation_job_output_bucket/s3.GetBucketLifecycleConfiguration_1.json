@@ -12,7 +12,10 @@
                 "Filter": {
                     "Prefix": "evaluations/"
                 },
-                "Status": "Enabled"
+                "Status": "Enabled",
+                "NoncurrentVersionExpiration": {
+                    "NoncurrentDays": 10
+                }
             }
         ]
     }

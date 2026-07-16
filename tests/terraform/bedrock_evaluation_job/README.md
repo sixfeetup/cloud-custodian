@@ -15,38 +15,55 @@ Terraform/OpenTofu, `uv`, and the repository test dependencies must be installed
 
 ## Recording
 
-Temporarily set every `@terraform('bedrock_evaluation_job', ...)` decorator to
-`replay=False, teardown=terraform.TEARDOWN_OFF, scope='session'`, and change every test to its
-unique `record_flight_data` call. Provision the dependencies without running tests:
+This fixture records in two separate phases because Terraform cannot create the evaluation job
+itself. The first pytest command only provisions Terraform-managed dependencies; it does not run
+test bodies and does not create flight-data recordings.
+
+Set every `@terraform('bedrock_evaluation_job', ...)` decorator to:
+
+```python
+@terraform(
+    'bedrock_evaluation_job', replay=False,
+    teardown=terraform.TEARDOWN_OFF, scope='function')
+```
+
+Use function scope because session-scoped Terraform fixtures do not preserve these resources
+with `TEARDOWN_OFF`. Pytest still provisions the selected evaluation-job fixtures sequentially.
+Provision the dependencies without running the test bodies:
 
 ```shell
-uv run pytest -s -p no:env --tf-debug --setup-only \
+C7N_FUNCTIONAL=yes uv run pytest -s -p no:env --tf-debug --setup-only \
   tests/test_bedrock.py -k bedrock_evaluation_job
 ```
 
-Save the Terraform/OpenTofu binary, module directory, `TF_DATA_DIR`, and state path printed by
-`--tf-debug`. Retain those exact paths until cleanup and destroy have both succeeded. Read the
-unsanitized live outputs directly from the state, from the saved module directory:
+The setup-only run refreshes `tests/terraform/bedrock_evaluation_job/tf_resources.json` with
+the live fixture outputs used by the replay-mode recording run. It also leaves temporary
+Terraform states under pytest's temp directory for later destroy.
+
+Never pass identities from the sanitized committed `tf_resources.json` to a live API. After the
+setup-only run, use the just-refreshed live outputs from `tf_resources.json` to create the
+evaluation job:
 
 ```shell
-TF_DATA_DIR=PRINTED_TF_DATA_DIR PRINTED_TERRAFORM_BIN output -json \
-  -state=PRINTED_STATE_PATH
-```
-
-Never pass identities from the sanitized committed `tf_resources.json` to a live API. Pass the
-live `job_name`, `model_arn`, `output_s3_uri`, and `role_arn` values to the setup script:
-
-```shell
+TF_RESOURCES="$(git rev-parse --show-toplevel)/tests/terraform/bedrock_evaluation_job/tf_resources.json" && \
+jq -e '.outputs.job_name.value and .outputs.model_arn.value and .outputs.output_s3_uri.value and .outputs.role_arn.value' "$TF_RESOURCES" >/dev/null && \
 uv run python tests/terraform/bedrock_evaluation_job/setup.py \
-  --job-name JOB_NAME \
-  --model-arn MODEL_ARN \
-  --output-s3-uri OUTPUT_S3_URI \
-  --role-arn ROLE_ARN
+  --job-name "$(jq -r '.outputs.job_name.value' "$TF_RESOURCES")" \
+  --model-arn "$(jq -r '.outputs.model_arn.value' "$TF_RESOURCES")" \
+  --output-s3-uri "$(jq -r '.outputs.output_s3_uri.value' "$TF_RESOURCES")" \
+  --role-arn "$(jq -r '.outputs.role_arn.value' "$TF_RESOURCES")"
 ```
 
-Temporarily switch every decorator to `replay=True`, remove
-`teardown=terraform.TEARDOWN_OFF`, retain `scope='session'` and each unique
-`record_flight_data` call, then record the complete group:
+After the setup script succeeds, temporarily switch every decorator to Terraform replay mode so
+pytest uses the just-written `tf_resources.json` instead of trying to create a second fixture:
+
+```python
+@terraform('bedrock_evaluation_job', replay=True, scope='function')
+```
+
+Change each evaluation-job test to its unique `record_flight_data` call. Then run the group
+without `--setup-only`; this is the step that creates or refreshes the placebo flight-data
+directories:
 
 ```shell
 uv run pytest -s -p no:env tests/test_bedrock.py -k bedrock_evaluation_job
@@ -56,23 +73,36 @@ Cleanup must happen before destroy. Delete the ephemeral job while all Terraform
 still exist, and do not continue until it is deleted or confirmed absent:
 
 ```shell
-uv run python tests/terraform/bedrock_evaluation_job/cleanup.py --job-name JOB_NAME
+TF_RESOURCES="$(git rev-parse --show-toplevel)/tests/terraform/bedrock_evaluation_job/tf_resources.json" && \
+uv run python tests/terraform/bedrock_evaluation_job/cleanup.py \
+  --job-name "$(jq -r '.outputs.job_name.value' "$TF_RESOURCES")"
 ```
 
-Then change to the saved module directory and destroy with the exact saved paths:
+Then destroy from the saved module directory with the same paths:
 
 ```shell
-TF_DATA_DIR=PRINTED_TF_DATA_DIR PRINTED_TERRAFORM_BIN destroy \
-  -input=false -no-color -state=PRINTED_STATE_PATH -auto-approve
+TF_BIN=$(command -v tofu || command -v terraform) && \
+TF_MODULE_DIR="$(git rev-parse --show-toplevel)/tests/terraform/bedrock_evaluation_job" && \
+find /tmp/pytest-of-"$(id -un)" -path '*/bedrock_evaluation_job*/terraform.tfstate' \
+  -type f | sort | while read -r TF_STATE; do \
+    TF_WORK_DIR="$(dirname "$TF_STATE")/work"; \
+    TF_DATA_DIR="$TF_WORK_DIR" "$TF_BIN" -chdir="$TF_MODULE_DIR" destroy \
+      -input=false -no-color -state="$TF_STATE" -auto-approve; \
+  done
 ```
 
 Confirm that no evaluation job, bucket, role, policy, or lifecycle configuration remains.
-Convert all tests to committed form: retain `scope='session'`, remove both `replay` and
-`teardown`, and use each test's unique `replay_flight_data` call. Commit the regenerated
+Convert all tests back to committed form:
+
+```python
+@terraform('bedrock_evaluation_job', scope='function')
+```
+
+Use each test's unique `replay_flight_data` call, not `record_flight_data`. Commit the regenerated
 `tf_resources.json` and every refreshed or new flight-data directory after inspecting them for
 credentials, unsanitized account/provider identities, and recording-only settings.
 
-Force replay and run the entire shared-fixture group:
+Force replay and run the entire function-scoped fixture group:
 
 ```shell
 C7N_FUNCTIONAL=no uv run pytest tests/test_bedrock.py -k bedrock_evaluation_job

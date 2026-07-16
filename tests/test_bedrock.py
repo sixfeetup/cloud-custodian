@@ -993,11 +993,11 @@ def test_bedrock_model_invocation_job_stop_not_found(test, caplog):
     test.assertEqual(len(warnings), 1)
 
 
-class TestBedrockEvaluationOutputBucket(BaseTest):
+class TestBedrockEvaluationOutputRetention(BaseTest):
 
     def get_filter(self, data=None, session_factory=None):
         filter_data = {
-            'type': 'output-bucket',
+            'type': 'output-retention',
             'key': '"c7n:BedrockEvaluationOutput".EffectiveExpirationDays',
             'op': 'eq',
             'value': 30,
@@ -1005,7 +1005,7 @@ class TestBedrockEvaluationOutputBucket(BaseTest):
         filter_data.update(data or {})
         policy = self.load_policy(
             {
-                'name': 'bedrock-evaluation-output-bucket',
+                'name': 'bedrock-evaluation-output-retention',
                 'resource': 'bedrock-evaluation-job',
                 'filters': [filter_data],
             },
@@ -1061,6 +1061,43 @@ class TestBedrockEvaluationOutputBucket(BaseTest):
             'direct', 'and', 'disabled', 'tagged', 'and-size', 'date-only']
         assert effective == 20
         assert get_bedrock_output_lifecycle(None, 'evaluations/') == ([], None)
+
+    def test_versioned_lifecycle_calculation(self):
+        lifecycle = {'Rules': [
+            {'ID': 'current', 'Status': 'Enabled',
+             'Filter': {'Prefix': 'evaluations/'},
+             'Expiration': {'Days': 30}},
+            {'ID': 'noncurrent', 'Status': 'Enabled',
+             'Filter': {'Prefix': 'evaluations/'},
+             'NoncurrentVersionExpiration': {'NoncurrentDays': 10}},
+        ]}
+        matched, effective = get_bedrock_output_lifecycle(
+            lifecycle, 'evaluations/job/id/', {'Status': 'Enabled'})
+        assert [r['ID'] for r in matched] == ['current', 'noncurrent']
+        assert effective == 40
+
+        matched, effective = get_bedrock_output_lifecycle(
+            {'Rules': [lifecycle['Rules'][0]]},
+            'evaluations/job/id/',
+            {'Status': 'Enabled'})
+        assert [r['ID'] for r in matched] == ['current']
+        assert effective is None
+
+        matched, effective = get_bedrock_output_lifecycle(
+            lifecycle, 'evaluations/job/id/', {'Status': 'Suspended'})
+        assert [r['ID'] for r in matched] == ['current', 'noncurrent']
+        assert effective == 40
+
+        matched, effective = get_bedrock_output_lifecycle(
+            {'Rules': [
+                lifecycle['Rules'][0],
+                {'ID': 'newer-noncurrent', 'Status': 'Enabled',
+                 'Filter': {'Prefix': 'evaluations/'},
+                 'NoncurrentVersionExpiration': {
+                     'NoncurrentDays': 10, 'NewerNoncurrentVersions': 2}},
+            ]}, 'evaluations/job/id/', {'Status': 'Enabled'})
+        assert [r['ID'] for r in matched] == ['current', 'newer-noncurrent']
+        assert effective is None
 
     def test_artifact_prefix_lifecycle_calculation(self):
         resource = {
@@ -1163,32 +1200,36 @@ class TestBedrockEvaluationOutputBucket(BaseTest):
         assert jobs[0]['c7n:OutputBucket'] is not jobs[1]['c7n:OutputBucket']
         assert 'c7n:BedrockEvaluationOutput' not in bucket
 
-    def test_augmentation_selection_and_no_list_buckets(self):
+    def test_retention_augmentation_and_no_list_buckets(self):
         client = mock.MagicMock()
         client.meta.region_name = 'us-east-1'
         client.get_bucket_location.return_value = {'LocationConstraint': None}
         client.get_bucket_tagging.return_value = {'TagSet': []}
         client.get_bucket_versioning.return_value = {'Status': 'Enabled'}
+        client.get_bucket_lifecycle_configuration.return_value = {'Rules': [{
+            'ID': 'retention', 'Status': 'Enabled',
+            'Filter': {'Prefix': 'a/a/id-a/'},
+            'Expiration': {'Days': 30},
+            'NoncurrentVersionExpiration': {'NoncurrentDays': 10},
+        }]}
         session = mock.MagicMock()
         session.client.return_value = client
 
         def session_factory():
             return session
 
-        output_filter = self.get_filter(
-            {'augment-keys': ['Versioning'], 'key': 'Versioning.Status',
-             'value': 'Enabled'}, session_factory)
+        output_filter = self.get_filter({'op': 'eq', 'value': 40}, session_factory)
         jobs = [
             {'jobName': 'a', 'jobArn': 'arn:aws:bedrock:r:a:evaluation-job/id-a',
              'outputDataConfig': {'s3Uri': 's3://bucket/a'}},
             {'jobName': 'b', 'jobArn': 'arn:aws:bedrock:r:a:evaluation-job/id-b',
              'outputDataConfig': {'s3Uri': 's3://bucket/b'}},
         ]
-        assert output_filter.process(jobs) == jobs
+        assert output_filter.process(jobs) == [jobs[0]]
         client.get_bucket_location.assert_called_once_with(Bucket='bucket')
         client.get_bucket_tagging.assert_called_once_with(Bucket='bucket')
         client.get_bucket_versioning.assert_called_once_with(Bucket='bucket')
-        assert not client.get_bucket_lifecycle_configuration.called
+        client.get_bucket_lifecycle_configuration.assert_called_once_with(Bucket='bucket')
         assert not client.list_buckets.called
 
     def test_missing_bucket_from_s3_error(self):
@@ -1211,6 +1252,31 @@ class TestBedrockEvaluationOutputBucket(BaseTest):
         job = {'outputDataConfig': {'s3Uri': 's3://missing/evaluations/'}}
         assert output_filter.process([job]) == [job]
         bucket = job['c7n:OutputBucket']
+        assert bucket['c7n:BedrockEvaluationOutput']['Error'] == 'bucket-not-found'
+        assert 'c7n:BedrockOutputBucketError' not in bucket
+
+    def test_missing_bucket_after_location_from_s3_error(self):
+        client = mock.MagicMock()
+        client.meta.region_name = 'us-east-1'
+        not_found = ClientError(
+            {'Error': {'Code': 'NoSuchBucket', 'Message': 'missing'}},
+            'GetBucketLifecycleConfiguration')
+        client.get_bucket_location.return_value = {'LocationConstraint': None}
+        client.get_bucket_tagging.return_value = {'TagSet': []}
+        client.get_bucket_lifecycle_configuration.side_effect = not_found
+        session = mock.MagicMock()
+        session.client.return_value = client
+
+        def session_factory():
+            return session
+
+        output_filter = self.get_filter(
+            {'value': 'absent', 'op': 'eq'}, session_factory)
+        job = {'outputDataConfig': {'s3Uri': 's3://missing/evaluations/'}}
+        assert output_filter.process([job]) == [job]
+        bucket = job['c7n:OutputBucket']
+        assert bucket['Location'] == {'LocationConstraint': None}
+        assert bucket['Tags'] == []
         assert bucket['c7n:BedrockEvaluationOutput']['Error'] == 'bucket-not-found'
         assert 'c7n:BedrockOutputBucketError' not in bucket
 
@@ -1240,25 +1306,17 @@ class TestBedrockEvaluationOutputBucket(BaseTest):
             assembly.assert_not_called()
         assert 's3' not in services
 
-    def test_augment_keys_permissions_and_validation(self):
+    def test_permissions_and_validation(self):
         default = self.get_filter()
         assert set(default.get_permissions()) == {
             's3:GetBucketLocation', 's3:GetBucketTagging',
-            's3:GetLifecycleConfiguration'}
-        explicit = self.get_filter({'augment-keys': ['Versioning']})
-        assert set(explicit.get_permissions()) == {
-            's3:GetBucketLocation', 's3:GetBucketTagging', 's3:GetBucketVersioning'}
-        all_fields = self.get_filter({'augment-keys': 'all'})
-        assert set(all_fields.get_permissions()) == {
-            row[4] for row in __import__(
-                'c7n.resources.s3', fromlist=['S3_AUGMENT_TABLE']).S3_AUGMENT_TABLE}
+            's3:GetLifecycleConfiguration', 's3:GetBucketVersioning'}
 
-        for value in ('detect', 'none', ['Unknown']):
-            with pytest.raises(PolicyValidationError):
-                self.get_filter({'augment-keys': value})
+        with pytest.raises(PolicyValidationError):
+            self.get_filter({'key': 'Versioning.Status', 'value': 'Enabled'})
 
 
-@terraform('bedrock_evaluation_job', scope='session')
+@terraform('bedrock_evaluation_job', scope='function')
 def test_bedrock_evaluation_job(test, bedrock_evaluation_job):
     session_factory = test.replay_flight_data('bedrock_evaluation_job')
     job_name = bedrock_evaluation_job.outputs['job_name']['value']
@@ -1278,16 +1336,16 @@ def test_bedrock_evaluation_job(test, bedrock_evaluation_job):
     )
 
     resources = policy.run()
-    test.assertEqual(len(resources), 1)
-    test.assertEqual(resources[0]['jobName'], job_name)
-    test.assertEqual(resources[0]['outputDataConfig']['s3Uri'], output_s3_uri)
-    test.assertTrue(resources[0]['jobArn'].startswith('arn:aws:bedrock:'))
-    test.assertIn(resources[0]['status'], ('InProgress', 'Completed'))
-    test.assertIn({'Key': 'Owner', 'Value': 'c7n'}, resources[0]['Tags'])
+    assert len(resources) == 1
+    assert resources[0]['jobName'] == job_name
+    assert resources[0]['outputDataConfig']['s3Uri'] == output_s3_uri
+    assert resources[0]['jobArn'].startswith('arn:aws:bedrock:')
+    assert resources[0]['status'] in ('InProgress', 'Completed')
+    assert {'Key': 'Owner', 'Value': 'c7n'} in resources[0]['Tags']
 
 
-@terraform('bedrock_evaluation_job', scope='session')
-def test_bedrock_evaluation_job_output_bucket(test, bedrock_evaluation_job):
+@terraform('bedrock_evaluation_job', scope='function')
+def test_bedrock_evaluation_job_output_retention(test, bedrock_evaluation_job):
     session_factory = test.replay_flight_data('bedrock_evaluation_job_output_bucket')
     job_name = bedrock_evaluation_job.outputs['job_name']['value']
     output_s3_uri = bedrock_evaluation_job.outputs['output_s3_uri']['value']
@@ -1296,12 +1354,12 @@ def test_bedrock_evaluation_job_output_bucket(test, bedrock_evaluation_job):
     def load_policy(op, value):
         return test.load_policy(
             {
-                'name': 'bedrock-evaluation-job-output-bucket-%s' % op,
+                'name': 'bedrock-evaluation-job-output-retention-%s' % op,
                 'resource': 'bedrock-evaluation-job',
                 'filters': [
                     {'jobName': job_name},
                     {
-                        'type': 'output-bucket',
+                        'type': 'output-retention',
                         'key': (
                             '"c7n:BedrockEvaluationOutput".'
                             'EffectiveExpirationDays'),
@@ -1315,25 +1373,24 @@ def test_bedrock_evaluation_job_output_bucket(test, bedrock_evaluation_job):
         )
 
     resources = load_policy('gt', 20).run()
-    test.assertEqual(len(resources), 1)
+    assert len(resources) == 1
     bucket = resources[0]['c7n:OutputBucket']
     output = bucket['c7n:BedrockEvaluationOutput']
-    test.assertEqual(bucket['Name'], bucket_name)
-    test.assertEqual(output['S3Uri'], output_s3_uri)
-    test.assertEqual(output['Prefix'], 'evaluations/')
-    test.assertEqual(
-        output['ArtifactPrefix'],
+    assert bucket['Name'] == bucket_name
+    assert bucket['Versioning']['Status'] == 'Enabled'
+    assert output['S3Uri'] == output_s3_uri
+    assert output['Prefix'] == 'evaluations/'
+    assert output['ArtifactPrefix'] == (
         'evaluations/%s/%s/' % (job_name, resources[0]['jobArn'].rsplit('/', 1)[-1]))
-    test.assertEqual(output['EffectiveExpirationDays'], 30)
-    test.assertEqual(output['Error'], None)
-    test.assertEqual(
-        [r['ID'] for r in output['PrefixMatchedLifecycleRules']],
-        ['evaluation-output-retention'])
+    assert output['EffectiveExpirationDays'] == 40
+    assert output['Error'] is None
+    assert [r['ID'] for r in output['PrefixMatchedLifecycleRules']] == [
+        'evaluation-output-retention']
 
-    test.assertEqual(load_policy('lt', 20).run(), [])
+    assert load_policy('lt', 40).run() == []
 
 
-@terraform('bedrock_evaluation_job', scope='session')
+@terraform('bedrock_evaluation_job', scope='function')
 def test_bedrock_evaluation_job_tag_actions(test, bedrock_evaluation_job):
     session_factory = test.replay_flight_data('bedrock_evaluation_job_tag_actions')
     client = session_factory().client('bedrock')
@@ -1356,10 +1413,10 @@ def test_bedrock_evaluation_job_tag_actions(test, bedrock_evaluation_job):
     )
 
     resources = policy.run()
-    test.assertEqual(len(resources), 1)
+    assert len(resources) == 1
     job_arn = resources[0]['jobArn']
     tags = client.list_tags_for_resource(resourceARN=job_arn)['tags']
-    test.assertIn({'key': 'TestTag', 'value': 'TestValue'}, tags)
+    assert {'key': 'TestTag', 'value': 'TestValue'} in tags
 
     policy = test.load_policy(
         {
@@ -1378,10 +1435,10 @@ def test_bedrock_evaluation_job_tag_actions(test, bedrock_evaluation_job):
     )
 
     resources = policy.run()
-    test.assertEqual(len(resources), 1)
+    assert len(resources) == 1
     tags = client.list_tags_for_resource(resourceARN=job_arn)['tags']
-    test.assertNotIn('TestTag', {t['key'] for t in tags})
-    test.assertIn({'key': 'Owner', 'value': 'c7n'}, tags)
+    assert 'TestTag' not in {t['key'] for t in tags}
+    assert {'key': 'Owner', 'value': 'c7n'} in tags
 
 
 @terraform('bedrock_guardrail')
