@@ -13,30 +13,28 @@ import boto3
 TIMEOUT = 900
 
 
-def main():
+def load_profile():
     resources_path = Path(__file__).with_name('tf_resources.json')
     resources = json.loads(resources_path.read_text())
-    profile = resources['resources']['aws_bedrock_inference_profile']['token_metrics']
-    profile_name = profile['name']
-    region = profile['region']
+    return resources['resources']['aws_bedrock_inference_profile']['token_metrics']
 
+
+def find_inference_profile(profile_name, region):
     bedrock = boto3.client('bedrock', region_name=region)
     request = {'typeEquals': 'APPLICATION'}
-    inference_profile = None
     while True:
         response = bedrock.list_inference_profiles(**request)
         inference_profile = next((
             p for p in response['inferenceProfileSummaries']
             if p['inferenceProfileName'] == profile_name), None)
-        if inference_profile or 'nextToken' not in response:
-            break
+        if inference_profile:
+            return inference_profile
+        if 'nextToken' not in response:
+            raise RuntimeError(f'could not find inference profile {profile_name!r}')
         request['nextToken'] = response['nextToken']
-    if inference_profile is None:
-        raise RuntimeError(f'could not find inference profile {profile_name!r}')
 
-    inference_profile_arn = inference_profile['inferenceProfileArn']
-    inference_profile_id = inference_profile['inferenceProfileId']
 
+def emit_token_metrics(inference_profile_arn, region):
     runtime = boto3.client('bedrock-runtime', region_name=region)
     runtime.converse(
         modelId=inference_profile_arn,
@@ -47,6 +45,8 @@ def main():
         inferenceConfig={'maxTokens': 8, 'temperature': 0},
     )
 
+
+def wait_for_token_metrics(inference_profile_id, region):
     cloudwatch = boto3.client('cloudwatch', region_name=region)
     deadline = time.monotonic() + TIMEOUT
     while time.monotonic() < deadline:
@@ -68,6 +68,13 @@ def main():
             return
         time.sleep(15)
     raise TimeoutError('timed out waiting for Bedrock token metrics')
+
+
+def main():
+    profile = load_profile()
+    inference_profile = find_inference_profile(profile['name'], profile['region'])
+    emit_token_metrics(inference_profile['inferenceProfileArn'], profile['region'])
+    wait_for_token_metrics(inference_profile['inferenceProfileId'], profile['region'])
 
 
 if __name__ == '__main__':

@@ -924,8 +924,8 @@ class InferenceProfileMetrics(MetricsFilter):
             'StartTime': params['StartTime'],
             'EndTime': params['EndTime'],
         }
-        while True:
-            response = client.get_metric_data(**request)
+        paginator = client.get_paginator('get_metric_data')
+        for response in paginator.paginate(**request):
             for result in response.get('MetricDataResults', ()):
                 if result['Id'] != 'total':
                     continue
@@ -934,9 +934,6 @@ class InferenceProfileMetrics(MetricsFilter):
                     self.statistics: value,
                 } for timestamp, value in zip(
                     result.get('Timestamps', ()), result.get('Values', ())))
-            if 'NextToken' not in response:
-                break
-            request['NextToken'] = response['NextToken']
         return datapoints
 
 
