@@ -158,13 +158,11 @@ class KmsCryptoKeyUpdate(MethodAction):
         **{
             'rotationPeriod': {'type': 'string'},
             'nextRotationTime': {'type': 'string'},
-            'destroyScheduledDuration': {'type': 'string'},
             'versionTemplate': {
                 'type': 'object',
                 'additionalProperties': False,
                 'properties': {
                     'algorithm': {'type': 'string'},
-                    'protectionLevel': {'type': 'string'},
                 },
             },
         })
@@ -181,10 +179,16 @@ class KmsCryptoKeyUpdate(MethodAction):
 
     def get_resource_params(self, model, resource):
         fields = {k: v for k, v in self.data.items() if k != 'type'}
+        mask_paths = []
+        for key, value in fields.items():
+            if isinstance(value, dict):
+                mask_paths.extend('%s.%s' % (key, subkey) for subkey in value)
+            else:
+                mask_paths.append(key)
         return {
             'name': resource['name'],
             'body': fields,
-            'updateMask': ','.join(fields),
+            'updateMask': ','.join(mask_paths),
         }
 
 
