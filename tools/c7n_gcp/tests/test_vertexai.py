@@ -110,6 +110,15 @@ def poll_for_state(
     return resources
 
 
+def test_vertexai_dataset_resource_registered(test):
+    """Test that gcp.vertex-ai-dataset resolves as a resource type."""
+    policy = test.load_policy(
+        {'name': 'vertexai-dataset-check',
+         'resource': 'gcp.vertex-ai-dataset'})
+    assert policy.resource_manager.resource_type.component == (
+        'projects.locations.datasets')
+
+
 def test_vertexai_endpoint_multi_location(test):
     """Test querying Vertex AI Endpoints across multiple locations.
 
