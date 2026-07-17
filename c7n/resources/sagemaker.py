@@ -1294,8 +1294,7 @@ class SagemakerUserProfile(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'sagemaker'
         enum_spec = ('list_user_profiles', 'UserProfiles', None)
-        arn = 'UserProfileArn'
-        id = 'UserProfileName'
+        arn = id = 'UserProfileArn'
         name = 'UserProfileName'
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::UserProfile'
@@ -1337,8 +1336,7 @@ class SagemakerSpace(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'sagemaker'
         enum_spec = ('list_spaces', 'Spaces', None)
-        arn = 'SpaceArn'
-        id = 'SpaceName'
+        arn = id = 'SpaceArn'
         name = 'SpaceName'
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::Space'
@@ -1385,8 +1383,7 @@ class SagemakerApp(QueryResourceManager):
     class resource_type(TypeInfo):
         service = 'sagemaker'
         enum_spec = ('list_apps', 'Apps', None)
-        arn = 'AppArn'
-        id = 'AppName'
+        arn = id = 'AppArn'
         name = 'AppName'
         date = 'CreationTime'
         cfn_type = 'AWS::SageMaker::App'
