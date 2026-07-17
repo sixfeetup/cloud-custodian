@@ -1583,13 +1583,21 @@ def test_sagemaker_space(test, sagemaker_studio):
 def test_sagemaker_app(test, sagemaker_studio):
     # tests the sagemaker-app-untagged example policy: verify the tagged app
     # is excluded and the untagged app is included.
+    #
+    # SageMaker retains app metadata (and keeps returning it from ListApps
+    # with Status Deleted/Deleting) for up to 24 hours after an app is shut
+    # down, so apps from earlier test recordings against now-destroyed
+    # domains can otherwise still show up here too. See the CreationTime
+    # note on:
+    # https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_DescribeApp.html
     factory = test.replay_flight_data('test_sagemaker_app')
     p = test.load_policy(
         {
             'name': 'sagemaker-app-untagged',
             'resource': 'sagemaker-app',
             'filters': [
-                {'DomainId': sagemaker_studio['aws_sagemaker_domain.main.id']},
+                {'type': 'value', 'key': 'Status', 'op': 'not-in',
+                 'value': ['Deleted', 'Deleting']},
                 {'tag:favorite-color': 'absent'},
             ],
         },
