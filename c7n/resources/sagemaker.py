@@ -1271,8 +1271,10 @@ class SagemakerUserProfileDescribe(DescribeSource):
             self.manager.retry(
                 client.describe_user_profile,
                 DomainId=r['DomainId'],
-                UserProfileName=r['UserProfileName'])
+                UserProfileName=r['UserProfileName'],
+                ignore_err_codes=('ResourceNotFound',))
             for r in resources]
+        resources = [r for r in resources if r]
         return universal_augment(self.manager, resources)
 
 
@@ -1313,8 +1315,10 @@ class SagemakerSpaceDescribe(DescribeSource):
             self.manager.retry(
                 client.describe_space,
                 DomainId=r['DomainId'],
-                SpaceName=r['SpaceName'])
+                SpaceName=r['SpaceName'],
+                ignore_err_codes=('ResourceNotFound',))
             for r in resources]
+        resources = [r for r in resources if r]
         return universal_augment(self.manager, resources)
 
 
@@ -1359,9 +1363,11 @@ class SagemakerAppDescribe(DescribeSource):
                 kw['UserProfileName'] = r['UserProfileName']
             if r.get('SpaceName'):
                 kw['SpaceName'] = r['SpaceName']
-            return self.manager.retry(client.describe_app, **kw)
+            return self.manager.retry(
+                client.describe_app, ignore_err_codes=('ResourceNotFound',), **kw)
 
         resources = [_describe(r) for r in resources]
+        resources = [r for r in resources if r]
         return universal_augment(self.manager, resources)
 
 
