@@ -223,9 +223,9 @@ class GCPMetricsFilter(Filter):
         resource_name = self.manager.resource_type.get_metric_resource_name(
             resource, metric_key=self.metric_key)
         metric = self.resource_metric_dict.get(resource_name)
-        if not metric and not self.missing_value:
+        if metric is None and self.missing_value is None:
             return False
-        if not metric:
+        if metric is None:
             metric_value = self.missing_value
         else:
             metric_value = float(list(metric["points"][0]["value"].values())[0])
