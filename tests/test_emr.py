@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import unittest
 
+from pytest_terraform import terraform
+
 from c7n.exceptions import PolicyValidationError
 from c7n.resources import emr
 from c7n.resources.emr import actions, EMRQueryParser
@@ -322,3 +324,24 @@ class TestEMRServerless(BaseTest):
         tags = client.list_tags_for_resource(resourceArn=resources[0]["arn"])['tags']
         self.assertEqual(len(tags), 1)
         self.assertEqual(tags, {'foo': 'Resource does not meet policy: notify@2023/01/26'})
+
+
+@terraform('emr_serverless_app_autostop')
+def test_emr_serverless_autostop_filter(test, emr_serverless_app_autostop):
+    session_factory = test.replay_flight_data('test_emr_serverless_autostop_filter')
+    p = test.load_policy(
+        {
+            'name': 'emr-serverless-autostop-disabled',
+            'resource': 'aws.emr-serverless-app',
+            'filters': [
+                {'type': 'value',
+                 'key': 'autoStopConfiguration.enabled',
+                 'value': False},
+            ],
+        },
+        session_factory=session_factory,
+    )
+    resources = p.run()
+    assert len(resources) == 1
+    assert resources[0]['name'] == emr_serverless_app_autostop[
+        'aws_emrserverless_application.autostop_disabled.name']
