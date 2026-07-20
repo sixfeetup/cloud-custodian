@@ -57,7 +57,7 @@ class ComputeInstancesFilter(ListItemFilter):
         return [c.serialize(True) for c in computes]
 
 
-# Machine Learning Data Contatiner
+# Machine Learning Data Container
 @resources.register('machine-learning-data-container')
 class MachineLearningDataContainer(ChildArmResourceManager):
     """Machine Learning Data Container Resource
