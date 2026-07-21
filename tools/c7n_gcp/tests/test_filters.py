@@ -125,6 +125,8 @@ class TestGCPMetricsFilter(BaseTest):
                     'aligner': 'ALIGN_MEAN',
                     'days': 14,
                     'value': 1,
+                    # 0 is falsy: the bug treated it the same as missing,
+                    # dropping the resource instead of applying it.
                     'missing-value': 0,
                     'filter': ' resource.labels.zone = "us-east4-c"',
                     'op': 'less-than'}],
