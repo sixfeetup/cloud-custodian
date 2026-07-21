@@ -1224,10 +1224,10 @@ def test_bedrock_inference_profile_token_metrics(
             point['Sum'] for point in resources[0]['c7n.metrics'][annotation_key]
         ) > 0
 
-    total_policy, resources = run_metric_policy('TotalTokenCount', statistics=None)
+    total_policy, resources = run_metric_policy('c7n:TotalTokenCount', statistics=None)
     assert len(resources) == 1
     assert resources[0]['inferenceProfileArn'] == profile_arn
-    total_key = 'AWS/Bedrock.TotalTokenCount.Sum.1'
+    total_key = 'AWS/Bedrock.c7n:TotalTokenCount.Sum.1'
     assert total_key in resources[0]['c7n.metrics']
     observed_total = max(
         point['Sum'] for point in resources[0]['c7n.metrics'][total_key])
@@ -1235,13 +1235,13 @@ def test_bedrock_inference_profile_token_metrics(
     assert 'cloudwatch:GetMetricData' in total_policy.get_permissions()
     assert 'cloudwatch:GetMetricStatistics' not in total_policy.get_permissions()
 
-    _, resources = run_metric_policy('TotalTokenCount', value=observed_total + 1)
+    _, resources = run_metric_policy('c7n:TotalTokenCount', value=observed_total + 1)
     assert resources == []
 
 
 def test_bedrock_inference_profile_bad_statistics(test):
     with pytest.raises(
-        PolicyValidationError, match="TotalTokenCount only supports the Sum statistic"
+        PolicyValidationError, match="c7n:TotalTokenCount only supports the Sum statistic"
     ):
         test.load_policy(
             {
@@ -1249,7 +1249,7 @@ def test_bedrock_inference_profile_bad_statistics(test):
                 'resource': 'aws.bedrock-inference-profile',
                 'filters': [{
                     'type': 'metrics',
-                    'name': 'TotalTokenCount',
+                    'name': 'c7n:TotalTokenCount',
                     'statistics': 'Average',
                     'value': 0,
                 }],

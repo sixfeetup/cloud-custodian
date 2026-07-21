@@ -822,7 +822,7 @@ class DeleteBedrockInferenceProfile(BaseAction):
 class InferenceProfileMetrics(MetricsFilter):
     """Filter inference profiles by published or combined token usage.
 
-    ``TotalTokenCount`` is a Custodian-derived metric that sums Bedrock's
+    ``c7n:TotalTokenCount`` is a Custodian-derived metric that sums Bedrock's
     ``InputTokenCount`` and ``OutputTokenCount`` metrics. Its statistic is
     always ``Sum`` and defaults to that value when omitted.
 
@@ -844,7 +844,7 @@ class InferenceProfileMetrics(MetricsFilter):
             resource: aws.bedrock-inference-profile
             filters:
               - type: metrics
-                name: TotalTokenCount
+                name: c7n:TotalTokenCount
                 days: 1
                 period: 86400
                 period-start: start-of-day
@@ -862,20 +862,20 @@ class InferenceProfileMetrics(MetricsFilter):
             resource: aws.bedrock-inference-profile
             filters:
               - type: metrics
-                name: TotalTokenCount
+                name: c7n:TotalTokenCount
                 days: 7
                 period: 604800
                 period-start: start-of-day
                 value: 700000
                 op: greater-than
     """
-    TOTAL_TOKEN_COUNT = 'TotalTokenCount'
+    TOTAL_TOKEN_COUNT = 'c7n:TotalTokenCount'
 
     def validate(self):
         if (self.data['name'] == self.TOTAL_TOKEN_COUNT and
                 self.data.get('statistics', 'Sum') != 'Sum'):
             raise PolicyValidationError(
-                "metrics filter TotalTokenCount only supports the Sum statistic")
+                "metrics filter c7n:TotalTokenCount only supports the Sum statistic")
         return super().validate()
 
     def process(self, resources, event=None):
