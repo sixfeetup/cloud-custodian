@@ -136,10 +136,13 @@ class TestGCPMetricsFilter(BaseTest):
         resources = p.run()
         self.assertEqual(len(resources), 1)
 
-    def test_missing_value_zero_batch_has_no_metrics(self):
+    def test_missing_value_batch_has_no_metrics(self):
         # No time series data at all is returned for the batch, so
         # missing-value must still be applied per-resource instead of
-        # short-circuiting the whole batch to no matches.
+        # short-circuiting the whole batch to no matches. missing-value is
+        # non-zero here to isolate this from the missing-value: 0 fix above:
+        # this test should fail solely because of the early return on an
+        # empty batch, not because of the falsy-zero check.
         session_factory = self.replay_flight_data("filter-no-metrics")
 
         p = self.load_policy(
@@ -152,14 +155,14 @@ class TestGCPMetricsFilter(BaseTest):
                     'metric-key': 'metric.labels.instance_name',
                     'aligner': 'ALIGN_MEAN',
                     'days': 14,
-                    'value': 1,
-                    'missing-value': 0,
+                    'value': -1,
+                    'missing-value': -1,
                     # Recorded flight data has this instance in zone
                     # us-east4-c, so filtering on us-east4-d matches nothing:
                     # the API response has no timeSeries at all, and
                     # time_series_data defaults to [].
                     'filter': ' resource.labels.zone = "us-east4-d"',
-                    'op': 'less-than'}],
+                    'op': 'equal'}],
             },
             session_factory=session_factory,
         )
