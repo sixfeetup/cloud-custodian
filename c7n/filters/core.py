@@ -739,12 +739,13 @@ class ValueFilter(BaseValueFilter):
             if 'value_from' in self.data:
                 values = ValuesFrom(self.data['value_from'], self.manager)
                 self.v = values.get_values()
-            elif 'value_path' in self.data:
-                self.v = self.get_path_value(i)
-            else:
+            elif 'value_path' not in self.data:
                 self.v = self.data.get('value')
             self.content_initialized = True
             self.vtype = self.data.get('value_type')
+
+        if 'value_path' in self.data:
+            self.v = self.get_path_value(i)
 
         if i is None:
             return False

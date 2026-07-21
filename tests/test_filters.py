@@ -303,6 +303,24 @@ class TestValueFilter(unittest.TestCase):
         res = vf.match(resource)
         self.assertEqual(res, False)
 
+    def test_value_path_recalculated_per_resource(self):
+        # Regression test for #10521: value_path must be reevaluated
+        # per resource, not cached from the first resource matched.
+        vf = filters.factory({
+            "type": "value",
+            "key": "a",
+            "value_path": "b",
+            "op": "eq"})
+
+        matching = {"a": "x", "b": "x"}
+        non_matching = {"a": "x", "b": "y"}
+
+        # Evaluate the non-matching resource first so a cached value_path
+        # from it (or a prior stale self.v) can't accidentally satisfy
+        # the matching resource that follows.
+        self.assertEqual(vf.match(non_matching), False)
+        self.assertEqual(vf.match(matching), True)
+
 
 class TestAgeFilter(unittest.TestCase):
 
