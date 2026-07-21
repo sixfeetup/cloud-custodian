@@ -152,6 +152,10 @@ class TestGCPMetricsFilter(BaseTest):
                     'days': 14,
                     'value': 1,
                     'missing-value': 0,
+                    # Recorded flight data has this instance in zone
+                    # us-east4-c, so filtering on us-east4-d matches nothing:
+                    # the API response has no timeSeries at all, and
+                    # time_series_data defaults to [].
                     'filter': ' resource.labels.zone = "us-east4-d"',
                     'op': 'less-than'}],
             },
