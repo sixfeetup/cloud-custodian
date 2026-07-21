@@ -411,8 +411,8 @@ class Increase(Action):
             raise PolicyExecutionError from error
 
 
-@resources.register('service-quota-services')
-class Services(QueryResourceManager):
+@resources.register('service-quota-service')
+class ServiceQuotaService(QueryResourceManager):
     """Lists all AWS services integrated with Service Quotas.
 
     :example:
@@ -442,8 +442,8 @@ class Services(QueryResourceManager):
         permissions_augment = ('servicequotas:ListServices',)
 
 
-@resources.register('default-service-quotas')
-class DefaultServiceQuotas(ChildResourceManager):
+@resources.register('default-service-quota')
+class DefaultServiceQuota(ChildResourceManager):
     """Lists default service quotas for AWS services.
 
     This is a child resource of service-quota-services. The list_aws_default_service_quotas

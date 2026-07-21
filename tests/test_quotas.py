@@ -86,7 +86,7 @@ class TestQuotas(BaseTest):
         session_factory = self.replay_flight_data('test_service_quota')
 
         p = self.load_policy(
-            {"name": "list-services", "resource": "aws.service-quota-services"},
+            {"name": "list-services", "resource": "aws.service-quota-service"},
             session_factory=session_factory,
         )
 
@@ -113,7 +113,7 @@ class TestQuotas(BaseTest):
         p = self.load_policy(
             {
                 "name": "filter-services-by-code",
-                "resource": "aws.service-quota-services",
+                "resource": "aws.service-quota-service",
                 "filters": [{"type": "value", "key": "ServiceCode", "value": "ec2"}],
             },
             session_factory=session_factory,
@@ -129,7 +129,7 @@ class TestQuotas(BaseTest):
         session_factory = self.replay_flight_data('test_service_quota')
 
         p = self.load_policy(
-            {"name": "list-default-quotas", "resource": "aws.default-service-quotas"},
+            {"name": "list-default-quotas", "resource": "aws.default-service-quota"},
             session_factory=session_factory,
         )
 
@@ -153,7 +153,7 @@ class TestQuotas(BaseTest):
         p = self.load_policy(
             {
                 "name": "filter-default-quotas-by-service",
-                "resource": "aws.default-service-quotas",
+                "resource": "aws.default-service-quota",
                 "filters": [{"type": "value", "key": "ServiceCode", "value": "AWSCloudMap"}],
             },
             session_factory=session_factory,
@@ -172,7 +172,7 @@ class TestQuotas(BaseTest):
         p = self.load_policy(
             {
                 "name": "filter-default-quotas-by-code",
-                "resource": "aws.default-service-quotas",
+                "resource": "aws.default-service-quota",
                 "filters": [{"type": "value", "key": "QuotaCode", "value": "L-D589BB26"}],
             },
             session_factory=session_factory,
@@ -193,7 +193,7 @@ class TestQuotas(BaseTest):
         session_factory = self.replay_flight_data('test_service_quota')
 
         p = self.load_policy(
-            {"name": "test-empty-resource-ids", "resource": "aws.default-service-quotas"},
+            {"name": "test-empty-resource-ids", "resource": "aws.default-service-quota"},
             session_factory=session_factory,
         )
 
