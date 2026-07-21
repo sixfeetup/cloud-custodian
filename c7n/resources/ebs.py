@@ -132,6 +132,16 @@ class ErrorHandler:
             log.warning("Volume id malformed %s" % e_vol_id)
         return e_vol_id
 
+    @staticmethod
+    def remove_volume(rid, resource_set):
+        found = None
+        for r in resource_set:
+            if r['VolumeId'] == rid:
+                found = r
+                break
+        if found:
+            resource_set.remove(found)
+
 
 class SnapshotQueryParser(QueryParser):
 
@@ -729,6 +739,24 @@ class EBS(QueryResourceManager):
         return []
 
 
+@EBS.action_registry.register('tag')
+class VolumeTag(Tag):
+
+    permissions = ('ec2:CreateTags',)
+
+    def process_resource_set(self, client, resource_set, tags):
+        while resource_set:
+            try:
+                return super(VolumeTag, self).process_resource_set(
+                    client, resource_set, tags)
+            except ClientError as e:
+                bad_vol = ErrorHandler.extract_bad_volume(e)
+                if bad_vol:
+                    ErrorHandler.remove_volume(bad_vol, resource_set)
+                    continue
+                raise
+
+
 @EBS.filter_registry.register('snapshots')
 class EBSSnapshotsFilter(ListItemFilter):
     """
@@ -1066,8 +1094,9 @@ class CopyInstanceTags(BaseAction):
     def initialize(self, volumes):
         instance_vol_map = {}
         for v in volumes:
-            instance_vol_map.setdefault(
-                v['Attachments'][0]['InstanceId'], []).append(v)
+            if v.get('Attachments') and 'InstanceId' in v['Attachments'][0]:
+                instance_vol_map.setdefault(
+                    v['Attachments'][0]['InstanceId'], []).append(v)
         instance_map = {
             i['InstanceId']: i for i in
             self.manager.get_resource_manager('ec2').get_resources(

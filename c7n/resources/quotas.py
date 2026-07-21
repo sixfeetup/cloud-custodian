@@ -156,6 +156,20 @@ class UsageFilter(MetricsFilter):
                   value: L-FE177D64
                 - type: usage-metric
                   hard_limit: 5000
+
+            - name: emr-serverless-vcpu-quota-override
+              description: |
+                  override MetricStatisticRecommendation for quotas
+                  where the API returns an incorrect recommendation
+              resource: aws.service-quota
+              filters:
+                - type: value
+                  key: QuotaCode
+                  value: L-D05C8A75
+                - type: usage-metric
+                  statistic: Maximum
+                  min_period: 60
+                  limit: 80
     """
 
     schema = type_schema(
@@ -163,6 +177,8 @@ class UsageFilter(MetricsFilter):
         limit={'type': 'integer'},
         min_period={'type': 'integer'},
         hard_limit={'type': 'integer'},
+        statistic={'type': 'string', 'enum': [
+            'Maximum', 'Minimum', 'Average', 'Sum', 'SampleCount']},
     )
 
     cloudwatch_max_datapoints = 1440
@@ -235,7 +251,8 @@ class UsageFilter(MetricsFilter):
             quota = r.get('Value')
             if not metric or quota is None:
                 continue
-            stat = metric.get('MetricStatisticRecommendation', 'Maximum')
+            stat = self.data.get(
+                'statistic', metric.get('MetricStatisticRecommendation', 'Maximum'))
             if stat not in self.metric_map and self.percentile_regex.match(stat) is None:
                 continue
 
