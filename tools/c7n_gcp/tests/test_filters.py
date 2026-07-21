@@ -109,9 +109,10 @@ class TestGCPMetricsFilter(BaseTest):
         self.assertEqual(len(resources), 0)
 
     def test_no_metrics_found_missing_value_zero(self):
-        # metric-key doesn't match any label on the returned time series, so
-        # the resource has no metric and must fall back to missing-value.
-        session_factory = self.replay_flight_data("filter-metrics")
+        # No time series data at all is returned for the batch, so
+        # missing-value must still be applied per-resource instead of
+        # short-circuiting the whole batch to no matches.
+        session_factory = self.replay_flight_data("filter-no-metrics")
 
         p = self.load_policy(
             {
@@ -120,12 +121,12 @@ class TestGCPMetricsFilter(BaseTest):
                 "filters": [
                     {'type': 'metrics',
                     'name': 'compute.googleapis.com/instance/cpu/utilization',
-                    'metric-key': 'metric.labels.nonexistent',
+                    'metric-key': 'metric.labels.instance_name',
                     'aligner': 'ALIGN_MEAN',
                     'days': 14,
                     'value': 1,
                     'missing-value': 0,
-                    'filter': ' resource.labels.zone = "us-east4-c"',
+                    'filter': ' resource.labels.zone = "us-east4-d"',
                     'op': 'less-than'}],
             },
             session_factory=session_factory,

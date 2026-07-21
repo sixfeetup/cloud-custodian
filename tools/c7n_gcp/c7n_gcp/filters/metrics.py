@@ -165,7 +165,6 @@ class GCPMetricsFilter(Filter):
 
         if not time_series_data:
             self.log.info("No metrics found for {}".format(self.c7n_metric_key))
-            return []
 
         self.split_by_resource(time_series_data)
         matched = [r for r in resources if self.process_resource(r)]
