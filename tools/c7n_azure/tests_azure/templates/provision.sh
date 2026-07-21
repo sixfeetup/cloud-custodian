@@ -551,7 +551,9 @@ PY
             'channels:' \
             '  - conda-forge' \
             'dependencies:' \
+            '  - python=3.12' \
             '  - pip:' \
+            '    - azureml-inference-server-http' \
             "    - scikit-learn==${sklearn_version}")
 
         az storage blob upload-batch \

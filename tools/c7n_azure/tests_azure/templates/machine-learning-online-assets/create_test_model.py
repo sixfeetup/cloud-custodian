@@ -34,7 +34,7 @@ def main(output_dir):
     with model_path.open('rb') as model_file:
         loaded_model = pickle.load(model_file)
     prediction = loaded_model.predict(np.array([[4.0]]))
-    if prediction[0] != 4.0:
+    if not np.isclose(prediction[0], 4.0):
         raise RuntimeError('The generated test model returned an unexpected prediction.')
 
     import sklearn
