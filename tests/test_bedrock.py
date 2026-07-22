@@ -7,7 +7,6 @@ import pytest
 
 from .common import ACCOUNT_ID, BaseTest, event_data
 from botocore.exceptions import ClientError
-import pytest
 from pytest_terraform import terraform
 from c7n.exceptions import PolicyValidationError
 from c7n.resources.bedrock import (

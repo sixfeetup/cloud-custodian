@@ -12,7 +12,6 @@ from c7n.utils import local_session, type_schema, QueryParser
 from c7n.actions import BaseAction
 from c7n.filters.kms import KmsRelatedFilter
 from c7n.filters import MetricsFilter, ValueFilter
-from c7n.exceptions import PolicyValidationError
 from c7n.resources.aws import shape_schema, shape_validate, Arn
 from c7n.resources.s3 import BucketAssembly, S3_AUGMENT_TABLE
 
