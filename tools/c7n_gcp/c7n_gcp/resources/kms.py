@@ -141,18 +141,10 @@ class KmsCryptoKeyUpdate(MethodAction):
 
     GCP action is https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys/patch
 
-    Per the CryptoKey reference (same URL, resource docs), ``rotationPeriod``
-    requires ``nextRotationTime`` to also be set, and both are only valid for
-    keys with ``purpose`` ``ENCRYPT_DECRYPT``:
-    "next_rotation_time will be advanced by this period when the service
-    automatically rotates a key... If rotation_period is set,
-    next_rotation_time must also be set. Keys with purpose ENCRYPT_DECRYPT
-    support automatic rotation. For other keys, this field must be omitted."
-
-    ``keyAccessJustificationsPolicy.allowedAccessReasons`` is intentionally
-    required to be non-empty here: per the reference, an explicit empty list
-    denies all encrypt/decrypt/sign operations on the key, which is too
-    consequential to allow by an easily-mistaken empty value.
+    ``rotationPeriod`` requires ``nextRotationTime``, and both are only
+    valid for keys with ``purpose`` ``ENCRYPT_DECRYPT``.
+    ``keyAccessJustificationsPolicy.allowedAccessReasons``, if given, must
+    be non-empty -- an empty list denies all crypto operations on the key.
 
     :Example:
 
