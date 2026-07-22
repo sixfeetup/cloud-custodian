@@ -438,7 +438,7 @@ class ServiceQuotaService(QueryResourceManager):
 
         policies:
         - name: list-service-quota-services
-          resource: aws.service-quota-services
+          resource: aws.service-quota-service
           filters:
             - type: value
               key: ServiceCode
@@ -463,7 +463,7 @@ class ServiceQuotaService(QueryResourceManager):
 class DefaultServiceQuota(ChildResourceManager):
     """Lists default service quotas for AWS services.
 
-    This is a child resource of service-quota-services. The list_aws_default_service_quotas
+    This is a child resource of service-quota-service. The list_aws_default_service_quotas
     API requires a ServiceCode parameter, so this resource enumerates quotas by iterating
     over parent services.
 
@@ -474,11 +474,11 @@ class DefaultServiceQuota(ChildResourceManager):
         # Get all default quotas for all services
         policies:
         - name: list-all-default-quotas
-          resource: aws.default-service-quotas
+          resource: aws.default-service-quota
 
         policies:
         - name: list-default-quotas-for-all-services
-          resource: aws.default-service-quotas
+          resource: aws.default-service-quota
           filters:
             - type: value
               key: QuotaCode
@@ -487,7 +487,7 @@ class DefaultServiceQuota(ChildResourceManager):
         # Get default quotas only for EC2
         policies:
         - name: list-default-quotas-for-ec2
-          resource: aws.default-service-quotas
+          resource: aws.default-service-quota
           query:
             - ServiceCode: ec2
           filters:
@@ -502,7 +502,7 @@ class DefaultServiceQuota(ChildResourceManager):
         service = 'service-quotas'
         permission_prefix = 'servicequotas'
         enum_spec = ('list_aws_default_service_quotas', 'Quotas', None)
-        parent_spec = ('service-quota-services', 'ServiceCode', None)
+        parent_spec = ('service-quota-service', 'ServiceCode', None)
         id = 'QuotaCode'
         arn = 'QuotaArn'
         name = 'QuotaName'
