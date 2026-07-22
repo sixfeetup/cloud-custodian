@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from gcp_common import BaseTest, event_data
 from pytest_terraform import terraform
 
@@ -260,6 +261,72 @@ class KmsCryptoKeyTest(BaseTest):
             {'name': key_name}
         )
         test.assertEqual(result['labels']['env'], 'production')
+
+    def test_kms_cryptokey_update_rotation_period_requires_next_rotation_time(test):
+        with test.assertRaisesRegex(PolicyValidationError, "is a dependency of"):
+            test.load_policy(
+                {
+                    'name': 'kms-cryptokey-update-invalid',
+                    'resource': 'gcp.kms-cryptokey',
+                    'actions': [
+                        {'type': 'update', 'rotationPeriod': '7776000s'}
+                    ],
+                }
+            )
+
+    def test_kms_cryptokey_update_version_template_requires_a_field(test):
+        with test.assertRaisesRegex(PolicyValidationError, 'versionTemplate'):
+            test.load_policy(
+                {
+                    'name': 'kms-cryptokey-update-invalid',
+                    'resource': 'gcp.kms-cryptokey',
+                    'actions': [
+                        {'type': 'update', 'versionTemplate': {}}
+                    ],
+                }
+            )
+
+    def test_kms_cryptokey_update_access_justifications_requires_a_reason(test):
+        with test.assertRaisesRegex(PolicyValidationError, 'allowedAccessReasons'):
+            test.load_policy(
+                {
+                    'name': 'kms-cryptokey-update-invalid',
+                    'resource': 'gcp.kms-cryptokey',
+                    'actions': [
+                        {
+                            'type': 'update',
+                            'keyAccessJustificationsPolicy': {
+                                'allowedAccessReasons': [],
+                            },
+                        }
+                    ],
+                }
+            )
+
+    def test_kms_cryptokey_update_rotation_requires_encrypt_decrypt_purpose(test):
+        factory = test.replay_flight_data('kms-cryptokey-update')
+        p = test.load_policy(
+            {
+                'name': 'kms-cryptokey-update-rotation',
+                'resource': 'gcp.kms-cryptokey',
+                'actions': [
+                    {'type': 'update',
+                     'rotationPeriod': '7776000s',
+                     'nextRotationTime': '2027-01-01T00:00:00Z'}
+                ],
+            },
+            session_factory=factory,
+        )
+        action = p.resource_manager.actions[0]
+        resource = {
+            'name': (
+                'projects/cloud-custodian/locations/us-central1/keyRings/'
+                'c7n-test-keyring-redfish/cryptoKeys/asymmetric-key'
+            ),
+            'purpose': 'ASYMMETRIC_SIGN',
+        }
+        with test.assertRaisesRegex(PolicyExecutionError, 'ENCRYPT_DECRYPT'):
+            action.process([resource])
 
 
 class KmsCryptoKeyVersionTest(BaseTest):
