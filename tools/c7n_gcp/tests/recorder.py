@@ -55,9 +55,9 @@ class FlightRecorder(Http):
             # one, otherwise fall back to the legacy (host-less) name.
             host_qualified_base_name = "%s-%s%s" % (
                 method.lower(), parsed.netloc.replace(':', '-'), path)
-            host_qualified_file = os.path.join(
-                data_dir, '{}_1.json'.format(host_qualified_base_name))
-            if record or os.path.exists(host_qualified_file):
+            if (record or
+                os.path.exists(os.path.join(data_dir, f'{host_qualified_base_name}_1.json'))
+                ):
                 base_name = host_qualified_base_name
 
         next_file = None
