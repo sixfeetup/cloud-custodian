@@ -20,24 +20,17 @@ def sanitize_project_name(dirty_str):
 
 class FlightRecorder(Http):
 
-    def __init__(self, data_path=None, discovery_path=None, include_host=False):
+    def __init__(self, data_path=None, discovery_path=None):
         self._data_path = data_path
         self._discovery_path = discovery_path
         self._index = {}
-        # Opt-in: include the request host in the file key, to disambiguate
-        # same-path requests to different hosts (e.g. Vertex AI's per-region
-        # endpoints). Off by default since existing flight data was recorded
-        # keyed on path alone. Doesn't apply to discovery requests (see
-        # get_next_file_path), which are host-invariant and shared across
-        # tests.
-        self.include_host = include_host
         super(FlightRecorder, self).__init__()
 
     def get_next_file_path(self, uri, method, record=True):
         uri = sanitize_project_name(uri)
         parsed = urlparse(uri)
-        base_name = "%s%s" % (
-            method.lower(), parsed.path.replace('/', '-').replace(':', '-'))
+        path = parsed.path.replace('/', '-').replace(':', '-')
+        base_name = "%s%s" % (method.lower(), path)
 
         # We don't record authentication
         if (base_name.startswith('post-oauth2-v4') or
@@ -49,15 +42,23 @@ class FlightRecorder(Http):
         is_discovery = False
 
         # Use a common directory for discovery metadata across tests.
+        # Discovery docs are host-invariant, so this is keyed on path alone.
         if base_name.startswith('get-discovery'):
             data_dir = self._discovery_path
             is_discovery = True
-        elif self.include_host:
-            # Disambiguate resources reachable via multiple hosts (e.g.
-            # Vertex AI's per-region endpoints) sharing the same path.
-            base_name = "%s-%s%s" % (
-                method.lower(), parsed.netloc.replace(':', '-'),
-                parsed.path.replace('/', '-').replace(':', '-'))
+        else:
+            # Host-qualify the key so requests to different hosts sharing a
+            # path (e.g. Vertex AI's per-region endpoints) can't collide.
+            # New flight data is always recorded host-qualified. Data
+            # recorded before this was added has no host in its name; when
+            # replaying, prefer a host-qualified match if the fixture has
+            # one, otherwise fall back to the legacy (host-less) name.
+            host_qualified_base_name = "%s-%s%s" % (
+                method.lower(), parsed.netloc.replace(':', '-'), path)
+            host_qualified_file = os.path.join(
+                data_dir, '{}_1.json'.format(host_qualified_base_name))
+            if record or os.path.exists(host_qualified_file):
+                base_name = host_qualified_base_name
 
         next_file = None
         while next_file is None:
