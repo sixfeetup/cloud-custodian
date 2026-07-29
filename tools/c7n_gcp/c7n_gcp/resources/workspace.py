@@ -15,15 +15,9 @@ from c7n_gcp.query import QueryResourceManager, TypeInfo
 class WorkspaceUser(QueryResourceManager):
     """Google Workspace user.
 
-    Users live in Cloud Identity / Google Workspace rather than in GCP, and
-    are read through the Admin SDK Directory API. That API is customer
-    scoped rather than project scoped, and is authorized by domain wide
-    delegation instead of GCP IAM: a service account impersonates a
-    Workspace user who holds the ``Users > Read`` privilege.
-
-    Set ``GOOGLE_WORKSPACE_SUBJECT`` to the user to impersonate, and
-    optionally ``GOOGLE_WORKSPACE_CUSTOMER`` to a customer (Workspace
-    account) id other than ``my_customer``.
+    Users live in Cloud Identity / Google Workspace rather than in GCP, so
+    reading them needs its own setup: see :ref:`gcp_workspace_users` for what
+    to configure and why.
 
     https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/list
 

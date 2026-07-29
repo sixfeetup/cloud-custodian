@@ -1,3 +1,5 @@
+.. _gcp_workspace_users:
+
 Workspace Users - find users without MFA
 ========================================
 
