@@ -1,17 +1,10 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-# The relationship between GCP and Google Workspace is genuinely confusing,
-# and most of the surprises in this module come from it. Workspace (Cloud
-# Identity) is the identity layer and owns the users; GCP owns projects and
-# resources. Creating a Workspace account for a domain also provisions a GCP
-# organization, but that relationship grants no access. Reading users needs a
-# service account, which may live in any project and holds no Workspace
-# privileges of its own, impersonating a Workspace user that holds the
-# Users > Read privilege.
+# The relationship between GCP and Google Workspace is genuinely confusing.
+# See:
 #
-# docs/source/gcp/examples/workspace-user-mfa.rst has a diagram of how the
-# pieces fit together, and the environment variables involved.
+# docs/source/gcp/examples/workspace-user-mfa.rst
 
 from c7n_gcp.client import get_workspace_customer
 from c7n_gcp.provider import resources
