@@ -48,3 +48,62 @@ class WorkspaceUserMetaTest(BaseTest):
         doc = json.loads(discovery_cache.get_static_doc(rt.service, rt.version))
         method = doc['resources'][rt.component]['methods'][rt.enum_spec[0]]
         self.assertTrue(set(rt.scopes).issubset(method['scopes']))
+
+
+class WorkspaceUserQueryTest(BaseTest):
+
+    def test_query(self):
+        factory = self.replay_flight_data('workspace-user-query')
+        policy = self.load_policy(
+            {'name': 'workspace-users', 'resource': 'gcp.workspace-user'},
+            session_factory=factory)
+        resources = policy.run()
+        self.assertEqual(len(resources), 5)
+        # Exactly one super admin, without naming it.
+        self.assertEqual(
+            len([r for r in resources if r['isAdmin']]), 1)
+        self.assertEqual(
+            policy.resource_manager.get_urns(resources)[0],
+            'gcp:admin:::workspace-user/100000000000000000001')
+
+    def test_users_without_2sv(self):
+        """CIS-B-GCPF-4.0.0-1.2"""
+        factory = self.replay_flight_data('workspace-user-query')
+        policy = self.load_policy(
+            {'name': 'workspace-users-without-mfa',
+             'resource': 'gcp.workspace-user',
+             'filters': [
+                 {'type': 'value',
+                  'key': 'isEnrolledIn2Sv',
+                  'value': False}]},
+            session_factory=factory)
+        self.assertEqual(
+            [r['primaryEmail'] for r in policy.run()],
+            ['user-no-2sv@example.com'])
+
+    def test_delegated_admins_are_distinguishable(self):
+        """isAdmin covers super admins only, so CIS 1.3 style policies need
+        isDelegatedAdmin too. Not a report field, but filterable.
+        """
+        factory = self.replay_flight_data('workspace-user-query')
+        policy = self.load_policy(
+            {'name': 'workspace-delegated-admins',
+             'resource': 'gcp.workspace-user',
+             'filters': [
+                 {'type': 'value',
+                  'key': 'isDelegatedAdmin',
+                  'value': True}]},
+            session_factory=factory)
+        self.assertEqual(
+            [r['primaryEmail'] for r in policy.run()],
+            ['delegated-admin@example.com'])
+
+
+def test_workspace_user_report_fields(test):
+    factory = test.replay_flight_data('workspace-user-query')
+    policy = test.load_policy(
+        {'name': 'workspace-users', 'resource': 'gcp.workspace-user'},
+        session_factory=factory)
+    resources = policy.run()
+    assert len(resources) == 5
+    test.check_report_fields(policy, resources)
