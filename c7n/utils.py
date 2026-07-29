@@ -9,7 +9,6 @@ import itertools
 import ipaddress
 import logging
 import os
-import boto3
 import random
 import re
 import sys
@@ -20,6 +19,7 @@ from urllib.request import getproxies, proxy_bypass
 
 from dateutil.parser import ParserError, parse
 
+import importlib.resources
 import jmespath
 from jmespath import functions
 from jmespath.parser import Parser, ParsedResult
@@ -386,11 +386,15 @@ def parse_s3(s3_path):
     return s3_path, bucket, key_prefix
 
 
+REGION_PARTITION_MAP = json.loads(
+    (importlib.resources.files('c7n') / 'data/aws_region_partition_map.json').read_text()
+)
+
+
 def get_partition(region):
-    if os.environ.get('PYTEST_CURRENT_TEST') and region == 'zanzibar':
-        return 'aws'
-    sess = boto3.Session()
-    return sess.get_partition_for_region(region)
+    if not region:
+        return ''
+    return REGION_PARTITION_MAP.get(region, 'aws')
 
 
 def generate_arn(
@@ -1053,6 +1057,24 @@ def get_human_size(size, precision=2):
         size = size / 1024.0
 
     return "%.*f %s" % (precision, size, suffixes[suffixIndex])
+
+
+def is_not_found(err):
+    """Attempt for an aws exception to determine if its a NotFound error.
+
+    Returns boolean.
+
+    Across the set of AWS services the error handling behavior, runs
+    across many different behavior patterns for NotFound style
+    exceptions. We want to use any unambigious signal in the error
+    code but also not flag an exception that could potentially represent
+    another error that user should be informed about.
+    """
+    code = err.response['Error']['Code']
+    for s in ('NotFound', 'NoSuch'):
+        if s in code:
+            return True
+    return False
 
 
 def get_support_region(manager):
