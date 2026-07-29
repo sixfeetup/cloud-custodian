@@ -2760,6 +2760,8 @@ class ComputeOptimizer(ValueFilter):
             results.append(r)
 
         return results
+
+
 @resources.register('ec2-instance-ami')
 class EC2ImageMetadata(query.QueryResourceManager):
     """Resource for EC2 instance image metadata.

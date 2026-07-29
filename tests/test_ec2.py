@@ -2648,6 +2648,8 @@ def test_ec2_compute_optimizer_server_side_invalid(test):
                 ],
             },
         )
+
+
 class TestEC2IamRoleFilter(BaseTest):
     """Tests for EC2 iam-role filter"""
 
