@@ -1,67 +1,77 @@
 Workspace Users - find users without MFA
 ========================================
 
-Google Workspace (Cloud Identity) users are not GCP resources. They are read
-through the Admin SDK Directory API, which differs from the rest of the GCP
-provider in two ways: it is scoped to a Workspace *customer* rather than a
-project, and it is authorized by domain wide delegation rather than by GCP
-IAM.
+Google Workspace (Cloud Identity) users are not GCP resources. They
+are read through the Admin SDK Directory API, which differs from the
+rest of the GCP provider in two ways: it is scoped to a Workspace
+account, called a "customer", rather than a project, and it is
+authorized by domain wide delegation rather than by GCP IAM::
 
-A *customer* is a Workspace / Cloud Identity account, the tenant that owns
-the users. It plays the role that a project plays for GCP resources, and is
-identified by an opaque id such as ``C03abc123``.
+  +-----------------------------------------------------------------------+
+  |  GOOGLE WORKSPACE                                                     |
+  |                                                                       |
+  |   +---------------------------------------------------------------+   |
+  |   |  Workspace user account that can list user meta data          |   |
+  |   +---------------------------------------------------------------+   |
+  |                                                       ^               |
+  +-------------------------------------------------------|---------------+
+                                                          |
+                                   2. Impersonates User   |
+                                      (OAuth 2.0 Access   |
+                                       Token generated)   |
+                                                          |
+  +-------------------------------------------------------|---------------+
+  |  GOOGLE CLOUD PLATFORM (GCP) PROJECT                  |               |
+  |                                                       |               |
+  |   +---------------------------------------------------+-----------+   |
+  |   |  GCP Service Account                                          |   |
+  |   |  - Client ID (OAuth 2.0 Identifier)                           |   |
+  |   |  - Holds private key credentials                              |   |
+  |   |  - Has been configured in the workspace via                   |   |
+  |   |    domain-wide-delegation to be able to list user meta data   |   |
+  |   |    (admin.directory.user.readonly scope)                      |   |
+  |   +---------------------------------------------------------------+   |
+  |                               ^                                       |
+  |                               | 1. Authenticates & requests token     |
+  |                               |                                       |
+  |   +---------------------------+---+                                   |
+  |   |  C7n policy run               |                                   |
+  |   |  - Uses Workspace API Client  |                                   |
+  |   +-------------------------------+                                   |
+  +-----------------------------------------------------------------------+
 
-How the pieces fit together
----------------------------
+The service account lives in a GCP project. The users, and the user whose
+``Users > Read`` privilege is borrowed to read them, live in the Workspace.
+The GCP service account is connected to the Workspace using
+domain-wide-delegation configuration in the Workspace, so the service account
+can live in any project. Which user it impersonates is chosen at run time by
+``GOOGLE_WORKSPACE_SUBJECT``.
 
-The service account lives in a GCP project. The users, and the admin whose
-privileges are borrowed to read them, live in the Workspace customer. The two
-are connected by an entry in the Workspace Admin console, not by any GCP
-relationship, so the service account can live in any project::
+Setup needed to use these resources
+-----------------------------------
 
-    1. Custodian authenticates as the service account   [GCP project]
-                       |
-                       |  GOOGLE_APPLICATION_CREDENTIALS=<key file>
-                       v
-    2. asking to act as the admin user             [Workspace customer]
-                       |
-                       |  GOOGLE_WORKSPACE_SUBJECT=admin@your-domain
-                       |
-                       |  permitted because the Admin console authorizes
-                       |  this service account's client id for the
-                       |  admin.directory.user.readonly scope, and the
-                       |  admin holds the Users > Read privilege
-                       v
-    3. and lists the users of a customer          [Admin SDK Directory API]
-                       |
-                       |  customer=my_customer, an alias for the customer
-                       |  the impersonated admin belongs to
-                       v
-              gcp.workspace-user resources
-
-The service account is only ever the means of authenticating. It holds no
-Workspace privileges itself; every call is made as the impersonated admin.
-
-Setup
------
-
-You need a service account that a Workspace super administrator has
+You need a GCP service account that a Workspace super administrator has
 authorized for the ``admin.directory.user.readonly`` scope, and a Workspace
-admin for it to impersonate. The impersonated user needs only the
+user for it to impersonate. The impersonated user needs only the
 ``Users > Read`` privilege, not super admin.
 
+Then, when running policies, the following environment variables must be set:
+
 ``GOOGLE_APPLICATION_CREDENTIALS``
-  Service account key file. A key is required because delegation self signs
+  Path to a service account key file. A key is required because delegation self signs
   a JWT.
 
 ``GOOGLE_WORKSPACE_SUBJECT``
-  The Workspace admin to impersonate. Delegation is only attempted when this
-  is set.
+  The Workspace user with the ``Users > Read`` privilege to
+  impersonate. Delegation is only attempted when this is set.
+
+In addition, you may need:
 
 ``GOOGLE_WORKSPACE_CUSTOMER``
-  Optional customer id. Defaults to ``my_customer``, which resolves to the
-  customer the impersonated subject belongs to, so the usual single tenant
-  case needs no configuration. Set it when the subject can administer more
+  Optional customer (Workspace account) id. Defaults to
+  ``my_customer``, which resolves to the customer (Workspace) the
+  impersonated subject belongs to, so the usual single Workspace case
+  needs no configuration. Set it when the subject can administer more
   than one customer, or to pin the target explicitly.
 
 A run targets one customer, so scanning several means several runs. Because
@@ -99,7 +109,7 @@ present or required, not which type it is. The Directory user resource does
 not expose security key information, so security key enforcement cannot be
 audited through this resource.
 
-``isAdmin`` denotes a Workspace *super* administrator. Administrators holding
+``isAdmin`` denotes a Workspace *super* administrator. Users holding
 a narrower delegated role appear as ``isDelegatedAdmin`` instead, and neither
 is the same as a GCP ``roles/resourcemanager.organizationAdmin`` binding.
 

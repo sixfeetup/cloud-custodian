@@ -13,11 +13,11 @@ class WorkspaceUser(QueryResourceManager):
     are read through the Admin SDK Directory API. That API is customer
     scoped rather than project scoped, and is authorized by domain wide
     delegation instead of GCP IAM: a service account impersonates a
-    Workspace admin who holds the directory read privilege.
+    Workspace user who holds the ``Users > Read`` privilege.
 
-    Set ``GOOGLE_WORKSPACE_SUBJECT`` to the admin to impersonate, and
-    optionally ``GOOGLE_WORKSPACE_CUSTOMER`` to a customer id other than
-    ``my_customer``.
+    Set ``GOOGLE_WORKSPACE_SUBJECT`` to the user to impersonate, and
+    optionally ``GOOGLE_WORKSPACE_CUSTOMER`` to a customer (Workspace
+    account) id other than ``my_customer``.
 
     https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/list
 
