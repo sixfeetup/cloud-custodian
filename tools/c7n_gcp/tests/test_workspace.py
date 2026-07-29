@@ -1,5 +1,45 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+
+# The flight data in workspace-user-query/ is recorded against a real
+# Cloud Identity / Workspace tenant. Recording needs a tenant, a service
+# account with domain wide delegation, and a Workspace user with the
+# Users > Read privilege to impersonate; see
+# docs/source/gcp/examples/workspace-user-mfa.rst for how the pieces fit.
+#
+# To re-record:
+#
+#   1. Set up a tenant (one time):
+#      - Create a Cloud Identity free account on a domain you own.
+#      - Create a service account in any GCP project and download its key.
+#      - In the Workspace Admin console, authorize the service account's
+#        client id for the admin.directory.user.readonly scope.
+#      - Create test users; enroll 2SV on some so isEnrolledIn2Sv varies.
+#        Google suspends freshly created accounts after a while, which is
+#        fine and even useful (it gives the fixture suspended records).
+#        Keep the super admin unsuspended and enroll 2SV on it first.
+#
+#   2. Temporarily change replay_flight_data to record_flight_data in the
+#      test, then:
+#
+#        export GOOGLE_APPLICATION_CREDENTIALS=/path/to/sa-key.json
+#        export GOOGLE_WORKSPACE_SUBJECT=<super-admin@your-domain>
+#        export GOOGLE_CLOUD_PROJECT=cloud-custodian
+#        uv run pytest tools/c7n_gcp/tests/test_workspace.py -k <test> -s -p no:env
+#
+#      -p no:env matters: pyproject.toml's [tool.pytest_env] loads test.env
+#      inside pytest, which would otherwise override the exports above and
+#      put the committed fake credentials back.
+#
+#   3. Scrub the recording before committing. The recorder sanitizes GCP
+#      project names only, so real user ids, addresses, names, the domain,
+#      the customer id, and recoveryEmail / recoveryPhone all come through
+#      and must be replaced by hand. Delete any stray recordings of calls
+#      the test doesn't need.
+#
+#   4. Change the test back to replay_flight_data and confirm it passes with
+#      no other edits.
+
 import json
 import os
 from unittest import mock
