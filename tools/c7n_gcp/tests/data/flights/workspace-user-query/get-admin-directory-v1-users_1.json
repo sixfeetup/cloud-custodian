@@ -3,7 +3,7 @@
     "etag": "\"c7n-test-users-etag\"",
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 29 Jul 2026 16:05:29 GMT",
+    "date": "Thu, 30 Jul 2026 22:17:44 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -11,7 +11,7 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "8111",
+    "content-length": "7987",
     "-content-encoding": "gzip",
     "content-location": "https://admin.googleapis.com/admin/directory/v1/users?customer=my_customer&alt=json"
   },
@@ -21,100 +21,48 @@
     "users": [
       {
         "kind": "admin#directory#user",
-        "id": "100000000000000000001",
-        "etag": "\"c7n-test-user-1-etag\"",
-        "primaryEmail": "superadmin@example.com",
-        "name": {
-          "givenName": "Super",
-          "familyName": "Admin",
-          "fullName": "Super Admin"
-        },
         "isAdmin": true,
         "isDelegatedAdmin": false,
-        "lastLoginTime": "2026-07-28T21:44:08.000Z",
+        "lastLoginTime": "2026-07-30T21:43:31.000Z",
         "creationTime": "2026-07-24T16:32:45.000Z",
         "agreedToTerms": true,
         "suspended": false,
         "archived": false,
         "changePasswordAtNextLogin": false,
         "ipWhitelisted": false,
-        "emails": [
-          {
-            "address": "superadmin@example.com",
-            "primary": true
-          }
-        ],
         "languages": [
           {
             "languageCode": "en",
             "preference": "preferred"
           }
         ],
-        "nonEditableAliases": [
-          "superadmin@example.com.test-google-a.com"
-        ],
-        "customerId": "C03abc123",
-        "orgUnitPath": "/",
-        "isMailboxSetup": false,
-        "isEnrolledIn2Sv": true,
-        "isEnforcedIn2Sv": true,
-        "includeInGlobalAddressList": true,
-        "isGuestUser": false
-      },
-      {
-        "kind": "admin#directory#user",
-        "id": "100000000000000000002",
-        "etag": "\"c7n-test-user-2-etag\"",
-        "primaryEmail": "user-2sv@example.com",
-        "name": {
-          "givenName": "Twostep",
-          "familyName": "User",
-          "fullName": "Twostep User"
-        },
-        "isAdmin": false,
-        "isDelegatedAdmin": false,
-        "lastLoginTime": "2026-07-28T21:57:19.000Z",
-        "creationTime": "2026-07-28T21:47:30.000Z",
-        "agreedToTerms": true,
-        "suspended": true,
-        "suspensionReason": "WEB_LOGIN_REQUIRED",
-        "archived": false,
-        "changePasswordAtNextLogin": false,
-        "ipWhitelisted": false,
-        "emails": [
-          {
-            "address": "user-2sv@example.com",
-            "primary": true
-          }
-        ],
-        "languages": [
-          {
-            "languageCode": "en",
-            "preference": "preferred"
-          }
-        ],
-        "nonEditableAliases": [
-          "user-2sv@example.com.test-google-a.com"
-        ],
-        "customerId": "C03abc123",
         "orgUnitPath": "/",
         "isMailboxSetup": false,
         "isEnrolledIn2Sv": true,
         "isEnforcedIn2Sv": true,
         "includeInGlobalAddressList": true,
         "isGuestUser": false,
-        "suspensionTime": "2026-07-29T02:17:38.376Z"
+        "id": "100000000000000000001",
+        "etag": "\"c7n-test-user-1-etag\"",
+        "primaryEmail": "superadmin@example.com",
+        "name": {
+          "givenName": "superadmin",
+          "familyName": "Test",
+          "fullName": "superadmin Test"
+        },
+        "emails": [
+          {
+            "address": "superadmin@example.com",
+            "primary": true
+          }
+        ],
+        "nonEditableAliases": [
+          "superadmin@example.com.test-google-a.com"
+        ],
+        "customerId": "C03abc123"
       },
       {
         "kind": "admin#directory#user",
-        "id": "100000000000000000003",
-        "etag": "\"c7n-test-user-3-etag\"",
-        "primaryEmail": "delegated-admin@example.com",
-        "name": {
-          "givenName": "Delegated",
-          "familyName": "Admin",
-          "fullName": "Delegated Admin"
-        },
         "isAdmin": false,
         "isDelegatedAdmin": true,
         "lastLoginTime": "2026-07-28T21:31:49.000Z",
@@ -125,40 +73,40 @@
         "archived": false,
         "changePasswordAtNextLogin": false,
         "ipWhitelisted": false,
-        "emails": [
-          {
-            "address": "delegated-admin@example.com",
-            "primary": true
-          }
-        ],
         "languages": [
           {
             "languageCode": "en",
             "preference": "preferred"
           }
         ],
-        "nonEditableAliases": [
-          "delegated-admin@example.com.test-google-a.com"
-        ],
-        "customerId": "C03abc123",
         "orgUnitPath": "/",
         "isMailboxSetup": false,
         "isEnrolledIn2Sv": true,
         "isEnforcedIn2Sv": true,
         "includeInGlobalAddressList": true,
         "isGuestUser": false,
-        "suspensionTime": "2026-07-29T02:17:43.242Z"
+        "suspensionTime": "2026-07-29T02:17:43.242Z",
+        "id": "100000000000000000002",
+        "etag": "\"c7n-test-user-2-etag\"",
+        "primaryEmail": "test_admin@example.com",
+        "name": {
+          "givenName": "test_admin",
+          "familyName": "Test",
+          "fullName": "test_admin Test"
+        },
+        "emails": [
+          {
+            "address": "test_admin@example.com",
+            "primary": true
+          }
+        ],
+        "nonEditableAliases": [
+          "test_admin@example.com.test-google-a.com"
+        ],
+        "customerId": "C03abc123"
       },
       {
         "kind": "admin#directory#user",
-        "id": "100000000000000000004",
-        "etag": "\"c7n-test-user-4-etag\"",
-        "primaryEmail": "user-unenforced@example.com",
-        "name": {
-          "givenName": "Unenforced",
-          "familyName": "User",
-          "fullName": "Unenforced User"
-        },
         "isAdmin": false,
         "isDelegatedAdmin": false,
         "lastLoginTime": "2026-07-28T21:50:22.000Z",
@@ -169,73 +117,123 @@
         "archived": false,
         "changePasswordAtNextLogin": false,
         "ipWhitelisted": false,
-        "emails": [
-          {
-            "address": "user-unenforced@example.com",
-            "primary": true
-          }
-        ],
         "languages": [
           {
             "languageCode": "en",
             "preference": "preferred"
           }
         ],
-        "nonEditableAliases": [
-          "user-unenforced@example.com.test-google-a.com"
-        ],
-        "customerId": "C03abc123",
         "orgUnitPath": "/test-no-enforcement",
         "isMailboxSetup": false,
         "isEnrolledIn2Sv": true,
         "isEnforcedIn2Sv": false,
         "includeInGlobalAddressList": true,
         "isGuestUser": false,
-        "suspensionTime": "2026-07-29T02:17:32.604Z"
-      },
-      {
-        "kind": "admin#directory#user",
-        "id": "100000000000000000005",
-        "etag": "\"c7n-test-user-5-etag\"",
-        "primaryEmail": "user-no-2sv@example.com",
+        "suspensionTime": "2026-07-29T02:17:32.604Z",
+        "id": "100000000000000000003",
+        "etag": "\"c7n-test-user-3-etag\"",
+        "primaryEmail": "test_needno2sv@example.com",
         "name": {
-          "givenName": "Notwostep",
-          "familyName": "User",
-          "fullName": "Notwostep User"
+          "givenName": "test_needno2sv",
+          "familyName": "Test",
+          "fullName": "test_needno2sv Test"
         },
-        "isAdmin": false,
-        "isDelegatedAdmin": false,
-        "lastLoginTime": "2026-07-28T22:02:09.000Z",
-        "creationTime": "2026-07-28T21:47:32.000Z",
-        "agreedToTerms": true,
-        "suspended": true,
-        "suspensionReason": "WEB_LOGIN_REQUIRED",
-        "archived": false,
-        "changePasswordAtNextLogin": false,
-        "ipWhitelisted": false,
         "emails": [
           {
-            "address": "user-no-2sv@example.com",
+            "address": "test_needno2sv@example.com",
             "primary": true
           }
         ],
+        "nonEditableAliases": [
+          "test_needno2sv@example.com.test-google-a.com"
+        ],
+        "customerId": "C03abc123"
+      },
+      {
+        "kind": "admin#directory#user",
+        "isAdmin": false,
+        "isDelegatedAdmin": false,
+        "lastLoginTime": "2026-07-30T22:05:21.000Z",
+        "creationTime": "2026-07-28T21:47:32.000Z",
+        "agreedToTerms": true,
+        "suspended": false,
+        "archived": false,
+        "changePasswordAtNextLogin": false,
+        "ipWhitelisted": false,
         "languages": [
           {
             "languageCode": "en",
             "preference": "preferred"
           }
         ],
-        "nonEditableAliases": [
-          "user-no-2sv@example.com.test-google-a.com"
+        "orgUnitPath": "/test-no-enforcement",
+        "isMailboxSetup": false,
+        "isEnrolledIn2Sv": false,
+        "isEnforcedIn2Sv": false,
+        "includeInGlobalAddressList": true,
+        "isGuestUser": false,
+        "id": "100000000000000000004",
+        "etag": "\"c7n-test-user-4-etag\"",
+        "primaryEmail": "test_no2sv@example.com",
+        "name": {
+          "givenName": "test_no2sv",
+          "familyName": "Test",
+          "fullName": "test_no2sv Test"
+        },
+        "emails": [
+          {
+            "address": "test_no2sv@example.com",
+            "primary": true
+          }
         ],
-        "customerId": "C03abc123",
+        "nonEditableAliases": [
+          "test_no2sv@example.com.test-google-a.com"
+        ],
+        "customerId": "C03abc123"
+      },
+      {
+        "kind": "admin#directory#user",
+        "isAdmin": false,
+        "isDelegatedAdmin": false,
+        "lastLoginTime": "2026-07-30T21:46:37.000Z",
+        "creationTime": "2026-07-30T21:45:45.000Z",
+        "agreedToTerms": true,
+        "suspended": true,
+        "suspensionReason": "ADMIN",
+        "archived": false,
+        "changePasswordAtNextLogin": false,
+        "ipWhitelisted": false,
+        "languages": [
+          {
+            "languageCode": "en",
+            "preference": "preferred"
+          }
+        ],
         "orgUnitPath": "/",
         "isMailboxSetup": false,
         "isEnrolledIn2Sv": false,
         "isEnforcedIn2Sv": true,
         "includeInGlobalAddressList": true,
         "isGuestUser": false,
-        "suspensionTime": "2026-07-29T02:17:40.915Z"
+        "suspensionTime": "2026-07-30T21:48:15.065Z",
+        "id": "100000000000000000005",
+        "etag": "\"c7n-test-user-5-etag\"",
+        "primaryEmail": "test_no2sv_susp@example.com",
+        "name": {
+          "givenName": "test_no2sv_susp",
+          "familyName": "Test",
+          "fullName": "test_no2sv_susp Test"
+        },
+        "emails": [
+          {
+            "address": "test_no2sv_susp@example.com",
+            "primary": true
+          }
+        ],
+        "nonEditableAliases": [
+          "test_no2sv_susp@example.com.test-google-a.com"
+        ],
+        "customerId": "C03abc123"
       }
     ]
   }
