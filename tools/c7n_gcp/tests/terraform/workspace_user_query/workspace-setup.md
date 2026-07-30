@@ -105,23 +105,43 @@ account and impersonated user fit together, see
    locks out anyone not enrolled, and the super admin is the account the
    tests impersonate.
 
-10. Un-suspend `test_no2sv`, and only that user.
+10. Get the suspended column to match the table.
 
-    Google auto suspends freshly created accounts, with
-    `suspensionReason: WEB_LOGIN_REQUIRED`, if you create several in quick
-    succession. Spacing account creation out avoids it. Once it happens,
-    **an admin cannot clear it** -- the REACTIVATE button is greyed out. The
-    user has to sign in at https://accounts.google.com and enter a code sent
-    to a mobile phone.
+    Suspend `test_no2sv_susp` yourself, from the admin console. Don't wait
+    for google to do it: doing it deliberately is reproducible, and shows up
+    as `suspensionReason: ADMIN`.
 
-    Only `test_no2sv` needs this, and it's only possible because step 8 put
-    that user outside 2sv enforcement. If it stays suspended, the documented
-    policy selects nothing and the test proves nothing.
+    `test_no2sv` has to be *un*suspended, and that's the awkward one.
 
-    The other users' suspended state doesn't matter to any test, so the
-    table just records what google will have left you with. Only
-    `test_no2sv` must be unsuspended, and only `test_no2sv_susp` must stay
-    suspended.
+    Google auto suspends freshly created accounts with
+    `suspensionReason: WEB_LOGIN_REQUIRED` when you create several in a
+    short period. It's a periodic sweep rather than a per account timer: our
+    accounts were created up to 18 minutes apart and were all suspended
+    within 11 seconds of each other, about 4.5 hours later. So spacing
+    creation out by a few minutes doesn't help much. What does help is
+    creating the account you need unsuspended last, on its own, and
+    recording promptly.
+
+    Once it happens, **an admin cannot clear it** -- the REACTIVATE button
+    is greyed out. Only the user can, by signing in at
+    https://accounts.google.com and entering a code sent to a mobile phone.
+    Two surprises there:
+
+    - It asks for a phone number rather than using the one on the account.
+      That's abuse throttling, not authentication.
+    - It rate limits per phone number, so the number you used to enroll 2sv
+      on the other accounts will likely be refused with "This phone number
+      has already been used too many times for verification". You may need
+      to borrow a phone.
+
+    This is only possible at all because step 8 put `test_no2sv` outside 2sv
+    enforcement: an unenrolled user can't complete a sign in while
+    enforcement applies. And it matters because if `test_no2sv` stays
+    suspended, the documented policy selects nothing and the test proves
+    nothing.
+
+    The remaining users can be suspended or not; no test depends on them.
+    The table records what we happened to have.
 
 11. Assign some admin role to test_admin. It doesn't matter which
     one. Whatever is first in the list is fine. :) That makes it a
