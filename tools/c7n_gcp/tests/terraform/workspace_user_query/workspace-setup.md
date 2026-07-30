@@ -1,5 +1,10 @@
 # Setting up to record against a Google Workspace.
 
+This is the one-time setup needed to record the flight data for
+`test_workspace.py`. For how the GCP project, Workspace account, service
+account and impersonated user fit together, see
+`docs/source/gcp/examples/workspace-user-mfa.rst`.
+
 1. Obtain a domain
 
 2. Create a workspace against that domain.
