@@ -56,18 +56,19 @@ account and impersonated user fit together, see
    | user               | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit                |
    |--------------------|-------|-----------------|--------------|--------------|-----------|-------------------------|
    | *the super admin*  | yes   | no              | yes          | yes          | no        | `/`                     |
-   | `test_2sv`         | no    | no              | yes          | yes          | no        | `/`                     |
-   | `test_admin`       | no    | yes             | yes          | yes          | no        | `/`                     |
-   | `test_needno2sv`   | no    | no              | yes          | **no**       | no        | `/test-no-enforcement`  |
-   | `test_no2sv`       | no    | no              | **no**       | yes          | no        | `/`                     |
-   | `test_suspended`   | no    | no              | no           | yes          | **yes**   | `/`                     |
+   | `test_2sv`         | no    | no              | yes          | yes          | yes       | `/`                     |
+   | `test_admin`       | no    | yes             | yes          | yes          | yes       | `/`                     |
+   | `test_needno2sv`   | no    | no              | yes          | **no**       | yes       | `/test-no-enforcement`  |
+   | `test_no2sv`       | no    | no              | **no**       | yes          | **no**    | `/`                     |
 
    Each row exists for a reason:
 
    - `test_no2sv` is the CIS-B-GCPF-4.0.0-1.2 finding: no 2sv, and *not*
-     suspended, so the documented policy selects it.
-   - `test_suspended` is why the documented policy's `suspended: false`
-     clause is worth having. Suspend it deliberately.
+     suspended, so the documented policy selects it. It is the only user
+     whose suspended state matters.
+   - The three suspended users are why the documented policy's
+     `suspended: false` clause is worth having: it has to exclude somebody.
+     Google will have suspended them for you, so this needs no work.
    - `test_needno2sv` is the only user with 2sv unenforced, which is what
      the sub org unit in step 10 is for.
    - `test_admin` is a delegated admin rather than a super admin. The two
@@ -77,19 +78,19 @@ account and impersonated user fit together, see
    only be done by signing in as that user. There is no API for it, which
    is why this step is manual.
 
-8. Un-suspend everything except `test_suspended`.
+8. Un-suspend `test_no2sv`, and only that user.
 
    Google auto suspends freshly created accounts, with
    `suspensionReason: WEB_LOGIN_REQUIRED`, if you create several in quick
    succession. Spacing account creation out avoids it. Once it happens,
-   **an admin cannot clear it** -- the REACTIVATE button is greyed out.
-   Each affected user has to sign in at https://accounts.google.com and
-   enter a code sent to a mobile phone. One phone number can serve all of
-   them.
+   **an admin cannot clear it** -- the REACTIVATE button is greyed out. The
+   user has to sign in at https://accounts.google.com and enter a code sent
+   to a mobile phone.
 
-   This is tedious, but the recording is only useful if `test_no2sv` is
-   unsuspended: otherwise the documented policy, which excludes suspended
-   users, selects nothing at all.
+   Only `test_no2sv` needs this. The documented policy excludes suspended
+   users, so if it stays suspended the policy selects nothing and the test
+   proves nothing. Leave the others suspended: that's free variation in the
+   `suspended` field.
 
 9. Turn on 2sv enforcement on the root organization unit.
 
