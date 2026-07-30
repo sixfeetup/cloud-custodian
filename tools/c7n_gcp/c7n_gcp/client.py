@@ -299,10 +299,11 @@ class Session:
         """Credentials for an API needing its own scopes and, for Google
         Workspace, a delegated subject.
 
-        Workspace (Admin SDK) APIs are authorized by domain wide delegation:
-        a service account impersonates an admin user, who holds the Workspace
-        admin privilege. The service account key is required because
-        with_subject self signs a JWT.
+        Workspace (Admin SDK) APIs are authorized by domain wide
+        delegation: a service account impersonates a user (the
+        "subject"), who holds needed workspace admin privileges. The
+        service account key is required because with_subject self
+        signs a JWT.
 
         Credentials that carry fixed scopes, such as the authorized_user
         credentials used by flight data replay, are returned unchanged.
