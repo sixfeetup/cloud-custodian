@@ -53,14 +53,14 @@ account and impersonated user fit together, see
    This is the state the tests expect. `test_workspace_user_state` asserts
    it, so if that test fails, this table is what to restore the workspace to.
 
-   | user | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit |
-   |---|---|---|---|---|---|---|
-   | *the super admin* | yes | no | yes | yes | no | `/` |
-   | `test_2sv` | no | no | yes | yes | no | `/` |
-   | `test_admin` | no | yes | yes | yes | no | `/` |
-   | `test_needno2sv` | no | no | yes | **no** | no | `/test-no-enforcement` |
-   | `test_no2sv` | no | no | **no** | yes | no | `/` |
-   | `test_suspended` | no | no | no | yes | **yes** | `/` |
+   | user               | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit                |
+   |--------------------|-------|-----------------|--------------|--------------|-----------|-------------------------|
+   | *the super admin*  | yes   | no              | yes          | yes          | no        | `/`                     |
+   | `test_2sv`         | no    | no              | yes          | yes          | no        | `/`                     |
+   | `test_admin`       | no    | yes             | yes          | yes          | no        | `/`                     |
+   | `test_needno2sv`   | no    | no              | yes          | **no**       | no        | `/test-no-enforcement`  |
+   | `test_no2sv`       | no    | no              | **no**       | yes          | no        | `/`                     |
+   | `test_suspended`   | no    | no              | no           | yes          | **yes**   | `/`                     |
 
    Each row exists for a reason:
 
