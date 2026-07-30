@@ -53,44 +53,45 @@ account and impersonated user fit together, see
    This is the state the tests expect. `test_workspace_user_state` asserts
    it, so if that test fails, this table is what to restore the workspace to.
 
-   | user               | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit                |
-   |--------------------|-------|-----------------|--------------|--------------|-----------|-------------------------|
-   | *the super admin*  | yes   | no              | yes          | yes          | no        | `/`                     |
-   | `test_2sv`         | no    | no              | yes          | yes          | yes       | `/`                     |
-   | `test_admin`       | no    | yes             | yes          | yes          | yes       | `/`                     |
-   | `test_needno2sv`   | no    | no              | yes          | **no**       | yes       | `/test-no-enforcement`  |
-   | `test_no2sv`       | no    | no              | **no**       | yes          | **no**    | `/`                     |
+   | user                | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit                |
+   |---------------------|-------|-----------------|--------------|--------------|-----------|-------------------------|
+   | *the super admin*   | yes   | no              | yes          | yes          | no        | `/`                     |
+   | `test_admin`        | no    | **yes**         | yes          | yes          | either    | `/`                     |
+   | `test_needno2sv`    | no    | no              | yes          | **no**       | either    | `/test-no-enforcement`  |
+   | `test_no2sv`        | no    | no              | **no**       | no           | **no**    | `/test-no-enforcement`  |
+   | `test_no2sv_susp`   | no    | no              | **no**       | no           | **yes**   | `/test-no-enforcement`  |
 
-   Each row exists for a reason:
+   The documented policy in
+   `docs/source/gcp/examples/workspace-user-mfa.rst` filters on
+   `isEnrolledIn2Sv: false` *and* `suspended: false`, so:
 
-   - `test_no2sv` is the CIS-B-GCPF-4.0.0-1.2 finding: no 2sv, and *not*
-     suspended, so the documented policy selects it. It is the only user
-     whose suspended state matters.
-   - The three suspended users are why the documented policy's
-     `suspended: false` clause is worth having: it has to exclude somebody.
-     Google will have suspended them for you, so this needs no work.
-   - `test_needno2sv` is the only user with 2sv unenforced, which is what
-     the sub org unit in step 10 is for.
+   - `test_no2sv` is the only user it selects: the CIS-B-GCPF-4.0.0-1.2
+     finding.
+   - `test_no2sv_susp` differs from it in **only** the suspended field, so
+     the `suspended: false` clause is load bearing. Without that row, a one
+     clause policy would select the same users and the test would prove
+     nothing about the second clause.
    - `test_admin` is a delegated admin rather than a super admin. The two
      are different, and `isAdmin` alone does not find delegated admins.
+   - `test_needno2sv` is enrolled but not *enforced*, so `isEnrolledIn2Sv`
+     and `isEnforcedIn2Sv` are seen to vary independently. It's also the
+     only user in a non root org unit.
+
+   Both `test_no2sv*` users live in `/test-no-enforcement` deliberately.
+   With 2sv enforced, an unenrolled user cannot sign in at all -- and
+   signing in is the only way to clear google's automatic suspension.
+   Putting them outside enforcement is what makes `test_no2sv` recoverable.
 
    Enrolling 2sv needs a phone or authenticator app per account, and can
    only be done by signing in as that user. There is no API for it, which
    is why this step is manual.
 
-8. Un-suspend `test_no2sv`, and only that user.
+8. Create a sub-organization, `test-no-enforcement`, with 2sv not enforced,
+   and move `test_needno2sv`, `test_no2sv` and `test_no2sv_susp` into it.
 
-   Google auto suspends freshly created accounts, with
-   `suspensionReason: WEB_LOGIN_REQUIRED`, if you create several in quick
-   succession. Spacing account creation out avoids it. Once it happens,
-   **an admin cannot clear it** -- the REACTIVATE button is greyed out. The
-   user has to sign in at https://accounts.google.com and enter a code sent
-   to a mobile phone.
-
-   Only `test_no2sv` needs this. The documented policy excludes suspended
-   users, so if it stays suspended the policy selects nothing and the test
-   proves nothing. Leave the others suspended: that's free variation in the
-   `suspended` field.
+   This comes before enforcement, because the `test_no2sv*` users are never
+   going to enroll, and enforcement would lock them out of the sign in that
+   step 10 needs.
 
 9. Turn on 2sv enforcement on the root organization unit.
 
@@ -98,12 +99,26 @@ account and impersonated user fit together, see
    locks out anyone not enrolled, and the super admin is the account the
    tests impersonate.
 
-10. Assign some admin role to test_admin. It doesn't matter which
+10. Un-suspend `test_no2sv`, and only that user.
+
+    Google auto suspends freshly created accounts, with
+    `suspensionReason: WEB_LOGIN_REQUIRED`, if you create several in quick
+    succession. Spacing account creation out avoids it. Once it happens,
+    **an admin cannot clear it** -- the REACTIVATE button is greyed out. The
+    user has to sign in at https://accounts.google.com and enter a code sent
+    to a mobile phone.
+
+    Only `test_no2sv` needs this, and it's only possible because step 8 put
+    that user outside 2sv enforcement. If it stays suspended, the documented
+    policy selects nothing and the test proves nothing.
+
+    Everyone else can be left suspended or not, hence "either" above. No
+    test depends on it, except that `test_no2sv_susp` must stay suspended,
+    which google will do for you.
+
+11. Assign some admin role to test_admin. It doesn't matter which
     one. Whatever is first in the list is fine. :) That makes it a
     delegated admin, which is all the tests care about.
-
-11. Create a sub-organization, `test-no-enforcement`, with 2sv not enforced,
-    and add test_needno2sv to it.
 
 ## Recording
 
