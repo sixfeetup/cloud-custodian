@@ -7,9 +7,9 @@
 # Users > Read privilege to impersonate; see
 # docs/source/gcp/examples/workspace-user-mfa.rst for how the pieces fit.
 #
-# tools/c7n_gcp/tests/terraform/workspace_user_query/readme.md has the
-# laboriously worked out one-time setup for the tenant, service account and
-# delegation, and the test users to create.
+# tools/c7n_gcp/tests/terraform/workspace_user_query/workspace-setup.md has
+# the laboriously worked out one-time setup for the tenant, service account
+# and delegation, and the test users to create.
 #
 # To re-record:
 #
