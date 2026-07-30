@@ -59,7 +59,7 @@ account and impersonated user fit together, see
    | `test_admin`      | no    | yes             | yes          | yes          | yes       | `/`                    |
    | `test_needno2sv`  | no    | no              | yes          | no           | yes       | `/test-no-enforcement` |
    | `test_no2sv`      | no    | no              | no           | no           | no        | `/test-no-enforcement` |
-   | `test_no2sv_susp` | no    | no              | no           | no           | yes       | `/test-no-enforcement` |
+   | `test_no2sv_susp` | no    | no              | no           | yes          | yes       | `/`                    |
 
    The documented policy in
    `docs/source/gcp/examples/workspace-user-mfa.rst` filters on
@@ -79,21 +79,25 @@ account and impersonated user fit together, see
    Drop any one of the four and exactly one of those properties disappears,
    so all of them are needed.
 
-   Both `test_no2sv*` users live in `/test-no-enforcement` deliberately.
-   With 2sv enforced, an unenrolled user cannot sign in at all -- and
-   signing in is the only way to clear google's automatic suspension.
-   Putting them outside enforcement is what makes `test_no2sv` recoverable.
+   `test_no2sv` lives in `/test-no-enforcement` deliberately. With 2sv
+   enforced, an unenrolled user cannot sign in at all -- and signing in is
+   the only way to clear google's automatic suspension. Being outside
+   enforcement is what makes it recoverable.
+
+   `test_no2sv_susp` can stay in the root org unit, because it never needs
+   to sign in. That also makes it the only unenrolled *and* enforced user,
+   which is what a real CIS 1.2 violation looks like.
 
    Enrolling 2sv needs a phone or authenticator app per account, and can
    only be done by signing in as that user. There is no API for it, which
    is why this step is manual.
 
 8. Create a sub-organization, `test-no-enforcement`, with 2sv not enforced,
-   and move `test_needno2sv`, `test_no2sv` and `test_no2sv_susp` into it.
+   and move `test_needno2sv` and `test_no2sv` into it.
 
-   This comes before enforcement, because the `test_no2sv*` users are never
-   going to enroll, and enforcement would lock them out of the sign in that
-   step 10 needs.
+   This comes before enforcement, because `test_no2sv` is never going to
+   enroll, and enforcement would lock it out of the sign in that step 10
+   needs.
 
 9. Turn on 2sv enforcement on the root organization unit.
 
