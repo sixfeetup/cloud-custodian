@@ -53,13 +53,13 @@ account and impersonated user fit together, see
    This is the state the tests expect. `test_workspace_user_state` asserts
    it, so if that test fails, this table is what to restore the workspace to.
 
-   | user                | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit                |
-   |---------------------|-------|-----------------|--------------|--------------|-----------|-------------------------|
-   | *the super admin*   | yes   | no              | yes          | yes          | no        | `/`                     |
-   | `test_admin`        | no    | **yes**         | yes          | yes          | either    | `/`                     |
-   | `test_needno2sv`    | no    | no              | yes          | **no**       | either    | `/test-no-enforcement`  |
-   | `test_no2sv`        | no    | no              | **no**       | no           | **no**    | `/test-no-enforcement`  |
-   | `test_no2sv_susp`   | no    | no              | **no**       | no           | **yes**   | `/test-no-enforcement`  |
+   | user              | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit               |
+   |-------------------|-------|-----------------|--------------|--------------|-----------|------------------------|
+   | *the super admin* | yes   | no              | yes          | yes          | no        | `/`                    |
+   | `test_admin`      | no    | yes             | yes          | yes          | yes       | `/`                    |
+   | `test_needno2sv`  | no    | no              | yes          | no           | yes       | `/test-no-enforcement` |
+   | `test_no2sv`      | no    | no              | no           | no           | no        | `/test-no-enforcement` |
+   | `test_no2sv_susp` | no    | no              | no           | no           | yes       | `/test-no-enforcement` |
 
    The documented policy in
    `docs/source/gcp/examples/workspace-user-mfa.rst` filters on
@@ -67,15 +67,17 @@ account and impersonated user fit together, see
 
    - `test_no2sv` is the only user it selects: the CIS-B-GCPF-4.0.0-1.2
      finding.
-   - `test_no2sv_susp` differs from it in **only** the suspended field, so
-     the `suspended: false` clause is load bearing. Without that row, a one
+   - `test_no2sv_susp` differs from it in only the suspended field, so the
+     `suspended: false` clause is load bearing. Without that row, a one
      clause policy would select the same users and the test would prove
      nothing about the second clause.
    - `test_admin` is a delegated admin rather than a super admin. The two
      are different, and `isAdmin` alone does not find delegated admins.
    - `test_needno2sv` is enrolled but not *enforced*, so `isEnrolledIn2Sv`
-     and `isEnforcedIn2Sv` are seen to vary independently. It's also the
-     only user in a non root org unit.
+     and `isEnforcedIn2Sv` are seen to vary independently.
+
+   Drop any one of the four and exactly one of those properties disappears,
+   so all of them are needed.
 
    Both `test_no2sv*` users live in `/test-no-enforcement` deliberately.
    With 2sv enforced, an unenrolled user cannot sign in at all -- and
@@ -112,9 +114,10 @@ account and impersonated user fit together, see
     that user outside 2sv enforcement. If it stays suspended, the documented
     policy selects nothing and the test proves nothing.
 
-    Everyone else can be left suspended or not, hence "either" above. No
-    test depends on it, except that `test_no2sv_susp` must stay suspended,
-    which google will do for you.
+    The other users' suspended state doesn't matter to any test, so the
+    table just records what google will have left you with. Only
+    `test_no2sv` must be unsuspended, and only `test_no2sv_susp` must stay
+    suspended.
 
 11. Assign some admin role to test_admin. It doesn't matter which
     one. Whatever is first in the list is fine. :) That makes it a
