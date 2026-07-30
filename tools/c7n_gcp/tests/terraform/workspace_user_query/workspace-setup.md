@@ -33,7 +33,7 @@ account and impersonated user fit together, see
 
    Point `GOOGLE_APPLICATION_CREDENTIALS` at this file.
 
-4. Log onto the workspace at https://admin.google.com 
+4. Log onto the workspace at https://admin.google.com
 
 5. In the workspace, go to
    Security > Access and data control > API controls > Manage Domain-Wide Delegation.
