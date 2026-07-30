@@ -48,28 +48,61 @@ account and impersonated user fit together, see
    3. Search for Admin SDK API
    4. Select it and click "Enable"
 
-7. Set up test users:
+7. Set up test users.
 
-   - test_admin, enable 2sv,
-   - test_needno2sv, enable 2sv
-   - test_2sv, enable 2sv
-   - test_no2sv
+   This is the state the tests expect. `test_workspace_user_state` asserts
+   it, so if that test fails, this table is what to restore the workspace to.
 
-   All of these **test** users may be suspended by google overnight. :)
-   Just go ahead and suspend them for test consistency.  The tests
-   work fine and actiually depend on them being suspended.
+   | user | admin | delegated admin | 2sv enrolled | 2sv enforced | suspended | org unit |
+   |---|---|---|---|---|---|---|
+   | *the super admin* | yes | no | yes | yes | no | `/` |
+   | `test_2sv` | no | no | yes | yes | no | `/` |
+   | `test_admin` | no | yes | yes | yes | no | `/` |
+   | `test_needno2sv` | no | no | yes | **no** | no | `/test-no-enforcement` |
+   | `test_no2sv` | no | no | **no** | yes | no | `/` |
+   | `test_suspended` | no | no | no | yes | **yes** | `/` |
 
-   Also enable 2sv on the super admin account, which is good hygiene
-   anyway. And, of course, don't suspend it.
+   Each row exists for a reason:
 
-8. Turn on 2sv enforcement on the root organization unit.
+   - `test_no2sv` is the CIS-B-GCPF-4.0.0-1.2 finding: no 2sv, and *not*
+     suspended, so the documented policy selects it.
+   - `test_suspended` is why the documented policy's `suspended: false`
+     clause is worth having. Suspend it deliberately.
+   - `test_needno2sv` is the only user with 2sv unenforced, which is what
+     the sub org unit in step 10 is for.
+   - `test_admin` is a delegated admin rather than a super admin. The two
+     are different, and `isAdmin` alone does not find delegated admins.
 
-   **IMPORTANT! Set up 2sv on the super admin acount first!**
+   Enrolling 2sv needs a phone or authenticator app per account, and can
+   only be done by signing in as that user. There is no API for it, which
+   is why this step is manual.
 
-9. Assign some admin role to test_admin. It doesn't matter which
-   one. Whatever is first in the list is fine. :)
+8. Un-suspend everything except `test_suspended`.
 
-10. Create a sub-organization with 2sv not enforced and add test_needno2sv to it.
+   Google auto suspends freshly created accounts, with
+   `suspensionReason: WEB_LOGIN_REQUIRED`, if you create several in quick
+   succession. Spacing account creation out avoids it. Once it happens,
+   **an admin cannot clear it** -- the REACTIVATE button is greyed out.
+   Each affected user has to sign in at https://accounts.google.com and
+   enter a code sent to a mobile phone. One phone number can serve all of
+   them.
+
+   This is tedious, but the recording is only useful if `test_no2sv` is
+   unsuspended: otherwise the documented policy, which excludes suspended
+   users, selects nothing at all.
+
+9. Turn on 2sv enforcement on the root organization unit.
+
+   **IMPORTANT! Set up 2sv on the super admin acount first!** Enforcement
+   locks out anyone not enrolled, and the super admin is the account the
+   tests impersonate.
+
+10. Assign some admin role to test_admin. It doesn't matter which
+    one. Whatever is first in the list is fine. :) That makes it a
+    delegated admin, which is all the tests care about.
+
+11. Create a sub-organization, `test-no-enforcement`, with 2sv not enforced,
+    and add test_needno2sv to it.
 
 ## Recording
 
@@ -90,11 +123,25 @@ deliberately unsets `GOOGLE_WORKSPACE_SUBJECT` and
 `GOOGLE_WORKSPACE_CUSTOMER`, so that replaying recorded data doesn't depend
 on whatever a developer happens to have in their environment.
 
-Then scrub the recording before committing it. The recorder sanitizes GCP
-project names only, so real user ids, email addresses, names, the domain,
-the customer id, and `recoveryEmail` / `recoveryPhone` all come through and
-have to be replaced by hand. Watch for stray recordings of unrelated calls
-as well; delete any that the test doesn't need.
+Then scrub the recording before committing it, with:
+
+```bash
+python tools/c7n_gcp/tests/terraform/workspace_user_query/scrub.py
+```
+
+The recorder sanitizes GCP project names only, so everything else about real
+users comes through. Don't scrub by hand: we did that once and shipped a real
+phone number, because we checked for the fields we thought of rather than the
+fields that were there. The script replaces the domain, the super admin's
+identity, ids, etags and the customer id, and drops anything that could carry
+personal data. It fails if it sees a field it doesn't recognize, so a future
+API addition can't slip PII through unnoticed.
+
+The `test_*` local parts are kept as they are: they're already test names, and
+`test_workspace_user_state` keys off them.
+
+Watch for stray recordings of unrelated calls as well; delete any that the
+test doesn't need.
 
 Finally, change the test back to `replay_flight_data` and confirm it passes
 with no other edits.

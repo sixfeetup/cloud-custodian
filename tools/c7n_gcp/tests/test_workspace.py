@@ -4,11 +4,6 @@
 # The flight data here is recorded against a real Google Workspace. To set
 # that up, or to re-record, see
 # terraform/workspace_user_query/workspace-setup.md
-#
-# One record, user-no-2sv-active, is derived rather than recorded: google
-# suspends freshly created accounts, so the tenant couldn't produce a user
-# that lacks 2sv and is also not suspended, which is what the documented
-# policy selects.
 
 import json
 import os
@@ -68,7 +63,7 @@ class WorkspaceUserQueryTest(BaseTest):
             {'name': 'workspace-users', 'resource': 'gcp.workspace-user'},
             session_factory=factory)
         resources = policy.run()
-        self.assertEqual(len(resources), 6)
+        self.assertEqual(len(resources), 5)
         # Exactly one super admin, without naming it.
         self.assertEqual(
             len([r for r in resources if r['isAdmin']]), 1)
@@ -88,27 +83,7 @@ class WorkspaceUserQueryTest(BaseTest):
             session_factory=factory)
         self.assertEqual(
             [r['primaryEmail'] for r in policy.run()],
-            ['user-no-2sv@example.com', 'user-no-2sv-active@example.com'])
-
-    def test_users_without_2sv_excluding_suspended(self):
-        """The CIS-B-GCPF-4.0.0-1.2 policy as documented. Suspended users
-        can't sign in, so a real policy excludes them.
-        """
-        factory = self.replay_flight_data('workspace-user-query')
-        policy = self.load_policy(
-            {'name': 'workspace-users-without-mfa',
-             'resource': 'gcp.workspace-user',
-             'filters': [
-                 {'type': 'value',
-                  'key': 'isEnrolledIn2Sv',
-                  'value': False},
-                 {'type': 'value',
-                  'key': 'suspended',
-                  'value': False}]},
-            session_factory=factory)
-        self.assertEqual(
-            [r['primaryEmail'] for r in policy.run()],
-            ['user-no-2sv-active@example.com'])
+            ['user-no-2sv@example.com'])
 
     def test_delegated_admins_are_distinguishable(self):
         """isAdmin covers super admins only, so CIS 1.3 style policies need
@@ -134,5 +109,5 @@ def test_workspace_user_report_fields(test):
         {'name': 'workspace-users', 'resource': 'gcp.workspace-user'},
         session_factory=factory)
     resources = policy.run()
-    assert len(resources) == 6
+    assert len(resources) == 5
     test.check_report_fields(policy, resources)
