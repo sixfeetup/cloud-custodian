@@ -21,6 +21,20 @@ REGION_DATA_PATH = Path(__file__).parent.parent / 'regions.json'
 VERTEXAI_REGION_DATA_PATH = Path(__file__).parent.parent / 'vertexai_regions.json'
 VERTEXAI_PUBLISHER_DATA_PATH = Path(__file__).parent.parent / 'vertexai_publishers.json'
 
+# Job states a job can be cancelled from: the non-terminal JobState values.
+# The rest are either terminal (SUCCEEDED, FAILED, CANCELLED, EXPIRED,
+# PARTIALLY_SUCCEEDED) or already cancelling. The API reference doesn't
+# enumerate cancel's valid starting states, so this is derived from the
+# JobState docs:
+# https://github.com/googleapis/googleapis/blob/master/google/cloud/aiplatform/v1/job_state.proto
+CANCELLABLE_JOB_STATES = (
+    'JOB_STATE_QUEUED',
+    'JOB_STATE_PENDING',
+    'JOB_STATE_RUNNING',
+    'JOB_STATE_PAUSED',
+    'JOB_STATE_UPDATING',
+    )
+
 
 class VertexAIQueryManager(QueryResourceManager):
     """Base class for Vertex AI resources scoped to a location.
@@ -139,6 +153,9 @@ class VertexAIMethodAction(MethodAction):
 
     def process(self, resources):
         model = self.manager.resource_type
+
+        if self.attr_filter:
+            resources = self.filter_resources(resources)
 
         # Group resources by location
         resources_by_location = defaultdict(list)
@@ -948,8 +965,8 @@ class VertexAICustomJobCancel(VertexAIMethodAction):
     and incident response when jobs are running longer than expected or
     consuming unexpected resources.
 
-    **Note**: Only jobs in JOB_STATE_RUNNING or JOB_STATE_PENDING can be cancelled.
-    Completed, failed, or already cancelled jobs cannot be cancelled.
+    **Note**: Only jobs in a non-terminal state can be cancelled; jobs in any
+    other state are logged and skipped.
 
     :example:
 
@@ -978,6 +995,7 @@ class VertexAICustomJobCancel(VertexAIMethodAction):
     schema = type_schema('cancel')
     method_spec = {'op': 'cancel'}
     permissions = ('aiplatform.customJobs.cancel',)
+    attr_filter = ('state', CANCELLABLE_JOB_STATES)
 
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}
@@ -1088,9 +1106,8 @@ class VertexAIHyperparameterTuningJobCancel(VertexAIMethodAction):
     cost control and incident response when jobs are running longer than
     expected or consuming unexpected resources.
 
-    **Note**: Only jobs in JOB_STATE_RUNNING or JOB_STATE_PENDING can be
-    cancelled. Completed, failed, or already cancelled jobs cannot be
-    cancelled.
+    **Note**: Only jobs in a non-terminal state can be cancelled; jobs in any
+    other state are logged and skipped.
 
     :example:
 
@@ -1119,6 +1136,7 @@ class VertexAIHyperparameterTuningJobCancel(VertexAIMethodAction):
     schema = type_schema('cancel')
     method_spec = {'op': 'cancel'}
     permissions = ('aiplatform.hyperparameterTuningJobs.cancel',)
+    attr_filter = ('state', CANCELLABLE_JOB_STATES)
 
     def get_resource_params(self, model, resource):
         return {'name': resource['name']}

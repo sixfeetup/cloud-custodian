@@ -1732,6 +1732,27 @@ def test_vertexai_hp_tuning_job_cancel_and_delete(
         client.execute_query('get', {'name': job_name})
 
 
+@pytest.mark.parametrize(
+    'resource',
+    ['gcp.vertex-ai-custom-job', 'gcp.vertex-ai-hyperparameter-tuning-job'],
+    )
+def test_vertexai_job_cancel_skips_non_cancellable_states(test, resource):
+    """The cancel action skips jobs that aren't in a cancellable state."""
+    policy = test.load_policy(
+        {'name': 'vertexai-job-cancel',
+         'resource': resource,
+         'actions': [{'type': 'cancel'}]})
+
+    running = {'name': 'running', 'state': 'JOB_STATE_RUNNING'}
+    action = policy.resource_manager.actions[0]
+    assert action.filter_resources([
+        running,
+        {'name': 'succeeded', 'state': 'JOB_STATE_SUCCEEDED'},
+        {'name': 'cancelled', 'state': 'JOB_STATE_CANCELLED'},
+        {'name': 'cancelling', 'state': 'JOB_STATE_CANCELLING'},
+        ]) == [running]
+
+
 @terraform('vertexai_hyperparameter_tuning_job', scope='module')
 def test_vertexai_hp_tuning_job_field_filters(
         test, vertexai_hyperparameter_tuning_job, create_hp_job):
