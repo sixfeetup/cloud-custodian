@@ -7,7 +7,6 @@ from azure.mgmt.machinelearningservices.models import (ComputeInstanceProperties
                                                        AmlComputeProperties)
 
 
-# Machine Learning Workspace
 @resources.register('machine-learning-workspace')
 class MachineLearningWorkspace(ArmResourceManager):
     """Machine Learning Workspace Resource
@@ -57,7 +56,6 @@ class ComputeInstancesFilter(ListItemFilter):
         return [c.serialize(True) for c in computes]
 
 
-# Machine Learning Data Container
 @resources.register('machine-learning-data-container')
 class MachineLearningDataContainer(ChildArmResourceManager):
     """Machine Learning Data Container Resource
