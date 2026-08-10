@@ -180,3 +180,33 @@ class MachineLearningOnlineDeployment(ChildArmResourceManager):
                 'workspace_name': parent_resource['c7n:parent-id'].rstrip('/').rsplit('/', 1)[-1],
                 'endpoint_name': parent_resource['name'],
             }
+
+
+@resources.register('machine-learning-data-container')
+class MachineLearningDataContainer(ChildArmResourceManager):
+    """Machine Learning data container resource."""
+
+    class resource_type(ChildArmResourceManager.resource_type):
+        doc_groups = ['ML']
+        service = 'azure.mgmt.machinelearningservices'
+        client = 'MachineLearningServicesMgmtClient'
+        enum_spec = ('data_containers', 'list', None)
+        parent_manager_name = 'machine-learning-workspace'
+        resource_type = 'Microsoft.MachineLearningServices/workspaces/data'
+        default_report_fields = (
+            'name', 'resourceGroup', '"c7n:parent-id"', 'properties.isArchived',
+            'systemData.lastModifiedAt'
+        )
+
+        @classmethod
+        def extra_args(cls, parent_resource):
+            return {
+                'resource_group_name': parent_resource['resourceGroup'],
+                'workspace_name': parent_resource['name']
+            }
+
+    def augment(self, resources):
+        for resource in resources:
+            if 'id' in resource:
+                resource['resourceGroup'] = ResourceIdParser.get_resource_group(resource['id'])
+        return resources
