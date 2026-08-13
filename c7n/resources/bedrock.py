@@ -1100,7 +1100,53 @@ def get_bedrock_output_lifecycle(lifecycle, output_prefix, versioning=None):
 
 @BedrockEvaluationJob.filter_registry.register('output-retention')
 class BedrockEvaluationOutputRetention(ValueFilter):
-    """Filter evaluation jobs by their S3 output artifact retention."""
+    """Filter evaluation jobs by their S3 output artifact retention.
+
+    The filter resolves the S3 output URI for each job and evaluates the
+    lifecycle rules that apply to the job's artifact prefix. By default it
+    compares the earliest guaranteed expiration, in days. A job has no
+    ``EffectiveExpirationDays`` value when its artifacts are not covered by an
+    enabled, unconstrained expiration rule. For versioned buckets, both current
+    and noncurrent version expiration are required to calculate that value.
+
+    :example:
+
+    Find jobs whose output artifacts are retained for more than 30 days:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: evaluation-jobs-with-long-output-retention
+            resource: aws.bedrock-evaluation-job
+            filters:
+              - type: output-retention
+                op: greater-than
+                value: 30
+
+    :example:
+
+    Find jobs whose output artifacts have no guaranteed expiration:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: evaluation-jobs-without-output-expiration
+            resource: aws.bedrock-evaluation-job
+            filters:
+              - type: output-retention
+                value: absent
+
+    The filter annotates matched jobs with ``c7n:OutputBucket``. To evaluate
+    another output detail, specify a ``key`` beneath
+    ``c7n:BedrockEvaluationOutput``. For example, identify jobs with an
+    inaccessible output bucket or invalid output URI with:
+
+    .. code-block:: yaml
+
+        - type: output-retention
+          key: '"c7n:BedrockEvaluationOutput".Error'
+          value: present
+    """
 
     DEFAULT_KEY = '"%s".EffectiveExpirationDays' % BEDROCK_OUTPUT_ANNOTATION
 
