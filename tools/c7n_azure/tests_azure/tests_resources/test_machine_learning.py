@@ -92,7 +92,6 @@ class MachineLearningWorkspaceResourceLockFilterTest(BaseTest):
         self.assertEqual('mlwsp165red', resources[0]['name'])
 
 
-# Online endpoint resource tests
 class MachineLearningOnlineEndpointTest(BaseTest):
 
     def test_machine_learning_online_endpoint_schema_validate(self):
@@ -147,7 +146,6 @@ class MachineLearningOnlineEndpointTest(BaseTest):
         assert resources[0]['name'].startswith('cctest-ml-')
 
 
-# Online deployment resource tests
 class MachineLearningOnlineDeploymentTest(BaseTest):
 
     def test_machine_learning_online_deployment_schema_validate(self):
