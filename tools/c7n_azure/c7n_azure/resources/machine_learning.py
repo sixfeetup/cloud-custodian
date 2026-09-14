@@ -181,7 +181,27 @@ class MachineLearningOnlineDeployment(ChildArmResourceManager):
 
 @resources.register('machine-learning-data-container')
 class MachineLearningDataContainer(ChildArmResourceManager):
-    """Machine Learning data container resource."""
+    """Machine Learning data container resource.
+
+    :example:
+
+    Finds non-archived Machine Learning data containers.
+
+    .. code-block:: yaml
+
+        policies:
+            - name: find-active-machine-learning-data-containers-older-than-90-days
+              resource: azure.machine-learning-data-container
+              filters:
+                - type: value
+                  key: properties.isArchived
+                  value: false
+                - type: value
+                  key: systemData.lastModifiedAt
+                  value_type: age
+                  op: lt
+                  value: 90
+    """
 
     class resource_type(ChildArmResourceManager.resource_type):
         doc_groups = ['ML']
