@@ -7,7 +7,6 @@ from azure.mgmt.machinelearningservices.models import (ComputeInstanceProperties
                                                        AmlComputeProperties)
 
 
-# Azure Machine Learning workspace resources
 @resources.register('machine-learning-workspace')
 class MachineLearningWorkspace(ArmResourceManager):
     """Machine Learning Workspace Resource
@@ -57,7 +56,6 @@ class ComputeInstancesFilter(ListItemFilter):
         return [c.serialize(True) for c in computes]
 
 
-# Azure Machine Learning online endpoint resources
 @resources.register('machine-learning-online-endpoint')
 class MachineLearningOnlineEndpoint(ChildArmResourceManager):
     """Azure Machine Learning online endpoint resource.
@@ -130,7 +128,6 @@ class OnlineDeploymentsFilter(ListItemFilter):
         return [deployment.serialize(True) for deployment in deployments]
 
 
-# Azure Machine Learning online deployment resources
 @resources.register('machine-learning-online-deployment')
 class MachineLearningOnlineDeployment(ChildArmResourceManager):
     """Azure Machine Learning online deployment resource.
