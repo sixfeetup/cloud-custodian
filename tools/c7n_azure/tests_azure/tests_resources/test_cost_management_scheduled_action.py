@@ -64,3 +64,49 @@ class CostManagementScheduledActionTest(BaseTest):
         })
         resources = p.run()
         self.assertEqual(len(resources), 0)
+
+    def test_update_schema_validate(self):
+        p = self.load_policy({
+            'name': 'cost-management-scheduled-action-enable',
+            'resource': 'azure.cost-management-scheduled-action',
+            'actions': [{'type': 'update'}]
+        }, validate=True)
+        self.assertTrue(p)
+
+    @arm_template('cost-management-scheduled-action.json')
+    @cassette_name('enable-disabled-alert')
+    def test_z_enable_disabled_alert(self):
+        read_policy = self.load_policy({
+            'name': 'cost-management-scheduled-action-read-before-enable',
+            'resource': 'azure.cost-management-scheduled-action',
+            'filters': [
+                {
+                    'type': 'value',
+                    'key': 'name',
+                    'value': 'cctestscheduledaction'
+                }
+            ]
+        })
+
+        before = read_policy.run()
+        self.assertEqual(len(before), 1)
+        self.assertNotEqual(before[0]['properties']['status'], 'Enabled')
+
+        enable_policy = self.load_policy({
+            'name': 'cost-management-scheduled-action-enable',
+            'resource': 'azure.cost-management-scheduled-action',
+            'filters': [
+                {
+                    'type': 'value',
+                    'key': 'name',
+                    'value': 'cctestscheduledaction'
+                }
+            ],
+            'actions': [{'type': 'update'}]
+        })
+        enable_policy.run()
+        self.sleep_in_live_mode(10)
+
+        after = read_policy.run()
+        self.assertEqual(len(after), 1)
+        self.assertEqual(after[0]['properties']['status'], 'Enabled')

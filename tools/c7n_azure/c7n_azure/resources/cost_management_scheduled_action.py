@@ -5,6 +5,8 @@ import logging
 
 from azure.core.rest import HttpRequest
 
+from c7n.utils import type_schema
+from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
 from c7n_azure.query import DescribeSource, QueryResourceManager
 
@@ -108,3 +110,62 @@ class CostManagementScheduledAction(QueryResourceManager):
 
     def get_source(self, source_type):
         return CostManagementScheduledActionSource(self)
+
+
+@CostManagementScheduledAction.action_registry.register('update')
+class UpdateScheduledAction(AzureBaseAction):
+    """Enable a disabled Cost Management scheduled action (for example an
+    ``InsightAlert`` anomaly alert).
+
+    ScheduledActionsOperations.create_or_update_by_scope has the same
+    upstream SDK bug as list_by_scope (see
+    CostManagementScheduledActionSource.get_resources): it serializes its
+    `scope` path parameter without skip_quote=True, percent-encoding the
+    '/' characters and producing a malformed request. This bypasses the
+    typed operation and PUTs directly to the same subscription-scoped URL
+    get_resources lists from - resource['id'] isn't used because the API
+    doesn't consistently return it with a leading slash.
+
+    :example:
+
+    Enable disabled anomaly alerts
+
+    .. code-block:: yaml
+
+        policies:
+          - name: enable-cost-anomaly-alerts
+            resource: azure.cost-management-scheduled-action
+            filters:
+              - type: value
+                key: kind
+                value: InsightAlert
+              - type: value
+                key: properties.status
+                op: ne
+                value: Enabled
+            actions:
+              - type: update
+    """
+
+    schema = type_schema('update')
+    permissions = ('Microsoft.CostManagement/scheduledActions/write',)
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client()
+        self.subscription_id = self.manager.get_session().get_subscription_id()
+
+    def _process_resource(self, resource):
+        url = (
+            '/subscriptions/{0}/providers/Microsoft.CostManagement/scheduledActions/{1}'
+            .format(self.subscription_id, resource['name'])
+        )
+        params = {'api-version': SCHEDULED_ACTIONS_API_VERSION}
+        body = {
+            'kind': resource['kind'],
+            'properties': {**resource['properties'], 'status': 'Enabled'},
+        }
+
+        response = self.client._send_request(
+            HttpRequest('PUT', url, params=params, json=body))
+        response.raise_for_status()
+        return 'enabled'

@@ -5,6 +5,14 @@
     "startDate": {
       "type": "string",
       "defaultValue": "[utcNow('yyyy-MM-ddT00:00:00Z')]"
+    },
+    "status": {
+      "type": "string",
+      "defaultValue": "Enabled",
+      "allowedValues": [
+        "Enabled",
+        "Disabled"
+      ]
     }
   },
   "variables": {
@@ -17,7 +25,7 @@
       "kind": "InsightAlert",
       "properties": {
         "displayName": "cctestscheduledaction",
-        "status": "Enabled",
+        "status": "[parameters('status')]",
         "viewId": "[concat(subscription().id, '/providers/Microsoft.CostManagement/views/ms:DailyAnomalyByResource')]",
         "notification": {
           "to": [

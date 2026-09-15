@@ -60,3 +60,26 @@ uv run --project tools/c7n_azure pytest -p no:env \
     tools/c7n_azure/tests_azure/tests_resources/test_cost_management_scheduled_action.py::CostManagementScheduledActionTest::test_resource \
     -q
 ```
+
+### Recording `test_z_enable_disabled_alert`
+
+This test needs the scheduled action deployed *disabled*, since it exercises the
+`update` action's enable path. Deploy with the `status` parameter overridden:
+
+```bash
+az deployment sub create \
+    --location "South Central US" \
+    --name cost-management-scheduled-action \
+    --template-file tools/c7n_azure/tests_azure/templates/cost-management-scheduled-action.json \
+    --parameters status=Disabled
+```
+
+Then record against it the same way, with real `az login` credentials:
+
+```bash
+uv run --project tools/c7n_azure pytest -p no:env \
+    tools/c7n_azure/tests_azure/tests_resources/test_cost_management_scheduled_action.py::CostManagementScheduledActionTest::test_z_enable_disabled_alert \
+    -q
+```
+
+Clean up afterwards the same way described above under Cleanup.
