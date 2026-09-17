@@ -107,6 +107,7 @@ class GCPMetricsFilter(Filter):
           'reducer': {'type': 'string', 'enum': REDUCERS},
           'aligner': {'type': 'string', 'enum': ALIGNERS},
           'value': {'type': 'number'},
+          'value-type': {'type': 'string', 'enum': ['count', 'mean', 'sum']},
           'filter': {'type': 'string'},
           'missing-value': {'type': 'number'},
           'required': ('value', 'name', 'op')})
@@ -140,6 +141,7 @@ class GCPMetricsFilter(Filter):
         self.resource_metric_dict = {}
         self.op = OPERATORS[self.data.get('op', 'less-than')]
         self.value = self.data['value']
+        self.value_type = self.data.get('value-type', 'sum')
         self.filter = self.data.get('filter', '')
         self.c7n_metric_key = "%s.%s.%s" % (self.metric, self.aligner, self.reducer)
 
@@ -217,6 +219,19 @@ class GCPMetricsFilter(Filter):
             resource_name = jmespath_search(self.metric_key, m)
             self.resource_metric_dict[resource_name] = m
 
+    def get_point_value(self, value):
+        distribution = value.get('distributionValue')
+        if distribution is None:
+            return float(list(value.values())[0])
+        # count is an int64 field, serialized by the API as a string.
+        count = int(distribution['count'])
+        mean = float(distribution['mean'])
+        if self.value_type == 'count':
+            return count
+        if self.value_type == 'mean':
+            return mean
+        return count * mean
+
     def process_resource(self, resource):
         resource_metric = resource.setdefault('c7n.metrics', {})
         resource_name = self.manager.resource_type.get_metric_resource_name(
@@ -227,7 +242,8 @@ class GCPMetricsFilter(Filter):
         if metric is None:
             metric_value = self.missing_value
         else:
-            metric_value = float(list(metric["points"][0]["value"].values())[0])
+            metric_value = sum(
+                self.get_point_value(p["value"]) for p in metric["points"])
 
         resource_metric[self.c7n_metric_key] = metric
 

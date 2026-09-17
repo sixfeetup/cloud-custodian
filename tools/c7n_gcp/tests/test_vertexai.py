@@ -685,6 +685,53 @@ def test_vertexai_endpoint_metrics(test, vertexai_endpoint_metrics):
     assert resources[0]["c7n.metrics"][metric_name]["points"]
 
 
+def test_vertexai_endpoint_tuned_model_tokens_metric(test):
+    """
+    Regression test for GCPMetricsFilter failing on DISTRIBUTION-typed
+    metrics (issue #11097). Running this test in record mode is involved.
+    See the readme in
+    tests/terraform/vertexai_tuned_model_metrics/.
+    """
+    project_id = get_default_project()
+    location = "us-central1"
+    metric_type = "aiplatform.googleapis.com/tuned_model/online_serving/tokens"
+    # Matches the tunedModelDisplayName passed to tuningJobs.create in
+    # run_tuning.py when this fixture was recorded.
+    endpoint_display_name = "c7n-11097-distribution-metric-test"
+
+    session_factory = test.replay_flight_data(
+        "vertexai_endpoint_tuned_model_tokens_metric", project_id=project_id
+    )
+
+    policy = test.load_policy(
+        {
+            "name": "vertexai-endpoint-tuned-model-tokens",
+            "resource": "gcp.vertex-ai-endpoint",
+            "query": [{"location": location}],
+            "filters": [
+                {"type": "value", "key": "displayName", "value": endpoint_display_name},
+                {
+                    "type": "metrics",
+                    "name": metric_type,
+                    "aligner": "ALIGN_SUM",
+                    "days": 1,
+                    "op": "greater-than",
+                    "value": 0,
+                },
+            ],
+        },
+        session_factory=session_factory,
+    )
+
+    resources = policy.run()
+
+    assert len(resources) == 1
+    metric_name = f"{metric_type}.ALIGN_SUM.REDUCE_NONE"
+    assert metric_name in resources[0]["c7n.metrics"]
+    assert resources[0]["c7n.metrics"][metric_name] is not None
+    assert resources[0]["c7n.metrics"][metric_name]["points"]
+
+
 def test_vertexai_endpoint_filtering(test,):
     """Test filtering Vertex AI Endpoints on common fields.
 
