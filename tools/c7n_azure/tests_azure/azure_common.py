@@ -249,6 +249,15 @@ class AzureVCRBaseTest(VCRTestCase):
         body = AzureVCRBaseTest._replace_subscription_id(body)
         body = AzureVCRBaseTest._replace_storage_keys(body)
         body = AzureVCRBaseTest._replace_instrumentation_key(body)
+        body = AzureVCRBaseTest._replace_user_email(body)
+
+        for header, values in response['headers'].items():
+            response['headers'][header] = [
+                AzureVCRBaseTest._replace_tenant_id(
+                    AzureVCRBaseTest._replace_subscription_id(value)
+                )
+                for value in values
+            ]
 
         try:
             response['body']['data'] = json.loads(body)
@@ -327,12 +336,19 @@ class AzureVCRBaseTest(VCRTestCase):
     @staticmethod
     def _replace_tenant_id(s):
         prefixes = ['(/|%2F)graph.windows.net(/|%2F)',
-                    '"(t|T)enantId":\\s*"']
+                    '"(t|T)enantId":\\s*"',
+                    '"userTenantId":\\s*"',
+                    'https://sts.windows.net/']
         regex = r"(?P<prefix>(%s))" \
                 r"[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}" \
                 % '|'.join(['(%s)' % p for p in prefixes])
 
         return re.sub(regex, r"\g<prefix>" + DEFAULT_TENANT_ID, s)
+
+    @staticmethod
+    def _replace_user_email(s):
+        regex = r'(?P<prefix>"(createdBy|lastModifiedBy|userId)":\s*")[^"]+@[^"]+'
+        return re.sub(regex, r'\g<prefix>user@example.com', s)
 
     @staticmethod
     def _replace_storage_keys(s):

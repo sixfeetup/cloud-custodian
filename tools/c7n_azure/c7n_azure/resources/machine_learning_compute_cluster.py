@@ -8,6 +8,7 @@ from urllib.parse import urlsplit, urlunsplit
 import isodate
 import requests
 
+from azure.core.exceptions import HttpResponseError
 from azure.mgmt.machinelearningservices.models import (
     ClusterUpdateParameters,
     ScaleSettings,
@@ -270,13 +271,18 @@ class SetMinNodesAction(AzureBaseAction):
                 ),
             ),
         )
-        self.client.compute.begin_update(
-            resource_group_name=ResourceIdParser.get_resource_group(
-                resource['id']
-            ),
-            workspace_name=ResourceIdParser.get_resource_name(
-                resource['c7n:parent-id']
-            ),
-            compute_name=resource['name'],
-            parameters=parameters,
-        )
+        try:
+            self.client.compute.begin_update(
+                resource_group_name=ResourceIdParser.get_resource_group(
+                    resource['id']
+                ),
+                workspace_name=ResourceIdParser.get_resource_name(
+                    resource['c7n:parent-id']
+                ),
+                compute_name=resource['name'],
+                parameters=parameters,
+            )
+        except HttpResponseError as error:
+            # The service can accept updates with 202, which this SDK rejects.
+            if error.response is None or error.response.status_code != 202:
+                raise
