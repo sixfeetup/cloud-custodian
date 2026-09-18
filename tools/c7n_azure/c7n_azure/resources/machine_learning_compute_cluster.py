@@ -45,6 +45,23 @@ NONTERMINAL_STATUSES = (
 
 @resources.register('machine-learning-compute-cluster')
 class MachineLearningComputeCluster(ChildArmResourceManager):
+    """Azure Machine Learning AmlCompute cluster resource.
+
+    :example:
+
+    Find allocated AmlCompute clusters.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: machine-learning-compute-clusters-allocated
+            resource: azure.machine-learning-compute-cluster
+            filters:
+              - type: value
+                key: properties.properties.currentNodeCount
+                op: gt
+                value: 0
+    """
 
     class resource_type(ChildArmResourceManager.resource_type):
         doc_groups = ['AI + Machine Learning']
@@ -90,6 +107,24 @@ class MachineLearningComputeCluster(ChildArmResourceManager):
 
 @MachineLearningComputeCluster.filter_registry.register('inactive')
 class InactiveFilter(Filter):
+    """Find clusters with no current or recent job activity.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: machine-learning-compute-clusters-inactive
+            resource: azure.machine-learning-compute-cluster
+            filters:
+              - type: value
+                key: properties.properties.currentNodeCount
+                op: gt
+                value: 0
+              - type: inactive
+                since: 1d
+    """
+
     schema = type_schema(
         'inactive',
         required=['since'],
@@ -246,6 +281,24 @@ class InactiveFilter(Filter):
 
 @MachineLearningComputeCluster.action_registry.register('set-min-nodes')
 class SetMinNodesAction(AzureBaseAction):
+    """Set a cluster's minimum node count.
+
+    This preserves the cluster and its maximum and idle scale-down settings.
+
+    :example:
+
+    Set the minimum node count to zero.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: machine-learning-compute-clusters-set-min-nodes
+            resource: azure.machine-learning-compute-cluster
+            actions:
+              - type: set-min-nodes
+                value: 0
+    """
+
     schema = type_schema(
         'set-min-nodes',
         required=['value'],
