@@ -21,11 +21,17 @@ from c7n.utils import local_session
 from c7n_azure.session import Session
 from c7n_azure.utils import ResourceIdParser
 
-from ..azure_common import BaseTest, arm_template, cassette_name
+from ..azure_common import (
+    AzureVCRBaseTest,
+    BaseTest,
+    arm_template,
+    cassette_name,
+)
 
 
 class MachineLearningComputeClusterTest(BaseTest):
 
+    recording_resource_group = 'test_machine-learning-compute-cluster'
     parent_id = (
         '/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/'
         'resourceGroups/test-rg/providers/Microsoft.MachineLearningServices/'
@@ -206,9 +212,7 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(1, properties['scaleSettings']['minNodeCount'])
         self.assertEqual(4, properties['scaleSettings']['maxNodeCount'])
 
-    @arm_template('machine-learning-compute-cluster.json')
-    @cassette_name('machine-learning-compute-cluster-inactive')
-    def test_machine_learning_compute_cluster_inactive_policy(self):
+    def _run_inactive_policy(self, since):
         policy = self.load_policy({
             'name': 'find-inactive-machine-learning-compute-cluster',
             'resource': 'azure.machine-learning-compute-cluster',
@@ -225,12 +229,23 @@ class MachineLearningComputeClusterTest(BaseTest):
                 },
                 {
                     'type': 'inactive',
-                    'since': '1d',
+                    'since': since,
                 },
             ],
         })
+        return policy.run()
 
-        resources = policy.run()
+    @arm_template('machine-learning-compute-cluster.json')
+    @cassette_name('machine-learning-compute-cluster-inactive-current')
+    def test_machine_learning_compute_cluster_inactive_current_policy(self):
+        resources = self._run_inactive_policy('1m')
+
+        self.assertEqual([], resources)
+
+    @arm_template('machine-learning-compute-cluster.json')
+    @cassette_name('machine-learning-compute-cluster-inactive-recent')
+    def test_machine_learning_compute_cluster_inactive_recent_policy(self):
+        resources = self._run_inactive_policy('1d')
 
         self.assertEqual([], resources)
 
@@ -432,6 +447,96 @@ class MachineLearningComputeClusterTest(BaseTest):
             },
             kwargs['parameters'].serialize(),
         )
+
+    def test_recording_sanitizer_scopes_arm_resources(self):
+        test_resource = {
+            'id': (
+                f"{self.parent_id.replace('test-rg', self.recording_resource_group)}"
+                '/computes/test-cluster'
+            ),
+        }
+        unrelated_resource = {
+            'id': self.parent_id.replace(
+                'test-rg',
+                'private-resource-group',
+            ),
+        }
+        response = {
+            'body': {
+                'data': {
+                    'value': [unrelated_resource, test_resource],
+                },
+            },
+        }
+
+        self._scope_recorded_resource_group(response)
+
+        self.assertEqual([test_resource], response['body']['data']['value'])
+
+    def test_recording_sanitizer_omits_unrelated_arm_requests(self):
+        unrelated_request = Mock(
+            uri=(
+                'https://management.azure.com/subscriptions/test/'
+                'resourceGroups/private-resource-group/resources'
+            ),
+            body=None,
+            headers={},
+        )
+        test_request = Mock(
+            uri=(
+                'https://management.azure.com/subscriptions/test/'
+                f'resourceGroups/{self.recording_resource_group}/resources'
+            ),
+            body=None,
+            headers={},
+        )
+
+        self.assertIsNone(self._request_callback(unrelated_request))
+        self.assertIs(test_request, self._request_callback(test_request))
+
+    def test_recording_sanitizer_removes_run_identity_and_git_metadata(self):
+        run = {
+            'runId': 'test-run',
+            'createdBy': {'userName': 'Test User'},
+            'lastModifiedBy': {'userPuId': 'private-id'},
+            'userId': 'private-object-id',
+            'properties': {
+                'mlflow.source.git.repoURL': 'private-repository',
+                'mlflow.source.git.branch': 'private-branch',
+                'mlflow.source.git.commit': 'private-commit',
+                'azureml.git.dirty': 'True',
+                'ComputeTargetType': 'AmlCompute',
+            },
+        }
+        response = {'body': {'data': {'value': [run]}}}
+
+        AzureVCRBaseTest._response_substitutions(response)
+
+        self.assertNotIn('createdBy', run)
+        self.assertNotIn('lastModifiedBy', run)
+        self.assertNotIn('userId', run)
+        self.assertEqual(
+            {'ComputeTargetType': 'AmlCompute'},
+            run['properties'],
+        )
+
+    def test_recording_sanitizer_redacts_async_operation_signature(self):
+        url = (
+            'https://management.azure.com/computeOperationsStatus/operation-id'
+            '?api-version=2023-04-01&service=new&t=timestamp'
+            '&c=certificate&s=signature&h=hash'
+        )
+
+        sanitized = AzureVCRBaseTest._replace_async_operation_signature(url)
+
+        self.assertIn('api-version=2023-04-01', sanitized)
+        self.assertIn('service=new', sanitized)
+        self.assertIn('t=timestamp', sanitized)
+        self.assertIn('c=redacted', sanitized)
+        self.assertIn('s=redacted', sanitized)
+        self.assertIn('h=redacted', sanitized)
+        self.assertNotIn('certificate', sanitized)
+        self.assertNotIn('signature', sanitized)
 
     def test_inactive_schema_validate(self):
         policy = self.load_policy({
