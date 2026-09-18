@@ -5,12 +5,21 @@ import datetime
 import re
 from urllib.parse import urlsplit, urlunsplit
 
+import isodate
 import requests
+
+from azure.mgmt.machinelearningservices.models import (
+    ClusterUpdateParameters,
+    ScaleSettings,
+    ScaleSettingsInformation,
+)
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters.core import Filter, type_schema
+from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ChildArmResourceManager
+from c7n_azure.utils import ResourceIdParser
 
 
 WORKSPACE_DISCOVERY_URL = 'c7n:WorkspaceDiscoveryUrl'
@@ -231,4 +240,43 @@ class InactiveFilter(Filter):
         return cutoff.astimezone(datetime.timezone.utc).isoformat().replace(
             '+00:00',
             'Z',
+        )
+
+
+@MachineLearningComputeCluster.action_registry.register('set-min-nodes')
+class SetMinNodesAction(AzureBaseAction):
+    schema = type_schema(
+        'set-min-nodes',
+        required=['value'],
+        value={
+            'type': 'integer',
+            'minimum': 0,
+        },
+    )
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client()
+
+    def _process_resource(self, resource):
+        scale_settings = resource['properties']['properties']['scaleSettings']
+        parameters = ClusterUpdateParameters(
+            properties=ScaleSettingsInformation(
+                scale_settings=ScaleSettings(
+                    max_node_count=scale_settings['maxNodeCount'],
+                    min_node_count=self.data['value'],
+                    node_idle_time_before_scale_down=isodate.parse_duration(
+                        scale_settings['nodeIdleTimeBeforeScaleDown']
+                    ),
+                ),
+            ),
+        )
+        self.client.compute.begin_update(
+            resource_group_name=ResourceIdParser.get_resource_group(
+                resource['id']
+            ),
+            workspace_name=ResourceIdParser.get_resource_name(
+                resource['c7n:parent-id']
+            ),
+            compute_name=resource['name'],
+            parameters=parameters,
         )

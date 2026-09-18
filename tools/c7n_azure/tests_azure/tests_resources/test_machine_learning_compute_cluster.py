@@ -140,6 +140,90 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(1, properties['scaleSettings']['minNodeCount'])
         self.assertEqual(4, properties['scaleSettings']['maxNodeCount'])
 
+    def test_set_min_nodes_schema_validate(self):
+        policy = self.load_policy({
+            'name': 'set-machine-learning-compute-cluster-minimum-nodes',
+            'resource': 'azure.machine-learning-compute-cluster',
+            'actions': [{
+                'type': 'set-min-nodes',
+                'value': 0,
+            }],
+        }, validate=True)
+
+        self.assertTrue(policy)
+
+    def test_set_min_nodes_schema_rejects_invalid_values(self):
+        for action in (
+            {'type': 'set-min-nodes'},
+            {'type': 'set-min-nodes', 'value': -1},
+            {'type': 'set-min-nodes', 'value': 1.5},
+            {'type': 'set-min-nodes', 'value': 0, 'state': 'idle'},
+        ):
+            with self.subTest(action=action):
+                with self.assertRaises(PolicyValidationError):
+                    self.load_policy({
+                        'name': 'set-machine-learning-compute-cluster-minimum-nodes',
+                        'resource': 'azure.machine-learning-compute-cluster',
+                        'actions': [action],
+                    }, validate=True)
+
+    def test_set_min_nodes_exact_update_request(self):
+        policy = self.load_policy({
+            'name': 'set-machine-learning-compute-cluster-minimum-nodes',
+            'resource': 'azure.machine-learning-compute-cluster',
+            'actions': [{
+                'type': 'set-min-nodes',
+                'value': 0,
+            }],
+        })
+        action = policy.resource_manager.actions[0]
+        client = Mock()
+        action.manager.get_client = Mock(return_value=client)
+        cluster = {
+            'id': f'{self.parent_id}/computes/test-cluster',
+            'name': 'test-cluster',
+            'c7n:parent-id': self.parent_id,
+            'properties': {
+                'properties': {
+                    'scaleSettings': {
+                        'minNodeCount': 1,
+                        'maxNodeCount': 4,
+                        'nodeIdleTimeBeforeScaleDown': 'PT5M',
+                    },
+                },
+            },
+        }
+
+        action._prepare_processing()
+        action._process_resource(cluster)
+
+        self.assertEqual(1, client.compute.begin_update.call_count)
+        kwargs = client.compute.begin_update.call_args.kwargs
+        self.assertEqual('test-rg', kwargs['resource_group_name'])
+        self.assertEqual('test-workspace', kwargs['workspace_name'])
+        self.assertEqual('test-cluster', kwargs['compute_name'])
+        scale = kwargs['parameters'].properties.scale_settings
+        self.assertEqual(0, scale.min_node_count)
+        self.assertEqual(4, scale.max_node_count)
+        self.assertEqual(
+            datetime.timedelta(minutes=5),
+            scale.node_idle_time_before_scale_down,
+        )
+        self.assertEqual(
+            {
+                'properties': {
+                    'properties': {
+                        'scaleSettings': {
+                            'minNodeCount': 0,
+                            'maxNodeCount': 4,
+                            'nodeIdleTimeBeforeScaleDown': 'PT5M',
+                        },
+                    },
+                },
+            },
+            kwargs['parameters'].serialize(),
+        )
+
     def test_inactive_schema_validate(self):
         policy = self.load_policy({
             'name': 'inactive-machine-learning-compute-clusters',
