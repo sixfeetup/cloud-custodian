@@ -30,6 +30,13 @@ DURATION_UNITS = {
     'd': 'days',
     'w': 'weeks',
 }
+# The Run History audience is not one of the cloud's ARM endpoints.
+AML_AUDIENCES = {
+    'AzureCloud': 'https://ml.azure.com',
+    'AzureChinaCloud': 'https://ml.azure.cn',
+    'AzureUSGovernment': 'https://ml.azure.us',
+}
+# Every Run History run status except terminal Completed/Failed/Canceled.
 NONTERMINAL_STATUSES = (
     'NotStarted',
     'Starting',
@@ -40,6 +47,9 @@ NONTERMINAL_STATUSES = (
     'Finalizing',
     'CancelRequested',
     'NotResponding',
+    'Unapproved',
+    'Pausing',
+    'Paused',
 )
 
 
@@ -135,6 +145,8 @@ class InactiveFilter(Filter):
     )
 
     def validate(self):
+        # Policy-level schema validation does not enforce this filter's
+        # `required`, so a missing `since` only fails here.
         if 'since' not in self.data:
             raise PolicyValidationError("inactive filter requires 'since'")
         return self
@@ -150,34 +162,30 @@ class InactiveFilter(Filter):
             **{DURATION_UNITS[unit]: int(amount)}
         )
 
-        unresolved = []
         workspaces = {}
         for resource in resources:
-            running_nodes = resource['properties']['properties'][
-                'nodeStateCounts'
-            ]['runningNodeCount']
-            if running_nodes > 0:
+            node_counts = resource['properties'].get('properties', {}).get(
+                'nodeStateCounts',
+                {},
+            )
+            if node_counts.get('runningNodeCount', 0) > 0:
                 continue
-            unresolved.append(resource)
             workspaces.setdefault(resource['c7n:parent-id'], []).append(resource)
 
-        active_targets = {}
-        for workspace_id, workspace_resources in workspaces.items():
-            active_targets[workspace_id] = self._get_active_targets(
-                workspace_resources,
-                cutoff,
+        inactive = []
+        for workspace_resources in workspaces.values():
+            targets = self._get_active_targets(workspace_resources[0], cutoff)
+            inactive.extend(
+                resource for resource in workspace_resources
+                if resource['name'].lower() not in targets
             )
-
-        return [
-            resource for resource in unresolved
-            if resource['name'].lower()
-            not in active_targets[resource['c7n:parent-id']]
-        ]
+        return inactive
 
     def _query_history(self, url: str, body: dict) -> list[dict]:
         session = self.manager.get_session()
         session._initialize_session()
-        token = session.credentials.get_token('https://ml.azure.com/.default')
+        audience = AML_AUDIENCES[session.cloud_endpoints.name]
+        token = session.credentials.get_token(f'{audience}/.default')
         headers = {
             'Authorization': f'Bearer {token.token}',
             'Content-Type': 'application/json',
@@ -205,23 +213,13 @@ class InactiveFilter(Filter):
             request_body = dict(body)
             request_body['continuationToken'] = continuation_token
 
-    def _get_experiments(
-        self,
-        workspace: dict,
-        cutoff: datetime.datetime,
-    ) -> list[str]:
+    def _get_experiments(self, workspace: dict) -> list[str]:
         endpoint = self._get_history_endpoint(workspace)
         workspace_id = workspace['c7n:parent-id']
         url = f'{endpoint}/history/v1.0{workspace_id}/experiments:query'
-        cutoff_text = self._format_cutoff(cutoff)
-        experiments = self._query_history(url, {'viewType': 'ActiveOnly'})
-        experiments.extend(self._query_history(
-            url,
-            {
-                'viewType': 'ArchivedOnly',
-                'filter': f'archivedTime ge {cutoff_text}',
-            },
-        ))
+        # Archiving an experiment does not end its runs, so a non-terminal run
+        # can live in an experiment archived long before the cutoff.
+        experiments = self._query_history(url, {'viewType': 'All'})
 
         experiment_ids = []
         seen = set()
@@ -234,10 +232,9 @@ class InactiveFilter(Filter):
 
     def _get_active_targets(
         self,
-        resources: list[dict],
+        workspace: dict,
         cutoff: datetime.datetime,
     ) -> set[str]:
-        workspace = resources[0]
         endpoint = self._get_history_endpoint(workspace)
         workspace_id = workspace['c7n:parent-id']
         cutoff_text = self._format_cutoff(cutoff)
@@ -246,7 +243,7 @@ class InactiveFilter(Filter):
         )
         targets = set()
 
-        for experiment_id in self._get_experiments(workspace, cutoff):
+        for experiment_id in self._get_experiments(workspace):
             url = (
                 f'{endpoint}/history/v1.0{workspace_id}/experimentids/'
                 f'{experiment_id}/runs:query'
@@ -313,13 +310,15 @@ class SetMinNodesAction(AzureBaseAction):
 
     def _process_resource(self, resource):
         scale_settings = resource['properties']['properties']['scaleSettings']
+        idle_time = scale_settings.get('nodeIdleTimeBeforeScaleDown')
         parameters = ClusterUpdateParameters(
             properties=ScaleSettingsInformation(
                 scale_settings=ScaleSettings(
                     max_node_count=scale_settings['maxNodeCount'],
                     min_node_count=self.data['value'],
-                    node_idle_time_before_scale_down=isodate.parse_duration(
-                        scale_settings['nodeIdleTimeBeforeScaleDown']
+                    node_idle_time_before_scale_down=(
+                        isodate.parse_duration(idle_time)
+                        if idle_time else None
                     ),
                 ),
             ),

@@ -228,9 +228,12 @@ class AzureVCRBaseTest(VCRTestCase):
         if re.match('https://login.microsoftonline.com/([^/]+)', request.uri):
             return None
 
+        # vcrpy also runs this callback over incoming playback requests, where
+        # dropping one means "no match" and falls through to a live call.
         resource_group = self.recording_resource_group
         if (
             resource_group
+            and not self.is_playback()
             and '/resourcegroups/' in request.uri.lower()
             and f'/resourcegroups/{resource_group}/'.lower()
             not in request.uri.lower()
@@ -252,6 +255,16 @@ class AzureVCRBaseTest(VCRTestCase):
                                response['headers'].items()
                                if k.lower() not in self.FILTERED_HEADERS}
 
+        for header, values in response['headers'].items():
+            response['headers'][header] = [
+                AzureVCRBaseTest._replace_async_operation_signature(
+                    AzureVCRBaseTest._replace_tenant_id(
+                        AzureVCRBaseTest._replace_subscription_id(value)
+                    )
+                )
+                for value in values
+            ]
+
         content_type = response['headers'].get('content-type', (None,))[0]
         if not content_type or 'application/json' not in content_type:
             return response
@@ -264,20 +277,6 @@ class AzureVCRBaseTest(VCRTestCase):
         body = AzureVCRBaseTest._replace_storage_keys(body)
         body = AzureVCRBaseTest._replace_instrumentation_key(body)
         body = AzureVCRBaseTest._replace_user_email(body)
-
-        for header, values in response['headers'].items():
-            sanitized_values = [
-                AzureVCRBaseTest._replace_tenant_id(
-                    AzureVCRBaseTest._replace_subscription_id(value)
-                )
-                for value in values
-            ]
-            if header == 'azure-asyncoperation':
-                sanitized_values = [
-                    AzureVCRBaseTest._replace_async_operation_signature(value)
-                    for value in sanitized_values
-                ]
-            response['headers'][header] = sanitized_values
 
         try:
             response['body']['data'] = json.loads(body)
@@ -361,7 +360,9 @@ class AzureVCRBaseTest(VCRTestCase):
             return
 
         for run in values:
-            if not isinstance(run, dict) or 'runId' not in run:
+            if not isinstance(run, dict) or not (
+                'runId' in run or 'experimentId' in run
+            ):
                 continue
             run.pop('createdBy', None)
             run.pop('lastModifiedBy', None)
@@ -378,7 +379,12 @@ class AzureVCRBaseTest(VCRTestCase):
     @staticmethod
     def _replace_async_operation_signature(value):
         parts = urlsplit(value)
-        if 'operationsstatus/' not in parts.path.lower():
+        path = parts.path.lower()
+        if not any(
+            segment in path
+            for segment in ('operationsstatus/', 'operationstatuses/',
+                            'operationresults/')
+        ):
             return value
 
         query = parse_qsl(parts.query, keep_blank_values=True)

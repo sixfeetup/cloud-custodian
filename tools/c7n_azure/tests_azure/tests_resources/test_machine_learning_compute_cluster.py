@@ -448,6 +448,33 @@ class MachineLearningComputeClusterTest(BaseTest):
             kwargs['parameters'].serialize(),
         )
 
+    def test_set_min_nodes_keeps_unset_idle_time_unset(self):
+        action = self._load_set_min_nodes_action()
+        client = Mock()
+        action.manager.get_client = Mock(return_value=client)
+        resource = self._scale_cluster()
+        del resource['properties']['properties']['scaleSettings'][
+            'nodeIdleTimeBeforeScaleDown'
+        ]
+
+        action._prepare_processing()
+        action._process_resource(resource)
+
+        kwargs = client.compute.begin_update.call_args.kwargs
+        self.assertEqual(
+            {
+                'properties': {
+                    'properties': {
+                        'scaleSettings': {
+                            'minNodeCount': 0,
+                            'maxNodeCount': 4,
+                        },
+                    },
+                },
+            },
+            kwargs['parameters'].serialize(),
+        )
+
     def test_recording_sanitizer_scopes_arm_resources(self):
         test_resource = {
             'id': (
@@ -538,6 +565,92 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertNotIn('certificate', sanitized)
         self.assertNotIn('signature', sanitized)
 
+    def test_recording_sanitizer_redacts_operation_urls_without_json_body(self):
+        response = {
+            'headers': {
+                'azure-asyncoperation': [
+                    'https://management.azure.com/providers/Microsoft.Test/'
+                    'operationResults/operation-id?api-version=2023-04-01'
+                    '&c=certificate&s=signature&h=hash'
+                ],
+                'location': [
+                    'https://management.azure.com/providers/Microsoft.Test/'
+                    'operationStatuses/operation-id?api-version=2023-04-01'
+                    '&c=certificate&s=signature&h=hash'
+                ],
+            },
+            'body': {'string': b''},
+        }
+
+        with patch.object(self, 'is_playback', return_value=False):
+            self._response_callback(response)
+
+        for header in ('azure-asyncoperation', 'location'):
+            with self.subTest(header=header):
+                value = response['headers'][header][0]
+                self.assertIn('api-version=2023-04-01', value)
+                self.assertIn('c=redacted', value)
+                self.assertIn('s=redacted', value)
+                self.assertIn('h=redacted', value)
+                self.assertNotIn('certificate', value)
+                self.assertNotIn('signature', value)
+
+    def test_recording_sanitizer_redacts_every_operation_url_shape(self):
+        for path in (
+            'operationsStatus',
+            'operationStatuses',
+            'operationResults',
+        ):
+            with self.subTest(path=path):
+                url = (
+                    'https://management.azure.com/providers/Microsoft.Test/'
+                    f'{path}/operation-id?api-version=2023-04-01'
+                    '&c=certificate&s=signature&h=hash'
+                )
+
+                sanitized = AzureVCRBaseTest._replace_async_operation_signature(
+                    url,
+                )
+
+                self.assertIn('c=redacted', sanitized)
+                self.assertIn('s=redacted', sanitized)
+                self.assertIn('h=redacted', sanitized)
+                self.assertNotIn('certificate', sanitized)
+
+    def test_recording_sanitizer_removes_structured_experiment_identity(self):
+        experiment = {
+            'experimentId': 'test-experiment',
+            'name': 'cctest-current',
+            'createdBy': {
+                'userObjectId': 'private-object-id',
+                'userTenantId': 'private-tenant-id',
+                'userName': 'Test User',
+                'upn': 'user@private.example',
+            },
+        }
+        response = {'body': {'data': {'value': [experiment]}}}
+
+        AzureVCRBaseTest._response_substitutions(response)
+
+        self.assertNotIn('createdBy', experiment)
+        self.assertEqual('test-experiment', experiment['experimentId'])
+
+    def test_recording_sanitizer_keeps_unrelated_requests_on_playback(self):
+        unrelated_request = Mock(
+            uri=(
+                'https://management.azure.com/subscriptions/test/'
+                'resourceGroups/private-resource-group/resources'
+            ),
+            body=None,
+            headers={},
+        )
+
+        with patch.object(self, 'is_playback', return_value=True):
+            self.assertIs(
+                unrelated_request,
+                self._request_callback(unrelated_request),
+            )
+
     def test_inactive_schema_validate(self):
         policy = self.load_policy({
             'name': 'inactive-machine-learning-compute-clusters',
@@ -590,12 +703,23 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual([], resources)
         inactive_filter._get_active_targets.assert_not_called()
 
+    def test_inactive_cluster_without_node_state_counts(self):
+        inactive_filter = self._load_inactive_filter()
+        inactive_filter._get_active_targets = Mock(return_value=set())
+        cluster = self._cluster('provisioning-cluster')
+        cluster['properties'] = {}
+
+        resources = inactive_filter.process([cluster])
+
+        self.assertEqual(['provisioning-cluster'], [r['name'] for r in resources])
+
     @patch(
         'c7n_azure.resources.machine_learning_compute_cluster.requests.post',
     )
     def test_inactive_history_pagination(self, post):
         inactive_filter = self._load_inactive_filter()
         session = Mock()
+        session.cloud_endpoints.name = 'AzureCloud'
         session.credentials.get_token.return_value.token = 'test-token'
         inactive_filter.manager.get_session = Mock(return_value=session)
         first_response = Mock()
@@ -658,6 +782,7 @@ class MachineLearningComputeClusterTest(BaseTest):
     def test_inactive_history_pagination_rejects_missing_value(self, post):
         inactive_filter = self._load_inactive_filter()
         session = Mock()
+        session.cloud_endpoints.name = 'AzureCloud'
         session.credentials.get_token.return_value.token = 'test-token'
         inactive_filter.manager.get_session = Mock(return_value=session)
         response = Mock()
@@ -672,50 +797,49 @@ class MachineLearningComputeClusterTest(BaseTest):
 
         response.raise_for_status.assert_called_once_with()
 
-    def test_inactive_experiments_include_recent_archived(self):
+    @patch(
+        'c7n_azure.resources.machine_learning_compute_cluster.requests.post',
+    )
+    def test_inactive_history_audience_follows_cloud(self, post):
         inactive_filter = self._load_inactive_filter()
-        inactive_filter._query_history = Mock(side_effect=[
-            [
-                {'experimentId': 'active'},
-                {'experimentId': 'shared'},
-                {'experimentId': ''},
-            ],
-            [
-                {'experimentId': 'shared'},
-                {'experimentId': 'archived'},
-            ],
+        session = Mock()
+        inactive_filter.manager.get_session = Mock(return_value=session)
+        post.return_value.json.return_value = {'value': []}
+
+        for cloud, audience in (
+            ('AzureCloud', 'https://ml.azure.com/.default'),
+            ('AzureChinaCloud', 'https://ml.azure.cn/.default'),
+            ('AzureUSGovernment', 'https://ml.azure.us/.default'),
+        ):
+            with self.subTest(cloud=cloud):
+                session.cloud_endpoints.name = cloud
+                session.credentials.get_token.reset_mock()
+
+                inactive_filter._query_history(
+                    'https://westus.api.azureml.ms/history/v1.0/runs:query',
+                    {},
+                )
+
+                session.credentials.get_token.assert_called_once_with(audience)
+
+    def test_inactive_experiments_include_archived(self):
+        inactive_filter = self._load_inactive_filter()
+        inactive_filter._query_history = Mock(return_value=[
+            {'experimentId': 'active'},
+            {'experimentId': 'archived'},
+            {'experimentId': 'archived'},
+            {'experimentId': ''},
         ])
-        cutoff = datetime.datetime(
-            2024,
-            1,
-            2,
-            3,
-            4,
-            5,
-            tzinfo=datetime.timezone.utc,
-        )
 
-        experiments = inactive_filter._get_experiments(
-            self._cluster('cluster'),
-            cutoff,
-        )
+        experiments = inactive_filter._get_experiments(self._cluster('cluster'))
 
-        self.assertEqual(['active', 'shared', 'archived'], experiments)
+        self.assertEqual(['active', 'archived'], experiments)
         url = (
             f'https://westus.api.azureml.ms/history/v1.0{self.parent_id}/'
             'experiments:query'
         )
         self.assertEqual(
-            [
-                call(url, {'viewType': 'ActiveOnly'}),
-                call(
-                    url,
-                    {
-                        'viewType': 'ArchivedOnly',
-                        'filter': 'archivedTime ge 2024-01-02T03:04:05Z',
-                    },
-                ),
-            ],
+            [call(url, {'viewType': 'All'})],
             inactive_filter._query_history.call_args_list,
         )
 
@@ -744,7 +868,7 @@ class MachineLearningComputeClusterTest(BaseTest):
         )
 
         targets = inactive_filter._get_active_targets(
-            [self._cluster('cluster')],
+            self._cluster('cluster'),
             cutoff,
         )
 
@@ -762,6 +886,9 @@ class MachineLearningComputeClusterTest(BaseTest):
             'Finalizing',
             'CancelRequested',
             'NotResponding',
+            'Unapproved',
+            'Pausing',
+            'Paused',
         )
         status_filter = ' or '.join(
             f"status eq '{status}'" for status in statuses
@@ -817,13 +944,8 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(['idle-west'], [r['name'] for r in resources])
         self.assertEqual(2, inactive_filter._get_active_targets.call_count)
         history_calls = inactive_filter._get_active_targets.call_args_list
-        west_resources = history_calls[0].args[0]
-        east_resources = history_calls[1].args[0]
-        self.assertEqual(
-            ['active-west', 'idle-west'],
-            [r['name'] for r in west_resources],
-        )
-        self.assertEqual(['active-east'], [r['name'] for r in east_resources])
+        self.assertEqual('active-west', history_calls[0].args[0]['name'])
+        self.assertEqual('active-east', history_calls[1].args[0]['name'])
 
     def test_inactive_active_targets_use_separate_workspace_endpoints(self):
         inactive_filter = self._load_inactive_filter()
@@ -852,15 +974,15 @@ class MachineLearningComputeClusterTest(BaseTest):
         )
 
         west_targets = inactive_filter._get_active_targets(
-            [self._cluster('west-cluster')],
+            self._cluster('west-cluster'),
             cutoff,
         )
         east_targets = inactive_filter._get_active_targets(
-            [self._cluster(
+            self._cluster(
                 'east-cluster',
                 parent_id=east_parent_id,
                 discovery_url='https://eastus.api.azureml.ms/discovery',
-            )],
+            ),
             cutoff,
         )
 
