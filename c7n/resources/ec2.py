@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import base64
+from collections import defaultdict
 import itertools
 import operator
 import random
@@ -25,12 +26,14 @@ from c7n.filters import (
 from c7n.filters.offhours import OffHour, OnHour
 from c7n.filters.costhub import CostHubRecommendation
 import c7n.filters.vpc as net_filters
+import c7n.filters.iamrole as iam_filters
 
 from c7n.manager import resources
 from c7n import query, utils
 from c7n.tags import coalesce_copy_user_tags
 from c7n.utils import type_schema, filter_empty, jmespath_search, jmespath_compile, QueryParser
 
+from c7n.resources.aws import shape_validate
 from c7n.resources.iam import CheckPermissions, SpecificIamProfileManagedPolicy
 from c7n.resources.securityhub import PostFinding
 
@@ -49,6 +52,24 @@ class DescribeEC2(query.DescribeSource):
             query_params.update(q)
         return query_params
 
+    @staticmethod
+    def _flatten_reservations(reservations):
+        instances = []
+        for r in (reservations or []):
+            rid = r.get('ReservationId')
+            for i in r.get('Instances', []):
+                i['ReservationId'] = rid
+                instances.append(i)
+        return instances
+
+    def resources(self, query):
+        reservations = self.query.filter(self.manager, **query)
+        return self._flatten_reservations(reservations)
+
+    def get_resources(self, ids, cache=True):
+        reservations = self.query.get(self.manager, ids)
+        return self._flatten_reservations(reservations)
+
     def augment(self, resources):
         """EC2 API and AWOL Tags
 
@@ -63,8 +84,6 @@ class DescribeEC2(query.DescribeSource):
         name), so there isn't a good default to ensure that we will
         always get tags from describe_x calls.
         """
-        # First if we're in event based lambda go ahead and skip this,
-        # tags can't be trusted in ec2 instances immediately post creation.
         if not resources or self.manager.data.get(
                 'mode', {}).get('type', '') in (
                     'cloudtrail', 'ec2-instance-state'):
@@ -108,7 +127,7 @@ class EC2(query.QueryResourceManager):
     class resource_type(query.TypeInfo):
         service = 'ec2'
         arn_type = 'instance'
-        enum_spec = ('describe_instances', 'Reservations[].Instances[]', None)
+        enum_spec = ('describe_instances', 'Reservations[]', None)
         id = 'InstanceId'
         filter_name = 'InstanceIds'
         filter_type = 'list'
@@ -156,6 +175,68 @@ class SubnetFilter(net_filters.SubnetFilter):
 class VpcFilter(net_filters.VpcFilter):
 
     RelatedIdsExpression = "VpcId"
+
+
+@filters.register('iam-role')
+class EC2IamRoleFilter(iam_filters.IamRoleFilter):
+    """Filter EC2 instances by their IAM role attribution.
+
+    EC2 instances use IAM instance profiles which contain roles. This filter
+    resolves the role from the instance profile and allows filtering on role attributes.
+
+    :example:
+
+    Find EC2 instances with roles tagged as Production:
+
+    .. code-block:: yaml
+
+    policies:
+        - name: ec2-prod-roles
+          resource: aws.ec2
+          filters:
+            - type: iam-role
+              key: tag:Environment
+              value: Production
+    """
+
+    # Set to bypass validation, not actually used (overriden in get_related_ids)
+    RelatedIdsExpression = ""
+
+    def get_related_ids(self, resources):
+        """Override to get role names (not ARNs) from instance profiles"""
+        profile_arns = [
+            r['IamInstanceProfile']['Arn']
+            for r in resources if 'IamInstanceProfile' in r
+        ]
+        if not profile_arns:
+            return set()
+
+        # Extract profile name (last part after last /) from ARN
+        # ARN format: arn:aws:iam::123456789012:instance-profile/path/ProfileName
+        profile_names = [p.rsplit('/', 1)[-1] for p in profile_arns]
+        profiles = self.manager.get_resource_manager('iam-profile').get_resources(profile_names)
+
+        role_names = set()
+        for arn, profile in zip(profile_arns, profiles):
+            if not profile:
+                self.log.warning(f"Instance profile not found: {arn}")
+                continue
+
+            roles = profile.get('Roles', [])
+            if not roles:
+                self.log.warning(f"Instance profile has no roles: {arn}")
+                continue
+
+            # AWS enforces: Instance profile can only have 1 role
+            # Extract role name from ARN
+            role_arn = roles[0]['Arn']
+            role_name = role_arn.rsplit('/', 1)[-1]
+            role_names.add(role_name)
+
+        return role_names
+
+
+filters.register('iam-role-tag-mirror', iam_filters.IamRoleTagMirror)
 
 
 @filters.register('check-permissions')
@@ -476,6 +557,51 @@ class InstanceImage(ValueFilter, InstanceImageBase):
             # Match instead on empty skeleton?
             return False
         return self.match(image)
+
+
+@filters.register('image-metadata')
+class InstanceImageMetadataFilter(ValueFilter):
+    """Filter EC2 instances based on image metadata.
+
+    Uses describe_instance_image_metadata to fetch AMI state, deprecation
+    status, and public visibility — even for deregistered or deprecated AMIs.
+    Results are stored in the c7n:image-metadata annotation.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: ec2-deregistered-ami
+            resource: aws.ec2
+            filters:
+              - type: image-metadata
+                key: State
+                value: deregistered
+    """
+
+    schema = type_schema('image-metadata', rinherit=ValueFilter.schema)
+    schema_alias = False
+    annotation_key = 'c7n:image-metadata'
+    permissions = ('ec2:DescribeInstanceImageMetadata',)
+    batch_size = 50
+
+    def process(self, resources, event=None):
+        client = utils.local_session(self.manager.session_factory).client('ec2')
+        to_fetch = [r for r in resources if self.annotation_key not in r]
+        for resource_set in utils.chunks(to_fetch, self.batch_size):
+            self.process_resource_set(client, resource_set)
+        return [r for r in resources if self.match(r.get(self.annotation_key, {}))]
+
+    def process_resource_set(self, client, resources):
+        instance_ids = [r['InstanceId'] for r in resources]
+        results = self.manager.retry(
+            client.describe_instance_image_metadata,
+            InstanceIds=instance_ids
+        ).get('InstanceImageMetadata', [])
+        metadata_map = {item['InstanceId']: item['ImageMetadata'] for item in results}
+        for r in resources:
+            r[self.annotation_key] = metadata_map.get(r['InstanceId'], {})
 
 
 @filters.register('offhour')
@@ -2558,3 +2684,110 @@ class CapacityReservation(query.QueryResourceManager):
         filter_type = 'list'
         cfn_type = 'AWS::EC2::CapacityReservation'
         permissions_enum = ('ec2:DescribeCapacityReservations',)
+
+
+@filters.register('compute-optimizer')
+class ComputeOptimizer(ValueFilter):
+    """Filter EC2 instances based on Compute Optimizer recommendations."""
+    schema = type_schema(
+        'compute-optimizer',
+        filters={'type': 'object'},
+        **{'recommendation-preferences': {'type': 'object'}},
+        rinherit=ValueFilter.schema,
+    )
+    permissions = ('compute-optimizer:GetEC2InstanceRecommendations',)
+    required_keys = ()
+
+    @property
+    def base_req(self) -> dict:
+        """Returns the base request parameters for the API call."""
+        req = {}
+        if 'filters' in self.data:
+            req['filters'] = []
+            for k, v in self.data['filters'].items():
+                req['filters'].append({'name': k, 'values': v})
+        if 'recommendation-preferences' in self.data:
+            req['recommendationPreferences'] = self.data['recommendation-preferences']
+        return req
+
+    @property
+    def is_server_side(self) -> bool:
+        """Returns whether or not the filter is being applied server-side."""
+        return 'filters' in self.data or 'recommendation-preferences' in self.data
+
+    @property
+    def is_client_side(self) -> bool:
+        """Returns whether or not the filter is being applied client-side."""
+        return 'key' in self.data
+
+    def validate(self):
+        return shape_validate(
+            # instanceArns is added in process
+            {**self.base_req, 'instanceArns': []},
+            'GetEC2InstanceRecommendationsRequest',
+            'compute-optimizer',
+        )
+
+    def process(self, resources, event=None):
+        # Get recommendations for all resources, map to arn
+        recommendations = utils.local_session(
+            self.manager.session_factory
+        ).client(
+            'compute-optimizer'
+        ).get_ec2_instance_recommendations(
+            **self.base_req,
+            instanceArns=self.manager.get_arns(resources),
+        )['instanceRecommendations']
+        recs_by_arn = defaultdict(list)
+        for r in recommendations:
+            recs_by_arn[r['instanceArn']].append(r)
+
+        results = []
+        for r in resources:
+            recs = recs_by_arn.get(self.manager.generate_arn(r['InstanceId']), [])
+
+            # If we're filtering server-side, exclude resources that don't have any returned
+            # recommendations.
+            if self.is_server_side and not recs:
+                continue
+
+            # If we're filtering client-side, exclude resources whose recommendations don't match
+            # the filter.
+            if self.is_client_side and not any(self.match(r) for r in recs):
+                continue
+
+            r['c7n:ComputeOptimizerRecommendations'] = recs
+            results.append(r)
+
+        return results
+
+
+@resources.register('ec2-instance-ami')
+class EC2ImageMetadata(query.QueryResourceManager):
+    """Resource for EC2 instance image metadata.
+
+    Provides access to the AMI used by each running EC2 instance via
+    describe_instance_image_metadata, including image state, deprecation
+    time, and public status, even when the AMI is deregistered.
+
+    :Example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: find-instances-with-deregistered-ami
+            resource: aws.ec2-instance-ami
+            filters:
+              - type: value
+                key: ImageMetadata.State
+                value: deregistered
+    """
+
+    class resource_type(query.TypeInfo):
+        service = 'ec2'
+        arn_type = 'instance'
+        enum_spec = ('describe_instance_image_metadata', 'InstanceImageMetadata', None)
+        id = name = 'InstanceId'
+        id_prefix = 'i-'
+        filter_name = 'InstanceIds'
+        filter_type = 'list'

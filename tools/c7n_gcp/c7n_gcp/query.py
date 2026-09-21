@@ -4,6 +4,7 @@
 import json
 import itertools
 import logging
+import os
 import re
 import jmespath
 
@@ -82,8 +83,8 @@ class DescribeSource:
         method = m.enum_spec[0]
         if method == 'aggregatedList':
             method = 'list'
-        component = m.component
-        if '.' in component:
+        component = m.perm_component or m.component
+        if component and '.' in component:
             component = component.split('.')[-1]
         return ("%s.%s.%s" % (
             m.perm_service or m.service, component, method),)
@@ -228,7 +229,7 @@ class QueryResourceManager(ResourceManager, metaclass=QueryMeta):
 
     def _fetch_resources(self, query):
         try:
-            return self.augment(self.source.get_resources(query)) or []
+            return self.augment(self.source.get_resources(query) or [])
         except HttpError as e:
             error_reason, error_code, error_message = extract_errors(e)
 
@@ -336,15 +337,36 @@ class ChildResourceManager(QueryResourceManager):
         return result
 
 
+def config_regions(config):
+    """Resolve cli/programmatic region selection to explicit region names.
+
+    - config.regions is the cli's raw, repeatable '-r/--region' list.
+
+      'all' anywhere in it means every region, overriding any other
+      entries in the list.  For backward compatibility, however, if
+      'all' is present and config.region is set, then config.region is
+      used.
+
+    - config.region is a single-region value set by some callers
+      (tests, embedders).  Normally an empty string in production.
+      Lore suggests it could be set to
+      `os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')`, but that
+      seems unlikely for GCP.
+
+    Returns () when nothing explicit was given, meaning "no filter".
+    """
+    if config.regions and 'all' not in config.regions:
+        return tuple(config.regions)
+    elif config.region and config.region != os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'):
+        return (config.region,)
+    return ()
+
+
 class RegionalResourceManager(ChildResourceManager):
 
     def get_parent_resource_query(self):
-        query = None
-        if self.config.regions and 'all' not in self.config.regions:
-            query = [{'name': r} for r in self.config.regions]
-        elif self.config.region:
-            query = [{'name': self.config.region}]
-        return query
+        regions = config_regions(self.config)
+        return [{'name': r} for r in regions] if regions else None
 
 
 class TypeMeta(type):
@@ -378,6 +400,7 @@ class TypeInfo(metaclass=TypeMeta):
     # for get methods that require the full event payload
     get_requires_event = False
     perm_service = None
+    perm_component = None
     permissions = ()
 
     labels = False

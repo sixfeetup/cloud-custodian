@@ -13,6 +13,7 @@ from c7n import policy, manager
 from c7n.config import Config
 from c7n.provider import clouds
 from c7n.exceptions import ResourceLimitExceeded, PolicyValidationError
+from c7n.filters.policystatement import HasStatementFilter
 from c7n.resources import aws, load_available
 from c7n.resources.aws import AWS, Arn, fake_session
 from c7n.resources.ec2 import EC2
@@ -205,8 +206,9 @@ class PolicyMetaLint(BaseTest):
         overrides = overrides.difference(
             {'account', 's3', 'hostedzone', 'log-group', 'rest-api', 'redshift-snapshot',
              'rest-stage', 'codedeploy-app', 'codedeploy-group', 'fis-template', 'dlm-policy',
-             'apigwv2', 'apigwv2-stage', 'lexv2-bot-alias', 'apigw-domain-name', 'fis-experiment',
-             'launch-template-version', 'glue-table', 'glue-catalog', 'cloudwatch-synthetics'})
+             'apigwv2', 'apigwv2-route', 'apigwv2-stage', 'lexv2-bot-alias', 'apigw-domain-name',
+             'fis-experiment', 'launch-template-version', 'glue-table', 'glue-catalog',
+             'cloudwatch-synthetics'})
         if overrides:
             raise ValueError("unknown arn overrides in %s" % (", ".join(overrides)))
 
@@ -269,6 +271,8 @@ class PolicyMetaLint(BaseTest):
 
         whitelist = set(('AwsS3Object', 'Container'))
         todo = set((
+            # q2 2026
+            'AzureResource',
             # q2 2025
             'CodeRepository',
             # q4 2023,
@@ -468,7 +472,6 @@ class PolicyMetaLint(BaseTest):
             "AWS::AppConfig::ExtensionAssociation",
             "AWS::AppIntegrations::Application",
             "AWS::AppSync::ApiCache",
-            "AWS::Bedrock::Guardrail",
             "AWS::Bedrock::KnowledgeBase",
             "AWS::Connect::Rule",
             "AWS::Connect::User",
@@ -653,7 +656,6 @@ class PolicyMetaLint(BaseTest):
             'AWS::EventSchemas::RegistryPolicy',
             'AWS::EventSchemas::Schema',
             'AWS::Events::Archive',
-            'AWS::Events::Connection',
             'AWS::Events::Endpoint',
             'AWS::FraudDetector::EntityType',
             'AWS::FraudDetector::Label',
@@ -884,6 +886,7 @@ class PolicyMetaLint(BaseTest):
             'rrset',
             'redshift-reserved',
             'elasticsearch-reserved',
+            'opensearch-reserved',
             'ses-receipt-rule-set',
             'iam-access-key',
         ))
@@ -988,7 +991,8 @@ class PolicyMetaLint(BaseTest):
             'snowball-cluster', 'snowball', 'ssm-activation',
             'healthcheck', 'event-rule-target', 'log-metric',
             'support-case', 'transit-attachment', 'config-recorder',
-            'apigw-domain-name', 'backup-job', 'quicksight-account', 'codedeploy-config'}
+            'apigw-domain-name', 'backup-job', 'quicksight-account', 'codedeploy-config',
+            'cleanrooms-collaboration-member', 's3files-mount-target'}
 
         missing_method = []
         for k, v in manager.resources.items():
@@ -1147,6 +1151,49 @@ class PolicyMetaLint(BaseTest):
                 "Deprecation validation issues with \n\t%s" %
                 "\n\t".join(sorted(issues))
             )
+
+
+class PolicyStatementTest(BaseTest):
+
+    def get_filter(self, statements):
+        f = HasStatementFilter(
+            {'type': 'has-statement', 'statements': statements}, None)
+        f.get_std_format_args = lambda resource: {}
+        return f
+
+    def test_has_statement_condition_keys_case_insensitive(self):
+        resource = {
+            'Policy': json.dumps({
+                'Statement': [{
+                    'Effect': 'Allow',
+                    'Condition': {
+                        'Bool': {
+                            'aws:SECURETRANSPORT': 'true',
+                            'elasticfilesystem:ACCESSEDVIAMOUNTTARGET': 'true'}}
+                }]})}
+        f = self.get_filter([{
+            'Effect': 'Allow',
+            'Condition': {
+                'Bool': {
+                    'aws:SecureTransport': 'true',
+                    'elasticfilesystem:AccessedViaMountTarget': 'true'}}}])
+
+        self.assertIsNotNone(f.process_resource(resource))
+
+    def test_has_statement_partial_condition_keys_case_insensitive(self):
+        resource = {
+            'Policy': json.dumps({
+                'Statement': [{
+                    'Effect': 'Allow',
+                    'Condition': {
+                        'StringNotLike': {'AWS:SourceArn': 'arn:aws:s3:::example'}}}]})}
+        f = self.get_filter([{
+            'Effect': 'Allow',
+            'Condition': {
+                'StringNotLike': {'aws:sourcearn': 'arn:aws:s3:::example'}},
+            'PartialMatch': 'Condition'}])
+
+        self.assertIsNotNone(f.process_resource(resource))
 
 
 class PolicyMeta(BaseTest):
