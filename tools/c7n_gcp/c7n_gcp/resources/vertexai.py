@@ -859,15 +859,16 @@ class VertexAIEvaluationRun(VertexAIQueryManager):
 
     def augment(self, resources):
         session = local_session(self.session_factory)
-        results = []
-        for r in resources:
-            name = r['name']
+
+        def _get(r):
             location = self.resource_type._get_location(r)
             client = self.get_location_client(session, location, self.resource_type.component)
-            detail = client.execute_query('get', verb_arguments={'name': name})
+            detail = client.execute_query('get', verb_arguments={'name': r['name']})
             r.update(detail)
-            results.append(r)
-        return results
+            return r
+
+        with self.executor_factory(max_workers=2) as w:
+            return list(w.map(_get, resources))
 
 
 @resources.register('vertex-ai-batch-prediction-job')
