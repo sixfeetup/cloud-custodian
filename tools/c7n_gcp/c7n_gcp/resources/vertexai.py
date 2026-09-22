@@ -862,7 +862,7 @@ class VertexAIEvaluationRun(VertexAIQueryManager):
         results = []
         for r in resources:
             name = r['name']
-            location = name.split('/')[3]
+            location = self.resource_type._get_location(r)
             client = self.get_location_client(session, location, self.resource_type.component)
             detail = client.execute_query('get', verb_arguments={'name': name})
             r.update(detail)
