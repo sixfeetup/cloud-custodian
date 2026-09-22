@@ -11,9 +11,11 @@ import yaml
 
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
+from c7n_gcp.filters.metrics import GCPMetricsFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import (
     config_regions, QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo)
+from c7n_gcp.utils import filter_tree_has_key
 
 
 REGION_DATA_PATH = Path(__file__).parent.parent / 'regions.json'
@@ -826,17 +828,12 @@ class VertexAIEvaluationRun(VertexAIQueryManager):
         urn_component = 'evaluation-run'
 
     def _needs_completion_time(self):
-        """Return True if any filter in the policy references completionTime."""
-        for f in self.data.get('filters', []):
-            if isinstance(f, dict):
-                if f.get('key') == 'completionTime':
-                    return True
-                for sub in f.values():
-                    if isinstance(sub, list):
-                        for item in sub:
-                            if isinstance(item, dict) and item.get('key') == 'completionTime':
-                                return True
-        return False
+        return filter_tree_has_key(self.data.get('filters', []), 'completionTime')
+
+    def get_cache_key(self, query):
+        key = super().get_cache_key(query)
+        key['completionTime_augment'] = self._needs_completion_time()
+        return key
 
     def _fetch_resources(self, query):
         resources = super()._fetch_resources(query)
