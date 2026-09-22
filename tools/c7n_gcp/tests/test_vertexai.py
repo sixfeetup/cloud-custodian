@@ -731,7 +731,7 @@ def test_vertexai_publisher_model_metrics(test):
 def test_vertexai_endpoint_metrics_invalid_metric_key(test):
     with pytest.raises(
         FilterValidationError,
-        match="only supports metric-key 'resource.labels.endpoint_id'",
+        match="metric-key 'metric.labels.deployed_model_id' not supported",
     ):
         test.load_policy({
             'name': 'vertexai-endpoint-invalid-metric-key',

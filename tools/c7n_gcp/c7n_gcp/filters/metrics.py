@@ -113,10 +113,16 @@ class GCPMetricsFilter(Filter):
     permissions = ("monitoring.timeSeries.list",)
 
     def validate(self):
-        if not self.data.get('metric-key') and \
-           not hasattr(self.manager.resource_type, 'metric_key'):
+        metric_key = self.data.get('metric-key')
+        if not metric_key and not hasattr(self.manager.resource_type, 'metric_key'):
             raise FilterValidationError("metric-key not defined for resource %s,"
             "so must be provided in the policy" % (self.manager.type))
+
+        supported_metric_keys = self.manager.resource_type.supported_metric_keys
+        if metric_key and supported_metric_keys and metric_key not in supported_metric_keys:
+            raise FilterValidationError(
+                "metric-key '%s' not supported for resource %s, supported keys: %s" % (
+                    metric_key, self.manager.type, ', '.join(supported_metric_keys)))
 
         return self
 
