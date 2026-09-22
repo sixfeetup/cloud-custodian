@@ -16,7 +16,6 @@ from c7n_gcp.resources.resourcemanager import (
 from gcp_common import BaseTest
 
 from c7n.exceptions import ResourceLimitExceeded
-from c7n.testing import C7N_FUNCTIONAL
 
 
 class LimitsTest(BaseTest):
@@ -925,12 +924,10 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
                         return set(lc.get('exemptedMembers', []))
         return set()
 
-    if C7N_FUNCTIONAL:
-        factory = test.record_flight_data(
-            'project-set-iam-policy-audit-configs', project_id=project_id)
-    else:
-        factory = test.replay_flight_data(
-            'project-set-iam-policy-audit-configs', project_id=project_id)
+    factory = test.replay_flight_data(
+        'project-set-iam-policy-audit-configs',
+        project_id=project_id,
+    )
     policy1 = test.load_policy(
         {
             'name': 'add-audit-configs',
