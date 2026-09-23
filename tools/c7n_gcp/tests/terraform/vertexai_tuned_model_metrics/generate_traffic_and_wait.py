@@ -13,6 +13,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 import google.auth
+import requests
 from google.auth.transport.requests import AuthorizedSession
 
 LOCATION = "us-central1"
@@ -29,20 +30,29 @@ def generate_traffic(session, endpoint, calls=5):
 
 def wait_for_metric(session, project_id, endpoint_id, timeout=1800, interval=30):
     url = f"https://monitoring.googleapis.com/v3/projects/{project_id}/timeSeries"
-    now = datetime.now(timezone.utc).replace(microsecond=0)
-    params = {
-        "filter": (
-            f'metric.type = "{METRIC_TYPE}" AND '
-            f'resource.labels.endpoint_id = "{endpoint_id}"'
-        ),
-        "interval.startTime": (now - timedelta(hours=6)).isoformat(),
-        "interval.endTime": now.isoformat(),
-        "view": "FULL",
-    }
     deadline = time.time() + timeout
     while True:
-        resp = session.get(url, params=params, timeout=30)
-        resp.raise_for_status()
+        # Recompute the window every poll. A window fixed before the loop
+        # ends in the past, and the point this waits for lands after it.
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        params = {
+            "filter": (
+                f'metric.type = "{METRIC_TYPE}" AND '
+                f'resource.labels.endpoint_id = "{endpoint_id}"'
+            ),
+            "interval.startTime": (now - timedelta(hours=6)).isoformat(),
+            "interval.endTime": now.isoformat(),
+            "view": "FULL",
+        }
+        try:
+            resp = session.get(url, params=params, timeout=30)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"poll failed, retrying: {e}", file=sys.stderr)
+            if time.time() >= deadline:
+                raise
+            time.sleep(interval)
+            continue
         if resp.json().get("timeSeries"):
             return
         if time.time() >= deadline:

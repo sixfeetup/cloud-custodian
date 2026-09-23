@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from gcp_common import BaseTest
 from c7n_gcp.filters.metrics import GCPMetricsFilter
-from c7n.exceptions import PolicyValidationError
+from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 
 
 class TestGCPMetricsFilter(BaseTest):
@@ -356,6 +356,46 @@ class TestGCPMetricsFilter(BaseTest):
             {"value": {"distributionValue": {"count": "1", "mean": 4.0}}},
         ]
         self.assertTrue(self._process_resource(metric_filter, points))
+
+    def test_distribution_value_omits_count_and_mean(self):
+        # Proto3 JSON drops a field set to its default, so an alignment period
+        # that recorded no samples arrives with neither count nor mean.
+        policy = self.load_policy({
+            "name": "test_distribution_value",
+            "resource": "gcp.instance"})
+        metric_filter = GCPMetricsFilter({
+            'type': 'metrics',
+            'name': 'aiplatform.googleapis.com/tuned_model/online_serving/tokens',
+            'metric-key': 'metric.labels.instance_name',
+            'value': 0.0,
+            'op': 'equal'}, manager=policy.resource_manager)
+        points = [{"value": {"distributionValue": {
+            "bucketOptions": {"exponentialBuckets": {
+                "numFiniteBuckets": 17, "growthFactor": 2, "scale": 1}}}}}]
+        self.assertTrue(self._process_resource(metric_filter, points))
+
+    def test_multiple_timeseries_per_resource_raises(self):
+        # A metric label such as type=input/output splits one resource across
+        # several series, and picking one of them is the policy author's call.
+        policy = self.load_policy({
+            "name": "test_multiple_timeseries",
+            "resource": "gcp.instance"})
+        metric_filter = GCPMetricsFilter({
+            'type': 'metrics',
+            'name': 'aiplatform.googleapis.com/tuned_model/online_serving/tokens',
+            'metric-key': 'metric.labels.instance_name',
+            'value': 10.0,
+            'op': 'equal'}, manager=policy.resource_manager)
+        metric_filter.process([])
+        series = [
+            {"metric": {"labels": {"instance_name": "test-instance", "type": "input"}},
+             "points": [{"value": {"distributionValue": {"count": "5", "mean": 7.0}}}]},
+            {"metric": {"labels": {"instance_name": "test-instance", "type": "output"}},
+             "points": [{"value": {"distributionValue": {"count": "5", "mean": 49.6}}}]},
+        ]
+        with self.assertRaises(PolicyExecutionError) as cm:
+            metric_filter.split_by_resource(series)
+        self.assertIn("multiple timeSeries for test-instance", str(cm.exception))
 
 
 class TestSecurityComandCenterFindingsFilter(BaseTest):

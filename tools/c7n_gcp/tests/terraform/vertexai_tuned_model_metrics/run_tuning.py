@@ -11,10 +11,12 @@ the target project's default Vertex AI staging bucket.
 """
 import argparse
 import json
+import pathlib
 import sys
 import time
 
 import google.auth
+import requests
 from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
 
@@ -23,13 +25,15 @@ LOCATION = "us-central1"
 # provisioning a new one.
 STAGING_BUCKET = "cloud-ai-platform-f4ead793-49a4-4a9e-89cf-4c77b2b61452"
 TRAINING_DATA_BLOB = "c7n-11097-tuning/training_data.jsonl"
+# Resolved against this file so the script runs from any directory.
+TRAINING_DATA_FILE = pathlib.Path(__file__).parent / "training_data.jsonl"
 
 
 def upload_training_data(project_id):
     client = storage.Client(project=project_id)
     bucket = client.bucket(STAGING_BUCKET)
     blob = bucket.blob(TRAINING_DATA_BLOB)
-    blob.upload_from_filename("training_data.jsonl")
+    blob.upload_from_filename(str(TRAINING_DATA_FILE))
     return f"gs://{STAGING_BUCKET}/{TRAINING_DATA_BLOB}"
 
 
@@ -62,8 +66,18 @@ def poll_tuning_job(session, job_name, timeout=3600, interval=30):
     url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/{job_name}"
     deadline = time.time() + timeout
     while True:
-        resp = session.get(url, timeout=30)
-        resp.raise_for_status()
+        # A dropped read costs the whole job otherwise: the tuning job keeps
+        # running server-side, but the caller loses the endpoint name it
+        # needs to use and to clean up.
+        try:
+            resp = session.get(url, timeout=30)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"poll failed, retrying: {e}", file=sys.stderr)
+            if time.time() >= deadline:
+                raise
+            time.sleep(interval)
+            continue
         job = resp.json()
         state = job.get("state")
         print(f"tuning job state: {state}", file=sys.stderr)
