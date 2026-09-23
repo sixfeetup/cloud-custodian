@@ -118,13 +118,13 @@ pytest tools/c7n_gcp/tests/test_vertexai.py::test_vertexai_endpoint_tuned_model_
     -s -p no:env
 ```
 
-   `-p no:env` and both variables are what make recording reach real GCP.
-   The repository's `test.env`, which `pytest-env` loads from
-   `[tool.pytest_env]`, pins `GOOGLE_APPLICATION_CREDENTIALS` to the dummy
-   `tools/c7n_gcp/tests/data/credentials.json` and `GOOGLE_CLOUD_PROJECT`
-   to `custodian-1291`. Those settings override the shell, so a recording
-   run without `-p no:env` fails its token refresh with `invalid_client:
-   The OAuth client was not found`.
+   `-p no:env` is the override `docs/source/developer/tests.rst`
+   documents for recording live interactions. Without it, `test.env` pins
+   `GOOGLE_APPLICATION_CREDENTIALS` to the dummy
+   `tools/c7n_gcp/tests/data/credentials.json`, and the run fails its
+   token refresh with `invalid_client: The OAuth client was not found`.
+   A local `.env`, which git ignores, overrides the same variables for
+   every run instead of one.
 
    Change one call per run. `record_flight_data` deletes its target
    directory before recording, so pointing it at a flight you didn't
