@@ -6,7 +6,6 @@ import re
 from urllib.parse import urlsplit, urlunsplit
 
 import isodate
-import requests
 
 from azure.core.exceptions import HttpResponseError
 from azure.mgmt.machinelearningservices.models import (
@@ -17,6 +16,7 @@ from azure.mgmt.machinelearningservices.models import (
 
 from c7n.exceptions import PolicyValidationError
 from c7n.filters.core import Filter, type_schema
+from c7n_azure import utils
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ChildArmResourceManager
@@ -182,20 +182,21 @@ class InactiveFilter(Filter):
         return inactive
 
     def _query_history(self, url: str, body: dict) -> list[dict]:
-        session = self.manager.get_session()
-        session._initialize_session()
-        audience = AML_AUDIENCES[session.cloud_endpoints.name]
-        token = session.credentials.get_token(f'{audience}/.default')
-        headers = {
-            'Authorization': f'Bearer {token.token}',
-            'Content-Type': 'application/json',
-        }
+        azure_session = self.manager.get_session()
+        audience = AML_AUDIENCES[azure_session.cloud_endpoints.name]
+        session = utils.requests_session(
+            azure_session,
+            token_scope=f'{audience}/.default',
+            max_retries=3,
+            allowed_methods=('POST',),
+        )
+        headers = {'Content-Type': 'application/json'}
         params = {'api-version': '2023-10-01'}
         values = []
         request_body = dict(body)
 
         while True:
-            response = requests.post(
+            response = session.post(
                 url,
                 headers=headers,
                 params=params,

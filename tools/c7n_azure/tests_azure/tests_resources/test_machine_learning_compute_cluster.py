@@ -714,14 +714,13 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(['provisioning-cluster'], [r['name'] for r in resources])
 
     @patch(
-        'c7n_azure.resources.machine_learning_compute_cluster.requests.post',
+        'c7n_azure.resources.machine_learning_compute_cluster.utils.requests_session',
     )
-    def test_inactive_history_pagination(self, post):
+    def test_inactive_history_pagination(self, requests_session):
         inactive_filter = self._load_inactive_filter()
-        session = Mock()
-        session.cloud_endpoints.name = 'AzureCloud'
-        session.credentials.get_token.return_value.token = 'test-token'
-        inactive_filter.manager.get_session = Mock(return_value=session)
+        azure_session = Mock()
+        azure_session.cloud_endpoints.name = 'AzureCloud'
+        inactive_filter.manager.get_session = Mock(return_value=azure_session)
         first_response = Mock()
         first_response.json.return_value = {
             'value': [{'experimentId': 'first'}],
@@ -732,7 +731,8 @@ class MachineLearningComputeClusterTest(BaseTest):
             'value': [{'experimentId': 'second'}],
             'continuationToken': None,
         }
-        post.side_effect = [first_response, second_response]
+        http = requests_session.return_value
+        http.post.side_effect = [first_response, second_response]
         url = 'https://westus.api.azureml.ms/history/v1.0/experiments:query'
 
         values = inactive_filter._query_history(
@@ -744,50 +744,51 @@ class MachineLearningComputeClusterTest(BaseTest):
             [{'experimentId': 'first'}, {'experimentId': 'second'}],
             values,
         )
-        session._initialize_session.assert_called_once_with()
-        session.credentials.get_token.assert_called_once_with(
-            'https://ml.azure.com/.default',
+        requests_session.assert_called_once_with(
+            azure_session,
+            token_scope='https://ml.azure.com/.default',
+            max_retries=3,
+            allowed_methods=('POST',),
         )
-        self.assertEqual(2, post.call_count)
+        self.assertEqual(2, http.post.call_count)
         self.assertEqual(
             {'api-version': '2023-10-01'},
-            post.call_args_list[0].kwargs['params'],
+            http.post.call_args_list[0].kwargs['params'],
         )
         self.assertEqual(
             {'viewType': 'ActiveOnly'},
-            post.call_args_list[0].kwargs['json'],
+            http.post.call_args_list[0].kwargs['json'],
         )
         self.assertEqual(
             {
                 'viewType': 'ActiveOnly',
                 'continuationToken': 'next-page',
             },
-            post.call_args_list[1].kwargs['json'],
+            http.post.call_args_list[1].kwargs['json'],
         )
-        for post_call in post.call_args_list:
+        for post_call in http.post.call_args_list:
             self.assertEqual(30, post_call.kwargs['timeout'])
             self.assertEqual(
-                {
-                    'Authorization': 'Bearer test-token',
-                    'Content-Type': 'application/json',
-                },
+                {'Content-Type': 'application/json'},
                 post_call.kwargs['headers'],
             )
         first_response.raise_for_status.assert_called_once_with()
         second_response.raise_for_status.assert_called_once_with()
 
     @patch(
-        'c7n_azure.resources.machine_learning_compute_cluster.requests.post',
+        'c7n_azure.resources.machine_learning_compute_cluster.utils.requests_session',
     )
-    def test_inactive_history_pagination_rejects_missing_value(self, post):
+    def test_inactive_history_pagination_rejects_missing_value(
+        self,
+        requests_session,
+    ):
         inactive_filter = self._load_inactive_filter()
-        session = Mock()
-        session.cloud_endpoints.name = 'AzureCloud'
-        session.credentials.get_token.return_value.token = 'test-token'
-        inactive_filter.manager.get_session = Mock(return_value=session)
+        azure_session = Mock()
+        azure_session.cloud_endpoints.name = 'AzureCloud'
+        inactive_filter.manager.get_session = Mock(return_value=azure_session)
         response = Mock()
         response.json.return_value = {}
-        post.return_value = response
+        requests_session.return_value.post.return_value = response
 
         with self.assertRaises(TypeError):
             inactive_filter._query_history(
@@ -798,13 +799,15 @@ class MachineLearningComputeClusterTest(BaseTest):
         response.raise_for_status.assert_called_once_with()
 
     @patch(
-        'c7n_azure.resources.machine_learning_compute_cluster.requests.post',
+        'c7n_azure.resources.machine_learning_compute_cluster.utils.requests_session',
     )
-    def test_inactive_history_audience_follows_cloud(self, post):
+    def test_inactive_history_audience_follows_cloud(self, requests_session):
         inactive_filter = self._load_inactive_filter()
-        session = Mock()
-        inactive_filter.manager.get_session = Mock(return_value=session)
-        post.return_value.json.return_value = {'value': []}
+        azure_session = Mock()
+        inactive_filter.manager.get_session = Mock(return_value=azure_session)
+        requests_session.return_value.post.return_value.json.return_value = {
+            'value': [],
+        }
 
         for cloud, audience in (
             ('AzureCloud', 'https://ml.azure.com/.default'),
@@ -812,15 +815,20 @@ class MachineLearningComputeClusterTest(BaseTest):
             ('AzureUSGovernment', 'https://ml.azure.us/.default'),
         ):
             with self.subTest(cloud=cloud):
-                session.cloud_endpoints.name = cloud
-                session.credentials.get_token.reset_mock()
+                azure_session.cloud_endpoints.name = cloud
+                requests_session.reset_mock()
 
                 inactive_filter._query_history(
                     'https://westus.api.azureml.ms/history/v1.0/runs:query',
                     {},
                 )
 
-                session.credentials.get_token.assert_called_once_with(audience)
+                requests_session.assert_called_once_with(
+                    azure_session,
+                    token_scope=audience,
+                    max_retries=3,
+                    allowed_methods=('POST',),
+                )
 
     def test_inactive_experiments_include_archived(self):
         inactive_filter = self._load_inactive_filter()
