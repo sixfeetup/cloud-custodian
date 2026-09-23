@@ -5,6 +5,8 @@ import datetime
 import time
 from unittest.mock import call, Mock, patch
 
+import requests
+
 from azure.core.exceptions import HttpResponseError
 from azure.mgmt.machinelearningservices.models import (
     AmlCompute,
@@ -926,6 +928,36 @@ class MachineLearningComputeClusterTest(BaseTest):
             ],
             inactive_filter._query_history.call_args_list,
         )
+
+    def test_inactive_skips_workspace_on_request_failure(self):
+        inactive_filter = self._load_inactive_filter()
+        inactive_filter._get_active_targets = Mock(side_effect=[
+            requests.RequestException('Run History unavailable'),
+            {'active-east'},
+        ])
+        east_parent_id = self.parent_id.replace(
+            'test-workspace',
+            'east-workspace',
+        )
+        clusters = [
+            self._cluster('idle-west'),
+            self._cluster(
+                'active-east',
+                parent_id=east_parent_id,
+                discovery_url='https://eastus.api.azureml.ms/discovery',
+            ),
+            self._cluster(
+                'idle-east',
+                parent_id=east_parent_id,
+                discovery_url='https://eastus.api.azureml.ms/discovery',
+            ),
+        ]
+
+        with self.assertLogs(inactive_filter.log, level='WARNING') as logs:
+            resources = inactive_filter.process(clusters)
+
+        self.assertEqual(['idle-east'], [r['name'] for r in resources])
+        self.assertIn(self.parent_id, logs.output[0])
 
     def test_inactive_workspace_cache(self):
         inactive_filter = self._load_inactive_filter()

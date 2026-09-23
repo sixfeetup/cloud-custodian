@@ -6,6 +6,7 @@ import re
 from urllib.parse import urlsplit, urlunsplit
 
 import isodate
+import requests
 
 from azure.core.exceptions import HttpResponseError
 from azure.mgmt.machinelearningservices.models import (
@@ -174,7 +175,16 @@ class InactiveFilter(Filter):
 
         inactive = []
         for workspace_resources in workspaces.values():
-            targets = self._get_active_targets(workspace_resources[0], cutoff)
+            workspace = workspace_resources[0]
+            try:
+                targets = self._get_active_targets(workspace, cutoff)
+            except requests.RequestException as error:
+                self.log.warning(
+                    'Run History query failed for workspace %s: %s',
+                    workspace['c7n:parent-id'],
+                    error,
+                )
+                continue
             inactive.extend(
                 resource for resource in workspace_resources
                 if resource['name'].lower() not in targets
