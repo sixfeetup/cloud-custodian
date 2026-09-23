@@ -109,10 +109,9 @@ class MachineLearningComputeCluster(ChildArmResourceManager):
             resource for resource in resources
             if resource['properties']['computeType'] == 'AmlCompute'
         ]
+        discovery_url = parent_resource['properties'].get('discoveryUrl')
         for cluster in clusters:
-            cluster[WORKSPACE_DISCOVERY_URL] = (
-                parent_resource['properties']['discoveryUrl']
-            )
+            cluster[WORKSPACE_DISCOVERY_URL] = discovery_url
         return clusters
 
 
@@ -176,6 +175,12 @@ class InactiveFilter(Filter):
         inactive = []
         for workspace_resources in workspaces.values():
             workspace = workspace_resources[0]
+            if not workspace.get(WORKSPACE_DISCOVERY_URL):
+                self.log.warning(
+                    'Workspace %s has no discovery URL; skipping inactivity check',
+                    workspace['c7n:parent-id'],
+                )
+                continue
             try:
                 targets = self._get_active_targets(workspace, cutoff)
             except requests.RequestException as error:

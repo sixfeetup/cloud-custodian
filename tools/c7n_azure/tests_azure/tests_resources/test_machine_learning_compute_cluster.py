@@ -3,7 +3,7 @@
 
 import datetime
 import time
-from unittest.mock import call, Mock, patch
+from unittest.mock import ANY, call, Mock, patch
 
 import requests
 
@@ -213,6 +213,33 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(1, properties['nodeStateCounts']['runningNodeCount'])
         self.assertEqual(1, properties['scaleSettings']['minNodeCount'])
         self.assertEqual(4, properties['scaleSettings']['maxNodeCount'])
+
+    def test_child_query_defaults_missing_discovery_url(self):
+        policy = self.load_policy({
+            'name': 'machine-learning-compute-clusters',
+            'resource': 'azure.machine-learning-compute-cluster',
+        })
+        cluster = {
+            'name': 'test-cluster',
+            'properties': {'computeType': 'AmlCompute'},
+        }
+        parent = {
+            'name': 'test-workspace',
+            'resourceGroup': 'test-rg',
+            'properties': {},
+        }
+
+        with patch(
+            'c7n_azure.resources.arm.ChildArmResourceManager.'
+            'enumerate_resources',
+            return_value=[cluster],
+        ):
+            resources = policy.resource_manager.enumerate_resources(
+                parent,
+                policy.resource_manager.resource_type,
+            )
+
+        self.assertIsNone(resources[0]['c7n:WorkspaceDiscoveryUrl'])
 
     def _run_inactive_policy(self, since):
         policy = self.load_policy({
@@ -927,6 +954,34 @@ class MachineLearningComputeClusterTest(BaseTest):
                 ),
             ],
             inactive_filter._query_history.call_args_list,
+        )
+
+    def test_inactive_skips_workspace_without_discovery_url(self):
+        inactive_filter = self._load_inactive_filter()
+        inactive_filter._get_active_targets = Mock(return_value=set())
+        missing_discovery = self._cluster('missing-discovery')
+        missing_discovery.pop('c7n:WorkspaceDiscoveryUrl')
+        east_parent_id = self.parent_id.replace(
+            'test-workspace',
+            'east-workspace',
+        )
+        idle_east = self._cluster(
+            'idle-east',
+            parent_id=east_parent_id,
+            discovery_url='https://eastus.api.azureml.ms/discovery',
+        )
+
+        with self.assertLogs(inactive_filter.log, level='WARNING') as logs:
+            resources = inactive_filter.process([
+                missing_discovery,
+                idle_east,
+            ])
+
+        self.assertEqual(['idle-east'], [r['name'] for r in resources])
+        self.assertIn(self.parent_id, logs.output[0])
+        inactive_filter._get_active_targets.assert_called_once_with(
+            idle_east,
+            ANY,
         )
 
     def test_inactive_skips_workspace_on_request_failure(self):
