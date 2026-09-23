@@ -1,6 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from parameterized import parameterized
 from pytest_terraform import terraform
@@ -390,6 +390,77 @@ class NetworkSecurityGroupTest(BaseTest):
             # The nsg with a deny all rule denies these ports explicitly.
             elif r['name'] == 'nsg-deny-all-ingress':
                 self.assertEqual(matched_rules, {'deny-all-ingress'})
+
+    def run_close(self, *rules, ports='22'):
+        """Close `ports` inbound on an NSG built from (priority, access, port) specs.
+
+        Only the Azure client is mocked. Returns the rule the action asked Azure to
+        create, or None when it wrote nothing.
+        """
+        nsg = {
+            'name': 'nsg-test',
+            'resourceGroup': 'test-rg',
+            'properties': {
+                'securityRules': [{
+                    'name': 'rule-%d' % priority,
+                    'id': '/subscriptions/xxx/securityRules/rule-%d' % priority,
+                    'properties': {
+                        'protocol': '*',
+                        'sourcePortRange': '*',
+                        'destinationPortRange': port,
+                        'sourceAddressPrefix': '*',
+                        'destinationAddressPrefix': '*',
+                        'access': access,
+                        'priority': priority,
+                        'direction': 'Inbound',
+                    },
+                } for priority, access, port in rules],
+            },
+        }
+
+        p = self.load_policy({
+            'name': 'test-azure-nsg',
+            'resource': 'azure.networksecuritygroup',
+            'actions': [
+                {'type': 'close',
+                 'ports': ports,
+                 'direction': 'Inbound'}],
+        })
+        action = p.resource_manager.actions[0]
+        action.manager.get_client = MagicMock()
+        action.process([nsg])
+
+        create = action.manager.get_client.return_value.security_rules.begin_create_or_update
+        return create.call_args[0][3] if create.call_args_list else None
+
+    def test_close_lands_on_the_floor_when_the_step_would_undershoot(self):
+        new_rule = self.run_close((105, 'Allow', '22'))
+
+        self.assertEqual(new_rule['properties']['priority'], 100)
+        self.assertEqual(new_rule['properties']['access'], 'Deny')
+        self.assertEqual(new_rule['properties']['destinationPortRanges'], ['22'])
+
+    def test_close_keeps_the_full_step_when_there_is_room(self):
+        new_rule = self.run_close((300, 'Allow', '22'))
+
+        self.assertEqual(new_rule['properties']['priority'], 290)
+
+    def test_close_outranks_only_the_offending_rule(self):
+        new_rule = self.run_close((100, 'Deny', '80'), (500, 'Allow', '22'))
+
+        self.assertEqual(new_rule['properties']['priority'], 490)
+
+    def test_close_skips_priorities_already_in_use(self):
+        new_rule = self.run_close((290, 'Deny', '80'), (300, 'Allow', '22'))
+
+        self.assertEqual(new_rule['properties']['priority'], 289)
+
+    def test_close_writes_nothing_when_no_priority_is_available(self):
+        with self.assertLogs('custodian.resources.networksecuritygroup',
+                             level='ERROR') as logged:
+            self.assertIsNone(self.run_close((100, 'Allow', '22')))
+
+        self.assertIn('No priority available below 100', logged.output[0])
 
 
 class NetworkSecurityGroupFlowLogsFilterTest(BaseTest):

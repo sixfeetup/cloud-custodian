@@ -115,6 +115,8 @@ ALLOW_OPERATION = 'Allow'
 DENY_OPERATION = 'Deny'
 
 PRIORITY_STEP = 10
+MIN_PRIORITY = 100
+MAX_PRIORITY = 4096
 
 SOURCE = 'source'
 DESTINATION = 'destination'
@@ -374,14 +376,39 @@ class NetworkSecurityGroupPortsAction(BaseAction):
         return True
 
     def _build_ports_strings(self, nsg, direction_key, ip_protocol):
-        nsg_ports = PortsRangeHelper.build_ports_dict(nsg, direction_key, ip_protocol)
+        nsg_ports = PortsRangeHelper.build_ports_rules_dict(nsg, direction_key, ip_protocol)
 
         IsAllowed = StringUtils.equal(self.access_action, ALLOW_OPERATION)
 
-        # Find ports with different access level from NSG and this action
-        diff_ports = sorted([p for p in self.action_ports if nsg_ports.get(p, False) != IsAllowed])
+        # Find ports with different access level from NSG and this action, and the rules
+        # responsible for that access. Azure stops at the first matching rule, so the new
+        # rule only has to outrank those, not every rule in the direction.
+        diff_ports = []
+        blocking_rules = set()
+        for port in self.action_ports:
+            info = nsg_ports.get(port)
+            if (info['allowed'] if info else False) == IsAllowed:
+                continue
+            diff_ports.append(port)
+            if info:
+                blocking_rules |= info['by_rules']
 
-        return PortsRangeHelper.get_ports_strings_from_list(diff_ports)
+        return (PortsRangeHelper.get_ports_strings_from_list(sorted(diff_ports)),
+                blocking_rules)
+
+    @staticmethod
+    def _find_priority(ceiling, taken):
+        """Pick a free priority that outranks ``ceiling``.
+
+        Prefers a full PRIORITY_STEP below the ceiling, then walks toward
+        MIN_PRIORITY looking for an unused slot. Returns None when the
+        direction has no free priority left below the ceiling.
+        """
+        stepped = max(MIN_PRIORITY, ceiling - PRIORITY_STEP)
+        for priority in range(min(stepped, ceiling - 1), MIN_PRIORITY - 1, -1):
+            if priority not in taken:
+                return priority
+        return None
 
     def process(self, network_security_groups):
 
@@ -398,7 +425,7 @@ class NetworkSecurityGroupPortsAction(BaseAction):
             resource_group = nsg['resourceGroup']
 
             # Get list of ports to Deny or Allow access to.
-            ports = self._build_ports_strings(nsg, direction, ip_protocol)
+            ports, blocking_rules = self._build_ports_strings(nsg, direction, ip_protocol)
             if not ports:
                 # If its empty, it means NSG already blocks/allows access to all ports,
                 # no need to change.
@@ -406,11 +433,20 @@ class NetworkSecurityGroupPortsAction(BaseAction):
                                       "ports configuration, no actions scheduled.", nsg_name)
                 continue
 
-            rules = nsg['properties']['securityRules']
-            rules = sorted(rules, key=lambda k: k['properties']['priority'])
-            rules = [r for r in rules
+            rules = [r for r in nsg['properties']['securityRules']
                      if StringUtils.equal(r['properties']['direction'], direction)]
-            lowest_priority = rules[0]['properties']['priority'] if len(rules) > 0 else 4096
+            # Priorities are unique per direction, so only same-direction rules are in the way.
+            taken = {r['properties']['priority'] for r in rules}
+            blocking = [r['properties']['priority'] for r in rules
+                        if r['id'] in blocking_rules]
+            ceiling = min(blocking) if blocking else MAX_PRIORITY
+
+            priority = self._find_priority(ceiling, taken)
+            if priority is None:
+                self.manager.log.error(
+                    "NSG %s. No priority available below %s, cannot %s access for ports %s.",
+                    nsg_name, ceiling, self.access_action, ports)
+                continue
 
             # Create new top-priority rule to allow/block ports from the action.
             rule_name = prefix + str(uuid.uuid1())
@@ -421,7 +457,7 @@ class NetworkSecurityGroupPortsAction(BaseAction):
                     'destinationAddressPrefix': '*',
                     'destinationPortRanges': ports,
                     'direction': self.data[DIRECTION],
-                    'priority': lowest_priority - PRIORITY_STEP,
+                    'priority': priority,
                     'protocol': ip_protocol,
                     'sourceAddressPrefix': '*',
                     'sourcePortRange': '*',
