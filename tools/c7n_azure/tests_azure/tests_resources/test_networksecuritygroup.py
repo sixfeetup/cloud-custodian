@@ -392,6 +392,30 @@ class NetworkSecurityGroupTest(BaseTest):
             elif r['name'] == 'nsg-deny-all-ingress':
                 self.assertEqual(matched_rules, {'deny-all-ingress'})
 
+    @arm_template('networksecuritygroup-remove-rules.json')
+    def test_remove_rules_removes_matched_ingress_rule(self):
+        p = self.load_policy({
+            'name': 'test-azure-nsg',
+            'resource': 'azure.networksecuritygroup',
+            'filters': [
+                {'type': 'value',
+                 'key': 'name',
+                 'op': 'eq',
+                 'value': 'c7n-nsg-remove-rules'},
+                {'type': 'ingress',
+                 'source': '*',
+                 'access': 'Allow'}],
+            'actions': [
+                {'type': 'remove-rules',
+                 'ingress': 'matched'}],
+        })
+
+        resources = p.run()
+
+        assert len(resources) == 1
+        matched = resources[0]['c7n:matched-ingress-security-rules']
+        assert [r['name'] for r in matched] == ['allow-all-inbound']
+
     def run_remove_rules(self, *rules, matched=(), **action):
         """Remove rules from an NSG built from (name, priority, direction) specs.
 
