@@ -31,7 +31,8 @@ class NetworkSecurityGroupTest(BaseTest):
                     {'type': 'close',
                      'ports': '1000-1100',
                      'direction': 'Inbound'},
-
+                    {'type': 'remove-rules',
+                     'ingress': 'matched'},
                 ]
             }, validate=True)
             self.assertTrue(p)
@@ -442,13 +443,13 @@ class NetworkSecurityGroupTest(BaseTest):
             ('allow-http', 200, 'Inbound'),
             matched=('allow-ssh',), ingress='matched')
 
-        self.assertEqual(deleted, ['allow-ssh'])
+        assert deleted == ['allow-ssh']
 
     def test_remove_rules_without_a_filter_deletes_nothing(self):
         deleted = self.run_remove_rules(
             ('allow-ssh', 100, 'Inbound'), ingress='matched')
 
-        self.assertEqual(deleted, [])
+        assert deleted == []
 
     def test_remove_rules_all_only_touches_one_direction(self):
         deleted = self.run_remove_rules(
@@ -457,14 +458,14 @@ class NetworkSecurityGroupTest(BaseTest):
             ('out-1', 100, 'Outbound'),
             ingress='all')
 
-        self.assertEqual(sorted(deleted), ['in-1', 'in-2'])
+        assert sorted(deleted) == ['in-1', 'in-2']
 
     def test_remove_rules_handles_egress(self):
         deleted = self.run_remove_rules(
             ('allow-rdp-out', 100, 'Outbound'),
             matched=('allow-rdp-out',), egress='matched')
 
-        self.assertEqual(deleted, ['allow-rdp-out'])
+        assert deleted == ['allow-rdp-out']
 
 
 class NetworkSecurityGroupFlowLogsFilterTest(BaseTest):
