@@ -115,8 +115,9 @@ class GCPMetricsFilter(Filter):
     def validate(self):
         metric_key = self.data.get('metric-key')
         if not metric_key and not hasattr(self.manager.resource_type, 'metric_key'):
-            raise FilterValidationError("metric-key not defined for resource %s,"
-            "so must be provided in the policy" % (self.manager.type))
+            raise FilterValidationError(
+                "metric-key not defined for resource %s, "
+                "so must be provided in the policy" % (self.manager.type))
 
         supported_metric_keys = self.manager.resource_type.supported_metric_keys
         if (
@@ -247,8 +248,8 @@ class GCPMetricsFilter(Filter):
     @classmethod
     def register_resources(klass, registry, resource_class):
         if resource_class.filter_registry:
-            if resource_class.resource_type.allow_metrics_filters and \
-                    'metrics' not in resource_class.filter_registry:
+            if (resource_class.resource_type.allow_metrics_filters
+                    and 'metrics' not in resource_class.filter_registry):
                 resource_class.filter_registry.register('metrics', klass)
 
 
