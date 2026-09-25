@@ -1,5 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from unittest.mock import Mock
+
 from .azure_common import BaseTest
 from c7n_azure.resources.storage import StorageSetFirewallAction
 import pytest
@@ -117,6 +119,31 @@ class FirewallActionsTest(BaseTest):
         rules = action._build_ip_rules(['1.1.1.1', '8.0.0.0/12'], data['ip-rules'])
         self.assertTrue({'6.0.0.0/16', '1.1.1.1', '8.0.0.0/12'} <= set(rules))
         self.assertEqual(6, len(rules))
+
+    def test_process_resource_keeps_each_account_to_its_own_rules(self):
+        action = StorageSetFirewallAction({
+            'type': 'set-firewall-rules',
+            'default-action': 'Deny',
+            'bypass-rules': ['AzureServices'],
+            'virtual-network-rules': [],
+        })
+        action.append = True
+        action.client = Mock()
+
+        for name, acls in [
+            ('hr', {'bypass': 'None', 'virtualNetworkRules': [{'id': '/subnets/hr'}]}),
+            ('public', {'bypass': 'None', 'virtualNetworkRules': []}),
+        ]:
+            action._process_resource(
+                {'name': name, 'resourceGroup': 'rg', 'properties': {'networkAcls': acls}})
+
+        sent = [c[0][2].network_rule_set
+                for c in action.client.storage_accounts.update.call_args_list]
+
+        assert [r.bypass for r in sent] == ['AzureServices', 'AzureServices']
+        # The account with no VNet access must not inherit the one processed before it.
+        assert [[v.virtual_network_resource_id for v in r.virtual_network_rules]
+                for r in sent] == [['/subnets/hr'], []]
 
     def _bypass_action(self, bypass_rules, append=True):
         action = StorageSetFirewallAction(
