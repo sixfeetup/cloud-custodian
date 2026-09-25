@@ -491,7 +491,7 @@ def test_kms_cryptokey_set_iam_policy_add_bindings(test, kms_cryptokey_set_iam_p
     key_name = kms_cryptokey_set_iam_policy['google_kms_crypto_key.c7n_test_key.id']
     member = 'serviceAccount:%s' % (
         kms_cryptokey_set_iam_policy['google_service_account.c7n_test.email'])
-    factory = test.replay_flight_data('kms-cryptokey-set-iam-policy-add-bindings')
+    factory = test.replay_flight_data('kms-key-iam-add')
     policy = test.load_policy(
         {
             'name': 'kms-cryptokey-set-iam-policy-add-bindings',
@@ -520,7 +520,7 @@ def test_kms_cryptokey_set_iam_policy_remove_bindings(test, kms_cryptokey_set_ia
     key_name = kms_cryptokey_set_iam_policy['google_kms_crypto_key.c7n_test_key.id']
     member = 'serviceAccount:%s' % (
         kms_cryptokey_set_iam_policy['google_service_account.c7n_test.email'])
-    factory = test.replay_flight_data('kms-cryptokey-set-iam-policy-remove-bindings')
+    factory = test.replay_flight_data('kms-key-iam-remove')
     policy = test.load_policy(
         {
             'name': 'kms-cryptokey-set-iam-policy-remove-bindings',
@@ -549,7 +549,7 @@ def test_kms_cryptokey_set_iam_policy_remove_matched(test, kms_cryptokey_set_iam
     key_name = kms_cryptokey_set_iam_policy['google_kms_crypto_key.c7n_test_key.id']
     member = 'serviceAccount:%s' % (
         kms_cryptokey_set_iam_policy['google_service_account.c7n_test.email'])
-    factory = test.replay_flight_data('kms-cryptokey-set-iam-policy-remove-matched')
+    factory = test.replay_flight_data('kms-key-iam-matched')
     policy = test.load_policy(
         {
             'name': 'kms-cryptokey-set-iam-policy-remove-matched',
