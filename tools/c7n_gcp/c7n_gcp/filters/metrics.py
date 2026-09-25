@@ -119,7 +119,11 @@ class GCPMetricsFilter(Filter):
             "so must be provided in the policy" % (self.manager.type))
 
         supported_metric_keys = self.manager.resource_type.supported_metric_keys
-        if metric_key and supported_metric_keys and metric_key not in supported_metric_keys:
+        if (
+            metric_key and
+            supported_metric_keys is not None and
+            metric_key not in supported_metric_keys
+        ):
             raise FilterValidationError(
                 "metric-key '%s' not supported for resource %s, supported keys: %s" % (
                     metric_key, self.manager.type, ', '.join(supported_metric_keys)))
