@@ -238,6 +238,9 @@ class AzureVCRBaseTest(VCRTestCase):
                                response['headers'].items()
                                if k.lower() not in self.FILTERED_HEADERS}
 
+        if not response['body'].get('string'):
+            return response
+
         content_type = response['headers'].get('content-type', (None,))[0]
         if not content_type or 'application/json' not in content_type:
             return response
