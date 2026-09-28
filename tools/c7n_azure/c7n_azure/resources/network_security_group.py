@@ -512,4 +512,4 @@ class RemoveRules(AzureBaseAction):
 
             for rule in rules:
                 self.client.security_rules.begin_delete(
-                    nsg['resourceGroup'], nsg['name'], rule['name'])
+                    nsg['resourceGroup'], nsg['name'], rule['name']).result()
