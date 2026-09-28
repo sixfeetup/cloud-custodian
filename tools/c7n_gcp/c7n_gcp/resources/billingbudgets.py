@@ -43,6 +43,6 @@ class BillingBudget(ChildResourceManager):
             ],
         }
         asset_type = "billingbudgets.googleapis.com/Budget"
-        permissions = ('billing.budgets.list',)
+        permissions = ('billing.budgets.list', 'billing.accounts.list')
         urn_component = "budget"
         urn_id_segments = (-1,)
