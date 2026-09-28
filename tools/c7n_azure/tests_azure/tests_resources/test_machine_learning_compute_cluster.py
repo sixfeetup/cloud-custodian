@@ -7,7 +7,7 @@ from unittest.mock import ANY, call, Mock, patch
 
 import requests
 
-from azure.core.exceptions import HttpResponseError
+from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.mgmt.machinelearningservices.models import (
     AmlCompute,
     AmlComputeProperties,
@@ -212,6 +212,87 @@ class MachineLearningComputeClusterTest(BaseTest):
         self.assertEqual(1, properties['nodeStateCounts']['runningNodeCount'])
         self.assertEqual(1, properties['scaleSettings']['minNodeCount'])
         self.assertEqual(4, properties['scaleSettings']['maxNodeCount'])
+
+    def test_child_query_skips_stale_workspace(self):
+        stale_parent_id = self.parent_id.replace(
+            'test-workspace',
+            'stale-workspace',
+        )
+        parent_manager = Mock()
+        parent_manager.resource_type.id = 'id'
+        parent_manager.resources.return_value = [
+            {
+                'id': stale_parent_id,
+                'name': 'stale-workspace',
+                'resourceGroup': 'missing-rg',
+                'properties': {
+                    'discoveryUrl': 'https://westus.api.azureml.ms/discovery',
+                },
+            },
+            {
+                'id': self.parent_id,
+                'name': 'test-workspace',
+                'resourceGroup': 'test-rg',
+                'properties': {
+                    'discoveryUrl': 'https://westus.api.azureml.ms/discovery',
+                },
+            },
+        ]
+        cluster = ComputeResource(
+            properties=AmlCompute(
+                properties=AmlComputeProperties(vm_size='Standard_DS2_v2'),
+            ),
+            location='westus',
+        )
+        cluster.id = f'{self.parent_id}/computes/test-cluster'
+        cluster.name = 'test-cluster'
+        cluster.type = (
+            'Microsoft.MachineLearningServices/workspaces/computes'
+        )
+        instance = ComputeResource(
+            properties=ComputeInstance(
+                properties=ComputeInstanceProperties(vm_size='Standard_DS2_v2'),
+            ),
+            location='westus',
+        )
+        instance.id = f'{self.parent_id}/computes/test-instance'
+        instance.name = 'test-instance'
+        client = Mock()
+        client.compute.list.side_effect = [
+            ResourceNotFoundError('stale workspace'),
+            [cluster, instance],
+        ]
+        policy = self.load_policy({
+            'name': 'machine-learning-compute-clusters',
+            'resource': 'azure.machine-learning-compute-cluster',
+        })
+        manager = policy.resource_manager
+        manager.get_parent_manager = Mock(return_value=parent_manager)
+        manager.get_client = Mock(return_value=client)
+
+        with self.assertLogs('custodian.azure.query', level='WARNING') as logs:
+            resources = manager.resources()
+
+        self.assertEqual(['test-cluster'], [r['name'] for r in resources])
+        self.assertEqual(self.parent_id, resources[0]['c7n:parent-id'])
+        self.assertEqual(
+            'https://westus.api.azureml.ms/discovery',
+            resources[0]['c7n:WorkspaceDiscoveryUrl'],
+        )
+        self.assertEqual(
+            [
+                call(
+                    resource_group_name='missing-rg',
+                    workspace_name='stale-workspace',
+                ),
+                call(
+                    resource_group_name='test-rg',
+                    workspace_name='test-workspace',
+                ),
+            ],
+            client.compute.list.call_args_list,
+        )
+        self.assertIn(stale_parent_id, logs.output[0])
 
     def test_child_query_defaults_missing_discovery_url(self):
         policy = self.load_policy({

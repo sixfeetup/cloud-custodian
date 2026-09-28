@@ -81,6 +81,7 @@ class MachineLearningComputeCluster(ChildArmResourceManager):
         enum_spec = ('compute', 'list', None)
         parent_manager_name = 'machine-learning-workspace'
         resource_type = 'Microsoft.MachineLearningServices/workspaces/computes'
+        raise_on_exception = False
         default_report_fields = (
             'name',
             'resourceGroup',
