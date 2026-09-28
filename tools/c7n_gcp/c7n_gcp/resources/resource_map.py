@@ -18,6 +18,7 @@ ResourceMap = {
     "gcp.bigtable-instance-table": "c7n_gcp.resources.bigtable.BigTableInstanceTable",
     "gcp.bigtable-instance-cluster-backup":
         "c7n_gcp.resources.bigtable.BigTableInstanceClusterBackup",
+    "gcp.billing-budget": "c7n_gcp.resources.billingbudgets.BillingBudget",
     "gcp.bq-dataset": "c7n_gcp.resources.bigquery.DataSet",
     "gcp.bq-job": "c7n_gcp.resources.bigquery.BigQueryJob",
     "gcp.bq-table": "c7n_gcp.resources.bigquery.BigQueryTable",
@@ -25,7 +26,6 @@ ResourceMap = {
     "gcp.build": "c7n_gcp.resources.build.CloudBuild",
     "gcp.certmanager-certificate": (
         "c7n_gcp.resources.certificatemanager.CertificateManagerCertificate"),
-    "gcp.billing-budget": "c7n_gcp.resources.billingbudgets.BillingBudget",
     "gcp.cloudbilling-account": "c7n_gcp.resources.cloudbilling.CloudBillingAccount",
     "gcp.cloud-run-service": "c7n_gcp.resources.cloudrun.CloudRunService",
     "gcp.cloud-run-job": "c7n_gcp.resources.cloudrun.CloudRunJob",
