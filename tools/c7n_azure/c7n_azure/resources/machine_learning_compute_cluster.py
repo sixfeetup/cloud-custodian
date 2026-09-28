@@ -168,8 +168,8 @@ class InactiveFilter(Filter):
             node_counts = resource['properties'].get('properties', {}).get(
                 'nodeStateCounts',
                 {},
-            )
-            if node_counts.get('runningNodeCount', 0) > 0:
+            ) or {}
+            if (node_counts.get('runningNodeCount') or 0) > 0:
                 continue
             workspaces.setdefault(resource['c7n:parent-id'], []).append(resource)
 

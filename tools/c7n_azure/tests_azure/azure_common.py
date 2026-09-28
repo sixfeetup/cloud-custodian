@@ -448,7 +448,10 @@ class AzureVCRBaseTest(VCRTestCase):
 
     @staticmethod
     def _replace_instrumentation_key(s):
-        prefixes = ['"InstrumentationKey":\\s*"']
+        prefixes = [
+            '"InstrumentationKey":\\s*"',
+            '"sdkTelemetryAppInsightsKey":\\s*"',
+        ]
 
         regex = r"(?P<prefix>(%s))" \
                 r"[\da-zA-Z]{8}-([\da-zA-Z]{4}-){3}[\da-zA-Z]{12}" \

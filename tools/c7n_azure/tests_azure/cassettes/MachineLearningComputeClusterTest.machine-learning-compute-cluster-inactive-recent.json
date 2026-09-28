@@ -14,39 +14,39 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "10223"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: CC79AD53ADD54D4B961F6AADC346788A Ref B: CYS013050704051 Ref C: 2026-09-21T14:52:31Z"
+                        "Ref A: BB4F785F68AF49C68C3DC400D89CD5AE Ref B: CYS013050703023 Ref C: 2026-09-28T20:44:09Z"
                     ],
                     "date": [
-                        "Mon, 21 Sep 2026 14:52:31 GMT"
+                        "Mon, 28 Sep 2026 20:44:08 GMT"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-ms-original-request-ids": [
                         "",
                         "",
                         ""
                     ],
+                    "content-length": [
+                        "12926"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
                     ]
                 },
                 "body": {
                     "data": {
                         "value": [
                             {
-                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167",
-                                "name": "cctestml965372705167",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560",
+                                "name": "cctestml898871372560",
                                 "type": "Microsoft.MachineLearningServices/workspaces",
                                 "location": "southcentralus",
                                 "tags": {},
@@ -54,9 +54,9 @@
                                 "properties": {
                                     "friendlyName": "cctest-machine-learning-workspace",
                                     "description": "",
-                                    "storageAccount": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.Storage/storageAccounts/cctestmlst965372705167",
-                                    "keyVault": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.Keyvault/vaults/cctestmlkv965372705167",
-                                    "applicationInsights": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.insights/components/cctestmlai965372705167",
+                                    "storageAccount": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.Storage/storageAccounts/cctestmlst898871372560",
+                                    "keyVault": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.Keyvault/vaults/cctestmlkv898871372560",
+                                    "applicationInsights": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.insights/components/cctestmlai898871372560",
                                     "hbiWorkspace": false,
                                     "tenantId": "00000000-0000-0000-0000-000000000003",
                                     "imageBuildCompute": null,
@@ -72,26 +72,26 @@
                                     "allowRoleAssignmentOnRG": true,
                                     "v1LegacyMode": false,
                                     "softDeleteEnabled": false,
-                                    "creationTime": "2026-09-21T14:46:31.7918489Z",
+                                    "creationTime": "2026-09-28T20:38:44.2714557Z",
                                     "notebookInfo": {
-                                        "resourceId": "a0def9a2a3db4efa87ad82b446cff0f7",
-                                        "fqdn": "ml-cctestml-southcentralus-c843fdff-afc5-440e-a49f-8ca1a2506846.southcentralus.notebooks.azure.net",
+                                        "resourceId": "6039dc9fa1cb446abe8ca5dc8dcc8299",
+                                        "fqdn": "ml-cctestml-southcentralus-d0150ca1-0c13-4f91-9c20-60d6c28b26bc.southcentralus.notebooks.azure.net",
                                         "isPrivateLinkEnabled": false,
                                         "notebookPreparationError": null
                                     },
                                     "storageHnsEnabled": false,
-                                    "workspaceId": "c843fdff-afc5-440e-a49f-8ca1a2506846",
+                                    "workspaceId": "d0150ca1-0c13-4f91-9c20-60d6c28b26bc",
                                     "linkedModelInventoryArmId": null,
                                     "privateLinkCount": 0,
                                     "publicNetworkAccess": "Enabled",
                                     "discoveryUrl": "https://southcentralus.api.azureml.ms/discovery",
-                                    "mlFlowTrackingUri": "azureml://southcentralus.api.azureml.ms/mlflow/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167",
-                                    "sdkTelemetryAppInsightsKey": "0c54a945-002c-433a-93ea-97b7f084292a",
+                                    "mlFlowTrackingUri": "azureml://southcentralus.api.azureml.ms/mlflow/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560",
+                                    "sdkTelemetryAppInsightsKey": "00000000-0000-0000-0000-000000000004",
                                     "enableDataIsolation": false
                                 },
                                 "identity": {
                                     "type": "SystemAssigned",
-                                    "principalId": "db233568-b6f7-486e-a6d3-b04fcb30cb87",
+                                    "principalId": "d658c321-7e68-4c7d-bfab-c932b24d467c",
                                     "tenantId": "00000000-0000-0000-0000-000000000003"
                                 },
                                 "kind": "Default",
@@ -100,10 +100,10 @@
                                     "tier": "Basic"
                                 },
                                 "systemData": {
-                                    "createdAt": "2026-09-21T14:46:31.7918489Z",
+                                    "createdAt": "2026-09-28T20:38:44.2714557Z",
                                     "createdBy": "user@example.com",
                                     "createdByType": "User",
-                                    "lastModifiedAt": "2026-09-21T14:46:31.7918489Z",
+                                    "lastModifiedAt": "2026-09-28T20:38:44.2714557Z",
                                     "lastModifiedBy": "user@example.com",
                                     "lastModifiedByType": "User"
                                 }
@@ -116,7 +116,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/computes?api-version=2023-04-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/computes?api-version=2023-04-01",
                 "body": null,
                 "headers": {}
             },
@@ -126,26 +126,20 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "request-context": [
-                        "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
+                    "x-msedge-ref": [
+                        "Ref A: 2584E32C3C4F47789557DD95FE0E06C6 Ref B: CYS013050703023 Ref C: 2026-09-28T20:44:12Z"
+                    ],
+                    "x-request-time": [
+                        "0.051"
+                    ],
+                    "x-ms-response-type": [
+                        "standard"
                     ],
                     "content-length": [
                         "1864"
                     ],
-                    "x-request-time": [
-                        "0.070"
-                    ],
                     "date": [
-                        "Mon, 21 Sep 2026 14:52:33 GMT"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 1FD54E97BAE7402888FAC1D03B53D447 Ref B: CYS013050703047 Ref C: 2026-09-21T14:52:34Z"
-                    ],
-                    "x-ms-response-type": [
-                        "standard"
+                        "Mon, 28 Sep 2026 20:44:11 GMT"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
@@ -153,25 +147,31 @@
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "request-context": [
+                        "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ],
                     "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
+                        "vienna-southcentralus-01"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ]
                 },
                 "body": {
                     "data": {
                         "value": [
                             {
-                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/computes/cctest-ml-cluster",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/computes/cctest-ml-cluster",
                                 "name": "cctest-ml-cluster",
                                 "type": "Microsoft.MachineLearningServices/workspaces/computes",
                                 "location": "southcentralus",
                                 "tags": {},
                                 "properties": {
-                                    "createdOn": "2026-09-21T14:46:52.6322864+00:00",
-                                    "modifiedOn": "2026-09-21T14:47:03.6560685+00:00",
+                                    "createdOn": "2026-09-28T20:39:03.5706968+00:00",
+                                    "modifiedOn": "2026-09-28T20:40:09.5155815+00:00",
                                     "disableLocalAuth": false,
                                     "description": null,
                                     "resourceId": null,
@@ -201,7 +201,7 @@
                                             "preemptedNodeCount": 0
                                         },
                                         "allocationState": "Steady",
-                                        "allocationStateTransitionTime": "2026-09-21T14:49:44.671+00:00",
+                                        "allocationStateTransitionTime": "2026-09-28T20:42:04.849+00:00",
                                         "errors": null,
                                         "remoteLoginPortPublicAccess": "Enabled",
                                         "osType": "Linux",
@@ -220,7 +220,7 @@
         {
             "request": {
                 "method": "POST",
-                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experiments:query?api-version=2023-10-01",
+                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experiments:query?api-version=2023-10-01",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -230,26 +230,26 @@
                     "message": "OK"
                 },
                 "headers": {
+                    "date": [
+                        "Mon, 28 Sep 2026 20:44:13 GMT"
+                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
                     ],
                     "x-request-time": [
-                        "0.031"
+                        "0.033"
                     ],
-                    "date": [
-                        "Mon, 21 Sep 2026 14:52:34 GMT"
+                    "mise-correlation-id": [
+                        "8a095ca8-f1ed-4115-a1ad-63ffe06f55e1"
                     ],
                     "x-ms-response-type": [
                         "standard"
                     ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-01"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
-                    ],
-                    "mise-correlation-id": [
-                        "6f774a59-1b6a-4d00-92eb-dc70fea72b6d"
                     ],
                     "content-length": [
                         "690"
@@ -259,20 +259,20 @@
                     "data": {
                         "value": [
                             {
-                                "experimentId": "80e6ec99-dab6-4980-8446-49cc5d778751",
+                                "experimentId": "b8116c22-d63e-4d98-956b-40d2c42a5b0d",
                                 "name": "cctest-recent-archived",
                                 "description": null,
-                                "createdUtc": "2026-09-21T14:48:07.1747137+00:00",
+                                "createdUtc": "2026-09-28T20:40:16.9750834+00:00",
                                 "tags": {},
-                                "archivedTime": "2026-09-21T14:52:05.5581834+00:00",
+                                "archivedTime": "2026-09-28T20:44:02.4799205+00:00",
                                 "retainForLifetimeOfWorkspace": false,
                                 "artifactLocation": null
                             },
                             {
-                                "experimentId": "fab82fe9-8cc6-499b-adfd-10175ee98050",
+                                "experimentId": "c8c24090-4e39-4dd6-8c7e-18a8854a3f18",
                                 "name": "cctest-recent-active",
                                 "description": null,
-                                "createdUtc": "2026-09-21T14:48:15.5106931+00:00",
+                                "createdUtc": "2026-09-28T20:40:23.9294339+00:00",
                                 "tags": {},
                                 "archivedTime": null,
                                 "retainForLifetimeOfWorkspace": false,
@@ -286,7 +286,7 @@
         {
             "request": {
                 "method": "POST",
-                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experimentids/80e6ec99-dab6-4980-8446-49cc5d778751/runs:query?api-version=2023-10-01",
+                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experimentids/b8116c22-d63e-4d98-956b-40d2c42a5b0d/runs:query?api-version=2023-10-01",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -296,29 +296,29 @@
                     "message": "OK"
                 },
                 "headers": {
+                    "date": [
+                        "Mon, 28 Sep 2026 20:44:14 GMT"
+                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
                     ],
-                    "content-length": [
-                        "17"
-                    ],
                     "x-request-time": [
-                        "0.179"
+                        "0.155"
                     ],
-                    "date": [
-                        "Mon, 21 Sep 2026 14:52:35 GMT"
+                    "mise-correlation-id": [
+                        "d1041509-6721-43c8-bc0f-ad49672a42bf"
                     ],
                     "x-ms-response-type": [
                         "standard"
                     ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-01"
+                    ],
+                    "content-length": [
+                        "17"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "mise-correlation-id": [
-                        "dca4f67c-75ad-4434-bb0a-0702182f367a"
-                    ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
                     ]
                 },
                 "body": {
@@ -331,7 +331,7 @@
         {
             "request": {
                 "method": "POST",
-                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experimentids/80e6ec99-dab6-4980-8446-49cc5d778751/runs:query?api-version=2023-10-01",
+                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experimentids/b8116c22-d63e-4d98-956b-40d2c42a5b0d/runs:query?api-version=2023-10-01",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -341,62 +341,62 @@
                     "message": "OK"
                 },
                 "headers": {
+                    "date": [
+                        "Mon, 28 Sep 2026 20:44:14 GMT"
+                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
                     ],
                     "x-request-time": [
-                        "0.336"
+                        "0.076"
                     ],
-                    "date": [
-                        "Mon, 21 Sep 2026 14:52:36 GMT"
+                    "mise-correlation-id": [
+                        "1f1f1c22-a216-4a3a-a28f-5fea28c71f29"
                     ],
                     "x-ms-response-type": [
                         "standard"
                     ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-01"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
-                    ],
-                    "mise-correlation-id": [
-                        "41c1b522-2d3d-4c80-a012-9fdeaf735a42"
-                    ],
                     "content-length": [
-                        "5258"
+                        "5259"
                     ]
                 },
                 "body": {
                     "data": {
                         "value": [
                             {
-                                "runNumber": 1790002087,
+                                "runNumber": 1790628016,
                                 "rootRunId": "cctest-recent-standalone",
-                                "createdUtc": "2026-09-21T14:48:07.1978491+00:00",
+                                "createdUtc": "2026-09-28T20:40:16.9907207+00:00",
                                 "token": null,
                                 "tokenExpiryTimeUtc": null,
                                 "error": null,
                                 "warnings": null,
                                 "revision": 13,
                                 "statusRevision": 5,
-                                "runUuid": "a60ed006-a60c-470d-80ad-fcf207da8388",
+                                "runUuid": "ab8a4334-0722-4ab0-8094-d8758d49b102",
                                 "parentRunUuid": null,
-                                "rootRunUuid": "a60ed006-a60c-470d-80ad-fcf207da8388",
+                                "rootRunUuid": "ab8a4334-0722-4ab0-8094-d8758d49b102",
                                 "lastStartTimeUtc": null,
                                 "currentComputeTime": null,
-                                "computeDuration": "00:00:49.6280751",
+                                "computeDuration": "00:00:46.2871114",
                                 "effectiveStartTimeUtc": null,
-                                "lastModifiedUtc": "2026-09-21T14:48:14.0642295+00:00",
-                                "duration": "00:00:49.6280751",
+                                "lastModifiedUtc": "2026-09-28T20:40:24.4782653+00:00",
+                                "duration": "00:00:46.2871114",
                                 "cancelationReason": null,
                                 "currentAttemptId": 1,
                                 "deletionState": null,
                                 "runId": "cctest-recent-standalone",
                                 "parentRunId": null,
-                                "experimentId": "80e6ec99-dab6-4980-8446-49cc5d778751",
+                                "experimentId": "b8116c22-d63e-4d98-956b-40d2c42a5b0d",
                                 "status": "Completed",
-                                "startTimeUtc": "2026-09-21T14:50:39.7500509+00:00",
-                                "endTimeUtc": "2026-09-21T14:51:29.378126+00:00",
+                                "startTimeUtc": "2026-09-28T20:42:40.9246304+00:00",
+                                "endTimeUtc": "2026-09-28T20:43:27.2117418+00:00",
                                 "scheduleId": null,
                                 "displayName": "cctest-recent-standalone",
                                 "name": null,
@@ -424,7 +424,7 @@
                                 },
                                 "parameters": {},
                                 "actionUris": {
-                                    "Cancel": "https://southcentralus.api.azureml.ms/execution/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experiments/cctest-recent-archived/runId/cctest-recent-standalone/cancel",
+                                    "Cancel": "https://southcentralus.api.azureml.ms/execution/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experiments/cctest-recent-archived/runId/cctest-recent-standalone/cancel",
                                     "Diagnose": ""
                                 },
                                 "scriptName": null,
@@ -441,7 +441,7 @@
                                 "jobSpecification": null,
                                 "primaryMetricName": null,
                                 "createdFrom": null,
-                                "cancelUri": "https://southcentralus.api.azureml.ms/execution/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experiments/cctest-recent-archived/runId/cctest-recent-standalone/cancel",
+                                "cancelUri": "https://southcentralus.api.azureml.ms/execution/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experiments/cctest-recent-archived/runId/cctest-recent-standalone/cancel",
                                 "completeUri": null,
                                 "diagnosticsUri": "",
                                 "virtualWorkspaceStorageArmId": null,
@@ -475,7 +475,7 @@
         {
             "request": {
                 "method": "POST",
-                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experimentids/fab82fe9-8cc6-499b-adfd-10175ee98050/runs:query?api-version=2023-10-01",
+                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experimentids/c8c24090-4e39-4dd6-8c7e-18a8854a3f18/runs:query?api-version=2023-10-01",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -485,29 +485,29 @@
                     "message": "OK"
                 },
                 "headers": {
+                    "date": [
+                        "Mon, 28 Sep 2026 20:44:15 GMT"
+                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
                     ],
-                    "content-length": [
-                        "17"
-                    ],
                     "x-request-time": [
-                        "0.070"
+                        "0.534"
                     ],
-                    "date": [
-                        "Mon, 21 Sep 2026 14:52:37 GMT"
+                    "mise-correlation-id": [
+                        "c5961639-42c6-488c-a81d-2175bc32d448"
                     ],
                     "x-ms-response-type": [
                         "standard"
                     ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-01"
+                    ],
+                    "content-length": [
+                        "17"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "mise-correlation-id": [
-                        "35fd7664-ed4c-4bce-9d80-35dd35cf0c1c"
-                    ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
                     ]
                 },
                 "body": {
@@ -520,7 +520,7 @@
         {
             "request": {
                 "method": "POST",
-                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml965372705167/experimentids/fab82fe9-8cc6-499b-adfd-10175ee98050/runs:query?api-version=2023-10-01",
+                "uri": "https://southcentralus.api.azureml.ms/history/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/providers/Microsoft.MachineLearningServices/workspaces/cctestml898871372560/experimentids/c8c24090-4e39-4dd6-8c7e-18a8854a3f18/runs:query?api-version=2023-10-01",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -530,62 +530,62 @@
                     "message": "OK"
                 },
                 "headers": {
+                    "date": [
+                        "Mon, 28 Sep 2026 20:44:16 GMT"
+                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
                     ],
                     "x-request-time": [
-                        "0.139"
+                        "0.100"
                     ],
-                    "date": [
-                        "Mon, 21 Sep 2026 14:52:38 GMT"
+                    "mise-correlation-id": [
+                        "38b253fe-7182-4072-b0e7-116362a854c6"
                     ],
                     "x-ms-response-type": [
                         "standard"
                     ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-01"
+                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-02"
-                    ],
-                    "mise-correlation-id": [
-                        "5e4c2d84-76ea-48ba-b87a-fd7e0d142833"
-                    ],
                     "content-length": [
-                        "10885"
+                        "10887"
                     ]
                 },
                 "body": {
                     "data": {
                         "value": [
                             {
-                                "runNumber": 1790002095,
+                                "runNumber": 1790628023,
                                 "rootRunId": "cctest-recent-pipeline",
-                                "createdUtc": "2026-09-21T14:48:15.5310323+00:00",
+                                "createdUtc": "2026-09-28T20:40:23.9468176+00:00",
                                 "token": null,
                                 "tokenExpiryTimeUtc": null,
                                 "error": null,
                                 "warnings": null,
                                 "revision": 8,
                                 "statusRevision": 4,
-                                "runUuid": "de3a53a1-f756-4c25-b0d7-2ffa8cc58d0e",
+                                "runUuid": "eca8e228-14f6-4ecf-a57a-9f10f7c609a7",
                                 "parentRunUuid": null,
-                                "rootRunUuid": "de3a53a1-f756-4c25-b0d7-2ffa8cc58d0e",
+                                "rootRunUuid": "eca8e228-14f6-4ecf-a57a-9f10f7c609a7",
                                 "lastStartTimeUtc": null,
                                 "currentComputeTime": null,
-                                "computeDuration": "00:03:36.5133458",
+                                "computeDuration": "00:03:26.9488884",
                                 "effectiveStartTimeUtc": null,
-                                "lastModifiedUtc": "2026-09-21T14:51:57.0606571+00:00",
-                                "duration": "00:03:36.5133458",
+                                "lastModifiedUtc": "2026-09-28T20:43:54.7339366+00:00",
+                                "duration": "00:03:26.9488884",
                                 "cancelationReason": null,
                                 "currentAttemptId": 1,
                                 "deletionState": null,
                                 "runId": "cctest-recent-pipeline",
                                 "parentRunId": null,
-                                "experimentId": "fab82fe9-8cc6-499b-adfd-10175ee98050",
+                                "experimentId": "c8c24090-4e39-4dd6-8c7e-18a8854a3f18",
                                 "status": "Completed",
-                                "startTimeUtc": "2026-09-21T14:48:20.750148+00:00",
-                                "endTimeUtc": "2026-09-21T14:51:57.2634938+00:00",
+                                "startTimeUtc": "2026-09-28T20:40:27.8909734+00:00",
+                                "endTimeUtc": "2026-09-28T20:43:54.8398618+00:00",
                                 "scheduleId": null,
                                 "displayName": "cctest-recent-pipeline",
                                 "name": null,
@@ -617,11 +617,11 @@
                                     "azureml.defaultComputeName": "cctest-ml-cluster",
                                     "azureml.defaultDataStoreName": "workspaceblobstore",
                                     "azureml.pipelineComponent": "pipelinerun",
-                                    "azureml.pipelines.stages": "{\"Initialization\":null,\"Execution\":{\"StartTime\":\"2026-09-21T14:48:21.1525645+00:00\",\"EndTime\":\"2026-09-21T14:51:56.520679+00:00\",\"Status\":\"Finished\"}}"
+                                    "azureml.pipelines.stages": "{\"Initialization\":null,\"Execution\":{\"StartTime\":\"2026-09-28T20:40:28.4013219+00:00\",\"EndTime\":\"2026-09-28T20:43:54.6670158+00:00\",\"Status\":\"Finished\"}}"
                                 },
                                 "parameters": {},
                                 "actionUris": {
-                                    "Cancel": "https://southcentralus.api.azureml.ms/studioservice/api/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml965372705167/PipelineRuns/cctest-recent-pipeline/cancel"
+                                    "Cancel": "https://southcentralus.api.azureml.ms/studioservice/api/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml898871372560/PipelineRuns/cctest-recent-pipeline/cancel"
                                 },
                                 "scriptName": null,
                                 "target": null,
@@ -637,7 +637,7 @@
                                 "jobSpecification": null,
                                 "primaryMetricName": null,
                                 "createdFrom": null,
-                                "cancelUri": "https://southcentralus.api.azureml.ms/studioservice/api/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml965372705167/PipelineRuns/cctest-recent-pipeline/cancel",
+                                "cancelUri": "https://southcentralus.api.azureml.ms/studioservice/api/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml898871372560/PipelineRuns/cctest-recent-pipeline/cancel",
                                 "completeUri": null,
                                 "diagnosticsUri": null,
                                 "virtualWorkspaceStorageArmId": null,
@@ -649,37 +649,37 @@
                                 "outputs": null
                             },
                             {
-                                "runNumber": 1790002108,
+                                "runNumber": 1790628033,
                                 "rootRunId": "cctest-recent-pipeline",
-                                "createdUtc": "2026-09-21T14:48:28.0884442+00:00",
+                                "createdUtc": "2026-09-28T20:40:33.3150864+00:00",
                                 "token": null,
                                 "tokenExpiryTimeUtc": null,
                                 "error": null,
                                 "warnings": null,
                                 "revision": 13,
                                 "statusRevision": 6,
-                                "runUuid": "1dd6cd06-3d1c-45d1-9bf5-60464890a9a9",
-                                "parentRunUuid": "de3a53a1-f756-4c25-b0d7-2ffa8cc58d0e",
-                                "rootRunUuid": "de3a53a1-f756-4c25-b0d7-2ffa8cc58d0e",
+                                "runUuid": "b2e2b4e0-f506-4f42-9c61-3f037bc4aebd",
+                                "parentRunUuid": "eca8e228-14f6-4ecf-a57a-9f10f7c609a7",
+                                "rootRunUuid": "eca8e228-14f6-4ecf-a57a-9f10f7c609a7",
                                 "lastStartTimeUtc": null,
                                 "currentComputeTime": null,
-                                "computeDuration": "00:00:10.1049371",
+                                "computeDuration": "00:00:09.9355203",
                                 "effectiveStartTimeUtc": null,
-                                "lastModifiedUtc": "2026-09-21T14:51:29.5350262+00:00",
-                                "duration": "00:00:10.1049371",
+                                "lastModifiedUtc": "2026-09-28T20:43:27.7910824+00:00",
+                                "duration": "00:00:09.9355203",
                                 "cancelationReason": null,
                                 "currentAttemptId": 1,
                                 "deletionState": null,
-                                "runId": "e125fe78-afcd-44c8-ad29-9c62c0ac6696",
+                                "runId": "f9e4ab16-2018-40ac-a67a-7e3790431342",
                                 "parentRunId": "cctest-recent-pipeline",
-                                "experimentId": "fab82fe9-8cc6-499b-adfd-10175ee98050",
+                                "experimentId": "c8c24090-4e39-4dd6-8c7e-18a8854a3f18",
                                 "status": "Completed",
-                                "startTimeUtc": "2026-09-21T14:51:43.7204515+00:00",
-                                "endTimeUtc": "2026-09-21T14:51:53.8253886+00:00",
+                                "startTimeUtc": "2026-09-28T20:43:42.7129786+00:00",
+                                "endTimeUtc": "2026-09-28T20:43:52.6484989+00:00",
                                 "scheduleId": null,
                                 "displayName": "child",
                                 "name": "azureml_anonymous",
-                                "dataContainerId": "dcid.e125fe78-afcd-44c8-ad29-9c62c0ac6696",
+                                "dataContainerId": "dcid.f9e4ab16-2018-40ac-a67a-7e3790431342",
                                 "description": null,
                                 "hidden": false,
                                 "runType": "azureml.StepRun",
@@ -701,12 +701,12 @@
                                     "azureml.DatasetAccessMode": "Asset",
                                     "StepType": "PythonScriptStep",
                                     "ComputeTargetType": "AmlCompute",
-                                    "azureml.moduleid": "ef39b06a-f730-476c-983b-d09beab30eb5",
+                                    "azureml.moduleid": "a1892efa-7350-4d06-abee-9df10e31dad4",
                                     "azureml.moduleFamilyId": "0",
                                     "azureml.moduleName": "azureml_anonymous",
                                     "azureml.moduleVersion": "1",
                                     "azureml.runsource": "azureml.StepRun",
-                                    "azureml.nodeid": "838767e6",
+                                    "azureml.nodeid": "1664266f",
                                     "azureml.pipelinerunid": "cctest-recent-pipeline",
                                     "azureml.pipeline": "cctest-recent-pipeline",
                                     "azureml.rootpipelinerunid": "cctest-recent-pipeline",
@@ -718,14 +718,14 @@
                                 },
                                 "parameters": {},
                                 "actionUris": {
-                                    "Cancel": "https://southcentralus.api.azureml.ms/studioservice/apiv2/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml965372705167/runs/e125fe78-afcd-44c8-ad29-9c62c0ac6696/Cancel",
+                                    "Cancel": "https://southcentralus.api.azureml.ms/studioservice/apiv2/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml898871372560/runs/f9e4ab16-2018-40ac-a67a-7e3790431342/Cancel",
                                     "Diagnose": ""
                                 },
                                 "scriptName": null,
                                 "target": "cctest-ml-cluster",
                                 "uniqueChildRunComputeTargets": [],
                                 "tags": {
-                                    "azureml.nodeid": "838767e6",
+                                    "azureml.nodeid": "1664266f",
                                     "azureml.pipeline": "cctest-recent-pipeline",
                                     "_aml_system_ComputeTargetStatus": "{\"AllocationState\":\"steady\",\"PreparingNodeCount\":0,\"RunningNodeCount\":0,\"CurrentNodeCount\":0}"
                                 },
@@ -737,7 +737,7 @@
                                 "jobSpecification": null,
                                 "primaryMetricName": null,
                                 "createdFrom": null,
-                                "cancelUri": "https://southcentralus.api.azureml.ms/studioservice/apiv2/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml965372705167/runs/e125fe78-afcd-44c8-ad29-9c62c0ac6696/Cancel",
+                                "cancelUri": "https://southcentralus.api.azureml.ms/studioservice/apiv2/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-compute-cluster/workspaces/cctestml898871372560/runs/f9e4ab16-2018-40ac-a67a-7e3790431342/Cancel",
                                 "completeUri": null,
                                 "diagnosticsUri": "",
                                 "virtualWorkspaceStorageArmId": null,

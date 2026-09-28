@@ -3,7 +3,11 @@
 
 from unittest.mock import Mock, patch
 
-from .azure_common import AzureVCRBaseTest, BaseTest
+from .azure_common import (
+    AzureVCRBaseTest,
+    BaseTest,
+    DEFAULT_INSTRUMENTATION_KEY,
+)
 
 
 class AzureCommonTest(BaseTest):
@@ -58,6 +62,8 @@ class AzureCommonTest(BaseTest):
             headers={},
         )
 
+        # This unit test never records, so no cassette exists and playback is disabled.
+        self.assertFalse(self.is_playback())
         self.assertIsNone(self._request_callback(unrelated_request))
         self.assertIs(test_request, self._request_callback(test_request))
 
@@ -86,6 +92,18 @@ class AzureCommonTest(BaseTest):
             {'ComputeTargetType': 'AmlCompute'},
             run['properties'],
         )
+
+    def test_recording_sanitizer_redacts_instrumentation_keys(self):
+        key = '12345678-1234-1234-1234-123456789abc'
+        body = (
+            f'{{"InstrumentationKey": "{key}", '
+            f'"sdkTelemetryAppInsightsKey": "{key}"}}'
+        )
+
+        sanitized = AzureVCRBaseTest._replace_instrumentation_key(body)
+
+        self.assertNotIn(key, sanitized)
+        self.assertEqual(2, sanitized.count(DEFAULT_INSTRUMENTATION_KEY))
 
     def test_recording_sanitizer_redacts_async_operation_signature(self):
         url = (

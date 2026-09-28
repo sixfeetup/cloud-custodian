@@ -646,6 +646,26 @@ class MachineLearningComputeClusterTest(BaseTest):
 
         self.assertEqual(['provisioning-cluster'], [r['name'] for r in resources])
 
+    def test_inactive_cluster_with_null_node_state_counts(self):
+        inactive_filter = self._load_inactive_filter()
+        inactive_filter._get_active_targets = Mock(return_value=set())
+        null_counts = self._cluster('failed-cluster')
+        null_counts['properties']['properties']['nodeStateCounts'] = None
+        null_running_count = self._cluster('creating-cluster')
+        null_running_count['properties']['properties'][
+            'nodeStateCounts'
+        ]['runningNodeCount'] = None
+
+        resources = inactive_filter.process([
+            null_counts,
+            null_running_count,
+        ])
+
+        self.assertEqual(
+            ['failed-cluster', 'creating-cluster'],
+            [r['name'] for r in resources],
+        )
+
     @patch(
         'c7n_azure.resources.machine_learning_compute_cluster.utils.requests_session',
     )
