@@ -4,10 +4,12 @@ import time
 import logging
 from unittest.mock import MagicMock
 
+import dns.resolver
 import pytest
 from pytest_terraform import terraform
 
 from botocore.exceptions import ClientError
+from c7n.resources import route53
 from .common import BaseTest
 
 
@@ -338,6 +340,124 @@ class ResourceRecordSetTest(BaseTest):
             HostedZoneId=resources[0]["c7n:parent-id"]
         )
         self.assertEqual(len(records["ResourceRecordSets"]), 2)
+
+
+class FakeResolver:
+
+    def __init__(self, error=None):
+        self.error = error
+        self.queries = []
+
+    def resolve(self, name, rdtype, search):
+        self.queries.append((name, rdtype, search))
+        if self.error:
+            raise self.error
+
+
+@pytest.mark.parametrize('error, expected', [
+    (None, 'EXISTS'),
+    (dns.resolver.NoAnswer(), 'EXISTS'),
+    (dns.resolver.NXDOMAIN(), 'NXDOMAIN'),
+    (dns.resolver.NoNameservers(), 'FAILED'),
+    (dns.resolver.LifetimeTimeout(), 'FAILED'),
+])
+def test_route53_rrset_resolve_target(error, expected):
+    resolver = FakeResolver(error)
+
+    assert route53.resolve_target(resolver, 'gone.example.net.') == expected
+    assert resolver.queries == [('gone.example.net.', 'A', False)]
+
+
+def test_route53_rrset_dangling_nameservers(test):
+    p = test.load_policy({
+        'name': 'rrset-dangling-nameservers',
+        'resource': 'aws.rrset',
+        'filters': [{'type': 'dangling', 'nameservers': ['192.0.2.53']}]})
+
+    resolver = p.resource_manager.filters[0].get_resolver()
+
+    assert resolver.nameservers == ['192.0.2.53']
+
+
+def fake_dns(monkeypatch, zone):
+    """Answer the dangling filter's lookups for the route53_rrset_dangling zone."""
+    answers = {
+        'gone.example.net.': 'NXDOMAIN',
+        'no-address.example.net.': 'EXISTS',
+        'alive.example.net.': 'EXISTS',
+        'flaky.example.net.': 'FAILED',
+        # Nothing delegates to the test zone, so public DNS has no web record.
+        f'web.{zone}.': 'NXDOMAIN',
+    }
+    looked_up = []
+
+    def resolve_target(resolver, name):
+        looked_up.append(name)
+        return answers[name]
+
+    monkeypatch.setattr(route53, 'resolve_target', resolve_target)
+    return looked_up
+
+
+def dangling_zones(fixture):
+    # The recording account may hold other zones, so judge only the fixture's.
+    return {
+        'type': 'value',
+        'key': '"c7n:parent-id"',
+        'op': 'in',
+        'value': [
+            '/hostedzone/' + fixture['aws_route53_zone.public.zone_id'],
+            '/hostedzone/' + fixture['aws_route53_zone.private.zone_id'],
+        ]}
+
+
+@terraform('route53_rrset_dangling', scope='session')
+def test_route53_rrset_dangling(test, route53_rrset_dangling, monkeypatch):
+    zone = route53_rrset_dangling['aws_route53_zone.public.name']
+    looked_up = fake_dns(monkeypatch, zone)
+    session_factory = test.replay_flight_data('route53_rrset_dangling')
+    p = test.load_policy({
+        'name': 'rrset-dangling',
+        'resource': 'aws.rrset',
+        'filters': [dangling_zones(route53_rrset_dangling), {'type': 'dangling'}]},
+        session_factory=session_factory)
+
+    resources = p.run()
+
+    assert {r['Name']: r['c7n:dangling'] for r in resources} == {
+        f'gone.{zone}.': {'target': 'gone.example.net.', 'result': 'NXDOMAIN'},
+        f'alias.{zone}.': {'target': f'web.{zone}.', 'result': 'NXDOMAIN'},
+    }
+    # The private zone's CNAME is never looked up.
+    assert sorted(looked_up) == [
+        'alive.example.net.',
+        'flaky.example.net.',
+        'gone.example.net.',
+        'no-address.example.net.',
+        f'web.{zone}.',
+    ]
+
+
+@terraform('route53_rrset_dangling', scope='session')
+def test_route53_rrset_dangling_include_failed(test, route53_rrset_dangling, monkeypatch):
+    zone = route53_rrset_dangling['aws_route53_zone.public.name']
+    fake_dns(monkeypatch, zone)
+    session_factory = test.replay_flight_data('route53_rrset_dangling_include_failed')
+    p = test.load_policy({
+        'name': 'rrset-dangling-include-failed',
+        'resource': 'aws.rrset',
+        'filters': [
+            dangling_zones(route53_rrset_dangling),
+            {'type': 'dangling', 'include-failed': True}]},
+        session_factory=session_factory)
+
+    resources = p.run()
+
+    assert {r['Name']: r['c7n:dangling']['result'] for r in resources} == {
+        f'gone.{zone}.': 'NXDOMAIN',
+        f'alias.{zone}.': 'NXDOMAIN',
+        f'flaky.{zone}.': 'FAILED',
+    }
 
 
 class Route53EnableDNSQueryLoggingTest(BaseTest):

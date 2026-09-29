@@ -30,6 +30,13 @@ from c7n import tags, query
 from c7n.filters.iamaccess import CrossAccountAccessFilter
 from c7n.resolver import ValuesFrom
 
+try:
+    import dns.exception
+    import dns.resolver
+    HAVE_DNSPYTHON = True
+except ImportError:
+    HAVE_DNSPYTHON = False
+
 
 class Route53Base:
 
@@ -281,6 +288,112 @@ class ResourceRecordSetRemove(BaseAction):
         except Exception as e:
             self.log.warning(
                 "ResourceRecordSet delete error: %s", e)
+
+
+def resolve_target(resolver, name):
+    """Look up a record's target and report whether the name still exists.
+
+    Returns NXDOMAIN when the name is gone and EXISTS when it answers, even
+    with no address: ACM validation and DKIM targets are TXT-only names.
+    Returns FAILED when the lookup gets no answer either way.
+    """
+    try:
+        resolver.resolve(name, 'A', search=False)
+    except dns.resolver.NXDOMAIN:
+        return 'NXDOMAIN'
+    except dns.resolver.NoAnswer:
+        return 'EXISTS'
+    except dns.exception.DNSException:
+        return 'FAILED'
+    return 'EXISTS'
+
+
+class DanglingRecordSet(Filter):
+    """Filter CNAME and alias records whose target no longer exists in DNS.
+
+    Each target is looked up in DNS rather than matched against resources
+    in the account, so a target in another account is judged correctly.
+    A target that returns NXDOMAIN matches, and the record is annotated
+    with ``c7n:dangling``. A target that exists without an address does
+    not match. A failed lookup, such as a timeout, matches only when
+    ``include-failed`` is set. Records in private hosted zones are skipped.
+
+    Lookups use the host's resolver unless ``nameservers`` is set. Requires
+    dnspython.
+
+    NXDOMAIN does not catch every stale record. S3 website endpoints
+    resolve whether or not the bucket exists, and a deleted CloudFront
+    distribution returns no address rather than NXDOMAIN.
+
+    :example:
+
+    .. code-block:: yaml
+
+            policies:
+              - name: route53-dangling-records
+                resource: aws.rrset
+                filters:
+                  - type: dangling
+                    nameservers:
+                      - 1.1.1.1
+    """
+    schema = type_schema(
+        'dangling',
+        nameservers={'type': 'array', 'items': {'type': 'string'}},
+        **{'include-failed': {'type': 'boolean'}})
+    permissions = ('route53:ListHostedZones',)
+    annotation_key = 'c7n:dangling'
+
+    def get_resolver(self):
+        nameservers = self.data.get('nameservers')
+        resolver = dns.resolver.Resolver(configure=not nameservers)
+        if nameservers:
+            resolver.nameservers = nameservers
+        return resolver
+
+    def get_target(self, r):
+        if 'AliasTarget' in r:
+            target = r['AliasTarget']['DNSName']
+        elif r['Type'] == 'CNAME':
+            target = r['ResourceRecords'][0]['Value']
+        else:
+            return None
+        return target.rstrip('.').lower() + '.'
+
+    def process(self, resources, event=None):
+        private_zones = {
+            z['Id'] for z in
+            self.manager.get_parent_manager().resources(augment=False)
+            if z['Config']['PrivateZone']}
+
+        candidates = []
+        for r in resources:
+            if r['c7n:parent-id'] in private_zones:
+                continue
+            target = self.get_target(r)
+            if target:
+                candidates.append((r, target))
+
+        targets = sorted({target for _, target in candidates})
+        resolver = self.get_resolver()
+        with self.executor_factory(max_workers=10) as w:
+            results = dict(zip(targets, w.map(
+                functools.partial(resolve_target, resolver), targets)))
+
+        wanted = {'NXDOMAIN'}
+        if self.data.get('include-failed'):
+            wanted.add('FAILED')
+
+        matched = []
+        for r, target in candidates:
+            if results[target] in wanted:
+                r[self.annotation_key] = {'target': target, 'result': results[target]}
+                matched.append(r)
+        return matched
+
+
+if HAVE_DNSPYTHON:
+    ResourceRecordSet.filter_registry.register('dangling', DanglingRecordSet)
 
 
 @HostedZone.action_registry.register('delete')

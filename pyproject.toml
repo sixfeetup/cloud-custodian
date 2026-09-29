@@ -61,6 +61,7 @@ lint = [
 addons = [
     "aws-xray-sdk<3.0,>=2.14",
     "bs4>=0.0.2",
+    "dnspython>=2.8.0",
     "jsonpatch<2.0,>=1.25",
     "psutil>=5.7",
 ]
