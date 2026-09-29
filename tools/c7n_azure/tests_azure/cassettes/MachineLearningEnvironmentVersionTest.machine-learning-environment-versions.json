@@ -101,10 +101,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-09-29T20:55:26.7028901Z",
-                                    "createdBy": "liam.callahan@sixfeetup.com",
+                                    "createdBy": "user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-09-29T20:55:26.7028901Z",
-                                    "lastModifiedBy": "liam.callahan@sixfeetup.com",
+                                    "lastModifiedBy": "user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             }
