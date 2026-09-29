@@ -8,6 +8,9 @@ from c7n_gcp.provider import resources
 from c7n_gcp.query import (
     ChildResourceManager, ChildTypeInfo, QueryResourceManager, TypeInfo)
 
+# TODO .. folder, billing account sink
+# how to map them given a project level root entity sans use of c7n-org
+
 
 @resources.register('log-project-sink')
 class LogProjectSink(QueryResourceManager):
