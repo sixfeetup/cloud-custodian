@@ -1,8 +1,14 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import logging
 from time import sleep
+from unittest import mock
+
 from gcp_common import BaseTest, event_data
+from googleapiclient.errors import HttpError
+from httplib2 import Response
 from pytest_terraform import terraform
+from c7n_gcp.client import ServiceClient
 from c7n_gcp.resources.loadbalancer import LoadBalancingAddress
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalAddress
 from c7n_gcp.resources.loadbalancer import LoadBalancingGlobalForwardingRule
@@ -1084,6 +1090,25 @@ def test_lb_https_proxy_ssl_policy_shared(test, lb_https_proxy_ssl_policy):
         names)
     assert sorted(r['name'] for r in resources) == sorted(names)
     assert all(r['c7n:ssl-policy']['profile'] == 'COMPATIBLE' for r in resources)
+
+
+@terraform('lb_https_proxy_ssl_policy', scope='session')
+def test_lb_https_proxy_ssl_policy_not_found(test, lb_https_proxy_ssl_policy, caplog):
+    # A 404 happens when the policy is deleted after the proxies were listed
+    # (or cached). GCP won't delete an in-use policy, so it can't be recorded
+    # live. Replay the proxy list and fail the ssl policy get.
+    proxies = lb_https_proxy_ssl_policy.resources['google_compute_target_https_proxy']
+    names = [proxies['weak']['name'], proxies['weak2']['name']]
+    not_found = HttpError(Response({'status': 404}), b'not found')
+    with mock.patch.object(
+            ServiceClient, 'execute_command', side_effect=not_found) as get:
+        with caplog.at_level(logging.WARNING, logger='custodian.gcp.loadbalancer'):
+            resources = _run_ssl_policy_filter(
+                test, 'gcp.loadbalancer-target-https-proxy', 'lb-https-ssl-shared',
+                names)
+    assert resources == []
+    assert get.call_count == 1
+    assert 'ssl policy not found' in caplog.text
 
 
 @terraform('lb_https_proxy_ssl_policy', scope='session')
