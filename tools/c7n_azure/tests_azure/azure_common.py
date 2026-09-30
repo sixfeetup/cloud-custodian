@@ -258,6 +258,14 @@ class AzureVCRBaseTest(VCRTestCase):
                                response['headers'].items()
                                if k.lower() not in self.FILTERED_HEADERS}
 
+        # Headers such as location and azure-asyncoperation carry the
+        # subscription id, and are not covered by the body scrubbing below.
+        response['headers'] = {
+            k: [self._replace_subscription_id(self._replace_tenant_id(value))
+                for value in v]
+            for (k, v) in response['headers'].items()
+            }
+
         if not response['body'].get('string'):
             return response
 

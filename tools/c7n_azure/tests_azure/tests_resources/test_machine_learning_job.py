@@ -213,11 +213,16 @@ class MachineLearningJobTest(BaseTest):
 
         client = local_session(Session).client(
             'azure.mgmt.machinelearningservices.MachineLearningServicesMgmtClient')
-        job = client.jobs.get(
-            ResourceIdParser.get_resource_group(resources[0]['id']),
-            ResourceIdParser.get_resource_name(resources[0]['c7n:parent-id']),
-            resources[0]['name'],
-        )
+        resource_group = ResourceIdParser.get_resource_group(resources[0]['id'])
+        workspace = ResourceIdParser.get_resource_name(resources[0]['c7n:parent-id'])
+        job = client.jobs.get(resource_group, workspace, resources[0]['name'])
+        # Cancellation is requested without waiting, so a live run can still
+        # see the job running for a moment after the request is accepted.
+        while job.properties.status not in (
+                'CancelRequested', 'Canceled', 'Completed', 'Failed'):
+            self.sleep_in_live_mode(30)
+            job = client.jobs.get(resource_group, workspace, resources[0]['name'])
+
         self.assertIn(job.properties.status, ('CancelRequested', 'Canceled'))
 
     @arm_template('machine-learning-job-cancel.json')
