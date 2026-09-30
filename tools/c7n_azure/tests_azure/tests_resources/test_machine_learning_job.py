@@ -203,7 +203,7 @@ class MachineLearningJobTest(BaseTest):
             }, {
                 'type': 'value',
                 'key': 'name',
-                'value': 'cctest-running-job',
+                'value': 'cctest-cancel-job',
             }],
             'actions': [{'type': 'cancel'}],
         }, validate=True, session_factory=Session)
@@ -232,7 +232,7 @@ class MachineLearningJobTest(BaseTest):
             'azure.mgmt.machinelearningservices.MachineLearningServicesMgmtClient')
         job = client.jobs.get(
             'test_machine-learning-job-cancel',
-            'cctest-mlws-cancel',
+            'cctest-mlws-job-cancel',
             'cctest-completed-job',
         )
         resource = _serialize(job)

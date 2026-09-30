@@ -4,7 +4,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-cancel/jobs/cctest-completed-job?api-version=2023-04-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-job-cancel/jobs/cctest-completed-job?api-version=2023-04-01",
                 "body": null,
                 "headers": {}
             },
@@ -14,46 +14,43 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-request-time": [
-                        "0.065"
-                    ],
-                    "content-length": [
-                        "3098"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "x-ms-response-type": [
-                        "standard"
-                    ],
                     "request-context": [
                         "appId=cid-v1:2d2e8e63-272e-4b3c-8598-4ee570a0e70d"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 67C401E3864047A48629786A79DF6608 Ref B: CYS013050703029 Ref C: 2026-08-25T13:18:38Z"
-                    ],
-                    "x-ms-operation-identifier": [
-                        "tenantId=72d876e4-6b6f-4622-8566-8200130e81d4,objectId=e89404a5-c7db-4cdf-aed3-31daf7739325/southcentralus/2c27f92e-7d4e-4d52-8809-31d584c41c70"
-                    ],
-                    "azureml-served-by-cluster": [
-                        "vienna-southcentralus-01"
                     ],
                     "cache-control": [
                         "no-cache"
                     ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "content-length": [
+                        "3118"
+                    ],
                     "date": [
-                        "Tue, 25 Aug 2026 13:18:38 GMT"
+                        "Wed, 30 Sep 2026 19:29:50 GMT"
+                    ],
+                    "x-request-time": [
+                        "0.079"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 21F2C1D4549248469C108AC9607470ED Ref B: CYS013050701011 Ref C: 2026-09-30T19:29:50Z"
+                    ],
+                    "azureml-served-by-cluster": [
+                        "vienna-southcentralus-02"
+                    ],
+                    "x-ms-response-type": [
+                        "standard"
                     ]
                 },
                 "body": {
                     "data": {
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-cancel/jobs/cctest-completed-job",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-job-cancel/jobs/cctest-completed-job",
                         "name": "cctest-completed-job",
                         "type": "Microsoft.MachineLearningServices/workspaces/jobs",
                         "properties": {
@@ -66,8 +63,8 @@
                                 "_azureml.ClusterName": "cctestcpucancel",
                                 "ProcessInfoFile": "azureml-logs/process_info.json",
                                 "ProcessStatusFile": "azureml-logs/process_status.json",
-                                "StartTimeUtc": "2026-08-25 13:16:10",
-                                "EndTimeUtc": "2026-08-25 13:16:19"
+                                "StartTimeUtc": "2026-09-30 19:28:16",
+                                "EndTimeUtc": "2026-09-30 19:29:03"
                             },
                             "displayName": "cctest_completed_job",
                             "status": "Completed",
@@ -76,7 +73,7 @@
                                 "Tracking": {
                                     "jobServiceType": "Tracking",
                                     "port": null,
-                                    "endpoint": "azureml://southcentralus.api.azureml.ms/mlflow/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-cancel?",
+                                    "endpoint": "azureml://southcentralus.api.azureml.ms/mlflow/v1.0/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-job-cancel?",
                                     "status": null,
                                     "errorMessage": null,
                                     "properties": null,
@@ -85,14 +82,14 @@
                                 "Studio": {
                                     "jobServiceType": "Studio",
                                     "port": null,
-                                    "endpoint": "https://ml.azure.com/runs/cctest-completed-job?wsid=/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_machine-learning-job-cancel/workspaces/cctest-mlws-cancel",
+                                    "endpoint": "https://ml.azure.com/runs/cctest-completed-job?wsid=/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_machine-learning-job-cancel/workspaces/cctest-mlws-job-cancel",
                                     "status": null,
                                     "errorMessage": null,
                                     "properties": null,
                                     "nodes": null
                                 }
                             },
-                            "computeId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-cancel/computes/cctestcpucancel",
+                            "computeId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-job-cancel/computes/cctestcpucancel",
                             "isArchived": false,
                             "identity": null,
                             "componentId": null,
@@ -106,7 +103,7 @@
                             },
                             "codeId": null,
                             "command": "echo hello",
-                            "environmentId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-cancel/environments/cctest-cancel-env/versions/1",
+                            "environmentId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_machine-learning-job-cancel/providers/Microsoft.MachineLearningServices/workspaces/cctest-mlws-job-cancel/environments/cctest-cancel-env/versions/1",
                             "inputs": {},
                             "outputs": {
                                 "default": {
@@ -122,7 +119,7 @@
                             "parameters": {}
                         },
                         "systemData": {
-                            "createdAt": "2026-08-25T13:04:17.9041614+00:00",
+                            "createdAt": "2026-09-30T19:25:21.2716411+00:00",
                             "createdBy": "Jim Fulton",
                             "createdByType": "User"
                         }

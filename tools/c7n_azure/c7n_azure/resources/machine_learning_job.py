@@ -43,6 +43,7 @@ class MachineLearningJob(ChildArmResourceManager):
         enum_spec = ('jobs', 'list', None)
         parent_manager_name = 'machine-learning-workspace'
         resource_type = 'Microsoft.MachineLearningServices/workspaces/jobs'
+        raise_on_exception = False
         default_report_fields = (
             'name',
             'resourceGroup',

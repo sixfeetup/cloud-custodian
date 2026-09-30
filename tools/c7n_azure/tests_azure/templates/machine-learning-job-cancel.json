@@ -10,10 +10,10 @@
         "storageAccountName": "[concat('cctestmlws', parameters('uniqueId'))]",
         "keyVaultName": "[concat('cctestmlws', parameters('uniqueId'))]",
         "appInsightsName": "[concat('cctestmlws', parameters('uniqueId'))]",
-        "workspaceName": "cctest-mlws-cancel",
+        "workspaceName": "cctest-mlws-job-cancel",
         "computeName": "cctestcpucancel",
         "environmentName": "cctest-cancel-env",
-        "jobName": "cctest-running-job",
+        "jobName": "cctest-cancel-job",
         "completedJobName": "cctest-completed-job"
     },
     "resources": [
@@ -123,9 +123,9 @@
             "apiVersion": "2023-04-01",
             "name": "[format('{0}/{1}', variables('workspaceName'), variables('jobName'))]",
             "properties": {
-                "command": "sleep 600",
+                "command": "sleep 3600",
                 "computeId": "[resourceId('Microsoft.MachineLearningServices/workspaces/computes', variables('workspaceName'), variables('computeName'))]",
-                "displayName": "cctest_running_job",
+                "displayName": "cctest_cancel_job",
                 "environmentId": "[resourceId('Microsoft.MachineLearningServices/workspaces/environments/versions', variables('workspaceName'), variables('environmentName'), '1')]",
                 "experimentName": "cctest_cancel",
                 "jobType": "Command"
