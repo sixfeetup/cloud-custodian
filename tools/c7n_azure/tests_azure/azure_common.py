@@ -159,7 +159,11 @@ class AzureVCRBaseTest(VCRTestCase):
 
     def setUp(self):
         super(AzureVCRBaseTest, self).setUp()
-        if self.vcr_enabled and getattr(
+
+        # When playing back, if we're in strict mode, make sure
+        # We played the whole cassette.  Otherwise, the default,
+        # we may only play a subset.
+        if self.is_playback() and getattr(
                 getattr(self, self._testMethodName), 'strict_cassette', False):
             # Registered after the cassette's own cleanup, so it runs first,
             # while the cassette is still open.
@@ -253,6 +257,9 @@ class AzureVCRBaseTest(VCRTestCase):
         response['headers'] = {k.lower(): v for (k, v) in
                                response['headers'].items()
                                if k.lower() not in self.FILTERED_HEADERS}
+
+        if not response['body'].get('string'):
+            return response
 
         content_type = response['headers'].get('content-type', (None,))[0]
         if not content_type or 'application/json' not in content_type:
@@ -557,11 +564,14 @@ def cassette_name(name):
 
 
 def strict_cassette(name):
-    """Use a cassette requiring all interactions to be played on replay.
+    """Name the cassette, and require every recorded interaction to be played.
 
     ``cassette_name`` constrains a test from one side only: playback rejects a
     request that was never recorded, but stays silent about a recorded request
-    the code under test stops making.
+    the code under test stops making. A test whose subject *is* a request --
+    the PUT or POST an action issues -- therefore passes just as happily when
+    the action does nothing at all, because its other assertions read recorded
+    responses either way.
 
     Mutually exclusive with sharing a cassette between tests, since a shared
     recording is the union of what each of them replays.
