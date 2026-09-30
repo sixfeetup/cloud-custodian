@@ -99,8 +99,8 @@ class ServiceTest(BaseTest):
         else:
             flip, restore, flipped = enable, disable, 'ENABLED'
 
-        flip.process([original])
         try:
+            flip.process([original])
             self.assertEqual(self.wait_for_state(manager, name, flipped)['state'], flipped)
         finally:
             restore.process([original])
