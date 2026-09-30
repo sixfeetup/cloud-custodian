@@ -1036,3 +1036,72 @@ def test_loadbalancer_global_forwarding_rule_labels(
     resource = LoadBalancingGlobalForwardingRule.resource_type.refresh(client, resources[0])
     assert resource['labels']['env'] == 'not-the-default'
     assert resource['labelFingerprint'] != label_fingerprint
+
+
+def _run_ssl_policy_filter(test, resource, flight, names, ssl_filter=None):
+    if ssl_filter is None:
+        ssl_filter = {'type': 'ssl-policy', 'key': 'profile', 'value': 'COMPATIBLE'}
+    factory = test.replay_flight_data(flight)
+    policy = test.load_policy(
+        {
+            'name': flight,
+            'resource': resource,
+            'filters': [
+                {'type': 'value', 'key': 'name', 'op': 'in', 'value': names},
+                ssl_filter,
+            ],
+        },
+        session_factory=factory,
+    )
+    return policy.run()
+
+
+@terraform('lb_https_proxy_ssl_policy', scope='session')
+def test_lb_https_proxy_ssl_policy_good(test, lb_https_proxy_ssl_policy):
+    proxy = lb_https_proxy_ssl_policy.resources['google_compute_target_https_proxy']['good']
+    resources = _run_ssl_policy_filter(
+        test, 'gcp.loadbalancer-target-https-proxy', 'lb-https-ssl-good',
+        [proxy['name']])
+    assert resources == []
+
+
+@terraform('lb_https_proxy_ssl_policy', scope='session')
+def test_lb_https_proxy_ssl_policy_none(test, lb_https_proxy_ssl_policy):
+    proxy = lb_https_proxy_ssl_policy.resources['google_compute_target_https_proxy']['none']
+    resources = _run_ssl_policy_filter(
+        test, 'gcp.loadbalancer-target-https-proxy', 'lb-https-ssl-none',
+        [proxy['name']])
+    assert resources == []
+
+
+@terraform('lb_https_proxy_ssl_policy', scope='session')
+def test_lb_https_proxy_ssl_policy_shared(test, lb_https_proxy_ssl_policy):
+    # Both proxies use the same ssl policy, which is only fetched once.
+    proxies = lb_https_proxy_ssl_policy.resources['google_compute_target_https_proxy']
+    names = [proxies['weak']['name'], proxies['weak2']['name']]
+    resources = _run_ssl_policy_filter(
+        test, 'gcp.loadbalancer-target-https-proxy', 'lb-https-ssl-shared',
+        names)
+    assert sorted(r['name'] for r in resources) == sorted(names)
+    assert all(r['c7n:ssl-policy']['profile'] == 'COMPATIBLE' for r in resources)
+
+
+@terraform('lb_https_proxy_ssl_policy', scope='session')
+def test_lb_https_proxy_ssl_policy_not_none(test, lb_https_proxy_ssl_policy):
+    # A proxy with no sslPolicy fails the ssl-policy check, so not matches it.
+    proxy = lb_https_proxy_ssl_policy.resources['google_compute_target_https_proxy']['none']
+    resources = _run_ssl_policy_filter(
+        test, 'gcp.loadbalancer-target-https-proxy', 'lb-https-ssl-not-none',
+        [proxy['name']],
+        ssl_filter={'not': [{'type': 'ssl-policy', 'key': 'profile', 'value': 'MODERN'}]})
+    assert [r['name'] for r in resources] == [proxy['name']]
+
+
+@terraform('lb_ssl_proxy_ssl_policy', scope='session')
+def test_lb_ssl_proxy_ssl_policy_weak(test, lb_ssl_proxy_ssl_policy):
+    proxy = lb_ssl_proxy_ssl_policy.resources['google_compute_target_ssl_proxy']['weak']
+    resources = _run_ssl_policy_filter(
+        test, 'gcp.loadbalancer-target-ssl-proxy', 'lb-sslproxy-ssl-weak',
+        [proxy['name']])
+    assert [r['name'] for r in resources] == [proxy['name']]
+    assert resources[0]['c7n:ssl-policy']['profile'] == 'COMPATIBLE'
