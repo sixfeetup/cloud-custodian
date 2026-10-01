@@ -6,8 +6,6 @@ one whose `/.*` handler is `SECURE_ALWAYS` and one whose handler is
 
 ## Prerequisites
 
-App Engine won't delete these, so the fixture can't manage them:
-
 - **An App Engine application.** Applications can't be deleted and their region
   can't change, so a fixture that created one could only ever apply once.
 
@@ -15,10 +13,16 @@ App Engine won't delete these, so the fixture can't manage them:
   gcloud app create --region=us-central
   ```
 
-- **A version in `default` that isn't from this fixture.** App Engine refuses to
-  delete the last version of a service ("Cannot delete the final version of a
-  service"). In a new app, the first recording's destroy fails on one version.
-  Remove it from state, destroy the rest, and leave that version in place.
+- **A version in `default` that outlives the fixture.** App Engine won't delete
+  the last version of a service. In a new app, the first recording's teardown
+  fails with "Cannot delete the final version of a service", leaving one `c7n-*`
+  version and the `c7n-app-engine-*` bucket. The recordings are still good. Keep
+  the version, since it's the one later recordings need, and delete the bucket:
+
+  ```bash
+  gcloud storage rm --recursive gs://<bucket>
+  ```
+
   Later recordings tear down cleanly.
 
 - **APIs enabled:**
@@ -34,9 +38,12 @@ Switch both `test_app_engine_service_version_*` tests in `test_appengine.py` to
 `replay=False` and `record_flight_data`, then run:
 
 ```bash
-GOOGLE_CLOUD_PROJECT=<project> uv run pytest -s -p no:env --tf-debug \
+C7N_FUNCTIONAL=yes GOOGLE_CLOUD_PROJECT=<project> uv run pytest -s -p no:env --tf-debug \
   tools/c7n_gcp/tests/test_appengine.py -k app_engine_service_version
 ```
+
+`C7N_FUNCTIONAL=yes` makes `event_data` put the live project back into the
+recorded audit events, so the audit test fetches a version that exists.
 
 The recorder only rewrites `projects/<id>/`, and App Engine paths are
 `apps/<id>/`. Before committing:

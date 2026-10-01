@@ -2,8 +2,7 @@ resource "random_id" "suffix" {
   byte_length = 2
 }
 
-# Requires an existing App Engine application in the project. Applications
-# can't be deleted, so a fixture that created one could only ever apply once.
+# Needs an existing App Engine app in the project; see README.md.
 
 data "archive_file" "app_source" {
   type        = "zip"

@@ -1,10 +1,11 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import functools
 from unittest import mock
 
-from c7n_gcp.client import ServiceClient
-from gcp_common import BaseTest
+from c7n_gcp.client import ServiceClient, Session
+from gcp_common import BaseTest, audit_event_recorder, event_data
 from pytest_terraform import terraform
 
 
@@ -331,20 +332,40 @@ def test_app_engine_service_version_full_view(test, app_engine_service_version):
 
 
 @terraform('app_engine_service_version', scope='session')
-def test_app_engine_service_version_get(test, app_engine_service_version):
+def test_app_engine_service_version_audit(test, app_engine_service_version):
     name = app_engine_service_version[
         'google_app_engine_standard_app_version.secure_always.name']
-    factory = test.replay_flight_data('app_engine_service_version_get')
+    factory = test.replay_flight_data('app_engine_service_version_audit')
+
+    if test.recording:
+        setup_session_factory = functools.partial(Session, project_id=test.project_id)
+        audit_event_recorder(
+            setup_session_factory,
+            'app-engine-version-create.json',
+            method='CreateVersion',
+            resource_name=name,
+            start_time_skew_seconds=900,
+        ).record()
+        # Otherwise the policy reuses the cached setup session and records nothing.
+        test.cleanUp()
+
     policy = test.load_policy(
-        {'name': 'app-engine-version-get',
-         'resource': 'gcp.app-engine-service-version'},
+        {'name': 'app-engine-version-audit',
+         'resource': 'gcp.app-engine-service-version',
+         'mode': {'type': 'gcp-audit',
+                  'methods': ['google.appengine.v1.Versions.CreateVersion']}},
         session_factory=factory)
+    exec_mode = policy.get_execution_mode()
+    service = name.rsplit('/versions/', 1)[0]
 
     with _spy('execute_query') as calls:
-        version = policy.resource_manager.get_resource({'resourceName': name})
+        for event_file in ('app-engine-version-create-first.json',
+                           'app-engine-version-create-last.json'):
+            [version] = exec_mode.run(event_data(event_file), None)
+            assert version['name'] == name, event_file
+            assert _catch_all_security_levels(version) == ['SECURE_ALWAYS'], event_file
+            assert version['c7n:app-engine-service']['name'] == service, event_file
 
     version_gets = [c.args[2] for c in calls.call_args_list if 'versionsId' in c.args[2]]
-    assert version_gets and all(args.get('view') == 'FULL' for args in version_gets)
-    assert version['name'] == name
-    assert _catch_all_security_levels(version) == ['SECURE_ALWAYS']
-    assert version['c7n:app-engine-service']['name'] == name.rsplit('/versions/', 1)[0]
+    assert len(version_gets) == 2
+    assert all(args.get('view') == 'FULL' for args in version_gets)
