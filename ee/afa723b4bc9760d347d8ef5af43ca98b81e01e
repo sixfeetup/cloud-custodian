@@ -1,0 +1,19 @@
+tools/c7n_kube/tests/test_kube.py
+  s_b65179e8a62551::t_9dd65b4cda80f3 46-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eeafa723b4bc9760d347d8ef5af43ca98b81e01e",
+  "prompts": {},
+  "sessions": {
+    "s_b65179e8a62551": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "abcafcb3-b168-4011-8d04-f52cfc22560d",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
