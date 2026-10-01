@@ -3,7 +3,7 @@
 
 from unittest.mock import Mock
 
-from azure.core.exceptions import ResourceNotFoundError
+from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.mgmt.machinelearningservices.models import (
     EnvironmentVersion,
     EnvironmentVersionProperties,
@@ -126,3 +126,46 @@ class MachineLearningEnvironmentVersionTest(BaseTest):
             name='cctest-env',
             list_view_type='All'
         )
+
+    def test_machine_learning_environment_version_skips_missing_workspace(self):
+        client = Mock()
+        client.environment_containers.list.side_effect = ResourceNotFoundError(
+            'ResourceGroupNotFound')
+
+        manager = self._manager_with_client(client)
+
+        assert manager.resources() == []
+
+    def test_machine_learning_environment_version_raises_other_errors(self):
+        user_created = Mock()
+        user_created.name = 'cctest-env'
+
+        client = Mock()
+        client.environment_containers.list.return_value = [user_created]
+        client.environment_versions.list.side_effect = HttpResponseError('Forbidden')
+
+        manager = self._manager_with_client(client)
+
+        with self.assertRaises(HttpResponseError):
+            manager.resources()
+
+    def _manager_with_client(self, client):
+        parent_manager = Mock()
+        parent_manager.resource_type.id = 'id'
+        parent_manager.resources.return_value = [{
+            'id': (
+                '/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/VV'
+                '/providers/Microsoft.MachineLearningServices/workspaces/vvmlwrkspc'
+            ),
+            'name': 'vvmlwrkspc',
+            'resourceGroup': 'VV'
+        }]
+
+        p = self.load_policy({
+            'name': 'find-all-machine-learning-environment-versions',
+            'resource': 'azure.machine-learning-environment-version'
+        })
+        manager = p.resource_manager
+        manager.get_parent_manager = Mock(return_value=parent_manager)
+        manager.get_client = Mock(return_value=client)
+        return manager

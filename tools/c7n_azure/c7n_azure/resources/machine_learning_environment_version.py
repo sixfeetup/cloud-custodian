@@ -49,7 +49,6 @@ class MachineLearningEnvironmentVersion(ChildArmResourceManager):
         client = 'MachineLearningServicesMgmtClient'
         enum_spec = ('environment_versions', 'list', None)
         parent_manager_name = 'machine-learning-workspace'
-        raise_on_exception = False
         resource_type = 'Microsoft.MachineLearningServices/workspaces/environments/versions'
         default_report_fields = (
             'name',
@@ -63,18 +62,23 @@ class MachineLearningEnvironmentVersion(ChildArmResourceManager):
         workspace_name = parent_resource['name']
 
         versions = []
-        for container in client.environment_containers.list(
-                resource_group_name=resource_group,
-                workspace_name=workspace_name,
-                list_view_type="All"):
-            try:
-                for version in client.environment_versions.list(
-                        resource_group_name=resource_group,
-                        workspace_name=workspace_name,
-                        name=container.name,
-                        list_view_type="All"):
-                    versions.append(version.serialize(True))
-            except ResourceNotFoundError:
-                # Curated environments are listed, but their versions live in a Microsoft registry.
-                continue
+        try:
+            for container in client.environment_containers.list(
+                    resource_group_name=resource_group,
+                    workspace_name=workspace_name,
+                    list_view_type="All"):
+                try:
+                    for version in client.environment_versions.list(
+                            resource_group_name=resource_group,
+                            workspace_name=workspace_name,
+                            name=container.name,
+                            list_view_type="All"):
+                        versions.append(version.serialize(True))
+                except ResourceNotFoundError:
+                    # Curated environments are listed, but their versions live in a
+                    # Microsoft registry.
+                    continue
+        except ResourceNotFoundError:
+            # A workspace stuck deleting is still listed after its resource group is gone.
+            return []
         return versions
