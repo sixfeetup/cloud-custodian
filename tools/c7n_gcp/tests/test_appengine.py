@@ -1,6 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from unittest import mock
+
+from c7n_gcp.client import ServiceClient
 from gcp_common import BaseTest
 from pytest_terraform import terraform
 
@@ -299,20 +302,30 @@ def _catch_all_security_levels(version):
     return [h['securityLevel'] for h in version['handlers'] if h['urlRegex'] == '/.*']
 
 
+def _spy(method):
+    # Replay matches flight files by URL path alone, so recorded handlers come back
+    # whether or not the request asked for them. Check the request instead.
+    return mock.patch.object(
+        ServiceClient, method, autospec=True, side_effect=getattr(ServiceClient, method))
+
+
 @terraform('app_engine_service_version', scope='session')
 def test_app_engine_service_version_full_view(test, app_engine_service_version):
     always = app_engine_service_version[
-        'google_app_engine_standard_app_version.secure_always.version_id']
+        'google_app_engine_standard_app_version.secure_always.name']
     optional = app_engine_service_version[
-        'google_app_engine_standard_app_version.secure_optional.version_id']
+        'google_app_engine_standard_app_version.secure_optional.name']
     factory = test.replay_flight_data('app_engine_service_version')
     policy = test.load_policy(
         {'name': 'app-engine-version-full-view',
          'resource': 'gcp.app-engine-service-version'},
         session_factory=factory)
 
-    versions = {v['id']: v for v in policy.run()}
+    with _spy('execute_paged_query') as calls:
+        versions = {v['name']: v for v in policy.run()}
 
+    version_lists = [c.args[2] for c in calls.call_args_list if 'servicesId' in c.args[2]]
+    assert version_lists and all(args.get('view') == 'FULL' for args in version_lists)
     assert _catch_all_security_levels(versions[always]) == ['SECURE_ALWAYS']
     assert _catch_all_security_levels(versions[optional]) == ['SECURE_OPTIONAL']
 
@@ -327,8 +340,11 @@ def test_app_engine_service_version_get(test, app_engine_service_version):
          'resource': 'gcp.app-engine-service-version'},
         session_factory=factory)
 
-    version = policy.resource_manager.get_resource({'resourceName': name})
+    with _spy('execute_query') as calls:
+        version = policy.resource_manager.get_resource({'resourceName': name})
 
+    version_gets = [c.args[2] for c in calls.call_args_list if 'versionsId' in c.args[2]]
+    assert version_gets and all(args.get('view') == 'FULL' for args in version_gets)
     assert version['name'] == name
     assert _catch_all_security_levels(version) == ['SECURE_ALWAYS']
     assert version['c7n:app-engine-service']['name'] == name.rsplit('/versions/', 1)[0]

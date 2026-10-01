@@ -200,7 +200,7 @@ class AppEngineServiceVersion(ChildResourceManager):
         @staticmethod
         def get(client, resource_info):
             apps_id, service_id, version_id = re.match(
-                'apps/(.*?)/services/(.*?)/versions/(.*)',
+                '.*?apps/([^/]+)/services/([^/]+)/versions/([^/]+)$',
                 resource_info['resourceName']).groups()
             return client.execute_query('get', {
                 'appsId': apps_id, 'servicesId': service_id,
