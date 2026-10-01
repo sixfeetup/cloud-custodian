@@ -84,6 +84,7 @@ def test_gcp_resource_metadata_asset_type():
         'vertex-ai-publisher-model',  # Catalog resource (no asset inventory type)
         'vertex-ai-location',
         'vertex-ai-evaluation-run',  # No asset inventory type yet
+        'vertex-ai-tuning-job',  # No asset inventory type yet
     ))
     missing = set()
     for k, v in GoogleCloud.resources.items():
