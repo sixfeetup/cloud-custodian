@@ -2452,6 +2452,7 @@ def test_vertexai_tuning_job_field_filters(test, vertexai_tuning_job, create_tun
         tuning_job_client(test), job_name,
         lambda job: job.get('state') == 'JOB_STATE_RUNNING' and 'serviceAccount' in job,
         attempts=60, description='to be running with its service account')
+    assert job is not None
     assert job['state'] == 'JOB_STATE_RUNNING'
     assert job['serviceAccount'] == service_account
 
