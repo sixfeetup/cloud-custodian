@@ -1431,6 +1431,30 @@ class VertexAIPublisherModel(ChildResourceManager):
                 key: name
                 op: regex
                 value: 'publishers/anthropic/.*'
+
+    :example: Find models that used more than 1,000,000 input tokens in the last day
+
+    Cloud Monitoring returns one ``token_count`` time series per combination
+    of metric labels, such as ``type`` (``input`` or ``output``) and
+    ``source`` region. Filter on the labels you want, then reduce the
+    remaining series to one value per model.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: vertex-ai-publisher-model-input-tokens
+            resource: gcp.vertex-ai-publisher-model
+            filters:
+              - type: metrics
+                name: aiplatform.googleapis.com/publisher/online_serving/token_count
+                filter: metric.labels.type = "input"
+                aligner: ALIGN_SUM
+                reducer: REDUCE_SUM
+                group-by-fields:
+                  - resource.labels.model_user_id
+                days: 1
+                op: greater-than
+                value: 1000000
     """
 
     def get_permissions(self):

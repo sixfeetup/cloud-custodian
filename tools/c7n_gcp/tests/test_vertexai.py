@@ -755,11 +755,15 @@ def _generate_publisher_model_traffic(project_id, location, model, calls=5):
 
 
 def _wait_for_publisher_model_metric(
-        project_id, metric_type, model, timeout=1800, interval=30):
+        project_id, metric_type, model, timeout=600, interval=30):
     """Poll Cloud Monitoring until ``metric_type`` has a data point for
     ``model``. Avoids guessing a fixed propagation delay.
+
+    Keeps polling through throttling, server errors, and network errors,
+    so one transient failure doesn't discard the recording.
     """
     import google.auth
+    import requests
     from google.auth.transport.requests import AuthorizedSession
 
     credentials, _ = google.auth.default(
@@ -778,10 +782,14 @@ def _wait_for_publisher_model_metric(
     }
     deadline = time.time() + timeout
     while True:
-        resp = session.get(url, params=params, timeout=30)
-        resp.raise_for_status()
-        if resp.json().get('timeSeries'):
-            return
+        try:
+            resp = session.get(url, params=params, timeout=30)
+        except (requests.ConnectionError, requests.Timeout):
+            resp = None
+        if resp is not None and resp.status_code != 429 and resp.status_code < 500:
+            resp.raise_for_status()
+            if resp.json().get('timeSeries'):
+                return
         if time.time() >= deadline:
             raise TimeoutError(
                 f'{metric_type} did not appear for {model} '
@@ -852,6 +860,26 @@ def test_vertexai_endpoint_metrics_invalid_metric_key(test):
                     'type': 'metrics',
                     'name': 'aiplatform.googleapis.com/prediction/online/prediction_count',
                     'metric-key': 'metric.labels.deployed_model_id',
+                    'op': 'greater-than',
+                    'value': 0,
+                },
+            ],
+        }, validate=True)
+
+
+def test_vertexai_publisher_model_metrics_invalid_metric_key(test):
+    with pytest.raises(
+        FilterValidationError,
+        match="metric-key 'metric.labels.type' not supported",
+    ):
+        test.load_policy({
+            'name': 'vertexai-publisher-model-invalid-metric-key',
+            'resource': 'gcp.vertex-ai-publisher-model',
+            'filters': [
+                {
+                    'type': 'metrics',
+                    'name': 'aiplatform.googleapis.com/publisher/online_serving/token_count',
+                    'metric-key': 'metric.labels.type',
                     'op': 'greater-than',
                     'value': 0,
                 },
