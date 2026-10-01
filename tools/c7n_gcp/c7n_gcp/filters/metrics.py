@@ -230,7 +230,9 @@ class GCPMetricsFilter(Filter):
     def get_point_value(self, value):
         distribution = value.get('distributionValue')
         if distribution is None:
-            return float(list(value.values())[0])
+            # Proto3 JSON can omit a TypedValue's field when it holds the
+            # default, leaving an empty value.
+            return float(next(iter(value.values()), 0))
         # count is an int64 field, serialized by the API as a string. Proto3
         # JSON omits both fields when they hold their default, which the API
         # does for an alignment period with no samples.

@@ -284,7 +284,8 @@ class TestGCPMetricsFilter(BaseTest):
 
     def test_distribution_value_default_sum(self):
         # count * mean is the default reduction: a distribution with
-        # count=4, mean=2.5 has a total ("sum") of 10.0.
+        # count=4, mean=2.5 has a total ("sum") of 10.0. Both values are
+        # exact in binary floating point, so op: equal is safe here.
         policy = self.load_policy({
             "name": "test_distribution_value",
             "resource": "gcp.instance"})
@@ -340,6 +341,20 @@ class TestGCPMetricsFilter(BaseTest):
             {"value": {"int64Value": "20"}},
         ]
         self.assertTrue(self._process_resource(metric_filter, points))
+
+    def test_scalar_value_empty(self):
+        # Proto3 JSON can drop a TypedValue's only field when it holds the
+        # default, so an empty value counts as 0 instead of raising.
+        policy = self.load_policy({
+            "name": "test_distribution_value",
+            "resource": "gcp.instance"})
+        metric_filter = GCPMetricsFilter({
+            'type': 'metrics',
+            'name': 'compute.googleapis.com/instance/cpu/utilization',
+            'metric-key': 'metric.labels.instance_name',
+            'value': 0,
+            'op': 'equal'}, manager=policy.resource_manager)
+        self.assertTrue(self._process_resource(metric_filter, [{"value": {}}]))
 
     def test_distribution_value_sums_multiple_points(self):
         policy = self.load_policy({
