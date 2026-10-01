@@ -303,7 +303,7 @@ def catch_all_security_levels(version):
 
 
 def capture_query_args(test, method):
-    """Record the arguments of every ServiceClient `method` call.
+    """Record the arguments of every ServiceClient ``method`` call.
 
     Replay matches flight files by URL path alone, so recorded handlers come back
     whether or not the request asked for them. Check the request instead.
@@ -326,12 +326,12 @@ def test_app_engine_service_version_full_view(test, app_engine_service_version):
     optional = app_engine_service_version[
         'google_app_engine_standard_app_version.secure_optional.name']
     factory = test.replay_flight_data('app_engine_service_version_full_view')
+    list_args = capture_query_args(test, 'execute_paged_query')
     policy = test.load_policy(
         {'name': 'gcp-app-engine-service-version-full-view',
          'resource': 'gcp.app-engine-service-version'},
         session_factory=factory)
 
-    list_args = capture_query_args(test, 'execute_paged_query')
     versions = {v['name']: v for v in policy.run()}
 
     version_lists = [args for args in list_args if 'servicesId' in args]
@@ -359,17 +359,18 @@ def test_app_engine_service_version_audit(test, app_engine_service_version):
         # Otherwise the policy reuses the cached setup session and records nothing.
         test.cleanUp()
 
+    get_args = capture_query_args(test, 'execute_query')
     policy = test.load_policy(
         {'name': 'gcp-app-engine-service-version-audit',
          'resource': 'gcp.app-engine-service-version',
-         'mode': {'type': 'gcp-audit',
-                  'methods': ['google.appengine.v1.Versions.CreateVersion']}},
+         'mode': {
+             'type': 'gcp-audit',
+             'methods': ['google.appengine.v1.Versions.CreateVersion']}},
         session_factory=factory)
     exec_mode = policy.get_execution_mode()
     parent_annotation_key = policy.resource_manager.resource_type.get_parent_annotation_key()
     service = name.rsplit('/versions/', 1)[0]
 
-    get_args = capture_query_args(test, 'execute_query')
     for event_file in ('app-engine-version-create-first.json',
                        'app-engine-version-create-last.json'):
         [version] = exec_mode.run(event_data(event_file), None)

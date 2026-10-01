@@ -32,13 +32,20 @@ one whose `/.*` handler is `SECURE_ALWAYS` and one whose handler is
     storage.googleapis.com artifactregistry.googleapis.com
   ```
 
+- **Application default credentials** for the project:
+
+  ```bash
+  gcloud auth application-default login
+  ```
+
 ## Recording
 
 Switch both `test_app_engine_service_version_*` tests in `test_appengine.py` to
 `replay=False` and `record_flight_data`, then run:
 
 ```bash
-C7N_FUNCTIONAL=yes GOOGLE_CLOUD_PROJECT=<project> uv run pytest -s -p no:env --tf-debug \
+C7N_FUNCTIONAL=yes GOOGLE_CLOUD_PROJECT=<project> \
+  uv run pytest -s -p no:env --tf-debug \
   tools/c7n_gcp/tests/test_appengine.py -k app_engine_service_version
 ```
 
@@ -52,6 +59,14 @@ The recorder only rewrites `projects/<id>/`, and App Engine paths are
   the flight data and in `tf_resources.json`
 - replace `createdBy` with `user@example.com`, and the bucket's `project_number`
   in `tf_resources.json` with `123456789012`
+
+Then remove `replay=False` and switch back to `replay_flight_data` in both
+tests, and confirm they pass in replay:
+
+```bash
+C7N_FUNCTIONAL=no uv run pytest \
+  tools/c7n_gcp/tests/test_appengine.py -k app_engine_service_version
+```
 
 ## Cleanup check
 
