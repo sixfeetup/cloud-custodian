@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import functools
-from unittest import mock
 
 from c7n_gcp.client import ServiceClient, Session
 from gcp_common import BaseTest, audit_event_recorder, event_data
@@ -299,15 +298,25 @@ class AppEngineServiceVersionTest(BaseTest):
         self.assertEqual(resources[0][parent_annotation_key]['name'], service_name)
 
 
-def _catch_all_security_levels(version):
+def catch_all_security_levels(version):
     return [h['securityLevel'] for h in version['handlers'] if h['urlRegex'] == '/.*']
 
 
-def _spy(method):
-    # Replay matches flight files by URL path alone, so recorded handlers come back
-    # whether or not the request asked for them. Check the request instead.
-    return mock.patch.object(
-        ServiceClient, method, autospec=True, side_effect=getattr(ServiceClient, method))
+def capture_query_args(test, method):
+    """Record the arguments of every ServiceClient `method` call.
+
+    Replay matches flight files by URL path alone, so recorded handlers come back
+    whether or not the request asked for them. Check the request instead.
+    """
+    captured = []
+    query = getattr(ServiceClient, method)
+
+    def record(client, verb, verb_arguments):
+        captured.append(verb_arguments)
+        return query(client, verb, verb_arguments)
+
+    test.patch(ServiceClient, method, record)
+    return captured
 
 
 @terraform('app_engine_service_version', scope='session')
@@ -316,19 +325,20 @@ def test_app_engine_service_version_full_view(test, app_engine_service_version):
         'google_app_engine_standard_app_version.secure_always.name']
     optional = app_engine_service_version[
         'google_app_engine_standard_app_version.secure_optional.name']
-    factory = test.replay_flight_data('app_engine_service_version')
+    factory = test.replay_flight_data('app_engine_service_version_full_view')
     policy = test.load_policy(
-        {'name': 'app-engine-version-full-view',
+        {'name': 'gcp-app-engine-service-version-full-view',
          'resource': 'gcp.app-engine-service-version'},
         session_factory=factory)
 
-    with _spy('execute_paged_query') as calls:
-        versions = {v['name']: v for v in policy.run()}
+    list_args = capture_query_args(test, 'execute_paged_query')
+    versions = {v['name']: v for v in policy.run()}
 
-    version_lists = [c.args[2] for c in calls.call_args_list if 'servicesId' in c.args[2]]
-    assert version_lists and all(args.get('view') == 'FULL' for args in version_lists)
-    assert _catch_all_security_levels(versions[always]) == ['SECURE_ALWAYS']
-    assert _catch_all_security_levels(versions[optional]) == ['SECURE_OPTIONAL']
+    version_lists = [args for args in list_args if 'servicesId' in args]
+    assert version_lists
+    assert all(args.get('view') == 'FULL' for args in version_lists)
+    assert catch_all_security_levels(versions[always]) == ['SECURE_ALWAYS']
+    assert catch_all_security_levels(versions[optional]) == ['SECURE_OPTIONAL']
 
 
 @terraform('app_engine_service_version', scope='session')
@@ -350,22 +360,23 @@ def test_app_engine_service_version_audit(test, app_engine_service_version):
         test.cleanUp()
 
     policy = test.load_policy(
-        {'name': 'app-engine-version-audit',
+        {'name': 'gcp-app-engine-service-version-audit',
          'resource': 'gcp.app-engine-service-version',
          'mode': {'type': 'gcp-audit',
                   'methods': ['google.appengine.v1.Versions.CreateVersion']}},
         session_factory=factory)
     exec_mode = policy.get_execution_mode()
+    parent_annotation_key = policy.resource_manager.resource_type.get_parent_annotation_key()
     service = name.rsplit('/versions/', 1)[0]
 
-    with _spy('execute_query') as calls:
-        for event_file in ('app-engine-version-create-first.json',
-                           'app-engine-version-create-last.json'):
-            [version] = exec_mode.run(event_data(event_file), None)
-            assert version['name'] == name, event_file
-            assert _catch_all_security_levels(version) == ['SECURE_ALWAYS'], event_file
-            assert version['c7n:app-engine-service']['name'] == service, event_file
+    get_args = capture_query_args(test, 'execute_query')
+    for event_file in ('app-engine-version-create-first.json',
+                       'app-engine-version-create-last.json'):
+        [version] = exec_mode.run(event_data(event_file), None)
+        assert version['name'] == name, event_file
+        assert catch_all_security_levels(version) == ['SECURE_ALWAYS'], event_file
+        assert version[parent_annotation_key]['name'] == service, event_file
 
-    version_gets = [c.args[2] for c in calls.call_args_list if 'versionsId' in c.args[2]]
+    version_gets = [args for args in get_args if 'versionsId' in args]
     assert len(version_gets) == 2
     assert all(args.get('view') == 'FULL' for args in version_gets)
