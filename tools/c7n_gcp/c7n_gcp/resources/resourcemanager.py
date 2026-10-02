@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import itertools
 from c7n_gcp.filters.iampolicy import IamPolicyFilter
 
@@ -496,6 +497,10 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
     lists them but not project-level ones; a project does not list the organization or
     folder configurations that also scan it.
 
+    With inherited: true, a project also gets the folder and organization configurations
+    that run for it: for each discovery type, the closest RUNNING one above the project.
+    Project ID patterns in their targets are not evaluated.
+
     Organizations with no running discovery configuration:
 
     .. code-block:: yaml
@@ -518,6 +523,19 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
         - type: dlp-discovery-configs
           attrs:
             - status: PAUSED
+
+    Projects that no running configuration covers, counting inherited ones:
+
+    .. code-block:: yaml
+
+      - name: project-no-running-dlp-discovery-configs
+        resource: gcp.project
+        filters:
+        - type: dlp-discovery-configs
+          inherited: true
+          count: 0
+          attrs:
+            - status: RUNNING
     """
     schema = type_schema(
         'dlp-discovery-configs',
@@ -525,6 +543,7 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
         count={'type': 'number'},
         count_op={'$ref': '#/definitions/filters_common/comparison_operators'}
     )
+    schema_alias = False
 
     annotate_items = True
     # there is no `dlp.discoveryConfigs.list` IAM permission; DLP checks `dlp.jobTriggers.list`.
@@ -535,10 +554,12 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
         raise NotImplementedError()
 
     def get_item_values(self, resource):
+        return self.list_configs(self.component, self.get_parent(resource))
+
+    def list_configs(self, component, parent):
         session = local_session(self.manager.session_factory)
-        client = session.client('dlp', 'v2', self.component)
-        parent = f"{self.get_parent(resource)}/locations/-"
-        pages = client.execute_paged_query('list', {'parent': parent})
+        client = session.client('dlp', 'v2', component)
+        pages = client.execute_paged_query('list', {'parent': f"{parent}/locations/-"})
         configs = []
         for page in pages:
             configs.extend(page.get('discoveryConfigs', []))
@@ -555,10 +576,66 @@ class OrgDlpDiscoveryConfigsFilter(DlpDiscoveryConfigsFilter):
 
 @Project.filter_registry.register('dlp-discovery-configs')
 class ProjectDlpDiscoveryConfigsFilter(DlpDiscoveryConfigsFilter):
+    schema = type_schema(
+        'dlp-discovery-configs',
+        rinherit=DlpDiscoveryConfigsFilter.schema,
+        inherited={'type': 'boolean'}
+    )
     component = 'projects.locations.discoveryConfigs'
+    org_configs = None
 
     def get_parent(self, resource):
         return f"projects/{resource['projectId']}"
+
+    def get_permissions(self):
+        if self.data.get('inherited'):
+            return self.permissions + ('resourcemanager.projects.get',)
+        return self.permissions
+
+    def process(self, resources, event=None):
+        self.org_configs = {}
+        return super().process(resources, event)
+
+    def get_item_values(self, resource):
+        configs = super().get_item_values(resource)
+        if self.data.get('inherited'):
+            configs.extend(self.get_inherited_configs(resource))
+        return configs
+
+    def get_ancestors(self, resource):
+        parent = resource.get('parent') or {}
+        if parent.get('type') == 'organization':
+            return [], parent['id']
+        if parent.get('type') != 'folder':
+            return [], None
+        session = local_session(self.manager.session_factory)
+        client = session.client('cloudresourcemanager', 'v1', 'projects')
+        ancestry = client.execute_command('getAncestry', {'projectId': resource['projectId']})
+        ids = [(a['resourceId']['type'], a['resourceId']['id']) for a in ancestry['ancestor']]
+        orgs = [i for t, i in ids if t == 'organization']
+        return [i for t, i in ids if t == 'folder'], orgs[0] if orgs else None
+
+    def get_inherited_configs(self, resource):
+        folders, org_id = self.get_ancestors(resource)
+        if org_id is None:
+            return []
+        if org_id not in self.org_configs:
+            self.org_configs[org_id] = self.list_configs(
+                'organizations.locations.discoveryConfigs', f"organizations/{org_id}")
+        # Google runs only the closest active configuration of each discovery type, so walk
+        # up from the nearest folder and skip target types a closer configuration has claimed.
+        scopes = [('folderId', f) for f in folders] + [('organizationId', org_id)]
+        claimed, inherited = set(), []
+        for key, scope_id in scopes:
+            for config in self.org_configs[org_id]:
+                location = config.get('orgConfig', {}).get('location', {})
+                if config.get('status') != 'RUNNING' or location.get(key) != scope_id:
+                    continue
+                targets = [t for t in config.get('targets', []) if not claimed & set(t)]
+                if targets:
+                    claimed.update(*targets)
+                    inherited.append(copy.deepcopy(dict(config, targets=targets)))
+        return inherited
 
 
 @Organization.filter_registry.register('iam-policy')
