@@ -899,3 +899,57 @@ def test_project_set_iam_policy_remove_matched(test, project_iam_policy_chained)
     assert sa_email not in bindings.get('roles/owner', [])
 
     assert sa_email in bindings.get('roles/viewer', [])
+
+
+@terraform('project_dlp_discovery_configs', scope='session')
+def test_project_dlp_discovery_configs(test, project_dlp_discovery_configs):
+    project_id = project_dlp_discovery_configs.outputs['project_id']['value']
+    config = project_dlp_discovery_configs.resources[
+        'google_data_loss_prevention_discovery_config']['c7n']
+    factory = test.replay_flight_data('project-dlp-discovery-configs')
+    p = test.load_policy(
+        {
+            'name': 'project-dlp-discovery-configs',
+            'resource': 'gcp.project',
+            'query': [{'filter': f'id:{project_id}'}],
+            'filters': [
+                {'type': 'dlp-discovery-configs', 'attrs': [{'status': 'PAUSED'}]},
+            ],
+        },
+        session_factory=factory,
+    )
+
+    resources = p.run()
+
+    assert len(resources) == 1
+    matches = resources[0]['c7n:ListItemMatches']
+    assert [m['name'] for m in matches] == [config['id']]
+    assert 'bigQueryTarget' in matches[0]['targets'][0]
+
+
+@terraform('project_dlp_discovery_configs', scope='session')
+def test_project_dlp_discovery_configs_none_running(test, project_dlp_discovery_configs):
+    project_id = project_dlp_discovery_configs.outputs['project_id']['value']
+    factory = test.replay_flight_data('project-dlp-discovery-configs-none-running')
+    p = test.load_policy(
+        {
+            'name': 'project-dlp-discovery-configs-none-running',
+            'resource': 'gcp.project',
+            'query': [{'filter': f'id:{project_id}'}],
+            'filters': [
+                {
+                    'type': 'dlp-discovery-configs',
+                    'count': 0,
+                    'attrs': [
+                        {'status': 'RUNNING'},
+                        {'type': 'value', 'key': 'targets[].bigQueryTarget', 'value': 'not-null'},
+                    ],
+                },
+            ],
+        },
+        session_factory=factory,
+    )
+
+    resources = p.run()
+
+    assert [r['projectId'] for r in resources] == [project_id]

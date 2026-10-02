@@ -488,6 +488,63 @@ class AccessApprovalFilter(ValueFilter):
         return access_approval
 
 
+class DlpDiscoveryConfigsFilter(ListItemFilter):
+    """Filter by Sensitive Data Protection discovery scan configurations
+
+    .. code-block:: yaml
+
+      - name: org-no-running-bigquery-discovery
+        resource: gcp.organization
+        filters:
+        - type: dlp-discovery-configs
+          count: 0
+          attrs:
+            - status: RUNNING
+            - type: value
+              key: targets[].bigQueryTarget
+              value: not-null
+    """
+    schema = type_schema(
+        'dlp-discovery-configs',
+        attrs={'$ref': '#/definitions/filters_common/list_item_attrs'},
+        count={'type': 'number'},
+        count_op={'$ref': '#/definitions/filters_common/comparison_operators'}
+    )
+
+    annotate_items = True
+    permissions = ('dlp.jobTriggers.list',)
+    component = None
+
+    def get_parent(self, resource):
+        raise NotImplementedError
+
+    def get_item_values(self, resource):
+        session = local_session(self.manager.session_factory)
+        client = session.client('dlp', 'v2', self.component)
+        parent = f"{self.get_parent(resource)}/locations/-"
+        pages = client.execute_paged_query('list', {'parent': parent})
+        configs = []
+        for page in pages:
+            configs.extend(page.get('discoveryConfigs', []))
+        return configs
+
+
+@Organization.filter_registry.register('dlp-discovery-configs')
+class OrgDlpDiscoveryConfigsFilter(DlpDiscoveryConfigsFilter):
+    component = 'organizations.locations.discoveryConfigs'
+
+    def get_parent(self, resource):
+        return resource['name']
+
+
+@Project.filter_registry.register('dlp-discovery-configs')
+class ProjectDlpDiscoveryConfigsFilter(DlpDiscoveryConfigsFilter):
+    component = 'projects.locations.discoveryConfigs'
+
+    def get_parent(self, resource):
+        return f"projects/{resource['projectId']}"
+
+
 @Organization.filter_registry.register('iam-policy')
 class OrganizationIamPolicyFilter(IamPolicyFilter):
     """
