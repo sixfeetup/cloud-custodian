@@ -491,6 +491,11 @@ class AccessApprovalFilter(ValueFilter):
 class DlpDiscoveryConfigsFilter(ListItemFilter):
     """Filter Resources based on Sensitive Data Protection (DLP) discovery configurations
 
+    Only configurations created directly under the resource are listed, from every location.
+    Folder-scoped configurations are created under the organization, so an organization
+    lists them but not project-level ones; a project does not list the organization or
+    folder configurations that also scan it.
+
     Organizations with no running discovery configuration:
 
     .. code-block:: yaml

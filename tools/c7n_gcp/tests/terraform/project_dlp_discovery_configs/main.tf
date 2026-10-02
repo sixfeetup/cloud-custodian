@@ -1,7 +1,5 @@
 variable "google_project_id" {
   description = "GCP project ID"
-  type        = string
-  nullable    = false
 }
 
 provider "google" {
@@ -35,8 +33,4 @@ resource "google_data_loss_prevention_discovery_config" "c7n" {
       }
     }
   }
-}
-
-output "project_id" {
-  value = var.google_project_id
 }

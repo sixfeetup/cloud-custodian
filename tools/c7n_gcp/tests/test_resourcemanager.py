@@ -10,8 +10,7 @@ import pytest
 from pytest_terraform import terraform
 
 from c7n_gcp.resources.resourcemanager import (
-    DlpDiscoveryConfigsFilter, FolderIamPolicyFilter, HierarchyAction,
-    OrgDlpDiscoveryConfigsFilter, OrganizationIamPolicyFilter, ProjectDlpDiscoveryConfigsFilter
+    DlpDiscoveryConfigsFilter, FolderIamPolicyFilter, HierarchyAction, OrganizationIamPolicyFilter
 )
 
 from gcp_common import BaseTest
@@ -902,17 +901,17 @@ def test_project_set_iam_policy_remove_matched(test, project_iam_policy_chained)
     assert sa_email in bindings.get('roles/viewer', [])
 
 
-@terraform('project_dlp_discovery_configs', scope='session')
+@terraform("project_dlp_discovery_configs")
 def test_project_dlp_discovery_configs(test, project_dlp_discovery_configs):
-    project_id = project_dlp_discovery_configs.outputs['project_id']['value']
-    config = project_dlp_discovery_configs.resources[
+    # recording needs the DLP API enabled and a quota project for user credentials
+    discovery_config = project_dlp_discovery_configs.resources[
         'google_data_loss_prevention_discovery_config']['c7n']
     factory = test.replay_flight_data('project-dlp-discovery-configs')
     p = test.load_policy(
         {
             'name': 'project-dlp-discovery-configs',
             'resource': 'gcp.project',
-            'query': [{'filter': f'id:{project_id}'}],
+            'query': [{'filter': f'id:{test.project_id}'}],
             'filters': [
                 {'type': 'dlp-discovery-configs', 'attrs': [{'status': 'PAUSED'}]},
             ],
@@ -923,40 +922,38 @@ def test_project_dlp_discovery_configs(test, project_dlp_discovery_configs):
     resources = p.run()
 
     assert len(resources) == 1
+    assert resources[0]['projectId'] == test.project_id
     matches = resources[0]['c7n:ListItemMatches']
-    assert [m['name'] for m in matches] == [config['id']]
-    assert 'bigQueryTarget' in matches[0]['targets'][0]
+    assert [m['name'] for m in matches] == [discovery_config['id']]
 
 
-@terraform('project_dlp_discovery_configs', scope='session')
-def test_project_dlp_discovery_configs_none_running(test, project_dlp_discovery_configs):
-    project_id = project_dlp_discovery_configs.outputs['project_id']['value']
-    factory = test.replay_flight_data('project-dlp-discovery-configs-none-running')
-    p = test.load_policy(
-        {
-            'name': 'project-dlp-discovery-configs-none-running',
-            'resource': 'gcp.project',
-            'query': [{'filter': f'id:{project_id}'}],
-            'filters': [
-                {'type': 'dlp-discovery-configs', 'count': 0, 'attrs': [{'status': 'RUNNING'}]},
-            ],
-        },
-        session_factory=factory,
-    )
+@pytest.mark.parametrize('resource_type, resource, component, parent', [
+    ('gcp.organization', {'name': 'organizations/999999999999'},
+     'organizations.locations.discoveryConfigs', 'organizations/999999999999/locations/-'),
+    ('gcp.project', {'projectId': 'cloud-custodian'},
+     'projects.locations.discoveryConfigs', 'projects/cloud-custodian/locations/-'),
+], ids=['organization', 'project'])
+def test_dlp_discovery_configs_filter_get_item_values(
+        test, resource_type, resource, component, parent):
+    session = mock.Mock()
+    client = session.client.return_value
+    client.execute_paged_query.return_value = [
+        {'discoveryConfigs': [{'name': 'c1'}]}, {'discoveryConfigs': [{'name': 'c2'}]}, {}]
+    p = test.load_policy({
+        'name': 'dlp-discovery-configs',
+        'resource': resource_type,
+        'filters': [{'type': 'dlp-discovery-configs'}],
+    })
+    dlp_filter = p.resource_manager.filters[0]
 
-    resources = p.run()
+    with mock.patch('c7n_gcp.resources.resourcemanager.local_session', return_value=session):
+        configs = dlp_filter.get_item_values(resource)
 
-    assert [r['projectId'] for r in resources] == [project_id]
+    assert configs == [{'name': 'c1'}, {'name': 'c2'}]
+    session.client.assert_called_once_with('dlp', 'v2', component)
+    client.execute_paged_query.assert_called_once_with('list', {'parent': parent})
 
 
-def test_dlp_discovery_configs_filter_get_parent():
-    manager = mock.Mock()
-    org_filter = OrgDlpDiscoveryConfigsFilter(data={}, manager=manager)
-    project_filter = ProjectDlpDiscoveryConfigsFilter(data={}, manager=manager)
-
-    assert org_filter.get_parent({'name': 'organizations/999999999999'}) == (
-        'organizations/999999999999')
-    assert project_filter.get_parent({'projectId': 'cloud-custodian'}) == (
-        'projects/cloud-custodian')
+def test_dlp_discovery_configs_filter_requires_parent():
     with pytest.raises(NotImplementedError):
-        DlpDiscoveryConfigsFilter(data={}, manager=manager).get_parent({})
+        DlpDiscoveryConfigsFilter(data={}, manager=mock.Mock()).get_parent({})

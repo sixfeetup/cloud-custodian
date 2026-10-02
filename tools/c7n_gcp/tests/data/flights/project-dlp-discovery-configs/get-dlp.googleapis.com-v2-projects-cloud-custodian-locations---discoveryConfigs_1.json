@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Fri, 02 Oct 2026 03:21:29 GMT",
+    "date": "Fri, 02 Oct 2026 14:02:38 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -17,9 +17,9 @@
   "body": {
     "discoveryConfigs": [
       {
-        "name": "projects/cloud-custodian/locations/us/discoveryConfigs/2859549990541537007",
+        "name": "projects/cloud-custodian/locations/us/discoveryConfigs/8338945954561565050",
         "inspectTemplates": [
-          "projects/cloud-custodian/locations/us/inspectTemplates/5126650665205996593"
+          "projects/cloud-custodian/locations/us/inspectTemplates/4167487095981753467"
         ],
         "targets": [
           {
@@ -30,12 +30,12 @@
             }
           }
         ],
-        "createTime": "2026-10-02T03:21:27.740795Z",
-        "updateTime": "2026-10-02T03:21:27.740795Z",
+        "createTime": "2026-10-02T14:02:36.223251Z",
+        "updateTime": "2026-10-02T14:02:36.223251Z",
         "status": "PAUSED",
         "displayName": "c7n-dlp-discovery-configs"
       }
     ],
-    "nextPageToken": "KlkKAlgBCgIIAQpPKk1wcm9qZWN0cy9zdGtsLWxpYW0tY2FsbGFoYW4vbG9jYXRpb25zL3VzL2Rpc2NvdmVyeUNvbmZpZ3MvMjg1OTU0OTk5MDU0MTUzNzAwNw"
+    "nextPageToken": "c7n-page-token"
   }
 }
