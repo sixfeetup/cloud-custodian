@@ -10,7 +10,8 @@ import pytest
 from pytest_terraform import terraform
 
 from c7n_gcp.resources.resourcemanager import (
-    FolderIamPolicyFilter, HierarchyAction, OrganizationIamPolicyFilter
+    DlpDiscoveryConfigsFilter, FolderIamPolicyFilter, HierarchyAction,
+    OrgDlpDiscoveryConfigsFilter, OrganizationIamPolicyFilter, ProjectDlpDiscoveryConfigsFilter
 )
 
 from gcp_common import BaseTest
@@ -937,14 +938,7 @@ def test_project_dlp_discovery_configs_none_running(test, project_dlp_discovery_
             'resource': 'gcp.project',
             'query': [{'filter': f'id:{project_id}'}],
             'filters': [
-                {
-                    'type': 'dlp-discovery-configs',
-                    'count': 0,
-                    'attrs': [
-                        {'status': 'RUNNING'},
-                        {'type': 'value', 'key': 'targets[].bigQueryTarget', 'value': 'not-null'},
-                    ],
-                },
+                {'type': 'dlp-discovery-configs', 'count': 0, 'attrs': [{'status': 'RUNNING'}]},
             ],
         },
         session_factory=factory,
@@ -953,3 +947,16 @@ def test_project_dlp_discovery_configs_none_running(test, project_dlp_discovery_
     resources = p.run()
 
     assert [r['projectId'] for r in resources] == [project_id]
+
+
+def test_dlp_discovery_configs_filter_get_parent():
+    manager = mock.Mock()
+    org_filter = OrgDlpDiscoveryConfigsFilter(data={}, manager=manager)
+    project_filter = ProjectDlpDiscoveryConfigsFilter(data={}, manager=manager)
+
+    assert org_filter.get_parent({'name': 'organizations/999999999999'}) == (
+        'organizations/999999999999')
+    assert project_filter.get_parent({'projectId': 'cloud-custodian'}) == (
+        'projects/cloud-custodian')
+    with pytest.raises(NotImplementedError):
+        DlpDiscoveryConfigsFilter(data={}, manager=manager).get_parent({})

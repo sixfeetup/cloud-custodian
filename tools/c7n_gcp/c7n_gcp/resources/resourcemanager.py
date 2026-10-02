@@ -489,20 +489,30 @@ class AccessApprovalFilter(ValueFilter):
 
 
 class DlpDiscoveryConfigsFilter(ListItemFilter):
-    """Filter by Sensitive Data Protection discovery scan configurations
+    """Filter Resources based on Sensitive Data Protection (DLP) discovery configurations
+
+    Organizations with no running discovery configuration:
 
     .. code-block:: yaml
 
-      - name: org-no-running-bigquery-discovery
+      - name: org-no-running-dlp-discovery-configs
         resource: gcp.organization
         filters:
         - type: dlp-discovery-configs
           count: 0
           attrs:
             - status: RUNNING
-            - type: value
-              key: targets[].bigQueryTarget
-              value: not-null
+
+    Projects with a paused discovery configuration:
+
+    .. code-block:: yaml
+
+      - name: project-paused-dlp-discovery-configs
+        resource: gcp.project
+        filters:
+        - type: dlp-discovery-configs
+          attrs:
+            - status: PAUSED
     """
     schema = type_schema(
         'dlp-discovery-configs',
@@ -512,11 +522,12 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
     )
 
     annotate_items = True
+    # there is no `dlp.discoveryConfigs.list` IAM permission; DLP checks `dlp.jobTriggers.list`.
     permissions = ('dlp.jobTriggers.list',)
     component = None
 
     def get_parent(self, resource):
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def get_item_values(self, resource):
         session = local_session(self.manager.session_factory)

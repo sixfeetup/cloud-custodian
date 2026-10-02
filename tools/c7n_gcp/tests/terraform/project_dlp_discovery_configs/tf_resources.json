@@ -10,17 +10,17 @@
         "google_data_loss_prevention_discovery_config": {
             "c7n": {
                 "actions": [],
-                "create_time": "2026-10-02T03:08:48.283611Z",
+                "create_time": "2026-10-02T03:21:27.740795Z",
                 "deletion_policy": "DELETE",
                 "display_name": "c7n-dlp-discovery-configs",
                 "errors": [],
-                "id": "projects/cloud-custodian/locations/us/discoveryConfigs/6104568355255367989",
+                "id": "projects/cloud-custodian/locations/us/discoveryConfigs/2859549990541537007",
                 "inspect_templates": [
-                    "projects/cloud-custodian/locations/us/inspectTemplates/593635780884728338"
+                    "projects/cloud-custodian/locations/us/inspectTemplates/5126650665205996593"
                 ],
                 "last_run_time": "",
                 "location": "us",
-                "name": "6104568355255367989",
+                "name": "2859549990541537007",
                 "org_config": [],
                 "other_cloud_starting_location": [],
                 "parent": "projects/cloud-custodian/locations/us",
@@ -50,7 +50,7 @@
                     }
                 ],
                 "timeouts": null,
-                "update_time": "2026-10-02T03:08:48.283611Z"
+                "update_time": "2026-10-02T03:21:27.740795Z"
             }
         },
         "google_data_loss_prevention_inspect_template": {
@@ -59,7 +59,7 @@
                 "deletion_policy": "DELETE",
                 "description": "",
                 "display_name": "c7n-dlp-discovery-configs",
-                "id": "projects/cloud-custodian/locations/us/inspectTemplates/593635780884728338",
+                "id": "projects/cloud-custodian/locations/us/inspectTemplates/5126650665205996593",
                 "inspect_config": [
                     {
                         "content_options": null,
@@ -79,9 +79,9 @@
                         "rule_set": []
                     }
                 ],
-                "name": "593635780884728338",
+                "name": "5126650665205996593",
                 "parent": "projects/cloud-custodian/locations/us",
-                "template_id": "593635780884728338",
+                "template_id": "5126650665205996593",
                 "timeouts": null
             }
         }

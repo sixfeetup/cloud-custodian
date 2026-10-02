@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Fri, 02 Oct 2026 03:08:50 GMT",
+    "date": "Fri, 02 Oct 2026 03:21:29 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -12,7 +12,7 @@
     "status": "200",
     "content-length": "3",
     "-content-encoding": "gzip",
-    "content-location": "https://dlp.googleapis.com/v2/projects/cloud-custodian/locations/-/discoveryConfigs?alt=json&pageToken=KlkKAlgBCgIIAQpPKk1wcm9qZWN0cy9zdGtsLWxpYW0tY2FsbGFoYW4vbG9jYXRpb25zL3VzL2Rpc2NvdmVyeUNvbmZpZ3MvNjEwNDU2ODM1NTI1NTM2Nzk4OQ"
+    "content-location": "https://dlp.googleapis.com/v2/projects/cloud-custodian/locations/-/discoveryConfigs?alt=json&pageToken=KlkKAlgBCgIIAQpPKk1wcm9qZWN0cy9zdGtsLWxpYW0tY2FsbGFoYW4vbG9jYXRpb25zL3VzL2Rpc2NvdmVyeUNvbmZpZ3MvMjg1OTU0OTk5MDU0MTUzNzAwNw"
   },
   "body": {}
 }
