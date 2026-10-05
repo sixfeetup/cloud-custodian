@@ -133,6 +133,8 @@ function should_cleanup() {
 }
 
 # Delete RG's for each template file
+pids=()
+jobs=()
 for file in "$templateDirectory"/*.json; do
     fileName=${file##*/}
     filenameNoExtension=${fileName%.*}
@@ -140,6 +142,8 @@ for file in "$templateDirectory"/*.json; do
     should_cleanup "$filenameNoExtension"
     if [[ $? -eq 1 ]]; then
         delete_resource ${file} &
+        pids+=($!)
+        jobs+=("${filenameNoExtension}")
     fi
 done
 
@@ -147,19 +151,37 @@ done
 should_cleanup "containerservice"
 if [[ $? -eq 1 ]]; then
     delete_acs &
+    pids+=($!)
+    jobs+=("containerservice")
 fi
 
 should_cleanup "policy"
 # Destroy Azure Policy Assignment
 if [[ $? -eq 1 ]]; then
     delete_policy_assignment &
+    pids+=($!)
+    jobs+=("policy")
 fi
 
 should_cleanup "cognitive-service"
 # Destroy Azure Cog Services Soft Delete
 if [[ $? -eq 1 ]]; then
     delete_cognitive_services &
+    pids+=($!)
+    jobs+=("cognitive-service")
 fi
 
 # Wait until all cleanup is finished
-wait
+failed=0
+for i in "${!pids[@]}"; do
+    pid="${pids[$i]}"
+    job_name="${jobs[$i]}"
+    if ! wait "$pid"; then
+        echo "Cleanup job failed: ${job_name}"
+        failed=1
+    fi
+done
+
+if [[ "$failed" -ne 0 ]]; then
+    exit 1
+fi
