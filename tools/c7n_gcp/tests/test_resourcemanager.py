@@ -24,7 +24,6 @@ from c7n.exceptions import (
     PolicyValidationError,
     ResourceLimitExceeded,
 )
-from c7n.testing import C7N_FUNCTIONAL
 
 
 TOKEN_COUNT_METRIC = 'aiplatform.googleapis.com/publisher/online_serving/token_count'
@@ -345,12 +344,6 @@ class ProjectTest(BaseTest):
                 raise RuntimeError('timed out waiting for token-count metric')
             time.sleep(10)
 
-    def project_metric_session(self, flight, generate_metric=False):
-        if C7N_FUNCTIONAL and generate_metric:
-            self.generate_token_count_metric()
-        factory = self.record_flight_data if C7N_FUNCTIONAL else self.replay_flight_data
-        return factory(flight, project_id=self.project_id)
-
     def test_project_get(self):
         factory = self.replay_flight_data(
             'project-get-resource', project_id='cloud-custodian')
@@ -491,10 +484,10 @@ class ProjectTest(BaseTest):
 
     def test_project_metric_filter(self):
         project_id = self.project_id
-        session_factory = self.project_metric_session(
-            'project-metric-filter',
-            generate_metric=True,
-        )
+        session_factory = self.replay_flight_data(
+            'project-metric-filter', project_id=project_id)
+        if self.recording:
+            self.generate_token_count_metric()
         policy = self.load_policy(
             {
                 'name': 'project-metric',
@@ -547,9 +540,8 @@ class ProjectTest(BaseTest):
 
     def test_project_metric_filter_missing_value(self):
         project_id = self.project_id
-        session_factory = self.project_metric_session(
-            'project-metric-filter-missing-value'
-        )
+        session_factory = self.replay_flight_data(
+            'project-metric-filter-missing-value', project_id=project_id)
         policy = self.load_policy(
             {
                 'name': 'project-metric-missing-value',
@@ -579,10 +571,11 @@ class ProjectTest(BaseTest):
 
     def test_project_metric_filter_rejects_multiple_series(self):
         project_id = self.project_id
-        session_factory = self.project_metric_session(
-            'project-metric-filter-multiple-series',
-            generate_metric=True,
-        )
+        session_factory = self.replay_flight_data(
+            'project-metric-filter-multiple-series', project_id=project_id)
+        if self.recording:
+            self.generate_token_count_metric()
+
         policy = self.load_policy(
             {
                 'name': 'project-metric-multiple-series',
