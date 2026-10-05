@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 from pathlib import Path
@@ -16,5 +17,6 @@ def init():
         model = pickle.load(model_file)
 
 
-def run(data):
-    return model.predict(np.asarray(data['instances'])).tolist()
+def run(raw_data):
+    payload = json.loads(raw_data)
+    return model.predict(np.asarray(payload['instances'])).tolist()
