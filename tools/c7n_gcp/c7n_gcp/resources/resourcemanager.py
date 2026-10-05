@@ -521,7 +521,7 @@ class DlpDiscoveryConfigsFilter(ListItemFilter):
     component = None
 
     def get_parent(self, resource):
-        raise NotImplementedError()
+        raise NotImplementedError("subclass responsibility")
 
     def get_item_values(self, resource):
         return self.list_configs(self.component, self.get_parent(resource))

@@ -968,7 +968,7 @@ def test_dlp_discovery_configs_filter_get_item_values(
 
 
 def test_dlp_discovery_configs_filter_requires_parent():
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(NotImplementedError, match="subclass responsibility"):
         DlpDiscoveryConfigsFilter(data={}, manager=mock.Mock()).get_parent({})
 
 
