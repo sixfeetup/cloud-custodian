@@ -62,12 +62,26 @@ delete_resource() {
     # Deleting the resource group only soft-deletes ML workspaces, which then
     # stay listed by the ML provider and break child enumeration. Purge them first.
     if [[ "$fileName" == machine-learning*.json ]]; then
+        # A workspace can't be purged while it has online endpoints. Deleting
+        # an endpoint also deletes its deployments.
+        for endpoint in $(az resource list --resource-group $rgName \
+            --resource-type Microsoft.MachineLearningServices/workspaces/onlineEndpoints \
+            --query "[].id" --output tsv); do
+            az rest --method delete \
+                --url "https://management.azure.com${endpoint}?api-version=2025-06-01"
+            az resource wait --deleted --ids "$endpoint" --timeout 1800
+        done
         for ws in $(az resource list --resource-group $rgName \
             --resource-type Microsoft.MachineLearningServices/workspaces \
             --query "[].id" --output tsv); do
-            az rest --method delete \
-                --url "https://management.azure.com${ws}?api-version=2025-06-01&forceToPurge=true"
-            az resource wait --deleted --ids "$ws" --timeout 900
+            # Never fall back to the group delete if the purge fails, since
+            # that soft-deletes the workspace instead.
+            if ! az rest --method delete \
+                    --url "https://management.azure.com${ws}?api-version=2025-06-01&forceToPurge=true" \
+                || ! az resource wait --deleted --ids "$ws" --timeout 900; then
+                echo "Failed to purge ${ws}; skipping delete of resource group $rgName"
+                return 1
+            fi
         done
     fi
 
