@@ -526,20 +526,21 @@ class DiagnosticSettingsFilter(ValueFilter):
 
     :example:
 
-    Find web apps that send all of their logs through the allLogs category group.
-    A log entry that uses a category group has ``category_group`` set and no ``category``.
+    Find KeyVaults that don't send AuditEvent logs anywhere. A log entry that uses a
+    category group has ``category_group`` set instead of ``category``, so an enabled
+    ``allLogs`` group counts too. The filter matches a resource when any one of its
+    settings matches, and Azure may list unconfigured groups such as ``audit`` as disabled.
 
     .. code-block:: yaml
 
         policies:
-          - name: find-webapps-with-all-logs-enabled
-            resource: azure.webapp
+          - name: find-keyvaults-without-audit-logs
+            resource: azure.keyvault
             filters:
-              - type: diagnostic-settings
-                key: logs[?category_group == 'allLogs'][].enabled
-                value: True
-                op: in
-                value_type: swap
+              - not:
+                - type: diagnostic-settings
+                  key: "logs[?(category == 'AuditEvent' || category_group == 'allLogs') && enabled]"
+                  value: not-null
     """
 
     schema = type_schema('diagnostic-settings', rinherit=ValueFilter.schema)
@@ -590,8 +591,9 @@ class DiagnosticSettingsFilter(ValueFilter):
 
     @classmethod
     def _normalize(cls, setting):
-        """Shape a raw diagnostic setting like the monitor SDK's as_dict(), which existing
-        policies are written against: properties flattened, snake_case keys, nulls dropped.
+        """Shape a raw diagnostic setting the way the monitor SDK's as_dict() did, which
+        existing policies are written against: properties flattened, snake_case keys,
+        nulls dropped. Fields that model didn't know, such as category_group, are kept.
         """
         setting = dict(setting)
         setting.update(setting.pop('properties', None) or {})
