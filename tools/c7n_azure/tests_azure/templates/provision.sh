@@ -563,13 +563,15 @@ PY
         az storage blob upload-batch \
             --account-name "$storage_account" \
             --auth-mode login \
-            --destination "${container_name}/model" \
+            --destination "$container_name" \
+            --destination-path model \
             --source "${asset_directory}/model" \
             --output none
         az storage blob upload-batch \
             --account-name "$storage_account" \
             --auth-mode login \
-            --destination "${container_name}/code" \
+            --destination "$container_name" \
+            --destination-path code \
             --source "${asset_directory}/code" \
             --output none
 
