@@ -4,13 +4,12 @@ from unittest.mock import Mock
 from azure.mgmt.machinelearningservices.models import (
     DataContainer,
     DataContainerProperties,
-    SystemData,
+    SystemData
 )
 
 from ..azure_common import BaseTest, arm_template, cassette_name
 
 
-# Machine Learning workspace
 class MachineLearningWorkspaceTest(BaseTest):
 
     def test_machine_learning_workspace_schema_validate(self):
@@ -187,25 +186,34 @@ class MachineLearningDataContainerTest(BaseTest):
 
     def test_machine_learning_data_container_schema_validate(self):
         with self.sign_out_patch():
-            policy = self.load_policy({
+            p = self.load_policy({
                 'name': 'find-all-machine-learning-data-containers',
                 'resource': 'azure.machine-learning-data-container',
-                'filters': [{'type': 'value', 'key': 'properties.isArchived', 'value': False}],
+                'filters': [{
+                    'type': 'value',
+                    'key': 'properties.isArchived',
+                    'value': False
+                }]
             }, validate=True)
-        assert policy
+            assert p
 
     @arm_template('machine-learning.json')
     @cassette_name('machine-learning-data-container')
     def test_machine_learning_data_container_policy_run(self):
-        policy = self.load_policy({
+        p = self.load_policy({
             'name': 'find-cctest-machine-learning-data-containers',
             'resource': 'azure.machine-learning-data-container',
-            'filters': [
-                {'type': 'value', 'key': 'name', 'value': 'cctest-ml-data-container'},
-                {'type': 'value', 'key': 'properties.isArchived', 'value': False},
-            ],
+            'filters': [{
+                'type': 'value',
+                'key': 'name',
+                'value': 'cctest-ml-data-container'
+            }, {
+                'type': 'value',
+                'key': 'properties.isArchived',
+                'value': False
+            }]
         })
-        resources = policy.run()
+        resources = p.run()
         assert len(resources) == 1
         assert resources[0]['name'] == 'cctest-ml-data-container'
         assert resources[0]['type'] == 'Microsoft.MachineLearningServices/workspaces/data'
@@ -219,37 +227,48 @@ class MachineLearningDataContainerTest(BaseTest):
             '/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/VV'
             '/providers/Microsoft.MachineLearningServices/workspaces/vvmlwrkspc'
         )
+        data_container_id = '{}/data/dataset-one'.format(parent_id)
+
         data_container = DataContainer(
-            properties=DataContainerProperties(data_type='uri_file', is_archived=False)
+            properties=DataContainerProperties(
+                data_type='uri_file',
+                is_archived=False
+            )
         )
-        data_container.id = '{}/data/dataset-one'.format(parent_id)
+        data_container.id = data_container_id
         data_container.name = 'dataset-one'
         data_container.type = 'Microsoft.MachineLearningServices/workspaces/data'
         data_container.system_data = SystemData(
             last_modified_at=datetime(2024, 1, 2, tzinfo=timezone.utc)
         )
+
         parent_manager = Mock()
         parent_manager.resource_type.id = 'id'
         parent_manager.resources.return_value = [{
-            'id': parent_id, 'name': 'vvmlwrkspc', 'resourceGroup': 'VV',
+            'id': parent_id,
+            'name': 'vvmlwrkspc',
+            'resourceGroup': 'VV'
         }]
+
         client = Mock()
         client.data_containers.list.return_value = [data_container]
-        policy = self.load_policy({
+
+        p = self.load_policy({
             'name': 'find-all-machine-learning-data-containers',
-            'resource': 'azure.machine-learning-data-container',
+            'resource': 'azure.machine-learning-data-container'
         })
-        manager = policy.resource_manager
+        manager = p.resource_manager
         manager.get_parent_manager = Mock(return_value=parent_manager)
         manager.get_client = Mock(return_value=client)
 
         resources = manager.resources()
 
         client.data_containers.list.assert_called_once_with(
-            resource_group_name='VV', workspace_name='vvmlwrkspc'
+            resource_group_name='VV',
+            workspace_name='vvmlwrkspc'
         )
         assert len(resources) == 1
-        assert resources[0]['id'] == data_container.id
+        assert resources[0]['id'] == data_container_id
         assert resources[0]['resourceGroup'] == 'VV'
         assert resources[0]['c7n:parent-id'] == parent_id
         assert resources[0]['properties']['isArchived'] is False

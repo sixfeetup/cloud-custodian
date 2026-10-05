@@ -181,7 +181,7 @@ class MachineLearningOnlineDeployment(ChildArmResourceManager):
 
 @resources.register('machine-learning-data-container')
 class MachineLearningDataContainer(ChildArmResourceManager):
-    """Machine Learning data container resource.
+    """Machine Learning Data Container Resource
 
     :example:
 
@@ -201,17 +201,22 @@ class MachineLearningDataContainer(ChildArmResourceManager):
                   value_type: age
                   op: lt
                   value: 90
+
     """
 
     class resource_type(ChildArmResourceManager.resource_type):
         doc_groups = ['ML']
+
         service = 'azure.mgmt.machinelearningservices'
         client = 'MachineLearningServicesMgmtClient'
         enum_spec = ('data_containers', 'list', None)
         parent_manager_name = 'machine-learning-workspace'
         resource_type = 'Microsoft.MachineLearningServices/workspaces/data'
         default_report_fields = (
-            'name', 'resourceGroup', '"c7n:parent-id"', 'properties.isArchived',
+            'name',
+            'resourceGroup',
+            '"c7n:parent-id"',
+            'properties.isArchived',
             'systemData.lastModifiedAt'
         )
 
