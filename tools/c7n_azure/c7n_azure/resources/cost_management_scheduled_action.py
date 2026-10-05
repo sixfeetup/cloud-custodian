@@ -109,7 +109,9 @@ class CostManagementScheduledAction(QueryResourceManager):
         resource_type = 'Microsoft.CostManagement/scheduledActions'
 
     def get_source(self, source_type):
-        return CostManagementScheduledActionSource(self)
+        if source_type == 'describe-azure':
+            return CostManagementScheduledActionSource(self)
+        return super().get_source(source_type)
 
 
 @CostManagementScheduledAction.action_registry.register('update')
