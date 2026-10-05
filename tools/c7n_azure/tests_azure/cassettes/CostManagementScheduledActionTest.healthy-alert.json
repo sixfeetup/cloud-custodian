@@ -47,9 +47,9 @@
                                 "eTag": "\"0400b20e-0000-0100-0000-6aa8b7040000\"",
                                 "systemData": {
                                     "createdAt": "2026-09-15T03:09:56.445444Z",
-                                    "createdBy": "kody.mullins@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "lastModifiedAt": "2026-09-15T03:09:56.4454355Z",
-                                    "lastModifiedBy": "kody.mullins@sixfeetup.com"
+                                    "lastModifiedBy": "mock-user@example.com"
                                 },
                                 "properties": {
                                     "displayName": "cctestscheduledaction",
@@ -77,7 +77,7 @@
                                         "language": "en",
                                         "regionalFormat": "en-us"
                                     },
-                                    "notificationEmail": "kody.mullins@sixfeetup.com"
+                                    "notificationEmail": "mock-user@example.com"
                                 }
                             }
                         ],
