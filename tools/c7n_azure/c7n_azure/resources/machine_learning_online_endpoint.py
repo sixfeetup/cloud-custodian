@@ -5,11 +5,12 @@ from c7n.filters import ListItemFilter
 from c7n.utils import type_schema
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ChildArmResourceManager
+from c7n_azure.resources.machine_learning import MachineLearningWorkspaceChildMixin
 from c7n_azure.utils import ResourceIdParser
 
 
 @resources.register('machine-learning-online-endpoint')
-class MachineLearningOnlineEndpoint(ChildArmResourceManager):
+class MachineLearningOnlineEndpoint(MachineLearningWorkspaceChildMixin, ChildArmResourceManager):
     """Azure Machine Learning Online Endpoint Resource
 
     Online endpoints are child resources of a Machine Learning workspace

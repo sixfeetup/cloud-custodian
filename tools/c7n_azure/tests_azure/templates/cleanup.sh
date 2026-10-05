@@ -59,6 +59,18 @@ delete_resource() {
         sleep 10s
     fi
 
+    # Deleting the resource group only soft-deletes ML workspaces, which then
+    # stay listed by the ML provider and break child enumeration. Purge them first.
+    if [[ "$fileName" == machine-learning*.json ]]; then
+        for ws in $(az resource list --resource-group $rgName \
+            --resource-type Microsoft.MachineLearningServices/workspaces \
+            --query "[].id" --output tsv); do
+            az rest --method delete \
+                --url "https://management.azure.com${ws}?api-version=2025-06-01&forceToPurge=true"
+            az resource wait --deleted --ids "$ws" --timeout 900
+        done
+    fi
+
     az group delete --name $rgName --yes --output None
 
     echo "Delete for $filenameNoExtension complete"
