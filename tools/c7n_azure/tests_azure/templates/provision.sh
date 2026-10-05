@@ -487,7 +487,6 @@ PY
         unique_suffix="$(date +%s%N | tail -c 13)"
         workspace_name="cctestmlonline${unique_suffix}"
         asset_directory="${templateDirectory}/machine-learning-online-assets"
-        model_directory="${asset_directory}/model"
 
         # The deployment requires registered model and code assets. First
         # create only this template's workspace prerequisites so its default
@@ -541,6 +540,8 @@ PY
             echo "The Azure ML deployment fixture requires uv to create its model artifact."
             exit 1
         fi
+        # Generate the model artifact outside the repo so it is never committed.
+        model_directory=$(mktemp -d)
         if ! sklearn_version=$(uv run --python 3.12 \
             --with click \
             --with numpy \
@@ -548,6 +549,7 @@ PY
             python "${asset_directory}/create_test_model.py" \
             --output-dir "$model_directory"); then
             echo "Failed to create the Azure ML test model artifact."
+            rm -rf "$model_directory"
             exit 1
         fi
         conda_file=$(printf '%s\n' \
@@ -565,8 +567,9 @@ PY
             --auth-mode login \
             --destination "$container_name" \
             --destination-path model \
-            --source "${asset_directory}/model" \
+            --source "$model_directory" \
             --output none
+        rm -rf "$model_directory"
         az storage blob upload-batch \
             --account-name "$storage_account" \
             --auth-mode login \
