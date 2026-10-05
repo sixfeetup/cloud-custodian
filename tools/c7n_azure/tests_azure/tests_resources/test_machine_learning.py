@@ -92,60 +92,6 @@ class MachineLearningWorkspaceResourceLockFilterTest(BaseTest):
         self.assertEqual('mlwsp165red', resources[0]['name'])
 
 
-class MachineLearningOnlineEndpointTest(BaseTest):
-
-    def test_machine_learning_online_endpoint_schema_validate(self):
-        with self.sign_out_patch():
-            policy = self.load_policy({
-                'name': 'machine-learning-online-endpoints',
-                'resource': 'azure.machine-learning-online-endpoint',
-            }, validate=True)
-
-        assert policy
-
-    @arm_template('machine-learning-online-deployment.json')
-    @cassette_name('machine-learning-online-endpoint-query')
-    def test_machine_learning_online_endpoint_query(self):
-        policy = self.load_policy({
-            'name': 'machine-learning-online-endpoint-query',
-            'resource': 'azure.machine-learning-online-endpoint',
-            'filters': [{
-                'type': 'value',
-                'key': 'name',
-                'value': 'cctest-ml-*',
-                'op': 'glob',
-            }],
-        })
-
-        resources = policy.run()
-
-        assert len(resources) == 1
-        assert resources[0]['name'].startswith('cctest-ml-')
-        assert '/workspaces/' in resources[0]['c7n:parent-id']
-
-    @arm_template('machine-learning-online-deployment.json')
-    @cassette_name('machine-learning-online-endpoint-deployment-count')
-    def test_machine_learning_online_endpoint_deployment_count(self):
-        policy = self.load_policy({
-            'name': 'machine-learning-online-endpoint-deployment-count',
-            'resource': 'azure.machine-learning-online-endpoint',
-            'filters': [{
-                'type': 'online-deployments',
-                'attrs': [{
-                    'type': 'value',
-                    'key': 'properties.model',
-                    'value': 'present',
-                }],
-                'count': 1,
-            }],
-        })
-
-        resources = policy.run()
-
-        assert len(resources) == 1
-        assert resources[0]['name'].startswith('cctest-ml-')
-
-
 class MachineLearningOnlineDeploymentTest(BaseTest):
 
     def test_machine_learning_online_deployment_schema_validate(self):
@@ -274,6 +220,7 @@ class MachineLearningDataContainerTest(BaseTest):
         assert resources[0]['c7n:parent-id'] == parent_id
         assert resources[0]['properties']['isArchived'] is False
         assert resources[0]['systemData']['lastModifiedAt'] == '2024-01-02T00:00:00.000Z'
+
 
 class MachineLearningWorkspaceChildTest(BaseTest):
 

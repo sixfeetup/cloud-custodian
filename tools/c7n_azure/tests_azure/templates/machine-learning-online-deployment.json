@@ -200,8 +200,7 @@
                 },
                 "instanceType": "Standard_F2s_v2",
                 "scaleSettings": {
-                    "scaleType": "Default",
-                    "instanceCount": 1
+                    "scaleType": "Default"
                 }
             },
             "dependsOn": [
