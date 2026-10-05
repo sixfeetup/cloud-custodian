@@ -103,10 +103,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-08-12T14:03:06.5147287Z",
-                                    "createdBy": "drea.jenkins@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-08-12T14:03:06.5147287Z",
-                                    "lastModifiedBy": "drea.jenkins@sixfeetup.com",
+                                    "lastModifiedBy": "mock-user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             },
@@ -167,10 +167,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-09-01T16:38:42.790844Z",
-                                    "createdBy": "kody.mullins@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-09-01T16:38:42.790844Z",
-                                    "lastModifiedBy": "kody.mullins@sixfeetup.com",
+                                    "lastModifiedBy": "mock-user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             },
@@ -234,10 +234,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-09-10T21:13:40.1618675Z",
-                                    "createdBy": "jim.fulton@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-09-10T21:13:40.1618675Z",
-                                    "lastModifiedBy": "jim.fulton@sixfeetup.com",
+                                    "lastModifiedBy": "mock-user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             },
@@ -299,10 +299,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-10-05T17:31:04.7851998Z",
-                                    "createdBy": "kody.mullins@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-10-05T17:32:01.0354027Z",
-                                    "lastModifiedBy": "kody.mullins@sixfeetup.com",
+                                    "lastModifiedBy": "mock-user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             },
@@ -363,10 +363,10 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-09-30T19:24:43.2405833Z",
-                                    "createdBy": "jim.fulton@sixfeetup.com",
+                                    "createdBy": "mock-user@example.com",
                                     "createdByType": "User",
                                     "lastModifiedAt": "2026-09-30T19:24:43.2405833Z",
-                                    "lastModifiedBy": "jim.fulton@sixfeetup.com",
+                                    "lastModifiedBy": "mock-user@example.com",
                                     "lastModifiedByType": "User"
                                 }
                             }
@@ -563,7 +563,7 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-10-05T17:32:21.3962956+00:00",
-                                    "createdBy": "Kody Mullins",
+                                    "createdBy": "mock-user@example.com",
                                     "lastModifiedAt": "2026-10-05T17:33:44.4048608+00:00"
                                 },
                                 "tags": {},
@@ -741,7 +741,7 @@
                                 },
                                 "systemData": {
                                     "createdAt": "2026-10-05T17:34:02.0230532+00:00",
-                                    "createdBy": "Kody Mullins",
+                                    "createdBy": "mock-user@example.com",
                                     "lastModifiedAt": "2026-10-05T17:34:02.0230584+00:00"
                                 },
                                 "tags": {},
