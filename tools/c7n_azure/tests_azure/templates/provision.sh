@@ -512,17 +512,26 @@ PY
         vnet_id=$(az network vnet show --resource-group $rgName --name c7n-vnet --query id --output tsv)
         watcher_name=$(az network watcher list --query "[?location=='southcentralus'].name" --output tsv)
         watcher_rg=$(az network watcher list --query "[?location=='southcentralus'].resourceGroup" --output tsv)
+        if [[ -z "$watcher_name" || -z "$watcher_rg" ]]; then
+            echo "No network watcher found in southcentralus; cannot create flow log for c7n-vnet."
+            exit 1
+        fi
 
+        # Retention is deliberately below 90 days so the flow-logs retention
+        # filter test has a non-compliant flow log to match.
         echo "Creating vnet flow log for c7n-vnet using network watcher ${watcher_name} (${watcher_rg})..."
-        az network watcher flow-log create \
+        if ! az network watcher flow-log create \
             --resource-group "$watcher_rg" \
             --location southcentralus \
             --name c7n-vnet-flowlog \
             --vnet "$vnet_id" \
             --storage-account "$storage_account_id" \
             --enabled true \
-            --retention 90 \
-            --output None
+            --retention 30 \
+            --output None; then
+            echo "Failed to create flow log for c7n-vnet."
+            exit 1
+        fi
     fi
 
     echo "Deployment for ${filenameNoExtension} complete"

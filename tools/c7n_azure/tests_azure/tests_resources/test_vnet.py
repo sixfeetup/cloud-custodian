@@ -59,6 +59,7 @@ class VnetFlowLogsFilterTest(BaseTest):
             'name': 'test-azure-vnet',
             'resource': 'azure.vnet',
             'filters': [
+                {'type': 'value', 'key': 'name', 'value': 'c7n-vnet'},
                 {
                     'type': 'flow-logs',
                     'key': 'length(logs)',
@@ -75,6 +76,7 @@ class VnetFlowLogsFilterTest(BaseTest):
             'name': 'test-azure-vnet',
             'resource': 'azure.vnet',
             'filters': [
+                {'type': 'value', 'key': 'name', 'value': 'c7n-vnet'},
                 {
                     'type': 'flow-logs',
                     'key': 'length(logs)',
@@ -92,6 +94,7 @@ class VnetFlowLogsFilterTest(BaseTest):
             'name': 'test-azure-vnet',
             'resource': 'azure.vnet',
             'filters': [
+                {'type': 'value', 'key': 'name', 'value': 'c7n-vnet'},
                 {
                     'or': [
                         {
@@ -121,7 +124,8 @@ class VnetFlowLogsFilterTest(BaseTest):
         })
 
         resources = p.run()
-        self.assertEqual(len(resources), 0)
+        assert len(resources) == 1
+        assert resources[0]['name'] == 'c7n-vnet'
 
 
 class VnetSetFlowLogActionTest(BaseTest):

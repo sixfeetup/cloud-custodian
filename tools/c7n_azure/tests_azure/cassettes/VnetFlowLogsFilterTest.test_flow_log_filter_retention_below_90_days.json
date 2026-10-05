@@ -14,35 +14,35 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-original-request-ids": [
-                        "13886d91-3ae3-48cc-8a87-26b317010ecd"
+                    "x-ms-throttle-levels": [
+                        "operationConcurrencyPct=0.5, subscriptionReadRatePct=0.2, subscriptionListRatePct=0.1, etc"
                     ],
                     "x-ms-arm-service-request-id": [
-                        "4b68cb73-5f1f-403a-b649-e8dc6cb35992"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                        "4a0678c8-9fbc-4af8-a012-27ee1fff921d"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 2F9670D9664E4EAB8440C23558EA655F Ref B: CHI261140503031 Ref C: 2026-09-21T15:46:49Z"
+                    "cache-control": [
+                        "no-cache"
                     ],
                     "date": [
-                        "Mon, 21 Sep 2026 15:46:49 GMT"
+                        "Mon, 05 Oct 2026 14:44:18 GMT"
                     ],
-                    "x-ms-throttle-levels": [
-                        "operationConcurrencyPct=0.5, subscriptionReadRatePct=0.2, subscriptionListRatePct=0.2, etc"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: B65EC28F474D43AFA414F5E9E9ECF9AA Ref B: CH1AA2030813034 Ref C: 2026-10-05T14:44:19Z"
                     ],
                     "content-length": [
                         "1357"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "x-ms-original-request-ids": [
+                        "2e8623ce-7646-46a2-8405-187a5d961191"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ]
                 },
                 "body": {
@@ -110,39 +110,39 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-throttle-levels": [
+                        "operationRatePct=0.2, operationConcurrencyPct=0.5, subscriptionReadRatePct=0.2, etc"
                     ],
                     "x-ms-arm-service-request-id": [
-                        "e830fa3e-d0d6-4b35-a077-d35838988ac7"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                        "5d5915a4-7e0d-45b3-9858-b8a1ced9904a"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 4AE1B9F662034F4A9727F53A23C4966D Ref B: CHI261140506025 Ref C: 2026-09-21T15:46:50Z"
+                    "cache-control": [
+                        "no-cache"
                     ],
                     "date": [
-                        "Mon, 21 Sep 2026 15:46:49 GMT"
+                        "Mon, 05 Oct 2026 14:44:20 GMT"
                     ],
-                    "x-ms-throttle-levels": [
-                        "operationConcurrencyPct=0.5, subscriptionReadRatePct=0.2, etc"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: F45A53AFC9D5492DB457B7CBAFBCC57A Ref B: CHI261140505036 Ref C: 2026-10-05T14:44:20Z"
                     ],
                     "content-length": [
                         "1005"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ]
                 },
                 "body": {
                     "data": {
                         "name": "c7n-vnet-flowlog",
                         "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/NetworkWatcherRG/providers/Microsoft.Network/networkWatchers/NetworkWatcher_southcentralus/flowLogs/c7n-vnet-flowlog",
-                        "etag": "W/\"d2a04b65-8d92-43ce-817b-a67657d80811\"",
+                        "etag": "W/\"d9176138-d117-472b-a2cf-7d439b6fed02\"",
                         "properties": {
                             "provisioningState": "Succeeded",
                             "resourceGuid": "e5f7cb59-600b-4ca7-b6b2-e29349aab7d2",
@@ -152,7 +152,7 @@
                             "enabled": true,
                             "flowAnalyticsConfiguration": {},
                             "retentionPolicy": {
-                                "days": 90,
+                                "days": 30,
                                 "enabled": true
                             },
                             "format": {
