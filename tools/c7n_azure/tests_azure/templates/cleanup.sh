@@ -71,9 +71,13 @@ delete_resource() {
                 --url "https://management.azure.com${endpoint}?api-version=2025-06-01"
             az resource wait --deleted --ids "$endpoint" --timeout 1800
         done
-        for ws in $(az resource list --resource-group $rgName \
+        if ! workspaces=$(az resource list --resource-group "$rgName" \
             --resource-type Microsoft.MachineLearningServices/workspaces \
-            --query "[].id" --output tsv); do
+            --query "[].id" --output tsv); then
+            echo "Failed to list Machine Learning workspaces; skipping delete of resource group $rgName"
+            return 1
+        fi
+        for ws in $workspaces; do
             # Never fall back to the group delete if the purge fails, since
             # that soft-deletes the workspace instead.
             if ! az rest --method delete \
