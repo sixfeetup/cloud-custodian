@@ -59,7 +59,7 @@ class VnetFlowLogsFilterTest(BaseTest):
             'name': 'test-azure-vnet',
             'resource': 'azure.vnet',
             'filters': [
-                {'type': 'value', 'key': 'name', 'value': 'c7n-vnet'},
+                {'type': 'value', 'key': 'name', 'value': 'c7n-vnet-no-flowlog'},
                 {
                     'type': 'flow-logs',
                     'key': 'length(logs)',
@@ -69,7 +69,8 @@ class VnetFlowLogsFilterTest(BaseTest):
         })
 
         resources = p.run()
-        self.assertEqual(len(resources), 0)
+        assert len(resources) == 1
+        assert resources[0]['name'] == 'c7n-vnet-no-flowlog'
 
     def test_flow_log_filter_matching(self):
         p = self.load_policy({

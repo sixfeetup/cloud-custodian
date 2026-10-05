@@ -14,32 +14,32 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-ms-throttle-levels": [
-                        "operationConcurrencyPct=0.5, subscriptionReadRatePct=0.1, subscriptionListRatePct=0.1, etc"
+                    "x-msedge-ref": [
+                        "Ref A: BDD91A5F1B654304898A43E002161EBA Ref B: CHI261140501054 Ref C: 2026-10-05T14:49:10Z"
+                    ],
+                    "content-length": [
+                        "2393"
                     ],
                     "x-ms-arm-service-request-id": [
-                        "61009574-732a-4352-8b3f-e3d2f6de1316"
+                        "724ef905-c052-4c48-a7cd-425f8114197f"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
+                    "date": [
+                        "Mon, 05 Oct 2026 14:49:09 GMT"
+                    ],
                     "cache-control": [
                         "no-cache"
                     ],
-                    "date": [
-                        "Mon, 05 Oct 2026 14:44:18 GMT"
+                    "x-ms-throttle-levels": [
+                        "operationConcurrencyPct=0.5, subscriptionReadRatePct=0.4, subscriptionListRatePct=0.1, etc"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 70FF0B842D4842B2955A348C84DF27EB Ref B: CHI261140514042 Ref C: 2026-10-05T14:44:18Z"
-                    ],
-                    "content-length": [
-                        "1357"
-                    ],
                     "x-ms-original-request-ids": [
-                        "40d0e876-9fad-4749-84cb-0c6734d2a0bc"
+                        "b5269a64-5504-4a60-8b48-aa726c2dbeca"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
@@ -51,12 +51,12 @@
                             {
                                 "name": "c7n-vnet",
                                 "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Network/virtualNetworks/c7n-vnet",
-                                "etag": "W/\"cc8ba458-f9fb-44a8-8b15-86e0ecf9b75a\"",
+                                "etag": "W/\"93fc8cf2-5283-4666-985e-a181b5c12d1b\"",
                                 "type": "Microsoft.Network/virtualNetworks",
                                 "location": "southcentralus",
                                 "properties": {
                                     "provisioningState": "Succeeded",
-                                    "resourceGuid": "093d3683-7201-4899-8400-d118a0cd1d35",
+                                    "resourceGuid": "5b597c18-18ad-45d5-8a86-ccb754fd72f1",
                                     "addressSpace": {
                                         "addressPrefixes": [
                                             "10.20.0.0/16"
@@ -67,7 +67,7 @@
                                         {
                                             "name": "default",
                                             "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Network/virtualNetworks/c7n-vnet/subnets/default",
-                                            "etag": "W/\"cc8ba458-f9fb-44a8-8b15-86e0ecf9b75a\"",
+                                            "etag": "W/\"93fc8cf2-5283-4666-985e-a181b5c12d1b\"",
                                             "properties": {
                                                 "provisioningState": "Succeeded",
                                                 "addressPrefix": "10.20.0.0/24",
@@ -86,84 +86,47 @@
                                     ],
                                     "enableDdosProtection": false,
                                     "flowLogConfiguration": {
-                                        "flowLogGuid": "e5f7cb59-600b-4ca7-b6b2-e29349aab7d2",
+                                        "flowLogGuid": "1269536d-ba17-4955-971a-e597d1ba52cb",
                                         "enabledFlowLogCategories": 3874,
                                         "forceFlowLogConfig": false
                                     }
                                 }
+                            },
+                            {
+                                "name": "c7n-vnet-no-flowlog",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Network/virtualNetworks/c7n-vnet-no-flowlog",
+                                "etag": "W/\"467a15dc-7bdf-4203-9bb1-024d2df75343\"",
+                                "type": "Microsoft.Network/virtualNetworks",
+                                "location": "southcentralus",
+                                "properties": {
+                                    "provisioningState": "Succeeded",
+                                    "resourceGuid": "be9d0d91-50fb-45d8-a04b-1dc5bc6e2937",
+                                    "addressSpace": {
+                                        "addressPrefixes": [
+                                            "10.21.0.0/16"
+                                        ]
+                                    },
+                                    "privateEndpointVNetPolicies": "Disabled",
+                                    "subnets": [
+                                        {
+                                            "name": "default",
+                                            "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Network/virtualNetworks/c7n-vnet-no-flowlog/subnets/default",
+                                            "etag": "W/\"467a15dc-7bdf-4203-9bb1-024d2df75343\"",
+                                            "properties": {
+                                                "provisioningState": "Succeeded",
+                                                "addressPrefix": "10.21.0.0/24",
+                                                "delegations": [],
+                                                "privateEndpointNetworkPolicies": "Disabled",
+                                                "privateLinkServiceNetworkPolicies": "Enabled"
+                                            },
+                                            "type": "Microsoft.Network/virtualNetworks/subnets"
+                                        }
+                                    ],
+                                    "virtualNetworkPeerings": [],
+                                    "enableDdosProtection": false
+                                }
                             }
                         ]
-                    }
-                }
-            }
-        },
-        {
-            "request": {
-                "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/NetworkWatcherRG/providers/Microsoft.Network/networkWatchers/NetworkWatcher_southcentralus/flowLogs/c7n-vnet-flowlog?api-version=2024-05-01",
-                "body": null,
-                "headers": {}
-            },
-            "response": {
-                "status": {
-                    "code": 200,
-                    "message": "OK"
-                },
-                "headers": {
-                    "x-ms-throttle-levels": [
-                        "operationRatePct=0.2, operationConcurrencyPct=0.5, subscriptionReadRatePct=0.1, etc"
-                    ],
-                    "x-ms-arm-service-request-id": [
-                        "9ee98757-e78e-44e6-9fdd-d137ac188905"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "date": [
-                        "Mon, 05 Oct 2026 14:44:18 GMT"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 79245364B07C4E458BA4F4CC4AE2F92D Ref B: CHI261140509052 Ref C: 2026-10-05T14:44:18Z"
-                    ],
-                    "content-length": [
-                        "1005"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ]
-                },
-                "body": {
-                    "data": {
-                        "name": "c7n-vnet-flowlog",
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/NetworkWatcherRG/providers/Microsoft.Network/networkWatchers/NetworkWatcher_southcentralus/flowLogs/c7n-vnet-flowlog",
-                        "etag": "W/\"d9176138-d117-472b-a2cf-7d439b6fed02\"",
-                        "properties": {
-                            "provisioningState": "Succeeded",
-                            "resourceGuid": "e5f7cb59-600b-4ca7-b6b2-e29349aab7d2",
-                            "targetResourceId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Network/virtualNetworks/c7n-vnet",
-                            "targetResourceGuid": "093d3683-7201-4899-8400-d118a0cd1d35",
-                            "storageId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vnet/providers/Microsoft.Storage/storageAccounts/c7nvnetflowjylwxlqyxf34g",
-                            "enabled": true,
-                            "flowAnalyticsConfiguration": {},
-                            "retentionPolicy": {
-                                "days": 30,
-                                "enabled": true
-                            },
-                            "format": {
-                                "type": "FlowLogJSON",
-                                "version": 2
-                            },
-                            "enabledFilteringCriteria": "",
-                            "recordTypes": ""
-                        },
-                        "type": "Microsoft.Network/networkWatchers/flowLogs",
-                        "location": "southcentralus"
                     }
                 }
             }
