@@ -171,6 +171,19 @@ class AppEngineService(ChildResourceManager):
                                         'servicesId': service_id})
 
 
+VERSION_NAME_RE = re.compile(
+    r'(?:.*/)?apps/(?P<appsId>[^/]+)'
+    r'/services/(?P<servicesId>[^/]+)'
+    r'/versions/(?P<versionsId>[^/]+)$')
+
+
+def parse_version_name(name):
+    """Split a version name into its appsId, servicesId and versionsId path params."""
+    if match := VERSION_NAME_RE.match(name):
+        return match.groupdict()
+    raise ValueError(f"Couldn't parse app, service and version from {name}")
+
+
 @resources.register('app-engine-service-version')
 class AppEngineServiceVersion(ChildResourceManager):
     """GCP Resource
@@ -178,8 +191,8 @@ class AppEngineServiceVersion(ChildResourceManager):
     """
 
     def _get_parent_resource_info(self, child_instance):
-        return {'resourceName': re.match(
-            '(apps/.*?/services/.*?)/versions/.*', child_instance['name']).group(1)}
+        ids = parse_version_name(child_instance['name'])
+        return {'resourceName': f"apps/{ids['appsId']}/services/{ids['servicesId']}"}
 
     class resource_type(AppEngineChildTypeInfo):
         component = 'apps.services.versions'
@@ -199,9 +212,5 @@ class AppEngineServiceVersion(ChildResourceManager):
 
         @staticmethod
         def get(client, resource_info):
-            apps_id, service_id, version_id = re.match(
-                '.*?apps/([^/]+)/services/([^/]+)/versions/([^/]+)$',
-                resource_info['resourceName']).groups()
-            return client.execute_query('get', {
-                'appsId': apps_id, 'servicesId': service_id,
-                'versionsId': version_id, 'view': 'FULL'})
+            ids = parse_version_name(resource_info['resourceName'])
+            return client.execute_query('get', {**ids, 'view': 'FULL'})

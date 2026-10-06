@@ -3,7 +3,9 @@
 
 import functools
 
+import pytest
 from c7n_gcp.client import ServiceClient, Session
+from c7n_gcp.resources.appengine import parse_version_name
 from gcp_common import BaseTest, audit_event_recorder, event_data
 from pytest_terraform import terraform
 
@@ -381,3 +383,8 @@ def test_app_engine_service_version_audit(test, app_engine_service_version):
     version_gets = [args for args in get_args if 'versionsId' in args]
     assert len(version_gets) == 2
     assert all(args.get('view') == 'FULL' for args in version_gets)
+
+
+def test_parse_version_name_rejects_service_name():
+    with pytest.raises(ValueError, match='apps/cloud-custodian/services/default'):
+        parse_version_name('apps/cloud-custodian/services/default')

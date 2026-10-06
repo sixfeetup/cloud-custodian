@@ -40,6 +40,13 @@ one whose `/.*` handler is `SECURE_ALWAYS` and one whose handler is
 
 ## Recording
 
+Delete the old audit events first. The recorder won't overwrite an event file;
+it writes `<name>.json-1` beside it, and the test keeps reading the old one:
+
+```bash
+rm tools/c7n_gcp/tests/data/events/app-engine-version-create-*.json
+```
+
 Switch both `test_app_engine_service_version_*` tests in `test_appengine.py` to
 `replay=False` and `record_flight_data`, then run:
 
