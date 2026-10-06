@@ -22,7 +22,7 @@ class FirewallActionsTest(BaseTest):
 
         action.append = True
         rules = action._build_bypass_rules(['Hello', 'World'], data['bypass-rules'])
-        self.assertEqual('Logging,Metrics,Hello,World', rules)
+        self.assertEqual('Hello,Logging,Metrics,World', rules)
 
     def test_build_bypass_rules_drops_the_none_sentinel(self):
         action = self._bypass_action(['AzureServices'])
@@ -43,7 +43,7 @@ class FirewallActionsTest(BaseTest):
 
         # Azure returns the string comma-space separated.
         assert action._build_bypass_rules(
-            'Logging, Metrics'.split(','), action.data['bypass-rules']) == 'Metrics,Logging'
+            'Logging, Metrics'.split(','), action.data['bypass-rules']) == 'Logging,Metrics'
 
     def test_build_bypass_rules_does_not_carry_over_between_resources(self):
         action = self._bypass_action(['AzureServices'])
