@@ -73,6 +73,14 @@ class FirewallActionsTest(BaseTest):
         assert second == ['id2']
         assert action.data['virtual-network-rules'] == []
 
+    def test_build_vnet_rules_skips_rules_already_in_the_policy(self):
+        action = StorageSetFirewallAction(
+            {'type': 'set-firewall-rules', 'virtual-network-rules': ['id1']})
+        action.append = True
+
+        assert action._build_vnet_rules(
+            ['id1', 'id2'], action.data['virtual-network-rules']) == ['id1', 'id2']
+
     def test_build_vnet_rules(self):
         data = {
             'virtual-network-rules': ['id1', 'id2']
