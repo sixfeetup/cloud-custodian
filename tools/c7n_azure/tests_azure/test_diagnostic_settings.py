@@ -205,7 +205,8 @@ class DiagnosticSettingsFilterTest(BaseTest):
         """
         manager = Mock()
         get_by_id = manager.get_client.return_value.resources.get_by_id
-        get_by_id.side_effect = [{'value': [ALL_LOGS_SETTING]}, {'value': []}]
+        get_by_id.side_effect = [
+            {'value': [ALL_LOGS_SETTING]}, {'value': []}, {'value': None}]
         f = DiagnosticSettingsFilter({
             'type': 'diagnostic-settings',
             'key': "logs[?category_group == 'allLogs'][].enabled",
@@ -213,7 +214,8 @@ class DiagnosticSettingsFilterTest(BaseTest):
             'value_type': 'swap',
             'value': True
         }, manager=manager)
-        resources = [{'id': WEBAPP_ID}, {'id': WEBAPP_ID + '-no-settings'}]
+        resources = [{'id': WEBAPP_ID}, {'id': WEBAPP_ID + '-no-settings'},
+                     {'id': WEBAPP_ID + '-null-value'}]
 
         self.assertEqual(f.process_resource_set(resources), [{'id': WEBAPP_ID}])
         manager.get_client.assert_called_once_with(

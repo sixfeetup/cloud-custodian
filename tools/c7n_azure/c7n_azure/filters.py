@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import json
 import logging
 import isodate
 import operator
@@ -579,9 +580,11 @@ class DiagnosticSettingsFilter(ValueFilter):
             response = client.resources.get_by_id(
                 f"{resource['id']}/providers/Microsoft.Insights/diagnosticSettings",
                 self.api_version,
-                cls=lambda pipeline_response, deserialized, headers: (
-                    pipeline_response.http_response.json()))
-            settings = [self._normalize(s) for s in response.get('value', [])]
+                # text(), not json(): older azure-mgmt-resource releases return
+                # responses that have no json() method.
+                cls=lambda pipeline_response, deserialized, headers: json.loads(
+                    pipeline_response.http_response.text()))
+            settings = [self._normalize(s) for s in response.get('value') or []]
             # put an empty item in when no diag settings, so the absent operator can function
             if not settings:
                 settings = [{}]
