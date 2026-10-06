@@ -527,9 +527,10 @@ class DiagnosticSettingsFilter(ValueFilter):
     :example:
 
     Find KeyVaults that don't send AuditEvent logs anywhere. A log entry that uses a
-    category group has ``category_group`` set instead of ``category``, so an enabled
-    ``allLogs`` group counts too. The filter matches a resource when any one of its
-    settings matches, and Azure may list unconfigured groups such as ``audit`` as disabled.
+    category group has ``category_group`` set instead of ``category``. On a Key Vault
+    both the ``audit`` and ``allLogs`` groups include AuditEvent, so either one counts.
+    The filter matches a resource when any one of its settings matches, and Azure may
+    list unconfigured groups such as ``audit`` as disabled.
 
     .. code-block:: yaml
 
@@ -539,7 +540,9 @@ class DiagnosticSettingsFilter(ValueFilter):
             filters:
               - not:
                 - type: diagnostic-settings
-                  key: "logs[?(category == 'AuditEvent' || category_group == 'allLogs') && enabled]"
+                  key: >-
+                    logs[?(category == 'AuditEvent' || category_group == 'audit'
+                    || category_group == 'allLogs') && enabled]
                   value: not-null
     """
 
