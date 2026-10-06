@@ -54,7 +54,7 @@ Install the script dependencies:
 uv pip install google-cloud-storage google-auth requests
 ```
 
-Confirm the base model in `run_tuning.py` (`DEFAULT_BASE_MODEL`, `gemini-2.5-flash`)
+Confirm the base model in `run_tuning.py` (`DEFAULT_BASE_MODEL`, `gemini-3.1-flash-lite`)
 still accepts tuning jobs. Supported models change over time, and a name
 that worked last quarter can stop tuning without the API saying so until
 you create a job. Check the supported-models list at

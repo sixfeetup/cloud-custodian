@@ -3,7 +3,7 @@
 finish, printing the resulting tuned model and endpoint resource names.
 
 Usage:
-    python run_tuning.py [--base-model gemini-2.5-flash]
+    python run_tuning.py [--base-model gemini-3.1-flash-lite]
 
 Requires application-default credentials (`gcloud auth application-default
 login`) with aiplatform.tuningJobs.create/get and storage.objects.create on
@@ -21,7 +21,7 @@ from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
 
 LOCATION = "us-central1"
-DEFAULT_BASE_MODEL = "gemini-2.5-flash"
+DEFAULT_BASE_MODEL = "gemini-3.1-flash-lite"
 # Reuse the project's existing Vertex AI staging bucket rather than
 # provisioning a new one.
 STAGING_BUCKET = "cloud-ai-platform-f4ead793-49a4-4a9e-89cf-4c77b2b61452"
