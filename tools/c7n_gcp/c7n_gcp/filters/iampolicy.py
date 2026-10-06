@@ -186,7 +186,7 @@ class IamPolicyFilter(Filter):
             held_b = {}
             for binding in iam_policy.get('bindings', []):
                 role = binding['role']
-                base_role = role.split('_withcond_')[0]
+                base_role = role.rsplit('_withcond_', 1)[0]
                 in_a = base_role in roles_a
                 in_b = base_role in roles_b
                 if not in_a and not in_b:
