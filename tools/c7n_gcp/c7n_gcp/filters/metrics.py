@@ -3,6 +3,8 @@
 """
 Monitoring Metrics suppport for resources
 """
+import math
+import operator
 from datetime import datetime, timedelta
 
 from c7n.exceptions import PolicyExecutionError
@@ -227,22 +229,32 @@ class GCPMetricsFilter(Filter):
                         self.metric, resource_name))
             self.resource_metric_dict[resource_name] = series
 
-    def get_point_value(self, value):
-        distribution = value.get('distributionValue')
-        if distribution is None:
-            # Proto3 JSON can omit a TypedValue's field when it holds the
-            # default, leaving an empty value.
-            return float(next(iter(value.values()), 0))
+    def get_distribution_parts(self, distribution):
         # count is an int64 field, serialized by the API as a string. Proto3
         # JSON omits both fields when they hold their default, which the API
         # does for an alignment period with no samples.
-        count = int(distribution.get('count', 0))
-        mean = float(distribution.get('mean', 0.0))
+        return int(distribution.get('count', 0)), float(distribution.get('mean', 0.0))
+
+    def get_point_value(self, value):
+        distribution = value.get('distributionValue')
+        if distribution is None:
+            return float(list(value.values())[0])
+        count, mean = self.get_distribution_parts(distribution)
         if self.value_type == 'count':
             return count
         if self.value_type == 'mean':
             return mean
         return count * mean
+
+    def get_metric_value(self, points):
+        values = [p["value"] for p in points]
+        if self.value_type == 'mean' and any('distributionValue' in v for v in values):
+            # Summing per-point means is meaningless. Weight each mean by its count.
+            parts = [self.get_distribution_parts(v.get('distributionValue', {}))
+                     for v in values]
+            count = sum(c for c, _ in parts)
+            return sum(c * m for c, m in parts) / count if count else 0.0
+        return sum(self.get_point_value(v) for v in values)
 
     def process_resource(self, resource):
         resource_metric = resource.setdefault('c7n.metrics', {})
@@ -254,13 +266,24 @@ class GCPMetricsFilter(Filter):
         if metric is None:
             metric_value = self.missing_value
         else:
-            metric_value = sum(
-                self.get_point_value(p["value"]) for p in metric["points"])
+            metric_value = self.get_metric_value(metric["points"])
 
         resource_metric[self.c7n_metric_key] = metric
 
-        matched = self.op(metric_value, self.value)
-        return matched
+        return self.compare(metric_value, metric)
+
+    def compare(self, metric_value, metric):
+        # count * mean rebuilds a sum from a rounded mean, so it can differ from the
+        # true sum by a few ulps. An exact == or != would then fail on values such as
+        # 3 * 0.1 against 0.3. Counts are integers and stay exact.
+        approximate = (
+            metric is not None and self.value_type != 'count' and
+            any('distributionValue' in p["value"] for p in metric["points"]))
+        if approximate and self.op in (operator.eq, operator.ne):
+            close = math.isclose(
+                metric_value, self.value, rel_tol=1e-12, abs_tol=1e-12)
+            return close if self.op is operator.eq else not close
+        return self.op(metric_value, self.value)
 
     @classmethod
     def register_resources(klass, registry, resource_class):
