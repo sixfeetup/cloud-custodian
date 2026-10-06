@@ -48,7 +48,9 @@ class SetFirewallAction(AzureBaseAction):
     def _build_vnet_rules(self, existing_vnet, new_rules):
         rules = list(new_rules)
         if self.append:
-            rules.extend(r for r in existing_vnet if r not in rules)
+            for rule in existing_vnet:
+                if rule not in rules:
+                    rules.append(rule)
         return rules
 
     def _build_ip_rules(self, existing_ip, new_rules):
