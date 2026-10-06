@@ -901,7 +901,7 @@ def test_project_set_iam_policy_remove_matched(test, project_iam_policy_chained)
     assert sa_email in bindings.get('roles/viewer', [])
 
 
-@terraform("project_iam_policy_separation_of_duties")
+@terraform("project_iam_policy_separation_of_duties", scope="session")
 def test_project_iam_policy_separation_of_duties(test, project_iam_policy_separation_of_duties):
     """separation-of-duties annotates only members holding a role from both sets.
 
@@ -946,6 +946,45 @@ def test_project_iam_policy_separation_of_duties(test, project_iam_policy_separa
     assert len(roles) == 2
     assert roles[0].startswith('roles/cloudkms.admin_withcond_')
     assert roles[1] == 'roles/cloudkms.cryptoKeyEncrypterDecrypter'
+
+
+@terraform("project_iam_policy_separation_of_duties", scope="session")
+def test_project_iam_policy_separation_of_duties_with_doc(
+    test, project_iam_policy_separation_of_duties
+):
+    """separation-of-duties reuses the IAM policy that doc already fetched.
+
+    The recording holds a single getIamPolicy, so a second fetch fails replay.
+    """
+    bad = project_iam_policy_separation_of_duties.resources['google_service_account']['bad']
+    bad_sa = 'serviceAccount:' + bad['email']
+    factory = test.replay_flight_data('project-iam-policy-separation-of-duties-with-doc')
+
+    policy = test.load_policy(
+        {
+            'name': 'kms-separation-of-duties-with-doc',
+            'resource': 'gcp.project',
+            'filters': [
+                {'type': 'value', 'key': 'projectId', 'value': bad['project']},
+                {
+                    'type': 'iam-policy',
+                    'doc': {'key': 'bindings', 'value': 'not-null'},
+                    'separation-of-duties': {
+                        'roles-a': ['roles/cloudkms.admin'],
+                        'roles-b': ['roles/cloudkms.cryptoKeyEncrypterDecrypter'],
+                    },
+                },
+            ],
+        },
+        session_factory=factory,
+    )
+
+    resources = policy.run()
+    assert len(resources) == 1
+    assert 'c7n:iamPolicy' in resources[0]
+
+    conflicts = resources[0]['c7n:conflicting-iam-bindings']
+    assert {c['member'] for c in conflicts} == {bad_sa}
 
 
 def test_project_iam_policy_separation_of_duties_shared_role(test):

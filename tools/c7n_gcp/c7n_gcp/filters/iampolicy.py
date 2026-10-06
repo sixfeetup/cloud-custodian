@@ -180,7 +180,9 @@ class IamPolicyFilter(Filter):
 
         matched_resources = []
         for r in resources:
-            iam_policy = client.execute_command('getIamPolicy', self._verb_arguments(r))
+            iam_policy = r.get('c7n:iamPolicy')
+            if iam_policy is None:
+                iam_policy = client.execute_command('getIamPolicy', self._verb_arguments(r))
 
             held_a = {}
             held_b = {}
