@@ -7,6 +7,7 @@ from c7n_azure.resources.arm import ArmResourceManager
 from c7n_azure.provider import resources
 from c7n.utils import type_schema
 from c7n_azure.actions.base import AzureBaseAction
+from c7n_azure.filters import DEFAULT_TAG
 from c7n_azure.utils import ResourceIdParser, StringUtils, ThreadHelper
 from azure.core.exceptions import AzureError
 
@@ -543,21 +544,24 @@ class DiskSnapshotAction(AzureBaseAction):
     shortened, with a hash of the disk ID added to keep them unique.
 
     ``incremental`` (default ``true``) stores only the changes since the disk's previous
-    snapshot. Set it to ``false`` for a full copy. Ultra Disks and Premium SSD v2 disks
-    support only incremental snapshots.
+    snapshot. Set it to ``false`` for a full copy. Azure supports only incremental
+    snapshots of Ultra Disks and Premium SSD v2 disks, and finishes copying them after
+    the action returns.
 
-    The snapshot copies the disk's tags and adds a ``custodian_snapshot`` tag set to the
-    policy name. Copied tags include any ``mark-for-op`` tag, so ``marked-for-op``
-    policies on ``azure.snapshot`` match the snapshot too. A disk that already has 50
-    tags can't be snapshotted.
+    Azure gives the snapshot the disk's encryption settings, including a customer-managed
+    key. The snapshot gets the disk's tags, except the ``custodian_status`` tag from
+    ``mark-for-op``, plus a ``custodian_snapshot`` tag set to the policy name. A snapshot
+    isn't taken if that comes to more than Azure's limit of 50 tags.
 
-    If a snapshot fails, the remaining disks are still snapshotted, then the action
-    raises so later actions in the policy don't run.
+    If a snapshot fails, snapshots of the remaining disks are still taken, then the
+    action raises so later actions in the policy don't run.
 
     Needs at least ``Microsoft.Compute/disks/read``, ``Microsoft.Compute/snapshots/write``
     and ``Microsoft.Compute/snapshots/read``.
 
     :example:
+
+    Take a snapshot of every disk tagged ``backup: daily``:
 
     .. code-block:: yaml
 
@@ -582,9 +586,9 @@ class DiskSnapshotAction(AzureBaseAction):
                 self._log_modified_resource(resource, self._process_resource(resource))
             except Exception as e:
                 self.log.error(
-                    f"Failed to snapshot disk '{resource.get('name')}' in resource group "
-                    f"'{resource.get('resourceGroup')}': {e}",
-                    extra=self._get_action_log_metadata(resource))
+                    "Snapshot of disk '%s' in resource group '%s' failed: %s",
+                    resource.get('name'), resource.get('resourceGroup'), e,
+                    exc_info=True, extra=self._get_action_log_metadata(resource))
                 failures.append(e)
         if failures:
             raise failures[0]
@@ -605,7 +609,7 @@ class DiskSnapshotAction(AzureBaseAction):
         """Return the request body that creates a snapshot of ``disk``."""
         tags = {
             k: v for k, v in (disk.get('tags') or {}).items()
-            if k.lower() != 'custodian_snapshot'
+            if k.lower() not in ('custodian_snapshot', DEFAULT_TAG)
         }
         tags['custodian_snapshot'] = self.manager.ctx.policy.name[:256]
         return {
@@ -618,9 +622,9 @@ class DiskSnapshotAction(AzureBaseAction):
     @staticmethod
     def snapshot_name(disk_name, disk_id, now):
         """Return a valid Azure snapshot name, unique per disk and second."""
-        stamp = now.strftime("%Y%m%d%H%M%S")
+        stamp = now.strftime('%Y%m%d%H%M%S')
         name = f'{disk_name}-{stamp}'
         if len(name) <= 80:
             return name
         suffix = f'-{StringUtils.naming_hash(disk_id.lower())}-{stamp}'
-        return disk_name[: 80 - len(suffix)] + suffix
+        return disk_name[:80 - len(suffix)] + suffix

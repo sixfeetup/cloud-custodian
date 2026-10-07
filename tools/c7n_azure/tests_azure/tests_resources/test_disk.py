@@ -630,6 +630,10 @@ class DiskSnapshotTest(BaseTest):
         with pytest.raises(PolicyValidationError, match="'incremntal' was unexpected"):
             self._load_snapshot_policy(incremntal=False)
 
+    def test_snapshot_schema_rejects_non_boolean_incremental(self):
+        with pytest.raises(PolicyValidationError, match="'yes' is not of type 'boolean'"):
+            self._load_snapshot_policy(incremental='yes')
+
     def test_snapshot_body_copies_the_disk_and_defaults_to_incremental(self):
         disk_tags = {'testtag': 'testvalue'}
 
@@ -654,14 +658,26 @@ class DiskSnapshotTest(BaseTest):
 
         assert body['tags'] == {'custodian_snapshot': 'test-azure-disk-snapshot'}
 
+    def test_snapshot_body_skips_the_mark_for_op_tag(self):
+        body = self._snapshot_body_for({'custodian_status': 'delete@2026/11/01', 'env': 'dev'})
+
+        assert body['tags'] == {'env': 'dev', 'custodian_snapshot': 'test-azure-disk-snapshot'}
+
     def test_snapshot_body_caps_the_marker_at_256_characters(self):
         body = self._snapshot_body_for(None, name='p' * 300)
 
         assert body['tags'] == {'custodian_snapshot': 'p' * 256}
 
-    def test_snapshot_schema_rejects_non_boolean_incremental(self):
-        with pytest.raises(PolicyValidationError, match="'yes' is not of type 'boolean'"):
-            self._load_snapshot_policy(incremental='yes')
+    def test_snapshot_failure_of_any_kind_does_not_stop_other_disks(self):
+        action = self._load_snapshot_policy().resource_manager.actions[0]
+        disks_without_ids = [{'name': 'cctest-no-id-1'}, {'name': 'cctest-no-id-2'}]
+
+        with self.assertLogs('custodian.azure.AzureBaseAction', level='ERROR') as logs:
+            with pytest.raises(KeyError):
+                action.process(disks_without_ids)
+
+        assert any("'cctest-no-id-1'" in line for line in logs.output)
+        assert any("'cctest-no-id-2'" in line for line in logs.output)
 
     def test_snapshot_name_appends_timestamp_to_short_disk_name(self):
         name = self._snapshot_name_for('cctestvm_OsDisk_1_81338ced63fa4855b8a5f3e2bab5213c')
