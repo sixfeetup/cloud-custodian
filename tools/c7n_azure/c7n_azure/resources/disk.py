@@ -551,8 +551,8 @@ class DiskSnapshotAction(AzureBaseAction):
     policies on ``azure.snapshot`` match the snapshot too. A disk that already has 50
     tags can't be snapshotted.
 
-    If Azure rejects a snapshot, the remaining disks are still snapshotted, then the
-    action raises so later actions in the policy don't run.
+    If a snapshot fails, the remaining disks are still snapshotted, then the action
+    raises so later actions in the policy don't run.
 
     Needs at least ``Microsoft.Compute/disks/read``, ``Microsoft.Compute/snapshots/write``
     and ``Microsoft.Compute/snapshots/read``.
@@ -580,10 +580,10 @@ class DiskSnapshotAction(AzureBaseAction):
         for resource in resources:
             try:
                 self._log_modified_resource(resource, self._process_resource(resource))
-            except AzureError as e:
+            except Exception as e:
                 self.log.error(
-                    f"Failed to snapshot disk '{resource['name']}' in resource group "
-                    f"'{resource['resourceGroup']}': {e}",
+                    f"Failed to snapshot disk '{resource.get('name')}' in resource group "
+                    f"'{resource.get('resourceGroup')}': {e}",
                     extra=self._get_action_log_metadata(resource))
                 failures.append(e)
         if failures:
