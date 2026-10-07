@@ -1,0 +1,631 @@
+{
+    "version": 1,
+    "interactions": [
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/disks?api-version=2024-03-02",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:07 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGet3Min;234,Microsoft.Compute/HighCostGet30Min;1914"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: A0DD4825DDE84FD0AFAF4CA874CF5D7F Ref B: CHI261140508023 Ref C: 2026-10-07T15:06:07Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "3804"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "173b1b79-590c-447d-9d94-ab72f73357df"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "name": "cctest-snapshot-full-disk",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-FULL/providers/Microsoft.Compute/disks/cctest-snapshot-full-disk",
+                                "type": "Microsoft.Compute/disks",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "testtag": "testvalue"
+                                },
+                                "sku": {
+                                    "name": "Standard_LRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Empty"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "diskIOPSReadWrite": 500,
+                                    "diskMBpsReadWrite": 60,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:04:50.0957295+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "57c2a59e-4f59-4bc9-a040-0ad6976d8120"
+                                }
+                            },
+                            {
+                                "name": "cctest-snapshot-limit-a",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-a",
+                                "type": "Microsoft.Compute/disks",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "tag01": "value",
+                                    "tag02": "value",
+                                    "tag03": "value",
+                                    "tag04": "value",
+                                    "tag05": "value",
+                                    "tag06": "value",
+                                    "tag07": "value",
+                                    "tag08": "value",
+                                    "tag09": "value",
+                                    "tag10": "value",
+                                    "tag11": "value",
+                                    "tag12": "value",
+                                    "tag13": "value",
+                                    "tag14": "value",
+                                    "tag15": "value",
+                                    "tag16": "value",
+                                    "tag17": "value",
+                                    "tag18": "value",
+                                    "tag19": "value",
+                                    "tag20": "value",
+                                    "tag21": "value",
+                                    "tag22": "value",
+                                    "tag23": "value",
+                                    "tag24": "value",
+                                    "tag25": "value",
+                                    "tag26": "value",
+                                    "tag27": "value",
+                                    "tag28": "value",
+                                    "tag29": "value",
+                                    "tag30": "value",
+                                    "tag31": "value",
+                                    "tag32": "value",
+                                    "tag33": "value",
+                                    "tag34": "value",
+                                    "tag35": "value",
+                                    "tag36": "value",
+                                    "tag37": "value",
+                                    "tag38": "value",
+                                    "tag39": "value",
+                                    "tag40": "value",
+                                    "tag41": "value",
+                                    "tag42": "value",
+                                    "tag43": "value",
+                                    "tag44": "value",
+                                    "tag45": "value",
+                                    "tag46": "value",
+                                    "tag47": "value",
+                                    "tag48": "value",
+                                    "tag49": "value",
+                                    "tag50": "value"
+                                },
+                                "sku": {
+                                    "name": "Standard_LRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Empty"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "diskIOPSReadWrite": 500,
+                                    "diskMBpsReadWrite": 60,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:04:51.0352411+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "4acbaeb5-a32e-4ce3-bc6f-a67bd6bf7982"
+                                }
+                            },
+                            {
+                                "name": "cctest-snapshot-limit-b",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-b",
+                                "type": "Microsoft.Compute/disks",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "testtag": "testvalue"
+                                },
+                                "sku": {
+                                    "name": "Standard_LRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Empty"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "diskIOPSReadWrite": 500,
+                                    "diskMBpsReadWrite": 60,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:04:51.0352411+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "f6b4697f-bf79-4fcf-b989-0aab7e21c455"
+                                }
+                            },
+                            {
+                                "name": "cctest-snapshot-disk",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT/providers/Microsoft.Compute/disks/cctest-snapshot-disk",
+                                "type": "Microsoft.Compute/disks",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "testtag": "testvalue"
+                                },
+                                "sku": {
+                                    "name": "Standard_LRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Empty"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "diskIOPSReadWrite": 500,
+                                    "diskMBpsReadWrite": 60,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:04:50.7588432+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "08470427-9f14-4b07-834d-a7eed1c1dc39"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "PUT",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-a-20261007235959?api-version=2024-03-02",
+                "body": "mock_body",
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 400,
+                    "message": "Bad Request"
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:07 GMT"
+                    ],
+                    "x-ms-failure-cause": [
+                        "gateway"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: D186F6DAE3D740C8AB0B99F3E9618631 Ref B: CHI261140504025 Ref C: 2026-10-07T15:06:08Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "137"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "error": {
+                            "code": "InvalidTags",
+                            "message": "Too many tags specified. Requested tag count - '51'. Maximum number of tags allowed - '50'. "
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "PUT",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959?api-version=2024-03-02",
+                "body": "mock_body",
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 202,
+                    "message": ""
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:09 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-writes": [
+                        "2999"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 3DF197E5ECB1472E93C2A2ED8946B513 Ref B: CHI261140512060 Ref C: 2026-10-07T15:06:08Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "azure-asyncoperation": [
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/DiskOperations/17e0539a-92fa-4521-bacd-470bcab8e7ea?p=98acd7d6-03f6-45a6-b0f1-6a08d463d7b7&api-version=2024-03-02&t=639269823694881143&c=MIIHxDCCBqygAwIBAgIRAK3GpGj7DjHLrjRJRX_HEXgwDQYJKoZIhvcNAQELBQAwNTEzMDEGA1UEAxMqQ0NNRSBHMSBUTFMgUlNBIDIwNDggU0hBMjU2IDIwNDkgQ1VTIENBIDAxMB4XDTI2MDkxNzE5NDgyOFoXDTI2MTIxMzAxNDgyOFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1snhTC6g_4xx4ZrHyiUqTYGCsPZny3WTFt1HNTpetNpb_Y4Ect_LxssSA3PaPbNW5xiK2g0l84t8tlBb4NJt4iWD9ZwS9IRxGg0UuWjhyi4BQ5nI7V4c80TQ3W166AA9VV-hnq8DlFZxA4jhgbhfitgCsrhHu-0To9jdy2yVo7Ou3R57j51u2Des7d-kBfWmS0Bfd_rg2U-JsWvitd4mXfjVmh0hIeD8PJAVxRczpzyxghRX3mYtuvxUHM0nYb39mkKTBJyFzkEdLMQXLeDBqfD7O80rXsQ0zETCpv5pYUNhLvtOvWmOOIdBJbNx5pzxskbmMOFz9HgF_Ze6P-F4tAgMBAAGjggTCMIIEvjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBQa8-eemI0KngUPnocA3BYB2hcHRTAfBgNVHSMEGDAWgBT85FoKL4UO50S5B3N44NREB6IZETCCAcoGA1UdHwSCAcEwggG9MG-gbaBrhmlodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwcaBvoG2Ga2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L2NlbnRyYWx1cy9jcmxzL2NjbWVjZW50cmFsdXNwa2kvY2NtZWNlbnRyYWx1c2ljYTAxLzY2L2N1cnJlbnQuY3JsMGCgXqBchlpodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwdaBzoHGGb2h0dHA6Ly9jY21lY2VudHJhbHVzcGtpLmNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWVjZW50cmFsdXNpY2EwMS82Ni9jdXJyZW50LmNybDCCAc8GCCsGAQUFBwEBBIIBwTCCAb0wcgYIKwYBBQUHMAKGZmh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjB0BggrBgEFBQcwAoZoaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NhY2VydHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvY2VydC5jZXIwYwYIKwYBBQUHMAKGV2h0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBsBggrBgEFBQcwAoZgaHR0cDovL2NjbWVjZW50cmFsdXNwa2kuY2VudHJhbHVzLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZWNlbnRyYWx1c2ljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBp0qSFIPxsO9-AAkHEku0ZFsMQQDXzDwru9rO_zch628Re4yuZQiurXQmd_7RdfMOTB8Bpy0TLqDaFsVzhDV6VVXcq5tbuMwjxgwFhwDMBRKGkvtXfojeQ5a2wNFt-Pk-_FxKYvNZ4EVdNbJk6d4ify7yuugiGxToKqqxmwp_mgkz71K-9wTj2SvITSyg43qHdnc5fhGdG0VkvOsjuQzgNR02mqPSkLzkVQNwM71gx5P_WA0n3PfHnBKalXfb2chNsstaOtnYkkJcYcNESFK-srFA6sijtKWm_7sbIQcnAJYR5l-eaXxcu2xMuuskUFmgq6njXPHx5tPSNB77zeeFd&s=P5W7DH36Spf2YGjpfD9NzrUSnTvOz_sNGPnmb2nkpVGL7JyYrB6wHgi8uD6SgpPhCYU25HGL-uglzJ4IUbuQwmZFKk7jeLQbvf__6HIXFKw8MQ3LlTqU9Dz9QYhtL85oQhZUitXVkAbNXT_kTxlQxrpE8BOrh-gckCObrceuOnbnVS7p9DPFLHHfMky15mhDMlClMM51Kct5TiX5cacRTFo_BNpFRiUQ6sevBc55FhO27ds29Ddeby9qfiJiviWLJjO4NfGGYNjTscG2lkdyJMuHFf8mFGUIn0vSaheTWoopYgph_6kdD_X-1WVxP657uaK-CCBWgjjt6QpqwJUBsQ&h=dhh0a9k0OIh1By24d62ZaH_IZ6ke6Beol6TQyEs98o8"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostSnapshotCreateHydrate3Min;997,Microsoft.Compute/HighCostSnapshotCreateHydrate30Min;7997"
+                    ],
+                    "location": [
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/DiskOperations/17e0539a-92fa-4521-bacd-470bcab8e7ea?p=98acd7d6-03f6-45a6-b0f1-6a08d463d7b7&monitor=true&api-version=2024-03-02&t=639269823694881143&c=MIIHxDCCBqygAwIBAgIRAK3GpGj7DjHLrjRJRX_HEXgwDQYJKoZIhvcNAQELBQAwNTEzMDEGA1UEAxMqQ0NNRSBHMSBUTFMgUlNBIDIwNDggU0hBMjU2IDIwNDkgQ1VTIENBIDAxMB4XDTI2MDkxNzE5NDgyOFoXDTI2MTIxMzAxNDgyOFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1snhTC6g_4xx4ZrHyiUqTYGCsPZny3WTFt1HNTpetNpb_Y4Ect_LxssSA3PaPbNW5xiK2g0l84t8tlBb4NJt4iWD9ZwS9IRxGg0UuWjhyi4BQ5nI7V4c80TQ3W166AA9VV-hnq8DlFZxA4jhgbhfitgCsrhHu-0To9jdy2yVo7Ou3R57j51u2Des7d-kBfWmS0Bfd_rg2U-JsWvitd4mXfjVmh0hIeD8PJAVxRczpzyxghRX3mYtuvxUHM0nYb39mkKTBJyFzkEdLMQXLeDBqfD7O80rXsQ0zETCpv5pYUNhLvtOvWmOOIdBJbNx5pzxskbmMOFz9HgF_Ze6P-F4tAgMBAAGjggTCMIIEvjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBQa8-eemI0KngUPnocA3BYB2hcHRTAfBgNVHSMEGDAWgBT85FoKL4UO50S5B3N44NREB6IZETCCAcoGA1UdHwSCAcEwggG9MG-gbaBrhmlodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwcaBvoG2Ga2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L2NlbnRyYWx1cy9jcmxzL2NjbWVjZW50cmFsdXNwa2kvY2NtZWNlbnRyYWx1c2ljYTAxLzY2L2N1cnJlbnQuY3JsMGCgXqBchlpodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwdaBzoHGGb2h0dHA6Ly9jY21lY2VudHJhbHVzcGtpLmNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWVjZW50cmFsdXNpY2EwMS82Ni9jdXJyZW50LmNybDCCAc8GCCsGAQUFBwEBBIIBwTCCAb0wcgYIKwYBBQUHMAKGZmh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjB0BggrBgEFBQcwAoZoaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NhY2VydHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvY2VydC5jZXIwYwYIKwYBBQUHMAKGV2h0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBsBggrBgEFBQcwAoZgaHR0cDovL2NjbWVjZW50cmFsdXNwa2kuY2VudHJhbHVzLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZWNlbnRyYWx1c2ljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBp0qSFIPxsO9-AAkHEku0ZFsMQQDXzDwru9rO_zch628Re4yuZQiurXQmd_7RdfMOTB8Bpy0TLqDaFsVzhDV6VVXcq5tbuMwjxgwFhwDMBRKGkvtXfojeQ5a2wNFt-Pk-_FxKYvNZ4EVdNbJk6d4ify7yuugiGxToKqqxmwp_mgkz71K-9wTj2SvITSyg43qHdnc5fhGdG0VkvOsjuQzgNR02mqPSkLzkVQNwM71gx5P_WA0n3PfHnBKalXfb2chNsstaOtnYkkJcYcNESFK-srFA6sijtKWm_7sbIQcnAJYR5l-eaXxcu2xMuuskUFmgq6njXPHx5tPSNB77zeeFd&s=lTqHvkurrQieY16DbLL9do9WV3qHXkJmtqxYn2ibow9uBHTT9VqPm-Pof7XB5A7dwBu1KjFrkvMSJqgkviAFY_XDF80wBwVK92aTj_xcmO58R3yDN3NnOeucZY4eJ5iau-Im7nC2sjyMv_M3Y5JpMPvlXpC2na9P_dOV-f3s4A5wmBoXCZNNUJ6NhAfvcXMCCbVpdG_xYkP3dQtNhlI0km4Pqr9QpZseP1zq0fyONVb-WfdvxOCVCMSuqG201wxi4xKZ3STPS19aIyFH-yv4k1vyJQ0s7ccPm_T52YL9wefZGSC4--vlzYDEtbUmoH1DLr3sLuOyjrH_03-DS5vSng&h=dhh0a9k0OIh1By24d62ZaH_IZ6ke6Beol6TQyEs98o8"
+                    ],
+                    "content-length": [
+                        "751"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "name": "cctest-snapshot-limit-b-20261007235959",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959",
+                        "type": "Microsoft.Compute/snapshots",
+                        "location": "southcentralus",
+                        "tags": {
+                            "testtag": "testvalue",
+                            "custodian_snapshot": "test-azure-disk-snapshot"
+                        },
+                        "properties": {
+                            "creationData": {
+                                "createOption": "Copy",
+                                "sourceResourceId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-b"
+                            },
+                            "incremental": true,
+                            "provisioningState": "Updating"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/DiskOperations/17e0539a-92fa-4521-bacd-470bcab8e7ea?p=98acd7d6-03f6-45a6-b0f1-6a08d463d7b7&api-version=2024-03-02&t=639269823694881143&c=MIIHxDCCBqygAwIBAgIRAK3GpGj7DjHLrjRJRX_HEXgwDQYJKoZIhvcNAQELBQAwNTEzMDEGA1UEAxMqQ0NNRSBHMSBUTFMgUlNBIDIwNDggU0hBMjU2IDIwNDkgQ1VTIENBIDAxMB4XDTI2MDkxNzE5NDgyOFoXDTI2MTIxMzAxNDgyOFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1snhTC6g_4xx4ZrHyiUqTYGCsPZny3WTFt1HNTpetNpb_Y4Ect_LxssSA3PaPbNW5xiK2g0l84t8tlBb4NJt4iWD9ZwS9IRxGg0UuWjhyi4BQ5nI7V4c80TQ3W166AA9VV-hnq8DlFZxA4jhgbhfitgCsrhHu-0To9jdy2yVo7Ou3R57j51u2Des7d-kBfWmS0Bfd_rg2U-JsWvitd4mXfjVmh0hIeD8PJAVxRczpzyxghRX3mYtuvxUHM0nYb39mkKTBJyFzkEdLMQXLeDBqfD7O80rXsQ0zETCpv5pYUNhLvtOvWmOOIdBJbNx5pzxskbmMOFz9HgF_Ze6P-F4tAgMBAAGjggTCMIIEvjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBQa8-eemI0KngUPnocA3BYB2hcHRTAfBgNVHSMEGDAWgBT85FoKL4UO50S5B3N44NREB6IZETCCAcoGA1UdHwSCAcEwggG9MG-gbaBrhmlodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwcaBvoG2Ga2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L2NlbnRyYWx1cy9jcmxzL2NjbWVjZW50cmFsdXNwa2kvY2NtZWNlbnRyYWx1c2ljYTAxLzY2L2N1cnJlbnQuY3JsMGCgXqBchlpodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwdaBzoHGGb2h0dHA6Ly9jY21lY2VudHJhbHVzcGtpLmNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWVjZW50cmFsdXNpY2EwMS82Ni9jdXJyZW50LmNybDCCAc8GCCsGAQUFBwEBBIIBwTCCAb0wcgYIKwYBBQUHMAKGZmh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjB0BggrBgEFBQcwAoZoaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NhY2VydHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvY2VydC5jZXIwYwYIKwYBBQUHMAKGV2h0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBsBggrBgEFBQcwAoZgaHR0cDovL2NjbWVjZW50cmFsdXNwa2kuY2VudHJhbHVzLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZWNlbnRyYWx1c2ljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBp0qSFIPxsO9-AAkHEku0ZFsMQQDXzDwru9rO_zch628Re4yuZQiurXQmd_7RdfMOTB8Bpy0TLqDaFsVzhDV6VVXcq5tbuMwjxgwFhwDMBRKGkvtXfojeQ5a2wNFt-Pk-_FxKYvNZ4EVdNbJk6d4ify7yuugiGxToKqqxmwp_mgkz71K-9wTj2SvITSyg43qHdnc5fhGdG0VkvOsjuQzgNR02mqPSkLzkVQNwM71gx5P_WA0n3PfHnBKalXfb2chNsstaOtnYkkJcYcNESFK-srFA6sijtKWm_7sbIQcnAJYR5l-eaXxcu2xMuuskUFmgq6njXPHx5tPSNB77zeeFd&s=P5W7DH36Spf2YGjpfD9NzrUSnTvOz_sNGPnmb2nkpVGL7JyYrB6wHgi8uD6SgpPhCYU25HGL-uglzJ4IUbuQwmZFKk7jeLQbvf__6HIXFKw8MQ3LlTqU9Dz9QYhtL85oQhZUitXVkAbNXT_kTxlQxrpE8BOrh-gckCObrceuOnbnVS7p9DPFLHHfMky15mhDMlClMM51Kct5TiX5cacRTFo_BNpFRiUQ6sevBc55FhO27ds29Ddeby9qfiJiviWLJjO4NfGGYNjTscG2lkdyJMuHFf8mFGUIn0vSaheTWoopYgph_6kdD_X-1WVxP657uaK-CCBWgjjt6QpqwJUBsQ&h=dhh0a9k0OIh1By24d62ZaH_IZ6ke6Beol6TQyEs98o8",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": ""
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:09 GMT"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: EB0CE48A851C421FB34860FF894F1EA7 Ref B: CHI261140507036 Ref C: 2026-10-07T15:06:09Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperation3Min;49981,Microsoft.Compute/GetOperation30Min;399981"
+                    ],
+                    "content-length": [
+                        "134"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "startTime": "2026-10-07T15:06:09.3147984+00:00",
+                        "status": "InProgress",
+                        "name": "17e0539a-92fa-4521-bacd-470bcab8e7ea"
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/DiskOperations/17e0539a-92fa-4521-bacd-470bcab8e7ea?p=98acd7d6-03f6-45a6-b0f1-6a08d463d7b7&api-version=2024-03-02&t=639269823694881143&c=MIIHxDCCBqygAwIBAgIRAK3GpGj7DjHLrjRJRX_HEXgwDQYJKoZIhvcNAQELBQAwNTEzMDEGA1UEAxMqQ0NNRSBHMSBUTFMgUlNBIDIwNDggU0hBMjU2IDIwNDkgQ1VTIENBIDAxMB4XDTI2MDkxNzE5NDgyOFoXDTI2MTIxMzAxNDgyOFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC1snhTC6g_4xx4ZrHyiUqTYGCsPZny3WTFt1HNTpetNpb_Y4Ect_LxssSA3PaPbNW5xiK2g0l84t8tlBb4NJt4iWD9ZwS9IRxGg0UuWjhyi4BQ5nI7V4c80TQ3W166AA9VV-hnq8DlFZxA4jhgbhfitgCsrhHu-0To9jdy2yVo7Ou3R57j51u2Des7d-kBfWmS0Bfd_rg2U-JsWvitd4mXfjVmh0hIeD8PJAVxRczpzyxghRX3mYtuvxUHM0nYb39mkKTBJyFzkEdLMQXLeDBqfD7O80rXsQ0zETCpv5pYUNhLvtOvWmOOIdBJbNx5pzxskbmMOFz9HgF_Ze6P-F4tAgMBAAGjggTCMIIEvjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBQa8-eemI0KngUPnocA3BYB2hcHRTAfBgNVHSMEGDAWgBT85FoKL4UO50S5B3N44NREB6IZETCCAcoGA1UdHwSCAcEwggG9MG-gbaBrhmlodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwcaBvoG2Ga2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L2NlbnRyYWx1cy9jcmxzL2NjbWVjZW50cmFsdXNwa2kvY2NtZWNlbnRyYWx1c2ljYTAxLzY2L2N1cnJlbnQuY3JsMGCgXqBchlpodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vY2VudHJhbHVzL2NybHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvNjYvY3VycmVudC5jcmwwdaBzoHGGb2h0dHA6Ly9jY21lY2VudHJhbHVzcGtpLmNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWVjZW50cmFsdXNpY2EwMS82Ni9jdXJyZW50LmNybDCCAc8GCCsGAQUFBwEBBIIBwTCCAb0wcgYIKwYBBQUHMAKGZmh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjB0BggrBgEFBQcwAoZoaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvY2VudHJhbHVzL2NhY2VydHMvY2NtZWNlbnRyYWx1c3BraS9jY21lY2VudHJhbHVzaWNhMDEvY2VydC5jZXIwYwYIKwYBBQUHMAKGV2h0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS9jZW50cmFsdXMvY2FjZXJ0cy9jY21lY2VudHJhbHVzcGtpL2NjbWVjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBsBggrBgEFBQcwAoZgaHR0cDovL2NjbWVjZW50cmFsdXNwa2kuY2VudHJhbHVzLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZWNlbnRyYWx1c2ljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBp0qSFIPxsO9-AAkHEku0ZFsMQQDXzDwru9rO_zch628Re4yuZQiurXQmd_7RdfMOTB8Bpy0TLqDaFsVzhDV6VVXcq5tbuMwjxgwFhwDMBRKGkvtXfojeQ5a2wNFt-Pk-_FxKYvNZ4EVdNbJk6d4ify7yuugiGxToKqqxmwp_mgkz71K-9wTj2SvITSyg43qHdnc5fhGdG0VkvOsjuQzgNR02mqPSkLzkVQNwM71gx5P_WA0n3PfHnBKalXfb2chNsstaOtnYkkJcYcNESFK-srFA6sijtKWm_7sbIQcnAJYR5l-eaXxcu2xMuuskUFmgq6njXPHx5tPSNB77zeeFd&s=P5W7DH36Spf2YGjpfD9NzrUSnTvOz_sNGPnmb2nkpVGL7JyYrB6wHgi8uD6SgpPhCYU25HGL-uglzJ4IUbuQwmZFKk7jeLQbvf__6HIXFKw8MQ3LlTqU9Dz9QYhtL85oQhZUitXVkAbNXT_kTxlQxrpE8BOrh-gckCObrceuOnbnVS7p9DPFLHHfMky15mhDMlClMM51Kct5TiX5cacRTFo_BNpFRiUQ6sevBc55FhO27ds29Ddeby9qfiJiviWLJjO4NfGGYNjTscG2lkdyJMuHFf8mFGUIn0vSaheTWoopYgph_6kdD_X-1WVxP657uaK-CCBWgjjt6QpqwJUBsQ&h=dhh0a9k0OIh1By24d62ZaH_IZ6ke6Beol6TQyEs98o8",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": ""
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:20 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperation3Min;49979,Microsoft.Compute/GetOperation30Min;399979"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: DBD35C31D1A3459FBA3B9D6496FA419A Ref B: CHI261140511054 Ref C: 2026-10-07T15:06:20Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "1339"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "startTime": "2026-10-07T15:06:09.3147984+00:00",
+                        "endTime": "2026-10-07T15:06:10.2180729+00:00",
+                        "status": "Succeeded",
+                        "properties": {
+                            "output": {
+                                "name": "cctest-snapshot-limit-b-20261007235959",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959",
+                                "type": "Microsoft.Compute/snapshots",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "testtag": "testvalue",
+                                    "custodian_snapshot": "test-azure-disk-snapshot"
+                                },
+                                "sku": {
+                                    "name": "Standard_ZRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Copy",
+                                        "sourceResourceId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-b",
+                                        "sourceUniqueId": "f6b4697f-bf79-4fcf-b989-0aab7e21c455"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "incremental": true,
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:06:09.3230991+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "a2d1ca6e-4aa8-4f84-9fa2-1533c323a922",
+                                    "incrementalSnapshotFamilyId": "2259d8cd-f3a1-4eaf-afdf-b3dc94486edf"
+                                }
+                            }
+                        },
+                        "name": "17e0539a-92fa-4521-bacd-470bcab8e7ea"
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959?api-version=2024-03-02",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": ""
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:21 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGet3Min;14983,Microsoft.Compute/LowCostGet30Min;119983"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 299BD276CA684B88AB309C3D6048D675 Ref B: CHI261140504042 Ref C: 2026-10-07T15:06:20Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "1323"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "name": "cctest-snapshot-limit-b-20261007235959",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959",
+                        "type": "Microsoft.Compute/snapshots",
+                        "location": "southcentralus",
+                        "tags": {
+                            "testtag": "testvalue",
+                            "custodian_snapshot": "test-azure-disk-snapshot"
+                        },
+                        "sku": {
+                            "name": "Standard_ZRS",
+                            "tier": "Standard"
+                        },
+                        "properties": {
+                            "creationData": {
+                                "createOption": "Copy",
+                                "sourceResourceId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-b",
+                                "sourceUniqueId": "f6b4697f-bf79-4fcf-b989-0aab7e21c455"
+                            },
+                            "diskSizeGB": 4,
+                            "encryption": {
+                                "type": "EncryptionAtRestWithPlatformKey"
+                            },
+                            "incremental": true,
+                            "networkAccessPolicy": "AllowAll",
+                            "publicNetworkAccess": "Enabled",
+                            "timeCreated": "2026-10-07T15:06:09.3230991+00:00",
+                            "provisioningState": "Succeeded",
+                            "diskState": "Unattached",
+                            "diskSizeBytes": 4294967296,
+                            "uniqueId": "a2d1ca6e-4aa8-4f84-9fa2-1533c323a922",
+                            "incrementalSnapshotFamilyId": "2259d8cd-f3a1-4eaf-afdf-b3dc94486edf"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_disk-snapshot-tag-limit/providers/Microsoft.Compute/snapshots?api-version=2024-03-02",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "date": [
+                        "Wed, 07 Oct 2026 15:06:22 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGet3Min;233,Microsoft.Compute/HighCostGet30Min;1913"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 7EE96539D79C416B9F220BF511CFCB3F Ref B: CHI261140503031 Ref C: 2026-10-07T15:06:22Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "content-length": [
+                        "1126"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "babe8a27-3eda-428e-bc61-9ae7adce3203"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "value": [
+                            {
+                                "name": "cctest-snapshot-limit-b-20261007235959",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_disk-snapshot-tag-limit/providers/Microsoft.Compute/snapshots/cctest-snapshot-limit-b-20261007235959",
+                                "type": "Microsoft.Compute/snapshots",
+                                "location": "southcentralus",
+                                "tags": {
+                                    "testtag": "testvalue",
+                                    "custodian_snapshot": "test-azure-disk-snapshot"
+                                },
+                                "sku": {
+                                    "name": "Standard_ZRS",
+                                    "tier": "Standard"
+                                },
+                                "properties": {
+                                    "creationData": {
+                                        "createOption": "Copy",
+                                        "sourceResourceId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_DISK-SNAPSHOT-TAG-LIMIT/providers/Microsoft.Compute/disks/cctest-snapshot-limit-b",
+                                        "sourceUniqueId": "f6b4697f-bf79-4fcf-b989-0aab7e21c455"
+                                    },
+                                    "diskSizeGB": 4,
+                                    "encryption": {
+                                        "type": "EncryptionAtRestWithPlatformKey"
+                                    },
+                                    "incremental": true,
+                                    "networkAccessPolicy": "AllowAll",
+                                    "publicNetworkAccess": "Enabled",
+                                    "timeCreated": "2026-10-07T15:06:09.3230991+00:00",
+                                    "provisioningState": "Succeeded",
+                                    "diskState": "Unattached",
+                                    "diskSizeBytes": 4294967296,
+                                    "uniqueId": "a2d1ca6e-4aa8-4f84-9fa2-1533c323a922",
+                                    "incrementalSnapshotFamilyId": "2259d8cd-f3a1-4eaf-afdf-b3dc94486edf"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

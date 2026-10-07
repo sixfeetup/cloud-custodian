@@ -7,7 +7,7 @@ from c7n_azure.resources.arm import ArmResourceManager
 from c7n_azure.provider import resources
 from c7n.utils import type_schema
 from c7n_azure.actions.base import AzureBaseAction
-from c7n_azure.utils import ResourceIdParser, ThreadHelper
+from c7n_azure.utils import ResourceIdParser, StringUtils, ThreadHelper
 from azure.core.exceptions import AzureError
 
 
@@ -532,3 +532,120 @@ class ModifyDiskTypeAction(AzureBaseAction):
         resource_group = ResourceIdParser.get_resource_group(resource_id)
         resource_name = ResourceIdParser.get_resource_name(resource_id)
         return resource_group, resource_name
+
+
+@Disk.action_registry.register('snapshot')
+class DiskSnapshotAction(AzureBaseAction):
+    """Create a snapshot of each disk.
+
+    The snapshot is created in the disk's resource group and region and is named
+    ``<disk name>-<YYYYMMDDhhmmss>`` in UTC. If that would exceed Azure's 80-character
+    limit, the disk name is shortened and a short hash of the disk ID is added so the
+    names stay unique.
+
+    ``incremental`` (default ``true``) stores only the changes since the disk's previous
+    snapshot; a disk's first incremental snapshot is a full copy. Set it to ``false`` for
+    a full copy every time. Ultra Disks and Premium SSD v2 disks support only incremental
+    snapshots, and theirs can't be used to create a disk until Azure's background copy
+    completes.
+
+    Azure gives the snapshot the disk's disk encryption set, network access policy and
+    public network access setting. The snapshot also copies the disk's tags and gets a
+    ``custodian_snapshot`` tag set to the policy name, so a later policy can find and
+    clean up these snapshots. Copied tags include any ``custodian_status`` tag left by
+    ``mark-for-op``, so a ``marked-for-op`` policy on ``azure.snapshot`` would act on the
+    snapshot too. Azure allows at most 50 tags, so a disk that already has 50 can't be
+    snapshotted.
+
+    If Azure rejects a disk's snapshot, the remaining disks are still snapshotted and the
+    action then raises an error, so later actions in the same policy, such as ``delete``,
+    don't run.
+
+    Snapshots are crash-consistent. The policy needs at least
+    ``Microsoft.Compute/disks/read`` to list the disks, and
+    ``Microsoft.Compute/snapshots/write`` and ``Microsoft.Compute/snapshots/read`` in
+    each disk's resource group.
+
+    :example:
+
+    Snapshot every disk tagged ``backup: daily``:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: azure-disk-snapshot-daily
+            resource: azure.disk
+            filters:
+              - "tag:backup": daily
+            actions:
+              - type: snapshot
+
+    Delete snapshots made by Custodian that are older than 30 days:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: azure-disk-snapshot-retention
+            resource: azure.snapshot
+            filters:
+              - "tag:custodian_snapshot": present
+              - type: value
+                key: properties.timeCreated
+                value_type: age
+                op: gt
+                value: 30
+            actions:
+              - type: delete
+    """
+
+    schema = type_schema('snapshot', incremental={'type': 'boolean'})
+
+    def _process_resources(self, resources, event):
+        # The base class logs and swallows errors outside pytest, so a later action such
+        # as delete would still run. Snapshot the rest, then raise.
+        self._prepare_processing()
+        failures = []
+        for resource in resources:
+            try:
+                self._log_modified_resource(resource, self._process_resource(resource))
+            except AzureError as e:
+                self.log.error(
+                    f"Failed to snapshot disk '{resource['name']}': {e}",
+                    extra=self._get_action_log_metadata(resource))
+                failures.append(e)
+        if failures:
+            raise failures[0]
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client()
+
+    def _process_resource(self, resource):
+        # Imported here so the test harness's patch of utcnow takes effect.
+        from c7n_azure.utils import utcnow
+
+        name = self.snapshot_name(resource['name'], resource['id'], utcnow())
+        tags = {
+            k: v for k, v in (resource.get('tags') or {}).items()
+            if k.lower() != 'custodian_snapshot'
+        }
+        tags['custodian_snapshot'] = self.manager.ctx.policy.name[:256]
+        body = {
+            'location': resource['location'],
+            'creation_data': {'create_option': 'Copy', 'source_resource_id': resource['id']},
+            'incremental': self.data.get('incremental', True),
+            'tags': tags,
+        }
+        self.client.snapshots.begin_create_or_update(
+            resource['resourceGroup'], name, body).result()
+        return f"Created snapshot '{name}'"
+
+    @staticmethod
+    def snapshot_name(disk_name, disk_id, now):
+        """Return a valid Azure snapshot name, unique per disk and second."""
+        stamp = now.strftime("%Y%m%d%H%M%S")
+        base = disk_name.lstrip('_-') or 'snapshot'
+        name = f'{base}-{stamp}'
+        if len(name) <= 80:
+            return name
+        suffix = f'-{StringUtils.naming_hash(disk_id.lower())}-{stamp}'
+        return base[: 80 - len(suffix)] + suffix

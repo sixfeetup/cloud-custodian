@@ -1,14 +1,19 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import datetime
 import logging
+from c7n.exceptions import PolicyValidationError
 from c7n.utils import local_session
 from c7n_azure.session import Session
 from c7n_azure.utils import ResourceIdParser, ThreadHelper
 from unittest.mock import patch, MagicMock
 import pytest
-from ..azure_common import BaseTest, arm_template, cassette_name
-from azure.core.exceptions import AzureError
-from c7n_azure.resources.disk import ModifyDiskTypeAction
+from ..azure_common import (
+    DEFAULT_SUBSCRIPTION_ID, BaseTest, arm_template, cassette_name, requires_arm_polling,
+    strict_cassette
+)
+from azure.core.exceptions import AzureError, HttpResponseError
+from c7n_azure.resources.disk import DiskSnapshotAction, ModifyDiskTypeAction
 from azure.mgmt.compute import ComputeManagementClient
 
 
@@ -559,3 +564,139 @@ class ModifyDiskTypeTests(BaseTest):
 
         self.assertIn("Skipping disk 'disk1'", cm.output[0])
         self.assertIn("Skipping disk 'disk2'", cm.output[1])
+
+
+# Polling stays on in playback so the recorded poll requests are replayed, which
+# @strict_cassette requires.
+@requires_arm_polling
+class DiskSnapshotTest(BaseTest):
+
+    now = datetime.datetime(2026, 1, 2, 3, 4, 5)
+
+    @staticmethod
+    def _disk_id(disk_name):
+        return (
+            f'/subscriptions/{DEFAULT_SUBSCRIPTION_ID}/resourceGroups/test_disk'
+            f'/providers/Microsoft.Compute/disks/{disk_name}'
+        )
+
+    def _snapshot_name_for(self, disk_name):
+        return DiskSnapshotAction.snapshot_name(disk_name, self._disk_id(disk_name), self.now)
+
+    def _load_snapshot_policy(self, **options):
+        with self.sign_out_patch():
+            return self.load_policy({
+                'name': 'test-azure-disk-snapshot',
+                'resource': 'azure.disk',
+                'actions': [{'type': 'snapshot', **options}],
+            }, validate=True)
+
+    def _run_snapshot_policy(self, name_pattern, **options):
+        p = self.load_policy({
+            'name': 'test-azure-disk-snapshot',
+            'resource': 'azure.disk',
+            'filters': [{'type': 'value', 'key': 'name', 'op': 'regex', 'value': name_pattern}],
+            'actions': [{'type': 'snapshot', **options}],
+        }, validate=True)
+        return p.run()
+
+    def _snapshots_in(self, resource_group):
+        client = self.session.client('azure.mgmt.compute.ComputeManagementClient')
+        return list(client.snapshots.list_by_resource_group(resource_group))
+
+    def test_snapshot_schema_registers_the_action(self):
+        p = self._load_snapshot_policy()
+
+        assert isinstance(p.resource_manager.actions[0], DiskSnapshotAction)
+
+    def test_snapshot_schema_accepts_boolean_incremental(self):
+        p = self._load_snapshot_policy(incremental=False)
+
+        assert p.resource_manager.actions[0].data['incremental'] is False
+
+    def test_snapshot_schema_rejects_misspelled_option(self):
+        with pytest.raises(PolicyValidationError, match="'incremntal' was unexpected"):
+            self._load_snapshot_policy(incremntal=False)
+
+    def test_snapshot_schema_rejects_non_boolean_incremental(self):
+        with pytest.raises(PolicyValidationError, match="'yes' is not of type 'boolean'"):
+            self._load_snapshot_policy(incremental='yes')
+
+    def test_snapshot_name_appends_timestamp_to_short_disk_name(self):
+        name = self._snapshot_name_for('cctestvm_OsDisk_1_81338ced63fa4855b8a5f3e2bab5213c')
+
+        assert name == 'cctestvm_OsDisk_1_81338ced63fa4855b8a5f3e2bab5213c-20260102030405'
+
+    def test_snapshot_name_keeps_whole_disk_name_at_80_characters(self):
+        disk_name = 'a' * 65
+
+        assert self._snapshot_name_for(disk_name) == f'{disk_name}-20260102030405'
+
+    def test_snapshot_name_truncates_and_hashes_past_80_characters(self):
+        name = self._snapshot_name_for('a' * 66)
+
+        assert name == 'a' * 56 + '-af248e7c-20260102030405'
+
+    def test_snapshot_name_keeps_truncated_names_unique(self):
+        first = self._snapshot_name_for('a' * 65 + '1')
+        second = self._snapshot_name_for('a' * 65 + '2')
+
+        assert first[:56] == second[:56]
+        assert first != second
+
+    def test_snapshot_name_strips_leading_underscores_and_hyphens(self):
+        assert self._snapshot_name_for('_-data_disk') == 'data_disk-20260102030405'
+
+    def test_snapshot_name_falls_back_when_nothing_is_left(self):
+        assert self._snapshot_name_for('___') == 'snapshot-20260102030405'
+
+    def test_snapshot_name_ignores_disk_id_capitalization(self):
+        disk_name = 'a' * 66
+        disk_id = self._disk_id(disk_name)
+
+        lower = DiskSnapshotAction.snapshot_name(disk_name, disk_id, self.now)
+        upper = DiskSnapshotAction.snapshot_name(disk_name, disk_id.upper(), self.now)
+
+        assert lower == upper
+
+    @arm_template('disk-snapshot.json')
+    @strict_cassette('disk-snapshot')
+    def test_snapshot_creates_tagged_incremental_snapshot(self):
+        disks = self._run_snapshot_policy('^cctest-snapshot-disk$')
+
+        assert [d['name'] for d in disks] == ['cctest-snapshot-disk']
+        snapshots = self._snapshots_in('test_disk-snapshot')
+        assert len(snapshots) == 1
+        snapshot = snapshots[0]
+        assert snapshot.creation_data.source_resource_id.lower() == disks[0]['id'].lower()
+        assert snapshot.creation_data.create_option == 'Copy'
+        assert snapshot.incremental is True
+        assert snapshot.tags == {
+            'testtag': 'testvalue',
+            'custodian_snapshot': 'test-azure-disk-snapshot',
+        }
+        assert snapshot.provisioning_state == 'Succeeded'
+
+    @arm_template('disk-snapshot-full.json')
+    @strict_cassette('disk-snapshot-full')
+    def test_snapshot_full_copy_when_incremental_is_false(self):
+        disks = self._run_snapshot_policy('^cctest-snapshot-full-disk$', incremental=False)
+
+        assert [d['name'] for d in disks] == ['cctest-snapshot-full-disk']
+        snapshots = self._snapshots_in('test_disk-snapshot-full')
+        assert len(snapshots) == 1
+        assert snapshots[0].creation_data.source_resource_id.lower() == disks[0]['id'].lower()
+        assert snapshots[0].incremental is False
+
+    @arm_template('disk-snapshot-tag-limit.json')
+    @strict_cassette('disk-snapshot-tag-limit')
+    def test_snapshot_failure_raises_after_snapshotting_other_disks(self):
+        with self.assertLogs('custodian.azure.AzureBaseAction', level='INFO') as logs:
+            with pytest.raises(HttpResponseError, match='Too many tags specified'):
+                self._run_snapshot_policy('^cctest-snapshot-limit-')
+
+        assert "Failed to snapshot disk 'cctest-snapshot-limit-a'" in logs.output[0]
+        assert "modified 'cctest-snapshot-limit-b'" in logs.output[1]
+        snapshots = self._snapshots_in('test_disk-snapshot-tag-limit')
+        sources = [s.creation_data.source_resource_id.rsplit('/', 1)[-1] for s in snapshots]
+        assert sources == ['cctest-snapshot-limit-b']
