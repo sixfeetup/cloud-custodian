@@ -591,14 +591,16 @@ class DiskSnapshotTest(BaseTest):
                 'actions': [{'type': 'snapshot', **options}],
             }, validate=True)
 
-    def _run_snapshot_policy(self, name_pattern, **options):
-        p = self.load_policy({
+    def _snapshot_policy(self, name_pattern, **options):
+        return self.load_policy({
             'name': 'test-azure-disk-snapshot',
             'resource': 'azure.disk',
             'filters': [{'type': 'value', 'key': 'name', 'op': 'regex', 'value': name_pattern}],
             'actions': [{'type': 'snapshot', **options}],
         }, validate=True)
-        return p.run()
+
+    def _run_snapshot_policy(self, name_pattern, **options):
+        return self._snapshot_policy(name_pattern, **options).run()
 
     def _snapshots_in(self, resource_group):
         client = self.session.client('azure.mgmt.compute.ComputeManagementClient')
@@ -644,12 +646,6 @@ class DiskSnapshotTest(BaseTest):
         assert first[:56] == second[:56]
         assert first != second
 
-    def test_snapshot_name_strips_leading_underscores_and_hyphens(self):
-        assert self._snapshot_name_for('_-data_disk') == 'data_disk-20260102030405'
-
-    def test_snapshot_name_falls_back_when_nothing_is_left(self):
-        assert self._snapshot_name_for('___') == 'snapshot-20260102030405'
-
     def test_snapshot_name_ignores_disk_id_capitalization(self):
         disk_name = 'a' * 66
         disk_id = self._disk_id(disk_name)
@@ -691,12 +687,14 @@ class DiskSnapshotTest(BaseTest):
     @arm_template('disk-snapshot-tag-limit.json')
     @strict_cassette('disk-snapshot-tag-limit')
     def test_snapshot_failure_raises_after_snapshotting_other_disks(self):
-        with self.assertLogs('custodian.azure.AzureBaseAction', level='INFO') as logs:
-            with pytest.raises(HttpResponseError, match='Too many tags specified'):
-                self._run_snapshot_policy('^cctest-snapshot-limit-')
+        p = self._snapshot_policy('^cctest-snapshot-limit-')
+        disks = p.resource_manager.resources()
+        # The failing disk must come first, or this can't tell "keep going" from "stop".
+        assert [d['name'] for d in disks] == ['cctest-snapshot-limit-a', 'cctest-snapshot-limit-b']
 
-        assert "Failed to snapshot disk 'cctest-snapshot-limit-a'" in logs.output[0]
-        assert "modified 'cctest-snapshot-limit-b'" in logs.output[1]
+        with pytest.raises(HttpResponseError, match='Too many tags specified'):
+            p.resource_manager.actions[0].process(disks)
+
         snapshots = self._snapshots_in('test_disk-snapshot-tag-limit')
         sources = [s.creation_data.source_resource_id.rsplit('/', 1)[-1] for s in snapshots]
         assert sources == ['cctest-snapshot-limit-b']

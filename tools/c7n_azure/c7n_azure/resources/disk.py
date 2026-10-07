@@ -538,37 +538,25 @@ class ModifyDiskTypeAction(AzureBaseAction):
 class DiskSnapshotAction(AzureBaseAction):
     """Create a snapshot of each disk.
 
-    The snapshot is created in the disk's resource group and region and is named
-    ``<disk name>-<YYYYMMDDhhmmss>`` in UTC. If that would exceed Azure's 80-character
-    limit, the disk name is shortened and a short hash of the disk ID is added so the
-    names stay unique.
+    Snapshots go in the disk's resource group and are named
+    ``<disk name>-<YYYYMMDDhhmmss>`` (UTC). Names over Azure's 80-character limit are
+    shortened, with a hash of the disk ID added to keep them unique.
 
     ``incremental`` (default ``true``) stores only the changes since the disk's previous
-    snapshot; a disk's first incremental snapshot is a full copy. Set it to ``false`` for
-    a full copy every time. Ultra Disks and Premium SSD v2 disks support only incremental
-    snapshots, and theirs can't be used to create a disk until Azure's background copy
-    completes.
+    snapshot. Set it to ``false`` for a full copy. Ultra Disks and Premium SSD v2 disks
+    support only incremental snapshots.
 
-    Azure gives the snapshot the disk's disk encryption set, network access policy and
-    public network access setting. The snapshot also copies the disk's tags and gets a
-    ``custodian_snapshot`` tag set to the policy name, so a later policy can find and
-    clean up these snapshots. Copied tags include any ``custodian_status`` tag left by
-    ``mark-for-op``, so a ``marked-for-op`` policy on ``azure.snapshot`` would act on the
-    snapshot too. Azure allows at most 50 tags, so a disk that already has 50 can't be
-    snapshotted.
+    The snapshot copies the disk's tags, including any ``mark-for-op`` tag, and adds a
+    ``custodian_snapshot`` tag set to the policy name. A disk that already has 50 tags
+    can't be snapshotted.
 
-    If Azure rejects a disk's snapshot, the remaining disks are still snapshotted and the
-    action then raises an error, so later actions in the same policy, such as ``delete``,
-    don't run.
+    If Azure rejects a snapshot, the remaining disks are still snapshotted, then the
+    action raises so later actions in the policy don't run.
 
-    Snapshots are crash-consistent. The policy needs at least
-    ``Microsoft.Compute/disks/read`` to list the disks, and
-    ``Microsoft.Compute/snapshots/write`` and ``Microsoft.Compute/snapshots/read`` in
-    each disk's resource group.
+    Needs at least ``Microsoft.Compute/disks/read``, ``Microsoft.Compute/snapshots/write``
+    and ``Microsoft.Compute/snapshots/read``.
 
     :example:
-
-    Snapshot every disk tagged ``backup: daily``:
 
     .. code-block:: yaml
 
@@ -579,23 +567,6 @@ class DiskSnapshotAction(AzureBaseAction):
               - "tag:backup": daily
             actions:
               - type: snapshot
-
-    Delete snapshots made by Custodian that are older than 30 days:
-
-    .. code-block:: yaml
-
-        policies:
-          - name: azure-disk-snapshot-retention
-            resource: azure.snapshot
-            filters:
-              - "tag:custodian_snapshot": present
-              - type: value
-                key: properties.timeCreated
-                value_type: age
-                op: gt
-                value: 30
-            actions:
-              - type: delete
     """
 
     schema = type_schema('snapshot', incremental={'type': 'boolean'})
@@ -643,9 +614,8 @@ class DiskSnapshotAction(AzureBaseAction):
     def snapshot_name(disk_name, disk_id, now):
         """Return a valid Azure snapshot name, unique per disk and second."""
         stamp = now.strftime("%Y%m%d%H%M%S")
-        base = disk_name.lstrip('_-') or 'snapshot'
-        name = f'{base}-{stamp}'
+        name = f'{disk_name}-{stamp}'
         if len(name) <= 80:
             return name
         suffix = f'-{StringUtils.naming_hash(disk_id.lower())}-{stamp}'
-        return base[: 80 - len(suffix)] + suffix
+        return disk_name[: 80 - len(suffix)] + suffix
