@@ -583,13 +583,23 @@ class DiskSnapshotTest(BaseTest):
     def _snapshot_name_for(self, disk_name):
         return DiskSnapshotAction.snapshot_name(disk_name, self._disk_id(disk_name), self.now)
 
-    def _load_snapshot_policy(self, **options):
+    def _load_snapshot_policy(self, name='test-azure-disk-snapshot', **options):
         with self.sign_out_patch():
             return self.load_policy({
-                'name': 'test-azure-disk-snapshot',
+                'name': name,
                 'resource': 'azure.disk',
                 'actions': [{'type': 'snapshot', **options}],
             }, validate=True)
+
+    def _snapshot_body_for(self, tags, name='test-azure-disk-snapshot', **options):
+        action = self._load_snapshot_policy(name, **options).resource_manager.actions[0]
+        disk = {
+            'name': 'cctest-snapshot-disk',
+            'id': self._disk_id('cctest-snapshot-disk'),
+            'location': 'southcentralus',
+            'tags': tags,
+        }
+        return action.snapshot_body(disk)
 
     def _snapshot_policy(self, name_pattern, **options):
         return self.load_policy({
@@ -619,6 +629,35 @@ class DiskSnapshotTest(BaseTest):
     def test_snapshot_schema_rejects_misspelled_option(self):
         with pytest.raises(PolicyValidationError, match="'incremntal' was unexpected"):
             self._load_snapshot_policy(incremntal=False)
+
+    def test_snapshot_body_copies_the_disk_and_defaults_to_incremental(self):
+        disk_tags = {'testtag': 'testvalue'}
+
+        body = self._snapshot_body_for(disk_tags)
+
+        assert body == {
+            'location': 'southcentralus',
+            'creation_data': {
+                'create_option': 'Copy',
+                'source_resource_id': self._disk_id('cctest-snapshot-disk'),
+            },
+            'incremental': True,
+            'tags': {'testtag': 'testvalue', 'custodian_snapshot': 'test-azure-disk-snapshot'},
+        }
+        assert disk_tags == {'testtag': 'testvalue'}
+
+    def test_snapshot_body_full_copy_when_incremental_is_false(self):
+        assert self._snapshot_body_for({}, incremental=False)['incremental'] is False
+
+    def test_snapshot_body_replaces_a_marker_tag_in_any_case(self):
+        body = self._snapshot_body_for({'Custodian_Snapshot': 'old'})
+
+        assert body['tags'] == {'custodian_snapshot': 'test-azure-disk-snapshot'}
+
+    def test_snapshot_body_caps_the_marker_at_256_characters(self):
+        body = self._snapshot_body_for(None, name='p' * 300)
+
+        assert body['tags'] == {'custodian_snapshot': 'p' * 256}
 
     def test_snapshot_schema_rejects_non_boolean_incremental(self):
         with pytest.raises(PolicyValidationError, match="'yes' is not of type 'boolean'"):

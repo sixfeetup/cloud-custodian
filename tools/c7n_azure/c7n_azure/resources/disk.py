@@ -546,9 +546,10 @@ class DiskSnapshotAction(AzureBaseAction):
     snapshot. Set it to ``false`` for a full copy. Ultra Disks and Premium SSD v2 disks
     support only incremental snapshots.
 
-    The snapshot copies the disk's tags, including any ``mark-for-op`` tag, and adds a
-    ``custodian_snapshot`` tag set to the policy name. A disk that already has 50 tags
-    can't be snapshotted.
+    The snapshot copies the disk's tags and adds a ``custodian_snapshot`` tag set to the
+    policy name. Copied tags include any ``mark-for-op`` tag, so ``marked-for-op``
+    policies on ``azure.snapshot`` match the snapshot too. A disk that already has 50
+    tags can't be snapshotted.
 
     If Azure rejects a snapshot, the remaining disks are still snapshotted, then the
     action raises so later actions in the policy don't run.
@@ -581,7 +582,8 @@ class DiskSnapshotAction(AzureBaseAction):
                 self._log_modified_resource(resource, self._process_resource(resource))
             except AzureError as e:
                 self.log.error(
-                    f"Failed to snapshot disk '{resource['name']}': {e}",
+                    f"Failed to snapshot disk '{resource['name']}' in resource group "
+                    f"'{resource['resourceGroup']}': {e}",
                     extra=self._get_action_log_metadata(resource))
                 failures.append(e)
         if failures:
@@ -595,20 +597,23 @@ class DiskSnapshotAction(AzureBaseAction):
         from c7n_azure.utils import utcnow
 
         name = self.snapshot_name(resource['name'], resource['id'], utcnow())
+        self.client.snapshots.begin_create_or_update(
+            resource['resourceGroup'], name, self.snapshot_body(resource)).result()
+        return f"Created snapshot '{name}'"
+
+    def snapshot_body(self, disk):
+        """Return the request body that creates a snapshot of ``disk``."""
         tags = {
-            k: v for k, v in (resource.get('tags') or {}).items()
+            k: v for k, v in (disk.get('tags') or {}).items()
             if k.lower() != 'custodian_snapshot'
         }
         tags['custodian_snapshot'] = self.manager.ctx.policy.name[:256]
-        body = {
-            'location': resource['location'],
-            'creation_data': {'create_option': 'Copy', 'source_resource_id': resource['id']},
+        return {
+            'location': disk['location'],
+            'creation_data': {'create_option': 'Copy', 'source_resource_id': disk['id']},
             'incremental': self.data.get('incremental', True),
             'tags': tags,
         }
-        self.client.snapshots.begin_create_or_update(
-            resource['resourceGroup'], name, body).result()
-        return f"Created snapshot '{name}'"
 
     @staticmethod
     def snapshot_name(disk_name, disk_id, now):
