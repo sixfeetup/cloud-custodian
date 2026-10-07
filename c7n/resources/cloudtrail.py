@@ -307,7 +307,8 @@ class SetEventSelectors(Action):
         for region, (client, trails) in grouped_trails.items():
             for t in trails:
                 try:
-                    client.put_event_selectors(TrailName=t['TrailARN'], **params)
+                    self.manager.retry(
+                        client.put_event_selectors, TrailName=t['TrailARN'], **params)
                 except client.exceptions.TrailNotFoundException:
                     self.log.warning(
                         "trail %s no longer exists, skipping", t['TrailARN'])
