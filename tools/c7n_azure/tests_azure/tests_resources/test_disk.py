@@ -743,7 +743,7 @@ class DiskSnapshotTest(BaseTest):
     @strict_cassette('disk-snapshot-tag-limit')
     def test_snapshot_failure_raises_after_snapshotting_other_disks(self):
         p = self._snapshot_policy('^cctest-snapshot-limit-')
-        disks = p.resource_manager.resources()
+        disks = sorted(p.resource_manager.resources(), key=lambda d: d['name'])
         # The failing disk must come first, or this can't tell "keep going" from "stop".
         assert [d['name'] for d in disks] == ['cctest-snapshot-limit-a', 'cctest-snapshot-limit-b']
 
