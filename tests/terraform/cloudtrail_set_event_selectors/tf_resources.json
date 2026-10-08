@@ -5,9 +5,9 @@
         "aws_caller_identity": {
             "current": {
                 "account_id": "644160558196",
-                "arn": "arn:aws:sts::644160558196:assumed-role/AWSReservedSSO_admin_1ca370fb35bf6b13/kody.mullins@sixfeetup.com",
+                "arn": "arn:aws:sts::644160558196:assumed-role/c7n-test-role/c7n-test-user",
                 "id": "644160558196",
-                "user_id": "AROAXGZAMH754FNWODWUX:kody.mullins@sixfeetup.com"
+                "user_id": "AROAEXAMPLEROLEID0000:c7n-test-user"
             }
         },
         "aws_region": {
@@ -129,7 +129,7 @@
                 "force_destroy": true,
                 "grant": [
                     {
-                        "id": "36b28bc69a41a1f44ff15f3d6bbcf2f5fd96d6cd49206458604c15ad38ebdf65",
+                        "id": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
                         "permissions": [
                             "FULL_CONTROL"
                         ],
