@@ -1984,12 +1984,17 @@ def retrieval_activity_policy_data(**filter_data):
 
 @pytest.mark.parametrize('filter_data', [
     pytest.param({'source': 'cloudtrail-lake'}, id='unknown-source'),
+    pytest.param({'days': 0}, id='zero-days'),
     pytest.param(
         {'log-group': 'arn:aws:logs:us-east-1:123456789012:log-group'}, id='bad-log-group-arn'),
 ])
 def test_retrieval_activity_rejects_invalid_policy(test, filter_data):
     with pytest.raises(PolicyValidationError):
         test.load_policy(retrieval_activity_policy_data(**filter_data), validate=True)
+
+
+def test_retrieval_activity_accepts_fractional_days(test):
+    test.load_policy(retrieval_activity_policy_data(days=0.05), validate=True)
 
 
 def test_retrieval_activity_permissions(test):
@@ -2327,20 +2332,18 @@ def test_retrieval_activity_explicit_log_group_short_retention(test, monkeypatch
             days=30, **{'log-group': 'kb-events'})
 
 
-@pytest.mark.parametrize('created_days_ago, trail_started_days_ago, warned', [
-    pytest.param(60, 60, False, id='full-history'),
-    pytest.param(3, 60, True, id='new-log-group'),
-    pytest.param(60, 3, True, id='new-trail'),
+@pytest.mark.parametrize('created_days_ago, trail_started_days_ago', [
+    pytest.param(3, 60, id='new-log-group'),
+    pytest.param(60, 3, id='new-trail'),
 ])
-def test_retrieval_activity_short_history_warning(
-        test, monkeypatch, caplog, created_days_ago, trail_started_days_ago, warned):
+def test_retrieval_activity_raises_on_short_history(
+        test, monkeypatch, caplog, created_days_ago, trail_started_days_ago):
     trail_log_groups = {KB_EVENTS: NOW - trail_started_days_ago * DAY}
     log_groups = {'kb-events': log_group('kb-events', created_days_ago=created_days_ago)}
     with caplog.at_level(logging.WARNING):
-        assert choose_log_groups(
-            test, monkeypatch, log_groups, trail_log_groups, days=30,
-        ) == [('us-east-1', 'kb-events')]
-    assert ('may be low' in caplog.text) is warned
+        with pytest.raises(PolicyExecutionError, match='no log group holds every knowledge base'):
+            choose_log_groups(test, monkeypatch, log_groups, trail_log_groups, days=30)
+    assert 'skipping log group kb-events has fewer than 30 days of events' in caplog.text
 
 
 def test_retrieval_activity_takes_highest_count_across_log_groups(test):

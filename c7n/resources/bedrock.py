@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from datetime import datetime, timezone
 import json
 import time
 
@@ -880,7 +879,7 @@ class KnowledgeBaseRetrievalActivity(Filter):
     ``resources.type`` = ``AWS::Bedrock::KnowledgeBase``. Set ``log-group`` to
     the name or ARN of one of those log groups to read only that one; a name is
     looked up in the policy's region. The count is annotated as
-    ``c7n:RetrievalActivity``. Raises an error if no such log group keeps
+    ``c7n:RetrievalActivity``. Raises an error if no such log group holds
     ``days`` days of events. Only ``VECTOR`` knowledge bases have been
     measured, so filter on that type as below.
 
@@ -903,7 +902,7 @@ class KnowledgeBaseRetrievalActivity(Filter):
     schema = type_schema(
         'retrieval-activity',
         source={'enum': ['cloudwatch-logs']},
-        days={'type': 'number', 'minimum': 1},
+        days={'type': 'number', 'exclusiveMinimum': 0},
         op={'$ref': '#/definitions/filters_common/comparison_operators'},
         value={'type': 'number'},
         **{'log-group': {'type': 'string', 'minLength': 1}})
@@ -974,6 +973,7 @@ class KnowledgeBaseRetrievalActivity(Filter):
                     'every knowledge base data event from a logging trail in this account')
             log_groups = {wanted: log_groups[wanted]}
 
+        window_start = time.time() - self.days * 86400
         usable = []
         for (account, region, name), trail_started in sorted(log_groups.items()):
             log_group = self.describe_log_group(region, name)
@@ -984,6 +984,10 @@ class KnowledgeBaseRetrievalActivity(Filter):
                 problem = (
                     f'log group {name} keeps events for fewer than {self.days} days '
                     f'(retention {retention})')
+            elif max(log_group['creationTime'] / 1000, trail_started) > window_start:
+                problem = (
+                    f'log group {name} has fewer than {self.days} days of events, '
+                    'because it or its trail is newer than that')
             else:
                 problem = None
             if problem and explicit:
@@ -991,7 +995,6 @@ class KnowledgeBaseRetrievalActivity(Filter):
             if problem:
                 self.log.warning('retrieval-activity: skipping %s', problem)
                 continue
-            self.warn_if_short_history(name, log_group['creationTime'] / 1000, trail_started)
             usable.append((region, name))
 
         if not usable:
@@ -1037,14 +1040,6 @@ class KnowledgeBaseRetrievalActivity(Filter):
                 started = status['StartLoggingTime'].timestamp()
                 log_groups[key] = min(started, log_groups.get(key, started))
         return log_groups
-
-    def warn_if_short_history(self, name, created, trail_started):
-        history_start = max(created, trail_started)
-        if history_start > time.time() - self.days * 86400:
-            self.log.warning(
-                'retrieval-activity: log group %s only has events since %s, so counts for '
-                'the last %s days may be low', name,
-                datetime.fromtimestamp(history_start, timezone.utc).isoformat(), self.days)
 
     def describe_log_group(self, region, name):
         client = local_session(self.manager.session_factory).client('logs', region_name=region)
