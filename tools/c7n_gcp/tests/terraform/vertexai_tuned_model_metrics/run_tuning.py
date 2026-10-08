@@ -3,7 +3,7 @@
 finish, printing the resulting tuned model and endpoint resource names.
 
 Usage:
-    python run_tuning.py [--base-model gemini-3.1-flash-lite]
+    python run_tuning.py [--base-model gemini-2.5-flash]
 
 Requires application-default credentials (`gcloud auth application-default
 login`) with aiplatform.tuningJobs.create/get and storage.objects.create on
@@ -11,6 +11,7 @@ the target project's default Vertex AI staging bucket.
 """
 import argparse
 import json
+import os
 import pathlib
 import sys
 import time
@@ -21,10 +22,11 @@ from google.auth.transport.requests import AuthorizedSession
 from google.cloud import storage
 
 LOCATION = "us-central1"
-DEFAULT_BASE_MODEL = "gemini-3.1-flash-lite"
-# Reuse the project's existing Vertex AI staging bucket rather than
-# provisioning a new one.
-STAGING_BUCKET = "cloud-ai-platform-f4ead793-49a4-4a9e-89cf-4c77b2b61452"
+DEFAULT_BASE_MODEL = "gemini-2.5-flash"
+# Reuse the project's existing Vertex AI staging bucket
+# (`gcloud storage ls --project $PROJECT`, named cloud-ai-platform-<uuid>)
+# rather than provisioning a new one.
+STAGING_BUCKET = os.environ.get("VERTEX_STAGING_BUCKET")
 TRAINING_DATA_BLOB = "c7n-11097-tuning/training_data.jsonl"
 # Resolved against this file so the script runs from any directory.
 TRAINING_DATA_FILE = pathlib.Path(__file__).parent / "training_data.jsonl"
@@ -95,6 +97,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-model", default=DEFAULT_BASE_MODEL)
     args = parser.parse_args()
+    if not STAGING_BUCKET:
+        parser.error("set VERTEX_STAGING_BUCKET to the project's Vertex AI staging bucket")
 
     credentials, project_id = google.auth.default(
         scopes=["https://www.googleapis.com/auth/cloud-platform"])

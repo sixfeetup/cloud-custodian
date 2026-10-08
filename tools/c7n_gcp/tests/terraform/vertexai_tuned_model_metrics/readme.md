@@ -35,6 +35,7 @@ different checkout; run `.venv/bin/python` by path instead:
 ```bash
 source .venv/bin/activate
 export PROJECT=<your-gcp-project>
+export VERTEX_STAGING_BUCKET=<cloud-ai-platform-uuid bucket in that project>
 ```
 
 Configure application default credentials, then attach a quota project.
@@ -54,7 +55,7 @@ Install the script dependencies:
 uv pip install google-cloud-storage google-auth requests
 ```
 
-Confirm the base model in `run_tuning.py` (`DEFAULT_BASE_MODEL`, `gemini-3.1-flash-lite`)
+Confirm the base model in `run_tuning.py` (`DEFAULT_BASE_MODEL`, `gemini-2.5-flash`)
 still accepts tuning jobs. Supported models change over time, and a name
 that worked last quarter can stop tuning without the API saying so until
 you create a job. Check the supported-models list at
