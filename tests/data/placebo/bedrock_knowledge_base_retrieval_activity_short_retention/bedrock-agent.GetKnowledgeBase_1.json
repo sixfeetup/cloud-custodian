@@ -3,10 +3,10 @@
     "data": {
         "ResponseMetadata": {},
         "knowledgeBase": {
-            "knowledgeBaseId": "ZVBNVYLKJC",
-            "name": "c7n-kb-activity-default-8ddc-canary",
-            "knowledgeBaseArn": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/ZVBNVYLKJC",
-            "roleArn": "arn:aws:iam::644160558196:role/c7n-kb-activity-default-8ddc-kb",
+            "knowledgeBaseId": "WEIEAWHV7H",
+            "name": "c7n-kb-activity-default-2b71-idle",
+            "knowledgeBaseArn": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/WEIEAWHV7H",
+            "roleArn": "arn:aws:iam::644160558196:role/c7n-kb-activity-default-2b71-kb",
             "knowledgeBaseConfiguration": {
                 "type": "VECTOR",
                 "vectorKnowledgeBaseConfiguration": {
@@ -16,7 +16,7 @@
             "storageConfiguration": {
                 "type": "S3_VECTORS",
                 "s3VectorsConfiguration": {
-                    "indexArn": "arn:aws:s3vectors:us-east-1:644160558196:bucket/c7n-kb-activity-default-8ddc/index/canary"
+                    "indexArn": "arn:aws:s3vectors:us-east-1:644160558196:bucket/c7n-kb-activity-default-2b71/index/idle"
                 }
             },
             "status": "ACTIVE",
@@ -24,21 +24,21 @@
                 "__class__": "datetime",
                 "year": 2026,
                 "month": 10,
-                "day": 2,
-                "hour": 20,
-                "minute": 42,
-                "second": 4,
-                "microsecond": 569620
+                "day": 8,
+                "hour": 22,
+                "minute": 12,
+                "second": 0,
+                "microsecond": 150285
             },
             "updatedAt": {
                 "__class__": "datetime",
                 "year": 2026,
                 "month": 10,
-                "day": 2,
-                "hour": 20,
-                "minute": 42,
-                "second": 4,
-                "microsecond": 569620
+                "day": 8,
+                "hour": 22,
+                "minute": 12,
+                "second": 0,
+                "microsecond": 150285
             }
         }
     }

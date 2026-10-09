@@ -6,29 +6,29 @@
             [
                 {
                     "field": "resources.0.ARN",
-                    "value": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/I8EBEGGCCW"
+                    "value": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/M3DS4ESUXQ"
                 },
                 {
                     "field": "retrievals",
-                    "value": "3"
+                    "value": "8"
                 }
             ],
             [
                 {
                     "field": "resources.0.ARN",
-                    "value": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/ZVBNVYLKJC"
+                    "value": "arn:aws:bedrock:us-east-1:644160558196:knowledge-base/MH5KZUMFB1"
                 },
                 {
                     "field": "retrievals",
-                    "value": "5"
+                    "value": "3"
                 }
             ]
         ],
         "statistics": {
-            "recordsMatched": 8.0,
-            "recordsScanned": 12.0,
+            "recordsMatched": 11.0,
+            "recordsScanned": 13.0,
             "estimatedRecordsSkipped": 0.0,
-            "bytesScanned": 29064.0,
+            "bytesScanned": 23532.0,
             "estimatedBytesSkipped": 0.0,
             "logGroupsScanned": 1.0,
             "resultCount": 2.0

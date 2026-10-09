@@ -879,7 +879,9 @@ class KnowledgeBaseRetrievalActivity(Filter):
     ``resources.type`` = ``AWS::Bedrock::KnowledgeBase``. Set ``log-group`` to
     the name or ARN of one of those log groups to read only that one; a name is
     looked up in the policy's region. The count is annotated as
-    ``c7n:RetrievalActivity``. Raises an error if no such log group holds
+    ``c7n:RetrievalActivity``. Each event is counted once, even when several
+    trails deliver it to one log group; Logs Insights approximates the count
+    for very busy knowledge bases. Raises an error if no such log group holds
     ``days`` days of events. Only ``VECTOR`` knowledge bases have been
     measured, so filter on that type as below.
 
@@ -915,9 +917,11 @@ class KnowledgeBaseRetrievalActivity(Filter):
         'logs:StopQuery',
     )
     annotation_key = 'c7n:RetrievalActivity'
+    # Trails sharing a log group each deliver a copy of every event, so count
+    # each event once.
     query = (
         'filter eventSource = "bedrock.amazonaws.com" and eventName = "Retrieve"'
-        ' | stats count(*) as retrievals by resources.0.ARN')
+        ' | stats count_distinct(eventID) as retrievals by resources.0.ARN')
     max_query_rows = 10000
     poll_delay = 2
     poll_max_attempts = 300

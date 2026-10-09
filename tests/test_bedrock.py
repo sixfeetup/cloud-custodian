@@ -2047,7 +2047,7 @@ def test_retrieval_activity_query_request(test, monkeypatch):
         'endTime': 1_000_000_000,
         'queryString': (
             'filter eventSource = "bedrock.amazonaws.com" and eventName = "Retrieve"'
-            ' | stats count(*) as retrievals by resources.0.ARN'),
+            ' | stats count_distinct(eventID) as retrievals by resources.0.ARN'),
     })
     stubber.add_response(
         'get_query_results', {'status': 'Complete', 'results': [RESULT_ROW]},
@@ -2365,9 +2365,16 @@ def retrieval_activity_flight_data(test, monkeypatch, name):
     return session_factory
 
 
+# The fixture's trail is minutes old when recorded, so the window has to be
+# shorter than that. setup.py waits until the trail is older, then searches.
+RECORDING_WINDOW_DAYS = 1 / 48
+# When the young test was recorded: its log group is less than a day old then.
+YOUNG_RECORDED_AT = 1791501110
+
+
 def retrieval_activity_policy(test, session_factory, **filter_data):
     return test.load_policy(
-        retrieval_activity_policy_data(**{'days': 1, **filter_data}),
+        retrieval_activity_policy_data(**{'days': RECORDING_WINDOW_DAYS, **filter_data}),
         session_factory=session_factory,
         config={'region': 'us-east-1', 'account_id': test.account_id},
     )
@@ -2407,10 +2414,26 @@ def test_bedrock_knowledge_base_retrieval_activity_count(
 @terraform('bedrock_knowledge_base_retrieval_activity', scope='session')
 def test_bedrock_knowledge_base_retrieval_activity_short_retention(
         test, bedrock_knowledge_base_retrieval_activity, monkeypatch, caplog):
+    log_group = bedrock_knowledge_base_retrieval_activity.outputs['log_group_name']['value']
     session_factory = retrieval_activity_flight_data(test, monkeypatch, 'short_retention')
     policy = retrieval_activity_policy(test, session_factory, days=2, op='eq', value=0)
 
     with caplog.at_level(logging.WARNING):
         with pytest.raises(PolicyExecutionError, match='no log group holds every knowledge base'):
             policy.run()
-    assert 'kb-activity-default-8ddc keeps events for fewer than 2 days' in caplog.text
+    assert f'{log_group} keeps events for fewer than 2 days' in caplog.text
+
+
+@terraform('bedrock_knowledge_base_retrieval_activity', scope='session')
+def test_bedrock_knowledge_base_retrieval_activity_young(
+        test, bedrock_knowledge_base_retrieval_activity, monkeypatch, caplog):
+    log_group = bedrock_knowledge_base_retrieval_activity.outputs['log_group_name']['value']
+    session_factory = retrieval_activity_flight_data(test, monkeypatch, 'young')
+    if not test.recording:
+        monkeypatch.setattr(time, 'time', lambda: YOUNG_RECORDED_AT)
+    policy = retrieval_activity_policy(test, session_factory, days=1, op='eq', value=0)
+
+    with caplog.at_level(logging.WARNING):
+        with pytest.raises(PolicyExecutionError, match='no log group holds every knowledge base'):
+            policy.run()
+    assert f'{log_group} has fewer than 1 days of events' in caplog.text

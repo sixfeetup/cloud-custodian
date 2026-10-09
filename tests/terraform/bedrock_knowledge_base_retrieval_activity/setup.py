@@ -5,6 +5,8 @@
 
 A new trail drops events for a while after it starts logging, so the canary
 knowledge base is searched until one of those searches reaches the log group.
+The filter rejects a window that starts before the trail did, so the searches
+wait until the trail is older than the tests' window.
 """
 
 import json
@@ -17,6 +19,8 @@ GENERATION_MODEL_ARN = 'arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-
 QUERY = 'What does this knowledge base contain?'
 POLL_DELAY = 60
 TIMEOUT = 1800
+# RECORDING_WINDOW_DAYS in tests/test_bedrock.py, in seconds.
+WINDOW = 1800
 # One event per search call, plus the Retrieve that Bedrock runs for the caller
 # inside each RetrieveAndGenerate and RetrieveAndGenerateStream call.
 EXPECTED_EVENTS = 5
@@ -27,7 +31,8 @@ def load_fixture():
     resources = json.loads(resources_path.read_text())['resources']
     knowledge_bases = resources['aws_bedrockagent_knowledge_base']
     log_group = resources['aws_cloudwatch_log_group']['trail']
-    return knowledge_bases['canary'], knowledge_bases['used'], log_group
+    trail = resources['aws_cloudtrail']['trail']
+    return knowledge_bases['canary'], knowledge_bases['used'], log_group, trail
 
 
 def find_events(logs, log_group_name, knowledge_base_id):
@@ -51,6 +56,14 @@ def wait_for_trail(runtime, logs, log_group_name, canary_id):
             print('The trail is logging knowledge base searches.')
             return
     raise TimeoutError(f'no canary search reached the log group after {TIMEOUT}s')
+
+
+def wait_for_window(cloudtrail, trail_name):
+    started = cloudtrail.get_trail_status(Name=trail_name)['StartLoggingTime']
+    remaining = started.timestamp() + WINDOW - time.time()
+    if remaining > 0:
+        print(f'Waiting {remaining / 60:.0f} minutes until the trail is older than the window.')
+        time.sleep(remaining)
 
 
 def search_knowledge_base(runtime, knowledge_base_id):
@@ -84,12 +97,19 @@ def wait_for_events(logs, log_group_name, knowledge_base_id):
 
 
 def main():
-    canary, used, log_group = load_fixture()
+    canary, used, log_group, trail = load_fixture()
     runtime = boto3.client('bedrock-agent-runtime', region_name=used['region'])
     logs = boto3.client('logs', region_name=log_group['region'])
+    cloudtrail = boto3.client('cloudtrail', region_name=trail['region'])
     wait_for_trail(runtime, logs, log_group['name'], canary['id'])
+    wait_for_window(cloudtrail, trail['name'])
+    searched = time.time()
     search_knowledge_base(runtime, used['id'])
+    # The warm-up searches may fall outside the window by the time the tests run.
+    runtime.retrieve(knowledgeBaseId=canary['id'], retrievalQuery={'text': QUERY})
     wait_for_events(logs, log_group['name'], used['id'])
+    minutes = (searched + WINDOW - time.time()) / 60
+    print(f'Continue the tests within {minutes:.0f} minutes, while the searches are in the window.')
 
 
 if __name__ == '__main__':

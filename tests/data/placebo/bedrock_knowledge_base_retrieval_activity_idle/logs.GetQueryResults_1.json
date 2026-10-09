@@ -9,10 +9,10 @@
             "estimatedRecordsSkipped": 0.0,
             "bytesScanned": 0.0,
             "estimatedBytesSkipped": 0.0,
-            "logGroupsScanned": 1.0,
+            "logGroupsScanned": 0.0,
             "resultCount": 0.0
         },
-        "status": "Running",
+        "status": "Scheduled",
         "ResponseMetadata": {}
     }
 }

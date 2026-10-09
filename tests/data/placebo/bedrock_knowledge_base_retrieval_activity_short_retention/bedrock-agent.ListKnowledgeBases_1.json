@@ -4,48 +4,48 @@
         "ResponseMetadata": {},
         "knowledgeBaseSummaries": [
             {
-                "knowledgeBaseId": "ZVBNVYLKJC",
-                "name": "c7n-kb-activity-default-8ddc-canary",
+                "knowledgeBaseId": "WEIEAWHV7H",
+                "name": "c7n-kb-activity-default-2b71-idle",
                 "status": "ACTIVE",
                 "updatedAt": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
-                    "day": 2,
-                    "hour": 20,
-                    "minute": 42,
-                    "second": 4,
-                    "microsecond": 569620
+                    "day": 8,
+                    "hour": 22,
+                    "minute": 12,
+                    "second": 0,
+                    "microsecond": 150285
                 }
             },
             {
-                "knowledgeBaseId": "I8EBEGGCCW",
-                "name": "c7n-kb-activity-default-8ddc-used",
+                "knowledgeBaseId": "MH5KZUMFB1",
+                "name": "c7n-kb-activity-default-2b71-used",
                 "status": "ACTIVE",
                 "updatedAt": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
-                    "day": 2,
-                    "hour": 20,
-                    "minute": 42,
-                    "second": 4,
-                    "microsecond": 440822
+                    "day": 8,
+                    "hour": 22,
+                    "minute": 12,
+                    "second": 0,
+                    "microsecond": 121381
                 }
             },
             {
-                "knowledgeBaseId": "E5XOKVPNYU",
-                "name": "c7n-kb-activity-default-8ddc-idle",
+                "knowledgeBaseId": "M3DS4ESUXQ",
+                "name": "c7n-kb-activity-default-2b71-canary",
                 "status": "ACTIVE",
                 "updatedAt": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
-                    "day": 2,
-                    "hour": 20,
-                    "minute": 42,
-                    "second": 4,
-                    "microsecond": 457975
+                    "day": 8,
+                    "hour": 22,
+                    "minute": 12,
+                    "second": 0,
+                    "microsecond": 112007
                 }
             }
         ]
