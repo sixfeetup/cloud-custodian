@@ -873,19 +873,29 @@ def count_retrievals(rows):
 class KnowledgeBaseRetrievalActivity(Filter):
     """Filter knowledge bases by how many times they were searched.
 
-    Counts ``Retrieve`` CloudTrail data events over the last ``days`` days from
-    the CloudWatch Logs log group of each logging trail in this account whose
-    advanced event selector is exactly ``eventCategory`` = ``Data`` and
-    ``resources.type`` = ``AWS::Bedrock::KnowledgeBase``. Set ``log-group`` to
-    the name or ARN of one of those log groups to read only that one; a name is
-    looked up in the policy's region. The count is annotated as
-    ``c7n:RetrievalActivity``. Each event is counted once, even when several
-    trails deliver it to one log group; Logs Insights approximates the count
-    for very busy knowledge bases. Raises an error if no such log group holds
-    ``days`` days of events. Only ``VECTOR`` knowledge bases have been
-    measured, so filter on that type as below.
+    Counts each knowledge base's ``Retrieve`` CloudTrail data events over the
+    last ``days`` days (default 30, fractions allowed) and compares the count
+    using ``op`` (default ``eq``) and ``value`` (default 0). The count is
+    annotated as ``c7n:RetrievalActivity``.
+
+    Events are read from the CloudWatch Logs log group of each logging trail
+    in this account whose advanced event selector is exactly ``eventCategory``
+    = ``Data`` and ``resources.type`` = ``AWS::Bedrock::KnowledgeBase``.
+    ``source`` is ``cloudwatch-logs``, the only source so far. Set
+    ``log-group`` to a name or ARN to read only that log group; a name is
+    looked up in the policy's region. Each event is counted once even if
+    several trails deliver it, and Logs Insights approximates very large
+    counts.
+
+    Raises an error if no such log group holds ``days`` days of events. A
+    change to an older trail's selectors or regions, or to a log group's
+    retention, isn't detected, so counts can be low for a window after one.
+    Only ``VECTOR`` knowledge bases have been measured.
 
     :example:
+
+    Find vector knowledge bases older than 30 days that nobody has searched in
+    that time:
 
     .. code-block:: yaml
 
@@ -894,6 +904,11 @@ class KnowledgeBaseRetrievalActivity(Filter):
             resource: aws.bedrock-knowledge-base
             filters:
               - knowledgeBaseConfiguration.type: VECTOR
+              - type: value
+                key: createdAt
+                value_type: age
+                op: gt
+                value: 30
               - type: retrieval-activity
                 source: cloudwatch-logs
                 days: 30
