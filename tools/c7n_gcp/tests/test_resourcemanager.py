@@ -374,7 +374,7 @@ class ProjectTest(BaseTest):
                             'resource': 'gcp.project',
                             'filters': [
                                 {
-                                    'type': 'metric',
+                                    'type': 'metrics',
                                     'name': 'example.googleapis.com/metric',
                                     'op': 'gt',
                                     'value': 0,
@@ -391,7 +391,7 @@ class ProjectTest(BaseTest):
                 'resource': 'gcp.project',
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'days': 1,
                         'aligner': 'ALIGN_SUM',
@@ -449,7 +449,7 @@ class ProjectTest(BaseTest):
                 'resource': 'gcp.project',
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'missing-value': 0,
                         'op': 'eq',
@@ -495,7 +495,7 @@ class ProjectTest(BaseTest):
                 'query': [{'filter': f'id:{project_id}'}],
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'days': 1,
                         'aligner': 'ALIGN_SUM',
@@ -524,7 +524,7 @@ class ProjectTest(BaseTest):
                 'query': [{'filter': f'id:{project_id}'}],
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'days': 1,
                         'aligner': 'ALIGN_SUM',
@@ -549,7 +549,7 @@ class ProjectTest(BaseTest):
                 'query': [{'filter': f'id:{project_id}'}],
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'days': 1,
                         'aligner': 'ALIGN_SUM',
@@ -583,7 +583,7 @@ class ProjectTest(BaseTest):
                 'query': [{'filter': f'id:{project_id}'}],
                 'filters': [
                     {
-                        'type': 'metric',
+                        'type': 'metrics',
                         'name': TOKEN_COUNT_METRIC,
                         'days': 1,
                         'aligner': 'ALIGN_SUM',

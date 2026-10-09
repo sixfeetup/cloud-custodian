@@ -139,7 +139,7 @@ class Project(QueryResourceManager):
 Project.filter_registry.register('missing', Missing)
 
 
-@Project.filter_registry.register('metric')
+@Project.filter_registry.register('metrics')
 class GCPProjectMetricsFilter(GCPMetricsFilter):
     """Filter projects by an aggregate Cloud Monitoring metric.
 
@@ -154,7 +154,7 @@ class GCPProjectMetricsFilter(GCPMetricsFilter):
           - name: vertex-ai-project-monthly-token-usage
             resource: gcp.project
             filters:
-              - type: metric
+              - type: metrics
                 name: aiplatform.googleapis.com/publisher/online_serving/token_count
                 days: 30
                 period-start: start-of-day
@@ -165,7 +165,7 @@ class GCPProjectMetricsFilter(GCPMetricsFilter):
     """
 
     schema = type_schema(
-        'metric',
+        'metrics',
         **{
             'name': {'type': 'string'},
             'days': {'type': 'number'},
