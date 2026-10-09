@@ -21,25 +21,25 @@
       {
         "role": "roles/cloudkms.admin",
         "members": [
-          "serviceAccount:c7n-sod-good-bed7@stkl-liam-callahan.iam.gserviceaccount.com"
+          "serviceAccount:c7n-sod-good-bed7@cloud-custodian.iam.gserviceaccount.com"
         ]
       },
       {
         "role": "roles/cloudkms.admin_withcond_653bb5aaba27f5c6bf9e",
         "members": [
-          "serviceAccount:c7n-sod-bad-bed7@stkl-liam-callahan.iam.gserviceaccount.com"
+          "serviceAccount:c7n-sod-bad-bed7@cloud-custodian.iam.gserviceaccount.com"
         ]
       },
       {
         "role": "roles/cloudkms.cryptoKeyEncrypterDecrypter",
         "members": [
-          "serviceAccount:c7n-sod-bad-bed7@stkl-liam-callahan.iam.gserviceaccount.com"
+          "serviceAccount:c7n-sod-bad-bed7@cloud-custodian.iam.gserviceaccount.com"
         ]
       },
       {
         "role": "roles/viewer",
         "members": [
-          "serviceAccount:c7n-sod-bad-bed7@stkl-liam-callahan.iam.gserviceaccount.com"
+          "serviceAccount:c7n-sod-bad-bed7@cloud-custodian.iam.gserviceaccount.com"
         ]
       }
     ]
