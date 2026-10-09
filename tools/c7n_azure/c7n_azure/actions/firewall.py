@@ -42,7 +42,7 @@ class SetFirewallAction(AzureBaseAction):
         if self.append:
             existing = {b.strip() for b in existing_bypass}
             rules.update(existing - {'', 'None'})
-        return ','.join(sorted(rules) or ['None'])
+        return ','.join((sorted(rules) if self.append else new_rules) or ['None'])
 
     def _build_vnet_rules(self, existing_vnet, new_rules):
         rules = list(new_rules)
