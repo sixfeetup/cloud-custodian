@@ -153,26 +153,21 @@ class BucketSetPublicAccess(MethodAction):
 
 @Bucket.action_registry.register('set-lifecycle-rule')
 class BucketSetLifecycleRule(MethodAction):
-    '''Add a lifecycle rule to a bucket, keeping the bucket's existing rules.
+    '''Add a lifecycle rule to a bucket, keeping its existing rules.
 
     ``rule`` is one Cloud Storage lifecycle rule, an ``action`` and a
-    ``condition`` with at least one field, in the API's own format:
-    https://cloud.google.com/storage/docs/lifecycle. The ``sizeAboveBytes`` and
-    ``sizeBelowBytes`` conditions are strings, as the API returns them.
+    ``condition``, in the API's format:
+    https://cloud.google.com/storage/docs/lifecycle. ``sizeAboveBytes`` and
+    ``sizeBelowBytes`` are strings, as the API returns them.
 
-    The API replaces a bucket's whole rule list on update, so the action reads
-    the bucket's current rules, adds the new rule and writes the list back.
-    Buckets that already have an identical rule are skipped. If the bucket
-    changes between the read and the write, the write fails instead of
-    overwriting the change.
+    Buckets that already have the rule are skipped. If a bucket changes while
+    the rule is being added, the update fails rather than overwriting the
+    change. ``SetStorageClass`` rules and ``matchesStorageClass`` conditions
+    are rejected on Autoclass buckets.
 
-    ``SetStorageClass`` rules and ``matchesStorageClass`` conditions are
-    rejected on buckets with Autoclass enabled, so filter those buckets out.
-
-    Cloud Storage applies the rules, not Custodian, and a new rule can take up
-    to 24 hours to take effect. A ``Delete`` rule's ``age`` counts from each
-    object's creation, so objects already older than ``age`` become eligible
-    for deletion once the rule takes effect.
+    Rules can take up to 24 hours to take effect, and ``age`` counts from each
+    object's creation, so a ``Delete`` rule applies to existing objects as
+    well as new ones.
 
     :example:
 
