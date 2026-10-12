@@ -171,12 +171,6 @@ class MachineLearningJobTest(BaseTest):
         )
         self.assertTrue(job.properties.is_archived)
 
-    def test_machine_learning_job_raise_on_exception_false(self):
-        # Stale Resource Graph entries for deleted workspaces yield 404s on job
-        # enumeration. raise_on_exception=False ensures those workspaces are
-        # skipped with a warning rather than aborting the entire policy run.
-        self.assertFalse(MachineLearningJob.resource_type.raise_on_exception)
-
     def test_machine_learning_job_continues_after_failed_workspace(self):
         # When one workspace raises ResourceNotFoundError during child enumeration
         # (e.g. a ghost entry in Azure Resource Graph for a deleted workspace),
