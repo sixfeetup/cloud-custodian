@@ -222,8 +222,10 @@ class BucketSetLifecycleRule(MethodAction):
                     'minProperties': 1,
                     'properties': {
                         'age': {'type': 'integer', 'minimum': 0},
-                        'createdBefore': {'type': 'string'},
-                        'customTimeBefore': {'type': 'string'},
+                        'createdBefore': {
+                            'type': 'string', 'pattern': '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'},
+                        'customTimeBefore': {
+                            'type': 'string', 'pattern': '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'},
                         'daysSinceCustomTime': {'type': 'integer', 'minimum': 0},
                         'daysSinceNoncurrentTime': {'type': 'integer', 'minimum': 0},
                         'isLive': {'type': 'boolean'},
@@ -231,7 +233,8 @@ class BucketSetLifecycleRule(MethodAction):
                         'matchesPrefix': {'type': 'array', 'items': {'type': 'string'}},
                         'matchesStorageClass': {'type': 'array', 'items': {'type': 'string'}},
                         'matchesSuffix': {'type': 'array', 'items': {'type': 'string'}},
-                        'noncurrentTimeBefore': {'type': 'string'},
+                        'noncurrentTimeBefore': {
+                            'type': 'string', 'pattern': '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'},
                         'numNewerVersions': {'type': 'integer', 'minimum': 0},
                         'sizeAboveBytes': {'type': 'string', 'pattern': '^[0-9]+$'},
                         'sizeBelowBytes': {'type': 'string', 'pattern': '^[0-9]+$'},

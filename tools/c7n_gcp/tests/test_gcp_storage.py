@@ -124,6 +124,9 @@ def test_bucket_public_access_inherited(test, bucket_public_access_inherited):
         {'action': {'type': 'Delete'}, 'condition': {'createdBefore': datetime.date(2020, 1, 1)}},
         id='unquoted-yaml-date'),
     pytest.param(
+        {'action': {'type': 'Delete'}, 'condition': {'createdBefore': 'January 1st'}},
+        id='date-wrong-format'),
+    pytest.param(
         {'action': {'type': 'Delete'}, 'condition': {'sizeAboveBytes': 1048576}},
         id='int64-as-number'),
     pytest.param(
