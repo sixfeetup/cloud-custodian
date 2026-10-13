@@ -505,6 +505,22 @@ PY
                     echo "Failed to purge soft-deleted account '${account_name}'."
                     exit 1
                 }
+            purged=0
+            for attempt in {1..12}; do
+                if ! az cognitiveservices account show-deleted \
+                    --location "$account_location" \
+                    --resource-group "$rgName" \
+                    --name "$account_name" \
+                    --output none 2>/dev/null; then
+                    purged=1
+                    break
+                fi
+                sleep 5
+            done
+            if [[ "$purged" -ne 1 ]]; then
+                echo "Soft-deleted account '${account_name}' is still present 60 seconds after purge."
+                exit 1
+            fi
         fi
 
         az deployment group create \
