@@ -1,15 +1,18 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import ANY, Mock, call
+from unittest.mock import ANY, Mock, call, patch
 
 from .azure_common import BaseTest, arm_template
 from c7n.exceptions import PolicyValidationError
+from c7n_azure.actions.diagnostic_settings import SetDiagnosticSettingsAction
 from c7n_azure.filters import DiagnosticSettingsFilter
 
 RESOURCE_GROUP_ID = ('/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47'
                      '/resourceGroups/test_diagnostic-settings')
 WEBAPP_ID = RESOURCE_GROUP_ID + '/providers/Microsoft.Web/sites/cctestwebapp'
 STORAGE_ID = RESOURCE_GROUP_ID + '/providers/Microsoft.Storage/storageAccounts/cctestdiagstorage'
+WORKSPACE_ID = (RESOURCE_GROUP_ID
+                + '/providers/Microsoft.OperationalInsights/workspaces/cctestworkspace')
 
 # A setting as the REST API returns it at 2021-05-01-preview, using the allLogs category group
 ALL_LOGS_SETTING = {
@@ -241,6 +244,88 @@ class DiagnosticSettingsFilterTest(BaseTest):
                 'retention_policy': {'enabled': False, 'days': 0}
             }]
         })
+
+
+class SetDiagnosticSettingsActionTest(BaseTest):
+
+    def test_set_diagnostic_settings_schema_validate(self):
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-set-diagnostic-settings',
+                'resource': 'azure.webapp',
+                'actions': [{
+                    'type': 'set-diagnostic-settings',
+                    'name': 'c7n-http-logs',
+                    'workspaceId': WORKSPACE_ID,
+                    'logs': [{'category': 'AppServiceHTTPLogs', 'enabled': True}]
+                }]
+            }, validate=True)
+            self.assertTrue(p)
+
+    def test_set_diagnostic_settings_validate_rejects(self):
+        cases = [
+            ('needs a destination',
+             {'logs': [{'category': 'AppServiceHTTPLogs', 'enabled': True}]}),
+            ('needs logs or metrics',
+             {'workspaceId': WORKSPACE_ID}),
+            ('exactly one of category or categoryGroup',
+             {'workspaceId': WORKSPACE_ID,
+              'logs': [{'enabled': True}]}),
+            ('exactly one of category or categoryGroup',
+             {'workspaceId': WORKSPACE_ID,
+              'logs': [{'category': 'AppServiceHTTPLogs', 'categoryGroup': 'allLogs',
+                        'enabled': True}]}),
+        ]
+        for message, fields in cases:
+            action = {'type': 'set-diagnostic-settings', 'name': 'c7n-http-logs'}
+            action.update(fields)
+            with self.subTest(fields=fields), self.sign_out_patch():
+                with self.assertRaisesRegex(PolicyValidationError, message):
+                    self.load_policy({
+                        'name': 'test-set-diagnostic-settings',
+                        'resource': 'azure.webapp',
+                        'actions': [action]
+                    }, validate=True)
+
+    def test_set_diagnostic_settings_request(self):
+        """Verifies each resource gets a PUT to its own setting id, at an api-version
+        that accepts category groups, with the policy's fields as the body.
+
+        Cassettes ignore api-version and request bodies, so this asserts them directly.
+        """
+        p = self.load_policy({
+            'name': 'test-set-diagnostic-settings',
+            'resource': 'azure.webapp',
+            'actions': [{
+                'type': 'set-diagnostic-settings',
+                'name': 'c7n-all-logs',
+                'workspaceId': WORKSPACE_ID,
+                'logs': [{'categoryGroup': 'allLogs', 'enabled': True}],
+                'metrics': [{'category': 'AllMetrics', 'enabled': True}]
+            }]
+        })
+        action = p.resource_manager.actions[0]
+        resources = [{'id': WEBAPP_ID, 'name': 'cctestwebapp'},
+                     {'id': WEBAPP_ID + '-2', 'name': 'cctestwebapp-2'}]
+
+        with patch.object(p.resource_manager, 'get_client') as get_client:
+            put = get_client.return_value.resources.begin_create_or_update_by_id
+            action.process(resources)
+
+        self.assertIsInstance(action, SetDiagnosticSettingsAction)
+        get_client.assert_called_with('azure.mgmt.resource.ResourceManagementClient')
+        self.assertEqual(put.call_args_list, [
+            call(r['id'] + '/providers/Microsoft.Insights/diagnosticSettings/c7n-all-logs',
+                 '2021-05-01-preview', ANY)
+            for r in resources
+        ])
+        for put_call in put.call_args_list:
+            self.assertEqual(put_call.args[2].properties, {
+                'workspaceId': WORKSPACE_ID,
+                'logs': [{'categoryGroup': 'allLogs', 'enabled': True}],
+                'metrics': [{'category': 'AllMetrics', 'enabled': True}]
+            })
+        self.assertEqual(put.return_value.result.call_count, len(resources))
 
 
 class EntraIDDiagnosticSettingsFilterTest(BaseTest):
