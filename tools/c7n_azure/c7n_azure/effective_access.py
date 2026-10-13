@@ -119,8 +119,8 @@ def classify(paths, approved_group_ids, approved_principal_ids):
 def members_approved(members, approved_principal_ids):
     """True when every user and service principal member is approved.
 
-    Graph directory objects of any other type, including nested groups, are
-    ignored. An empty group has no members and counts as approved.
+    The function ignores Graph directory objects of any other type, including
+    nested groups. An empty group has no members and counts as approved.
     """
     approved = {i.lower() for i in approved_principal_ids}
     return all(
@@ -159,24 +159,24 @@ def transitive_members(session, group_id):
 class EffectiveAccess(Filter):
     """Filter resources where a principal outside an approved set holds a data action.
 
-    The filter lists role assignments at the resource, resource group,
-    subscription, and management group scopes, resolves each role, and keeps
-    assignments whose role grants ``data-action``. It removes access that an
-    unconditional deny assignment blocks. A resource matches when any
-    remaining principal fails the approval test. The filter annotates each
-    resource with ``c7n:EffectiveAccess``, which lists the approved and
-    unapproved access paths.
+    The filter lists the role assignments at or above the resource scope,
+    resolves each role, and keeps the assignments whose role grants
+    ``data-action``. It drops access that an unconditional deny assignment
+    blocks. A resource matches when any remaining principal fails the approval
+    test. The filter annotates each resource with ``c7n:EffectiveAccess``,
+    which lists the approved and unapproved access paths.
 
     Limits:
 
-    - Role assignment conditions are not evaluated. A conditional assignment
-      counts as full access, and its path records the condition.
-    - A deny assignment that carries a condition is not subtracted. A deny
-      that names a group does not match the group's members.
-    - Active Privileged Identity Management assignments appear as ordinary
-      role assignments. Eligible assignments grant no access and do not count.
-    - API key access (local authentication) bypasses role assignments and is
-      not evaluated.
+    - The filter does not evaluate role assignment conditions. A conditional
+      assignment counts as full access, and its path records the condition.
+    - The filter does not subtract a deny assignment that carries a condition.
+      It does not match a deny that names a group to the group's members.
+    - The filter does not query Privileged Identity Management. It counts only
+      assignments that the role assignment list returns, so eligible
+      assignments never count.
+    - The filter does not evaluate API key access (local authentication),
+      which bypasses role assignments.
 
     The executing identity needs ``Microsoft.Authorization/roleAssignments/read``,
     ``Microsoft.Authorization/roleDefinitions/read``, and
