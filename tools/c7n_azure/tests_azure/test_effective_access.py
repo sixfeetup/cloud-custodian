@@ -18,7 +18,7 @@ from c7n_azure.effective_access import (
 )
 from c7n_azure.graph_utils import get_required_permissions_for_endpoint
 
-from .azure_common import BaseTest
+from .azure_common import BaseTest, arm_template, cassette_name
 
 SCOPE = ('/subscriptions/s1/resourceGroups/rg/providers/'
          'Microsoft.CognitiveServices/accounts/acct')
@@ -446,3 +446,38 @@ class EffectiveAccessFilterTest(BaseTest):
                         return_value=[]) as tm:
             self.run_filter(p, client, [{'id': SCOPE}, {'id': SCOPE + '2'}])
         self.assertEqual(tm.call_count, 1)
+
+
+# Object IDs of the managed identities that templates/effective-access.json creates.
+APPROVED_PRINCIPAL = 'c3e553fd-a8f0-4ea0-a719-a92b9d1c63ee'
+UNAPPROVED_PRINCIPAL = '3b38bbe2-819e-4ca0-9e55-9a58f2744ca4'
+
+
+class EffectiveAccessFunctionalTest(BaseTest):
+
+    def policy(self, **filter_data):
+        data = {'type': 'effective-access', 'data-action': ACTION}
+        data.update(filter_data)
+        return self.load_policy({
+            'name': 'effective-access-functional',
+            'resource': 'azure.cognitiveservice',
+            'filters': [
+                {'type': 'value', 'key': 'name', 'op': 'eq', 'value': 'cctest-eff-access'},
+                data]})
+
+    @arm_template('effective-access.json')
+    @cassette_name('effective-access')
+    def test_flags_unapproved_inherited_assignment(self):
+        resources = self.policy(**{'approved-principal-ids': [APPROVED_PRINCIPAL]}).run()
+        self.assertEqual(len(resources), 1)
+        note = resources[0][ANNOTATION]
+        self.assertEqual([p['principalId'] for p in note['approved']], [APPROVED_PRINCIPAL])
+        self.assertEqual([p['principalId'] for p in note['unapproved']], [UNAPPROVED_PRINCIPAL])
+        self.assertNotIn('/accounts/', note['unapproved'][0]['scope'].lower())
+
+    @arm_template('effective-access.json')
+    @cassette_name('effective-access')
+    def test_all_principals_approved_does_not_match(self):
+        resources = self.policy(**{
+            'approved-principal-ids': [APPROVED_PRINCIPAL, UNAPPROVED_PRINCIPAL]}).run()
+        self.assertEqual(resources, [])
