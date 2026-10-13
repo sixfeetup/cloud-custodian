@@ -486,6 +486,37 @@ PY
             exit 1
         fi
 
+    elif [[ "$fileName" == "effective-access.json" ]]; then
+
+        # The account name is global while soft-deleted, so a redeploy fails until the purge.
+        account_name="cctest-eff-access"
+        account_location="eastus"
+        if az cognitiveservices account show-deleted \
+            --location "$account_location" \
+            --resource-group "$rgName" \
+            --name "$account_name" \
+            --output none 2>/dev/null; then
+            echo "Purging soft-deleted Cognitive Services account '${account_name}'."
+            az cognitiveservices account purge \
+                --location "$account_location" \
+                --resource-group "$rgName" \
+                --name "$account_name" \
+                --output none || {
+                    echo "Failed to purge soft-deleted account '${account_name}'."
+                    exit 1
+                }
+        fi
+
+        az deployment group create \
+            --resource-group "$rgName" \
+            --template-file "$file" \
+            --mode Complete \
+            --output None || {
+                echo "Failed to deploy template '${fileName}' in resource group '${rgName}'."
+                print_failed_group_deployment "$rgName"
+                exit 1
+            }
+
     else
         template_parameters=()
         append_generated_unique_id_parameter "$file" template_parameters
