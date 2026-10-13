@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from unittest.mock import ANY, Mock, call, patch
 
-from .azure_common import BaseTest, arm_template
+from .azure_common import BaseTest, arm_template, strict_cassette
 from c7n.exceptions import PolicyValidationError
 from c7n_azure.actions.diagnostic_settings import SetDiagnosticSettingsAction
 from c7n_azure.filters import DiagnosticSettingsFilter
@@ -326,6 +326,45 @@ class SetDiagnosticSettingsActionTest(BaseTest):
                 'metrics': [{'category': 'AllMetrics', 'enabled': True}]
             })
         self.assertEqual(put.return_value.result.call_count, len(resources))
+
+    @arm_template('diagnostic-settings-action.json')
+    @strict_cassette('set-diagnostic-settings-http-logs')
+    def test_set_diagnostic_settings_http_logs(self):
+        workspace_id = (
+            '/subscriptions/{}/resourceGroups/test_diagnostic-settings-action/providers'
+            '/Microsoft.OperationalInsights/workspaces/cctest-diag-action-workspace'
+        ).format(self.session.get_subscription_id())
+        p = self.load_policy({
+            'name': 'test-set-diagnostic-settings',
+            'resource': 'azure.webapp',
+            'filters': [
+                {'type': 'value',
+                 'key': 'resourceGroup',
+                 'value': 'test_diagnostic-settings-action'},
+                {'not': [{
+                    'type': 'diagnostic-settings',
+                    'key': "logs[?category == 'AppServiceHTTPLogs' && enabled]",
+                    'value': 'not-null'
+                }]}
+            ],
+            'actions': [{
+                'type': 'set-diagnostic-settings',
+                'name': 'cctest-http-logs',
+                'workspaceId': workspace_id,
+                'logs': [{'category': 'AppServiceHTTPLogs', 'enabled': True}]
+            }]
+        }, validate=True)
+
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+        self.assertTrue(resources[0]['name'].startswith('cctestdiagaction'))
+
+        client = self.session.client('azure.mgmt.monitor.MonitorManagementClient')
+        setting = client.diagnostic_settings.get(resources[0]['id'], 'cctest-http-logs')
+        self.assertEqual(setting.workspace_id.lower(), workspace_id.lower())
+        # Azure lists every category the app supports; only the requested one is enabled
+        self.assertEqual(
+            [log.category for log in setting.logs if log.enabled], ['AppServiceHTTPLogs'])
 
 
 class EntraIDDiagnosticSettingsFilterTest(BaseTest):
