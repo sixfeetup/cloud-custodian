@@ -267,7 +267,7 @@ class GraphPermissionTest(unittest.TestCase):
 
 
 class TransitiveMembersTest(unittest.TestCase):
-    """Control flow only. The recorded functional test pins the response shape."""
+    """Control flow only. No recording exercises the Graph response shape."""
 
     def session(self):
         graph = mock.Mock()
