@@ -4,6 +4,7 @@ import unittest
 from unittest import mock
 
 import requests
+from c7n.exceptions import PolicyValidationError
 from c7n_azure.effective_access import (
     ALL_PRINCIPALS,
     ANNOTATION,
@@ -15,6 +16,7 @@ from c7n_azure.effective_access import (
     permission_grants,
     permissions_grant,
     transitive_members,
+    unapproved_members,
 )
 from c7n_azure.graph_utils import get_required_permissions_for_endpoint
 
@@ -237,6 +239,11 @@ class ClassifyTest(unittest.TestCase):
         approved, _ = classify(self.paths(), [GROUP.upper()], [USER.upper()])
         self.assertEqual(len(approved), 2)
 
+    def test_untyped_principal_matches_approved_group_id(self):
+        approved, unapproved = classify(
+            [{'principalId': GROUP, 'principalType': None}], [GROUP], [])
+        self.assertEqual((len(approved), len(unapproved)), (1, 0))
+
 
 class MembersApprovedTest(unittest.TestCase):
 
@@ -257,6 +264,12 @@ class MembersApprovedTest(unittest.TestCase):
     def test_empty_group_is_approved(self):
         self.assertTrue(members_approved([], []))
 
+    def test_unapproved_members_lists_id_and_type_only(self):
+        members = [self.member(USER), dict(self.member(OTHER, 'servicePrincipal'), mail='x')]
+        self.assertEqual(
+            unapproved_members(members, [USER]),
+            [{'id': OTHER, 'type': '#microsoft.graph.servicePrincipal'}])
+
 
 class GraphPermissionTest(unittest.TestCase):
 
@@ -276,8 +289,8 @@ class TransitiveMembersTest(unittest.TestCase):
         session.get_session_for_resource.return_value = graph
         return session
 
-    def response(self, payload, status=200):
-        r = mock.Mock(status_code=status)
+    def response(self, payload, status=200, headers=None):
+        r = mock.Mock(status_code=status, headers=headers or {})
         r.json.return_value = payload
         if status >= 400:
             r.raise_for_status.side_effect = requests.HTTPError(response=r)
@@ -301,6 +314,33 @@ class TransitiveMembersTest(unittest.TestCase):
                 with self.assertRaises(requests.HTTPError):
                     transitive_members(self.session(), GROUP)
         self.assertIn('GroupMember.ReadBasic.All', logs.output[0])
+
+    def test_retries_a_throttled_request_after_retry_after(self):
+        pages = [
+            self.response({}, status=429, headers={'Retry-After': '7'}),
+            self.response({'value': [{'id': 'a'}]}),
+        ]
+        with mock.patch('c7n_azure.effective_access.requests.get', side_effect=pages):
+            with mock.patch('c7n_azure.effective_access.time.sleep') as sleep:
+                members = transitive_members(self.session(), GROUP)
+        self.assertEqual([m['id'] for m in members], ['a'])
+        sleep.assert_called_once_with(7)
+
+    def test_backs_off_when_retry_after_is_absent(self):
+        pages = [self.response({}, status=503), self.response({'value': []})]
+        with mock.patch('c7n_azure.effective_access.requests.get', side_effect=pages):
+            with mock.patch('c7n_azure.effective_access.time.sleep') as sleep:
+                transitive_members(self.session(), GROUP)
+        sleep.assert_called_once_with(1)
+
+    def test_gives_up_after_the_retry_limit(self):
+        throttled = [self.response({}, status=429) for _ in range(4)]
+        with mock.patch('c7n_azure.effective_access.requests.get',
+                        side_effect=throttled) as get:
+            with mock.patch('c7n_azure.effective_access.time.sleep'):
+                with self.assertRaises(requests.HTTPError):
+                    transitive_members(self.session(), GROUP)
+        self.assertEqual(get.call_count, 4)
 
 
 class FakeModel:
@@ -347,14 +387,14 @@ class EffectiveAccessFilterTest(BaseTest):
 
     def test_schema_requires_data_action(self):
         with self.sign_out_patch():
-            with self.assertRaises(Exception):
+            with self.assertRaises(PolicyValidationError):
                 self.load_policy({
                     'name': 'x', 'resource': 'azure.cognitiveservice',
                     'filters': [{'type': 'effective-access',
                                  'approved-group-ids': [GROUP]}]}, validate=True)
 
     def test_schema_rejects_wildcard_data_action(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(PolicyValidationError):
             self.load(**{'data-action': 'Microsoft.CognitiveServices/*'})
 
     def test_registered_on_armresource(self):
@@ -421,16 +461,20 @@ class EffectiveAccessFilterTest(BaseTest):
             _, matched = self.run_filter(p, client, [resource])
         self.assertEqual(matched, [])
         tm.assert_called_once()
-        self.assertEqual(resource[ANNOTATION]['approved'][0]['members'], members)
+        self.assertEqual(resource[ANNOTATION]['approved'][0]['unapprovedMembers'], [])
 
     def test_expand_groups_flags_group_with_unapproved_member(self):
         p = self.load(**{'expand-groups': True, 'approved-principal-ids': [USER]})
         client = FakeAuthClient([assignment('a1', ROLE_ID, GROUP, 'Group')], ROLES)
         members = [{'@odata.type': '#microsoft.graph.user', 'id': OTHER}]
+        resource = {'id': SCOPE}
         with mock.patch('c7n_azure.effective_access.transitive_members',
                         return_value=members):
-            _, matched = self.run_filter(p, client, [{'id': SCOPE}])
+            _, matched = self.run_filter(p, client, [resource])
         self.assertEqual(len(matched), 1)
+        self.assertEqual(
+            resource[ANNOTATION]['unapproved'][0]['unapprovedMembers'],
+            [{'id': OTHER, 'type': '#microsoft.graph.user'}])
 
     def test_groups_are_not_expanded_by_default(self):
         p = self.load()

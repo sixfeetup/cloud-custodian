@@ -3,6 +3,7 @@
 import functools
 import logging
 import re
+import time
 
 import requests
 
@@ -18,6 +19,9 @@ GROUP_TYPES = ('Group', 'ForeignGroup')
 LEAF_MEMBER_TYPES = ('#microsoft.graph.user', '#microsoft.graph.servicePrincipal')
 EXPANDABLE_TYPES = ('Group',)
 ANNOTATION = 'c7n:EffectiveAccess'
+RETRY_STATUSES = (429, 503, 504)
+MAX_RETRIES = 3
+MAX_RETRY_WAIT = 60
 
 
 @functools.lru_cache(maxsize=None)
@@ -102,30 +106,60 @@ def classify(paths, approved_group_ids, approved_principal_ids):
     """Split paths into approved and unapproved.
 
     A path is approved when its principal ID is in ``approved_principal_ids``,
-    or its principal is a group whose ID is in ``approved_group_ids``.
+    or its principal is a group whose ID is in ``approved_group_ids``. A path
+    without a principal type counts as a group for that test.
     """
     groups = {i.lower() for i in approved_group_ids}
     principals = {i.lower() for i in approved_principal_ids}
     approved, unapproved = [], []
     for path in paths:
         pid = path['principalId'].lower()
-        if pid in principals or (path['principalType'] in GROUP_TYPES and pid in groups):
+        if pid in principals or (path['principalType'] in GROUP_TYPES + (None,) and pid in groups):
             approved.append(path)
         else:
             unapproved.append(path)
     return approved, unapproved
 
 
+def unapproved_members(members, approved_principal_ids):
+    """List the users and service principals that are not approved.
+
+    The function ignores Graph directory objects of any other type, including
+    nested groups. Each entry carries the object ID and the Graph type.
+    """
+    approved = {i.lower() for i in approved_principal_ids}
+    return [
+        {'id': m['id'], 'type': m['@odata.type']}
+        for m in members
+        if m.get('@odata.type') in LEAF_MEMBER_TYPES and m['id'].lower() not in approved]
+
+
 def members_approved(members, approved_principal_ids):
     """True when every user and service principal member is approved.
 
-    The function ignores Graph directory objects of any other type, including
-    nested groups. An empty group has no members and counts as approved.
+    An empty group has no members and counts as approved.
     """
-    approved = {i.lower() for i in approved_principal_ids}
-    return all(
-        m['id'].lower() in approved
-        for m in members if m.get('@odata.type') in LEAF_MEMBER_TYPES)
+    return not unapproved_members(members, approved_principal_ids)
+
+
+def graph_get(url, headers, params):
+    """GET a Graph URL, retrying throttled and unavailable responses.
+
+    The function waits for ``Retry-After`` seconds when Graph sends the header
+    and backs off 1, 2, then 4 seconds when it does not. It returns the last
+    response after ``MAX_RETRIES`` retries.
+    """
+    for attempt in range(MAX_RETRIES + 1):
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+        if response.status_code not in RETRY_STATUSES or attempt == MAX_RETRIES:
+            return response
+        try:
+            wait = int(response.headers['Retry-After'])
+        except (KeyError, ValueError):
+            wait = 2 ** attempt
+        wait = min(wait, MAX_RETRY_WAIT)
+        log.warning('Microsoft Graph returned %s. Retrying in %ss.', response.status_code, wait)
+        time.sleep(wait)
 
 
 def transitive_members(session, group_id):
@@ -144,7 +178,7 @@ def transitive_members(session, group_id):
     params = {'$top': 999}
     members = []
     while url:
-        response = requests.get(url, headers=headers, params=params, timeout=30)
+        response = graph_get(url, headers, params)
         if response.status_code == 403:
             log.error('Microsoft Graph denied %s. The executing identity needs %s.',
                       endpoint, ', '.join(permissions))
@@ -164,7 +198,8 @@ class EffectiveAccess(Filter):
     ``data-action``. It drops access that an unconditional deny assignment
     blocks. A resource matches when any remaining principal fails the approval
     test. The filter annotates each resource with ``c7n:EffectiveAccess``,
-    which lists the approved and unapproved access paths.
+    which lists the approved and unapproved access paths. With
+    ``expand-groups``, each group path also lists its ``unapprovedMembers``.
 
     Limits:
 
@@ -177,6 +212,9 @@ class EffectiveAccess(Filter):
       assignments never count.
     - The filter does not evaluate API key access (local authentication),
       which bypasses role assignments.
+    - ``expand-groups`` expands ``Group`` principals only. It leaves a
+      ``ForeignGroup`` unexpanded, so the filter reports it as unapproved
+      unless ``approved-group-ids`` lists it.
 
     The executing identity needs ``Microsoft.Authorization/roleAssignments/read``,
     ``Microsoft.Authorization/roleDefinitions/read``, and
@@ -279,8 +317,8 @@ class EffectiveAccess(Filter):
             key = path['principalId'].lower()
             if key not in cache:
                 cache[key] = transitive_members(session, path['principalId'])
-            path['members'] = cache[key]
-            if members_approved(path['members'], principals):
+            path['unapprovedMembers'] = unapproved_members(cache[key], principals)
+            if not path['unapprovedMembers']:
                 approved.append(path)
             else:
                 remaining.append(path)
