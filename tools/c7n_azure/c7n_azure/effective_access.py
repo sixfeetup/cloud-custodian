@@ -4,6 +4,11 @@ import functools
 import logging
 import re
 
+import requests
+
+from c7n_azure.constants import MSGRAPH_RESOURCE_ID
+from c7n_azure.graph_utils import get_required_permissions_for_endpoint
+
 log = logging.getLogger('custodian.azure.effective_access')
 
 ALL_PRINCIPALS = '00000000-0000-0000-0000-000000000000'
@@ -117,3 +122,31 @@ def members_approved(members, approved_principal_ids):
     return all(
         m['id'].lower() in approved
         for m in members if m.get('@odata.type') in LEAF_MEMBER_TYPES)
+
+
+def transitive_members(session, group_id):
+    """List a group's transitive members through Microsoft Graph v1.0.
+
+    Documented at
+    https://learn.microsoft.com/en-us/graph/api/group-list-transitivemembers
+    """
+    endpoint = 'groups/%s/transitiveMembers' % group_id
+    permissions = get_required_permissions_for_endpoint(endpoint)
+    graph = session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
+    graph._initialize_session()
+    token = graph.credentials.get_token('https://graph.microsoft.com/.default')
+    headers = {'Authorization': 'Bearer %s' % token.token}
+    url = 'https://graph.microsoft.com/v1.0/' + endpoint
+    params = {'$top': 999}
+    members = []
+    while url:
+        response = requests.get(url, headers=headers, params=params, timeout=30)
+        if response.status_code == 403:
+            log.error('Microsoft Graph denied %s. The executing identity needs %s.',
+                      endpoint, ', '.join(permissions))
+        response.raise_for_status()
+        payload = response.json()
+        members.extend(payload.get('value', []))
+        url = payload.get('@odata.nextLink')
+        params = None
+    return members

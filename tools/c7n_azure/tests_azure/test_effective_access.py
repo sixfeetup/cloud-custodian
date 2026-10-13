@@ -1,7 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import unittest
+from unittest import mock
 
+import requests
 from c7n_azure.effective_access import (
     ALL_PRINCIPALS,
     access_paths,
@@ -11,7 +13,9 @@ from c7n_azure.effective_access import (
     members_approved,
     permission_grants,
     permissions_grant,
+    transitive_members,
 )
+from c7n_azure.graph_utils import get_required_permissions_for_endpoint
 
 SCOPE = ('/subscriptions/s1/resourceGroups/rg/providers/'
          'Microsoft.CognitiveServices/accounts/acct')
@@ -249,3 +253,48 @@ class MembersApprovedTest(unittest.TestCase):
 
     def test_empty_group_is_approved(self):
         self.assertTrue(members_approved([], []))
+
+
+class GraphPermissionTest(unittest.TestCase):
+
+    def test_transitive_members_maps_to_least_privilege(self):
+        self.assertEqual(
+            get_required_permissions_for_endpoint('groups/%s/transitiveMembers' % GROUP),
+            ['GroupMember.ReadBasic.All'])
+
+
+class TransitiveMembersTest(unittest.TestCase):
+    """Control flow only. The recorded functional test pins the response shape."""
+
+    def session(self):
+        graph = mock.Mock()
+        graph.credentials.get_token.return_value = mock.Mock(token='t')
+        session = mock.Mock()
+        session.get_session_for_resource.return_value = graph
+        return session
+
+    def response(self, payload, status=200):
+        r = mock.Mock(status_code=status)
+        r.json.return_value = payload
+        if status >= 400:
+            r.raise_for_status.side_effect = requests.HTTPError(response=r)
+        return r
+
+    def test_follows_next_link(self):
+        pages = [
+            self.response({'value': [{'id': 'a'}], '@odata.nextLink': 'https://next'}),
+            self.response({'value': [{'id': 'b'}]}),
+        ]
+        with mock.patch('c7n_azure.effective_access.requests.get', side_effect=pages) as get:
+            members = transitive_members(self.session(), GROUP)
+        self.assertEqual([m['id'] for m in members], ['a', 'b'])
+        self.assertEqual(get.call_args_list[1][0][0], 'https://next')
+        self.assertIsNone(get.call_args_list[1][1]['params'])
+
+    def test_403_raises_and_names_the_permission(self):
+        with mock.patch('c7n_azure.effective_access.requests.get',
+                        return_value=self.response({}, status=403)):
+            with self.assertLogs('custodian.azure.effective_access', 'ERROR') as logs:
+                with self.assertRaises(requests.HTTPError):
+                    transitive_members(self.session(), GROUP)
+        self.assertIn('GroupMember.ReadBasic.All', logs.output[0])
