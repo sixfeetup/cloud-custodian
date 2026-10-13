@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 from unittest.mock import ANY, Mock, call, patch
 
+from azure.core.exceptions import HttpResponseError
+
 from .azure_common import BaseTest, arm_template, strict_cassette
 from c7n.exceptions import PolicyValidationError
 from c7n_azure.actions.diagnostic_settings import SetDiagnosticSettingsAction
@@ -13,6 +15,8 @@ WEBAPP_ID = RESOURCE_GROUP_ID + '/providers/Microsoft.Web/sites/cctestwebapp'
 STORAGE_ID = RESOURCE_GROUP_ID + '/providers/Microsoft.Storage/storageAccounts/cctestdiagstorage'
 WORKSPACE_ID = (RESOURCE_GROUP_ID
                 + '/providers/Microsoft.OperationalInsights/workspaces/cctestworkspace')
+EVENTHUB_RULE_ID = (RESOURCE_GROUP_ID + '/providers/Microsoft.EventHub/namespaces/cctesthubs'
+                    '/authorizationRules/RootManageSharedAccessKey')
 
 # A setting as the REST API returns it at 2021-05-01-preview, using the allLogs category group
 ALL_LOGS_SETTING = {
@@ -287,6 +291,35 @@ class SetDiagnosticSettingsActionTest(BaseTest):
                         'actions': [action]
                     }, validate=True)
 
+    def test_set_diagnostic_settings_name_rejects(self):
+        # The name ends the request URL: empty, '/', '?' or '#' would change what gets written
+        for name in (None, '', 'a/b', 'a?b', 'a#b'):
+            action = {'type': 'set-diagnostic-settings', 'workspaceId': WORKSPACE_ID,
+                      'logs': [{'category': 'AppServiceHTTPLogs', 'enabled': True}]}
+            if name is not None:
+                action['name'] = name
+            with self.subTest(name=name), self.sign_out_patch():
+                with self.assertRaises(PolicyValidationError):
+                    self.load_policy({
+                        'name': 'test-set-diagnostic-settings',
+                        'resource': 'azure.webapp',
+                        'actions': [action]
+                    }, validate=True)
+
+    def test_set_diagnostic_settings_not_enabled(self):
+        # VMs have diagnostic_settings_enabled = False, so they get neither the filter nor this
+        with self.sign_out_patch(), self.assertRaises(PolicyValidationError):
+            self.load_policy({
+                'name': 'test-set-diagnostic-settings',
+                'resource': 'azure.vm',
+                'actions': [{
+                    'type': 'set-diagnostic-settings',
+                    'name': 'c7n-http-logs',
+                    'workspaceId': WORKSPACE_ID,
+                    'metrics': [{'category': 'AllMetrics', 'enabled': True}]
+                }]
+            }, validate=True)
+
     def test_set_diagnostic_settings_request(self):
         """Verifies each resource gets a PUT to its own setting id, at an api-version
         that accepts category groups, with the policy's fields as the body.
@@ -300,6 +333,10 @@ class SetDiagnosticSettingsActionTest(BaseTest):
                 'type': 'set-diagnostic-settings',
                 'name': 'c7n-all-logs',
                 'workspaceId': WORKSPACE_ID,
+                'storageAccountId': STORAGE_ID,
+                'eventHubAuthorizationRuleId': EVENTHUB_RULE_ID,
+                'eventHubName': 'cctesthub',
+                'logAnalyticsDestinationType': 'Dedicated',
                 'logs': [{'categoryGroup': 'allLogs', 'enabled': True}],
                 'metrics': [{'category': 'AllMetrics', 'enabled': True}]
             }]
@@ -322,10 +359,44 @@ class SetDiagnosticSettingsActionTest(BaseTest):
         for put_call in put.call_args_list:
             self.assertEqual(put_call.args[2].properties, {
                 'workspaceId': WORKSPACE_ID,
+                'storageAccountId': STORAGE_ID,
+                'eventHubAuthorizationRuleId': EVENTHUB_RULE_ID,
+                'eventHubName': 'cctesthub',
+                'logAnalyticsDestinationType': 'Dedicated',
                 'logs': [{'categoryGroup': 'allLogs', 'enabled': True}],
                 'metrics': [{'category': 'AllMetrics', 'enabled': True}]
             })
         self.assertEqual(put.return_value.result.call_count, len(resources))
+
+    def test_set_diagnostic_settings_raises_after_batch(self):
+        """Verifies a failed write doesn't stop the rest of the batch, and still fails the run.
+
+        The base class would swallow the error outside pytest and report success.
+        """
+        p = self.load_policy({
+            'name': 'test-set-diagnostic-settings',
+            'resource': 'azure.webapp',
+            'actions': [{
+                'type': 'set-diagnostic-settings',
+                'name': 'c7n-http-logs',
+                'workspaceId': WORKSPACE_ID,
+                'logs': [{'category': 'AppServiceHTTPLogs', 'enabled': True}]
+            }]
+        })
+        action = p.resource_manager.actions[0]
+        resources = [{'id': WEBAPP_ID, 'name': 'cctestwebapp'},
+                     {'id': WEBAPP_ID + '-2', 'name': 'cctestwebapp-2'}]
+
+        with patch.object(p.resource_manager, 'get_client') as get_client:
+            put = get_client.return_value.resources.begin_create_or_update_by_id
+            put.side_effect = [HttpResponseError('Data sink is already used'), Mock()]
+            with self.assertRaisesRegex(HttpResponseError, 'Data sink is already used'):
+                action.process(resources)
+
+        self.assertEqual([c.args[0] for c in put.call_args_list], [
+            r['id'] + '/providers/Microsoft.Insights/diagnosticSettings/c7n-http-logs'
+            for r in resources
+        ])
 
     @arm_template('diagnostic-settings-action.json')
     @strict_cassette('set-diagnostic-settings-http-logs')

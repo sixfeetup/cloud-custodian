@@ -16,6 +16,19 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
     The setting called ``name`` is written whole, so an existing setting with
     that name is replaced. Other settings on the resource are left alone.
 
+    Set at least one destination (``workspaceId``, ``storageAccountId``, or
+    ``eventHubAuthorizationRuleId`` with an optional ``eventHubName``) and at
+    least one of ``logs`` or ``metrics``. Each ``logs`` entry names either a
+    ``category`` or a ``categoryGroup`` such as ``allLogs``. Keys use Azure's
+    API casing, so the filter's ``category_group`` is ``categoryGroup`` here.
+    ``logAnalyticsDestinationType: Dedicated`` sends to resource-specific
+    tables. ``retentionPolicy`` isn't accepted, since Azure stopped honouring
+    it in September 2025.
+
+    Azure rejects a setting that sends a category to a destination another
+    setting on the resource already sends it to. If a write fails, the
+    remaining resources are still processed, then the action raises.
+
     The caller needs ``Microsoft.Insights/diagnosticSettings/write`` on the
     resource. Storage account and Event Hub destinations also need permission
     to list their keys.
@@ -23,7 +36,8 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
     :example:
 
     Send HTTP logs to a Log Analytics workspace for web apps that don't
-    already send them anywhere:
+    already send them anywhere. On a web app both the ``audit`` and
+    ``allLogs`` groups include AppServiceHTTPLogs, so either one counts:
 
     .. code-block:: yaml
 
@@ -33,7 +47,9 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
            filters:
              - not:
                - type: diagnostic-settings
-                 key: 'logs[?category==`AppServiceHTTPLogs` && enabled]'
+                 key: >-
+                   logs[?(category == 'AppServiceHTTPLogs' || category_group == 'audit'
+                   || category_group == 'allLogs') && enabled]
                  value: not-null
            actions:
              - type: set-diagnostic-settings
@@ -48,11 +64,13 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
     schema = type_schema(
         'set-diagnostic-settings',
         required=['name'],
-        name={'type': 'string'},
+        # The name ends the request URL, so it can't contain URL delimiters
+        name={'type': 'string', 'minLength': 1, 'pattern': '^[^/?#]+$'},
         workspaceId={'type': 'string'},
         storageAccountId={'type': 'string'},
         eventHubAuthorizationRuleId={'type': 'string'},
         eventHubName={'type': 'string'},
+        logAnalyticsDestinationType={'type': 'string'},
         logs={
             'type': 'array',
             'items': {
@@ -60,8 +78,8 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
                 'additionalProperties': False,
                 'required': ['enabled'],
                 'properties': {
-                    'category': {'type': 'string'},
-                    'categoryGroup': {'type': 'string'},
+                    'category': {'type': 'string', 'minLength': 1},
+                    'categoryGroup': {'type': 'string', 'minLength': 1},
                     'enabled': {'type': 'boolean'},
                 },
             },
@@ -71,9 +89,9 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
             'items': {
                 'type': 'object',
                 'additionalProperties': False,
-                'required': ['enabled'],
+                'required': ['category', 'enabled'],
                 'properties': {
-                    'category': {'type': 'string'},
+                    'category': {'type': 'string', 'minLength': 1},
                     'enabled': {'type': 'boolean'},
                 },
             },
@@ -83,7 +101,7 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
 
     # Policy fields that are sent to Azure unchanged as the setting's properties
     PROPERTIES = ('workspaceId', 'storageAccountId', 'eventHubAuthorizationRuleId',
-                  'eventHubName', 'logs', 'metrics')
+                  'eventHubName', 'logAnalyticsDestinationType', 'logs', 'metrics')
 
     def validate(self):
         destinations = ('workspaceId', 'storageAccountId', 'eventHubAuthorizationRuleId')
@@ -106,6 +124,23 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
                 )
 
         return self
+
+    def _process_resources(self, resources, event):
+        # The base class logs and swallows errors outside pytest, so a failed write
+        # would leave the run looking successful. Set the rest, then raise.
+        self._prepare_processing()
+        failures = []
+        for resource in resources:
+            try:
+                self._log_modified_resource(resource, self._process_resource(resource))
+            except Exception as e:
+                self.log.error(
+                    "Setting diagnostic setting '%s' on '%s' in resource group '%s' failed: %s",
+                    self.data['name'], resource.get('name'), resource.get('resourceGroup'), e,
+                    exc_info=True, extra=self._get_action_log_metadata(resource))
+                failures.append(e)
+        if failures:
+            raise failures[0]
 
     def _prepare_processing(self):
         self.client = self.manager.get_client('azure.mgmt.resource.ResourceManagementClient')

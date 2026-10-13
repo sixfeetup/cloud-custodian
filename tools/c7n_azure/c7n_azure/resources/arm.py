@@ -7,8 +7,8 @@ import requests
 
 from c7n_azure import constants
 from c7n_azure.actions.delete import DeleteAction
-from c7n_azure.actions.lock import LockAction
 from c7n_azure.actions.diagnostic_settings import SetDiagnosticSettingsAction
+from c7n_azure.actions.lock import LockAction
 from c7n_azure.actions.tagging import (AutoTagDate)
 from c7n_azure.actions.tagging import Tag, AutoTagUser, RemoveTag, TagTrim, TagDelayedAction
 from c7n_azure.filters import (CostFilter, MetricFilter, TagActionFilter,
