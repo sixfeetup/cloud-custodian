@@ -6,6 +6,7 @@ from unittest import mock
 import requests
 from c7n_azure.effective_access import (
     ALL_PRINCIPALS,
+    ANNOTATION,
     access_paths,
     action_matches,
     classify,
@@ -16,6 +17,8 @@ from c7n_azure.effective_access import (
     transitive_members,
 )
 from c7n_azure.graph_utils import get_required_permissions_for_endpoint
+
+from .azure_common import BaseTest
 
 SCOPE = ('/subscriptions/s1/resourceGroups/rg/providers/'
          'Microsoft.CognitiveServices/accounts/acct')
@@ -298,3 +301,148 @@ class TransitiveMembersTest(unittest.TestCase):
                 with self.assertRaises(requests.HTTPError):
                     transitive_members(self.session(), GROUP)
         self.assertIn('GroupMember.ReadBasic.All', logs.output[0])
+
+
+class FakeModel:
+    def __init__(self, data):
+        self.data = data
+
+    def serialize(self, keep_readonly=False):
+        return self.data
+
+
+class FakeAuthClient:
+    def __init__(self, assignments, roles, denies=()):
+        self.role_assignments = mock.Mock()
+        self.role_assignments.list_for_scope.return_value = [FakeModel(a) for a in assignments]
+        self.deny_assignments = mock.Mock()
+        self.deny_assignments.list_for_scope.return_value = [FakeModel(d) for d in denies]
+        self.role_definitions = mock.Mock()
+        self.role_definitions.get_by_id.side_effect = (
+            lambda rid: FakeModel(roles[rid.lower()]))
+
+
+def fake_session(client):
+    session = mock.Mock()
+    session.client.return_value = client
+    return session
+
+
+class EffectiveAccessFilterTest(BaseTest):
+
+    def load(self, **filter_data):
+        data = {'type': 'effective-access', 'data-action': ACTION}
+        data.update(filter_data)
+        with self.sign_out_patch():
+            return self.load_policy({
+                'name': 'effective-access-test',
+                'resource': 'azure.cognitiveservice',
+                'filters': [data]}, validate=True)
+
+    def run_filter(self, policy, client, resources):
+        flt = policy.resource_manager.filters[0]
+        with mock.patch.object(
+                policy.resource_manager, 'get_session', return_value=fake_session(client)):
+            return flt, flt.process(resources)
+
+    def test_schema_requires_data_action(self):
+        with self.sign_out_patch():
+            with self.assertRaises(Exception):
+                self.load_policy({
+                    'name': 'x', 'resource': 'azure.cognitiveservice',
+                    'filters': [{'type': 'effective-access',
+                                 'approved-group-ids': [GROUP]}]}, validate=True)
+
+    def test_schema_rejects_wildcard_data_action(self):
+        with self.assertRaises(Exception):
+            self.load(**{'data-action': 'Microsoft.CognitiveServices/*'})
+
+    def test_registered_on_armresource(self):
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'x', 'resource': 'azure.armresource',
+                'filters': [{'type': 'effective-access', 'data-action': ACTION}]},
+                validate=True)
+        self.assertTrue(p)
+
+    def test_flags_unapproved_and_annotates(self):
+        p = self.load(**{'approved-principal-ids': [USER]})
+        client = FakeAuthClient(
+            [assignment('a1', ROLE_ID, USER), assignment('a2', ROLE_ID, OTHER, scope=RG_SCOPE)],
+            ROLES)
+        resource = {'id': SCOPE}
+        _, matched = self.run_filter(p, client, [resource])
+        self.assertEqual(matched, [resource])
+        note = resource[ANNOTATION]
+        self.assertEqual(note['data-action'], ACTION)
+        self.assertEqual([x['principalId'] for x in note['approved']], [USER])
+        self.assertEqual([x['principalId'] for x in note['unapproved']], [OTHER])
+        client.role_assignments.list_for_scope.assert_called_once_with(
+            SCOPE, filter='atScope()')
+        client.deny_assignments.list_for_scope.assert_called_once_with(
+            SCOPE, filter='atScope()')
+
+    def test_all_approved_does_not_match(self):
+        p = self.load(**{'approved-principal-ids': [USER]})
+        client = FakeAuthClient([assignment('a1', ROLE_ID, USER)], ROLES)
+        resource = {'id': SCOPE}
+        _, matched = self.run_filter(p, client, [resource])
+        self.assertEqual(matched, [])
+        self.assertEqual(resource[ANNOTATION]['unapproved'], [])
+
+    def test_no_assignments_annotates_empty_lists(self):
+        p = self.load()
+        resource = {'id': SCOPE}
+        _, matched = self.run_filter(p, FakeAuthClient([], ROLES), [resource])
+        self.assertEqual(matched, [])
+        self.assertEqual(resource[ANNOTATION]['approved'], [])
+        self.assertEqual(resource[ANNOTATION]['unapproved'], [])
+
+    def test_role_definitions_are_cached_across_resources(self):
+        p = self.load()
+        client = FakeAuthClient([assignment('a1', ROLE_ID, USER)], ROLES)
+        self.run_filter(p, client, [{'id': SCOPE}, {'id': SCOPE + '2'}])
+        self.assertEqual(client.role_definitions.get_by_id.call_count, 1)
+
+    def test_deleted_role_definition_raises(self):
+        p = self.load()
+        client = FakeAuthClient([assignment('a1', ROLE_ID, USER)], ROLES)
+        client.role_definitions.get_by_id.side_effect = RuntimeError('404 role not found')
+        with self.assertRaises(RuntimeError):
+            self.run_filter(p, client, [{'id': SCOPE}])
+
+    def test_expand_groups_approves_group_of_approved_members(self):
+        p = self.load(**{'expand-groups': True, 'approved-principal-ids': [USER]})
+        client = FakeAuthClient([assignment('a1', ROLE_ID, GROUP, 'Group')], ROLES)
+        members = [{'@odata.type': '#microsoft.graph.user', 'id': USER}]
+        resource = {'id': SCOPE}
+        with mock.patch('c7n_azure.effective_access.transitive_members',
+                        return_value=members) as tm:
+            _, matched = self.run_filter(p, client, [resource])
+        self.assertEqual(matched, [])
+        tm.assert_called_once()
+        self.assertEqual(resource[ANNOTATION]['approved'][0]['members'], members)
+
+    def test_expand_groups_flags_group_with_unapproved_member(self):
+        p = self.load(**{'expand-groups': True, 'approved-principal-ids': [USER]})
+        client = FakeAuthClient([assignment('a1', ROLE_ID, GROUP, 'Group')], ROLES)
+        members = [{'@odata.type': '#microsoft.graph.user', 'id': OTHER}]
+        with mock.patch('c7n_azure.effective_access.transitive_members',
+                        return_value=members):
+            _, matched = self.run_filter(p, client, [{'id': SCOPE}])
+        self.assertEqual(len(matched), 1)
+
+    def test_groups_are_not_expanded_by_default(self):
+        p = self.load()
+        client = FakeAuthClient([assignment('a1', ROLE_ID, GROUP, 'Group')], ROLES)
+        with mock.patch('c7n_azure.effective_access.transitive_members') as tm:
+            self.run_filter(p, client, [{'id': SCOPE}])
+        tm.assert_not_called()
+
+    def test_group_members_are_fetched_once_per_group(self):
+        p = self.load(**{'expand-groups': True})
+        client = FakeAuthClient([assignment('a1', ROLE_ID, GROUP, 'Group')], ROLES)
+        with mock.patch('c7n_azure.effective_access.transitive_members',
+                        return_value=[]) as tm:
+            self.run_filter(p, client, [{'id': SCOPE}, {'id': SCOPE + '2'}])
+        self.assertEqual(tm.call_count, 1)

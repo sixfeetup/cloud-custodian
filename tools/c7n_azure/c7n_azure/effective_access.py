@@ -6,6 +6,8 @@ import re
 
 import requests
 
+from c7n.filters import Filter
+from c7n.utils import type_schema
 from c7n_azure.constants import MSGRAPH_RESOURCE_ID
 from c7n_azure.graph_utils import get_required_permissions_for_endpoint
 
@@ -14,6 +16,8 @@ log = logging.getLogger('custodian.azure.effective_access')
 ALL_PRINCIPALS = '00000000-0000-0000-0000-000000000000'
 GROUP_TYPES = ('Group', 'ForeignGroup')
 LEAF_MEMBER_TYPES = ('#microsoft.graph.user', '#microsoft.graph.servicePrincipal')
+EXPANDABLE_TYPES = ('Group',)
+ANNOTATION = 'c7n:EffectiveAccess'
 
 
 @functools.lru_cache(maxsize=None)
@@ -150,3 +154,134 @@ def transitive_members(session, group_id):
         url = payload.get('@odata.nextLink')
         params = None
     return members
+
+
+class EffectiveAccess(Filter):
+    """Filter resources where a principal outside an approved set holds a data action.
+
+    The filter lists role assignments at the resource, resource group,
+    subscription, and management group scopes, resolves each role, and keeps
+    assignments whose role grants ``data-action``. It removes access that an
+    unconditional deny assignment blocks. A resource matches when any
+    remaining principal fails the approval test. The filter annotates each
+    resource with ``c7n:EffectiveAccess``, which lists the approved and
+    unapproved access paths.
+
+    Limits:
+
+    - Role assignment conditions are not evaluated. A conditional assignment
+      counts as full access, and its path records the condition.
+    - A deny assignment that carries a condition is not subtracted. A deny
+      that names a group does not match the group's members.
+    - Active Privileged Identity Management assignments appear as ordinary
+      role assignments. Eligible assignments grant no access and do not count.
+    - API key access (local authentication) bypasses role assignments and is
+      not evaluated.
+
+    The executing identity needs ``Microsoft.Authorization/roleAssignments/read``,
+    ``Microsoft.Authorization/roleDefinitions/read``, and
+    ``Microsoft.Authorization/denyAssignments/read`` at the resource scope.
+    ``expand-groups`` also needs the Microsoft Graph application permission
+    ``GroupMember.ReadBasic.All``.
+
+    :example:
+
+    Find Azure OpenAI accounts where an unapproved principal can call chat
+    completions.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: openai-chat-completions-unapproved-access
+            resource: azure.cognitiveservice
+            filters:
+              - type: effective-access
+                data-action: >-
+                  Microsoft.CognitiveServices/accounts/OpenAI/deployments/chat/completions/action
+                approved-group-ids:
+                  - 00000000-0000-0000-0000-0000000000aa
+                approved-principal-ids:
+                  - 00000000-0000-0000-0000-0000000000bb
+
+    :example:
+
+    Treat a group as approved when every member is approved.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: openai-chat-completions-expanded
+            resource: azure.cognitiveservice
+            filters:
+              - type: effective-access
+                data-action: >-
+                  Microsoft.CognitiveServices/accounts/OpenAI/deployments/chat/completions/action
+                approved-principal-ids:
+                  - 00000000-0000-0000-0000-0000000000bb
+                expand-groups: true
+    """
+
+    schema = type_schema(
+        'effective-access',
+        required=['data-action'],
+        **{
+            'data-action': {'type': 'string', 'pattern': '^[^*]+$'},
+            'approved-group-ids': {'type': 'array', 'items': {'type': 'string'}},
+            'approved-principal-ids': {'type': 'array', 'items': {'type': 'string'}},
+            'expand-groups': {'type': 'boolean'},
+        })
+    schema_alias = True
+    permissions = (
+        'Microsoft.Authorization/roleAssignments/read',
+        'Microsoft.Authorization/roleDefinitions/read',
+        'Microsoft.Authorization/denyAssignments/read',
+    )
+
+    def process(self, resources, event=None):
+        session = self.manager.get_session()
+        client = session.client('azure.mgmt.authorization.AuthorizationManagementClient')
+        action = self.data['data-action']
+        groups = self.data.get('approved-group-ids', [])
+        principals = self.data.get('approved-principal-ids', [])
+        role_defs = {}
+        members = {}
+        matched = []
+        for resource in resources:
+            scope = resource['id']
+            assignments = [
+                a.serialize(True)
+                for a in client.role_assignments.list_for_scope(scope, filter='atScope()')]
+            denies = [
+                d.serialize(True)
+                for d in client.deny_assignments.list_for_scope(scope, filter='atScope()')]
+            for a in assignments:
+                role_id = a['properties']['roleDefinitionId']
+                if role_id.lower() not in role_defs:
+                    role_defs[role_id.lower()] = client.role_definitions.get_by_id(
+                        role_id).serialize(True)
+            paths = access_paths(assignments, role_defs, denies, scope, action)
+            approved, unapproved = classify(paths, groups, principals)
+            if unapproved and self.data.get('expand-groups'):
+                approved, unapproved = self.expand(session, approved, unapproved, members)
+            resource[ANNOTATION] = {
+                'data-action': action, 'approved': approved, 'unapproved': unapproved}
+            if unapproved:
+                matched.append(resource)
+        return matched
+
+    def expand(self, session, approved, unapproved, cache):
+        principals = self.data.get('approved-principal-ids', [])
+        remaining = []
+        for path in unapproved:
+            if path['principalType'] not in EXPANDABLE_TYPES:
+                remaining.append(path)
+                continue
+            key = path['principalId'].lower()
+            if key not in cache:
+                cache[key] = transitive_members(session, path['principalId'])
+            path['members'] = cache[key]
+            if members_approved(path['members'], principals):
+                approved.append(path)
+            else:
+                remaining.append(path)
+        return approved, remaining
