@@ -286,7 +286,7 @@ class MetricFilter(Filter):
             metrics_data = self.client.metrics.list(
                 self.get_resource_id(resource),
                 timespan=self.timespan,
-                interval=self.interval,
+                interval=isodate.duration_isoformat(self.interval),
                 metricnames=self.metric,
                 aggregation=self.aggregation,
                 metricnamespace=self.metricnamespace,
