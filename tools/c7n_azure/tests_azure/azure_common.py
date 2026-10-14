@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from collections import Counter
 import datetime
 import email.utils as eut
 from functools import wraps
@@ -172,43 +173,50 @@ class AzureVCRBaseTest(VCRTestCase):
             self.addCleanup(self._assert_cassette_fully_played)
 
     def _assert_cassette_fully_played(self):
-        poller_requests = self._lro_poller_requests()
-        unplayed = [
-            '{0} {1}'.format(r.method, r.uri)
-            for i, r in enumerate(self.cassette.requests)
-            if not self.cassette.play_counts[i] and i not in poller_requests
-        ]
+        poll_paths, final_gets = self._lro_poller_requests()
+        unplayed = []
+        for i, r in enumerate(self.cassette.requests):
+            if self.cassette.play_counts[i]:
+                continue
+            path = urlparse(r.uri).path.lower()
+            if r.method == 'GET' and path in poll_paths:
+                continue
+            # Playback matches a test's own GET of the resource to whichever
+            # recorded GET of that path comes first, which may be the poller's,
+            # so exempt any unplayed GET of the path up to the poller's count.
+            if r.method == 'GET' and final_gets[path]:
+                final_gets[path] -= 1
+                continue
+            unplayed.append('{0} {1}'.format(r.method, r.uri))
         self.assertFalse(unplayed, 'unplayed cassette interactions')
 
     def _lro_poller_requests(self):
-        """Indexes of requests the LRO poller made while the cassette was recorded.
+        """Requests the LRO poller made while the cassette was recorded.
 
         A recording captures whatever the poller did before the test finished,
         but playback disables polling unless the test requires it, so these
-        can never be replayed. They are the GETs of the status URLs the
-        operations' initial responses pointed to, and, once a PUT or PATCH
-        operation's status was polled, the next GET of its resource, which the
-        poller issues for the final result. The request that started each
-        operation must still be played.
+        can never be replayed. Returns the status URL paths the operations'
+        initial responses pointed to, and a count per resource path of the
+        final GETs the poller recorded, each being the next GET of a PUT or
+        PATCH operation's resource once its status was polled. The request
+        that started each operation must still be played.
         """
-        indexes = set()
+        poll_paths, final_gets = set(), Counter()
         if getattr(self, '_requires_polling', False):
-            return indexes
-        poll_paths = set()
+            return poll_paths, final_gets
         # Resource path of each PUT or PATCH operation -> its status paths
         operations = {}
         polled = set()
-        for i, (request, response) in enumerate(self.cassette.data):
+        for request, response in self.cassette.data:
             path = urlparse(request.uri).path.lower()
             if request.method == 'GET':
                 if path in poll_paths:
-                    indexes.add(i)
                     polled.update(
                         resource for resource, status_paths in operations.items()
                         if path in status_paths
                     )
                 elif path in polled:
-                    indexes.add(i)
+                    final_gets[path] += 1
                     polled.discard(path)
                     del operations[path]
                 continue
@@ -220,7 +228,7 @@ class AzureVCRBaseTest(VCRTestCase):
             poll_paths.update(status_paths)
             if status_paths and request.method in ('PUT', 'PATCH'):
                 operations[path] = status_paths
-        return indexes
+        return poll_paths, final_gets
 
     def is_playback(self):
         # You can't do this in setup because it is actually required by the base class

@@ -14,32 +14,32 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "8529"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 87C77A12BEBC4A84945408D4039C64DD Ref B: CH1AA2030814052 Ref C: 2026-10-14T15:32:36Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
                     "x-ms-original-request-ids": [
-                        "b10bbaf6-e763-4e49-9d61-068983624728"
-                    ],
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:36 GMT"
+                        "dee0d68e-b19c-44fa-ac31-213a185950b1"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:03 GMT"
+                    ],
+                    "content-length": [
+                        "8528"
+                    ],
                     "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;897"
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;899"
+                    ],
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: A08C22FDBE694CB1AE6D41786401EB90 Ref B: CH1AA2020620011 Ref C: 2026-10-14T17:00:02Z"
                     ],
                     "cache-control": [
                         "no-cache"
@@ -110,7 +110,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -174,7 +174,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -238,7 +238,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -301,7 +301,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"5\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -313,7 +313,7 @@
                                 },
                                 "properties": {
                                     "hardwareProfile": {
-                                        "vmSize": "Standard_B1ms"
+                                        "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
                                     "vmId": "99c956d6-1c4f-452e-99b2-13f669e3b242",
@@ -365,7 +365,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"7\""
+                                "etag": "\"8\""
                             }
                         ]
                     }
@@ -385,32 +385,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:03 GMT"
+                    ],
                     "content-length": [
                         "2191"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: B56B8486F1D74C88945DD04B86F7DA37 Ref B: CH1AA2020610025 Ref C: 2026-10-14T15:32:37Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23999,Microsoft.Compute/LowCostGetResource;35"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"6\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:37 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: 131C3248A1F24B97A7E42A890CDB5428 Ref B: CHI261140514029 Ref C: 2026-10-14T17:00:03Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23997,Microsoft.Compute/LowCostGetResource;35"
+                    "etag": [
+                        "\"8\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -479,7 +479,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"6\""
+                        "etag": "\"8\""
                     }
                 }
             }
@@ -497,32 +497,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:03 GMT"
+                    ],
                     "content-length": [
                         "2198"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: A604376A24194252B12B37D56B30E172 Ref B: CHI261140512052 Ref C: 2026-10-14T15:32:37Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23998,Microsoft.Compute/LowCostGetResource;35"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"6\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:37 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: A5BFCB78A4A841AB8144DEA9948924EB Ref B: CHI261140506031 Ref C: 2026-10-14T17:00:04Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23996,Microsoft.Compute/LowCostGetResource;35"
+                    "etag": [
+                        "\"8\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -591,7 +591,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"6\""
+                        "etag": "\"8\""
                     }
                 }
             }
@@ -609,32 +609,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:03 GMT"
+                    ],
                     "content-length": [
                         "2180"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 6DFF91728B3E4899815CE9DEA08700EA Ref B: CHI261140504023 Ref C: 2026-10-14T15:32:37Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23997,Microsoft.Compute/LowCostGetResource;35"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"4\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:37 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: C4C6E4D9A11546E4832BAEA9C1CDF8A0 Ref B: CHI261140506031 Ref C: 2026-10-14T17:00:04Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23995,Microsoft.Compute/LowCostGetResource;35"
+                    "etag": [
+                        "\"5\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -702,7 +702,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                         },
-                        "etag": "\"4\""
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -720,32 +720,32 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "8529"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 9C84B0F742B24AC286EEEAD3E9741E7B Ref B: CHI261140502040 Ref C: 2026-10-14T15:32:38Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
                     "x-ms-original-request-ids": [
-                        "ace24054-5c13-48f1-a7c0-7031d11eff61"
-                    ],
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:38 GMT"
+                        "cd5a7f51-1137-49f4-b7a0-670b3266a48c"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:04 GMT"
+                    ],
+                    "content-length": [
+                        "8528"
+                    ],
                     "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;899"
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;898"
+                    ],
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 993D4CCD908D4B10B9ABF8A880827DDE Ref B: CHI261140504062 Ref C: 2026-10-14T17:00:04Z"
                     ],
                     "cache-control": [
                         "no-cache"
@@ -816,7 +816,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -880,7 +880,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -944,7 +944,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"6\""
+                                "etag": "\"8\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -1007,7 +1007,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"5\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -1019,7 +1019,7 @@
                                 },
                                 "properties": {
                                     "hardwareProfile": {
-                                        "vmSize": "Standard_B1ms"
+                                        "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
                                     "vmId": "99c956d6-1c4f-452e-99b2-13f669e3b242",
@@ -1071,7 +1071,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"7\""
+                                "etag": "\"8\""
                             }
                         ]
                     }
@@ -1091,44 +1091,44 @@
                     "message": ""
                 },
                 "headers": {
+                    "azure-asyncoperation": [
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/28c975ef-fbaa-43db-a292-c6bffa0440c0?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275940056794564&c=redacted&s=redacted&h=redacted"
+                    ],
                     "x-ms-ratelimit-remaining-subscription-writes": [
                         "199"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
+                    "etag": [
+                        "\"9\""
+                    ],
                     "cache-control": [
                         "no-cache"
-                    ],
-                    "content-length": [
-                        "2196"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-writes": [
                         "2999"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 3EDC0605D58B484E9FBF73E8A9BB389F Ref B: CH1AA2030813023 Ref C: 2026-10-14T15:32:38Z"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1499,Microsoft.Compute/UpdateVMResource;11"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"7\""
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 5E73CBFD177F44F0A6EB9F5930496B7F Ref B: CHI261140507023 Ref C: 2026-10-14T17:00:05Z"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 15:32:39 GMT"
+                        "Wed, 14 Oct 2026 17:00:05 GMT"
                     ],
                     "azure-asyncnotification": [
                         "Enabled"
                     ],
-                    "azure-asyncoperation": [
-                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b9f1209a-9b8f-4640-95eb-1d21ce0211d2?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887604057302&c=redacted&s=redacted&h=redacted"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1498,Microsoft.Compute/UpdateVMResource;11"
+                    "content-length": [
+                        "2196"
                     ]
                 },
                 "body": {
@@ -1194,16 +1194,16 @@
                             },
                             "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"7\""
+                        "etag": "\"9\""
                     }
                 }
             }
         },
         {
             "request": {
-                "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b9f1209a-9b8f-4640-95eb-1d21ce0211d2?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887604057302&c=redacted&s=redacted&h=redacted",
-                "body": null,
+                "method": "PATCH",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_VM-RESIZE/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s?api-version=2024-11-01",
+                "body": "mock_body",
                 "headers": {}
             },
             "response": {
@@ -1212,14 +1212,26 @@
                     "message": ""
                 },
                 "headers": {
-                    "content-length": [
-                        "134"
+                    "azure-asyncoperation": [
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/74bd5f0d-3a03-4bf2-9b98-0a8e2e2a60fd?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275940063330463&c=redacted&s=redacted&h=redacted"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 17A03CE9B4474DF1B2B493DF8C4C6D99 Ref B: CHI261140511062 Ref C: 2026-10-14T15:32:40Z"
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
+                    ],
+                    "etag": [
+                        "\"9\""
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-writes": [
+                        "2999"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1498,Microsoft.Compute/UpdateVMResource;11"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
@@ -1227,24 +1239,83 @@
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: B2606E4F8C934B17925A17CDFEA65AB1 Ref B: CHI261140509060 Ref C: 2026-10-14T17:00:05Z"
+                    ],
                     "date": [
-                        "Wed, 14 Oct 2026 15:32:40 GMT"
+                        "Wed, 14 Oct 2026 17:00:06 GMT"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "azure-asyncnotification": [
+                        "Enabled"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14998"
-                    ],
-                    "cache-control": [
-                        "no-cache"
+                    "content-length": [
+                        "2191"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-14T15:32:39.0751673+00:00",
-                        "status": "InProgress",
-                        "name": "b9f1209a-9b8f-4640-95eb-1d21ce0211d2"
+                        "name": "cctestvmresize-map-b1s",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/TEST_VM-RESIZE/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s",
+                        "type": "Microsoft.Compute/virtualMachines",
+                        "location": "southcentralus",
+                        "tags": {
+                            "testtag": "testvalue"
+                        },
+                        "properties": {
+                            "hardwareProfile": {
+                                "vmSize": "Standard_B1ms"
+                            },
+                            "provisioningState": "Updating",
+                            "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
+                            "storageProfile": {
+                                "imageReference": {
+                                    "publisher": "Canonical",
+                                    "offer": "0001-com-ubuntu-server-jammy",
+                                    "sku": "22_04-lts-gen2",
+                                    "version": "latest",
+                                    "exactVersion": "22.04.202608060"
+                                },
+                                "osDisk": {
+                                    "osType": "Linux",
+                                    "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
+                                    "createOption": "FromImage",
+                                    "caching": "ReadWrite",
+                                    "managedDisk": {
+                                        "storageAccountType": "Standard_LRS",
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
+                                    },
+                                    "deleteOption": "Delete",
+                                    "diskSizeGB": 30
+                                },
+                                "dataDisks": [],
+                                "diskControllerType": "SCSI"
+                            },
+                            "osProfile": {
+                                "computerName": "cctestvmresize-map-b1s",
+                                "linuxConfiguration": {
+                                    "disablePasswordAuthentication": false,
+                                    "provisionVMAgent": true,
+                                    "patchSettings": {
+                                        "patchMode": "ImageDefault",
+                                        "assessmentMode": "ImageDefault"
+                                    },
+                                    "enableVMAgentPlatformUpdates": true
+                                },
+                                "secrets": [],
+                                "allowExtensionOperations": true,
+                                "requireGuestProvisionSignal": true,
+                                "adminUsername": "testuser"
+                            },
+                            "networkProfile": {
+                                "networkInterfaces": [
+                                    {
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Network/networkInterfaces/cctestvmresize-map-b1s-nic"
+                                    }
+                                ]
+                            },
+                            "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
+                        },
+                        "etag": "\"9\""
                     }
                 }
             }
@@ -1252,7 +1323,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/4c2dcdc0-76d2-4331-ac2e-29d498350e34?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887616703014&c=redacted&s=redacted&h=redacted",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/74bd5f0d-3a03-4bf2-9b98-0a8e2e2a60fd?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275940063330463&c=redacted&s=redacted&h=redacted",
                 "body": null,
                 "headers": {}
             },
@@ -1262,29 +1333,29 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:06 GMT"
+                    ],
                     "content-length": [
                         "134"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: EA476A02399B4AFAB881007CBA25DB8E Ref B: CHI261140513031 Ref C: 2026-10-14T15:32:41Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14994"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:32:41 GMT"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14997"
+                    "x-msedge-ref": [
+                        "Ref A: 0B1EC713CB494E8993CD8697A29ED100 Ref B: CH1AA2020610053 Ref C: 2026-10-14T17:00:06Z"
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1292,9 +1363,9 @@
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-14T15:32:40.8725238+00:00",
+                        "startTime": "2026-10-14T17:00:06.1728535+00:00",
                         "status": "InProgress",
-                        "name": "4c2dcdc0-76d2-4331-ac2e-29d498350e34"
+                        "name": "74bd5f0d-3a03-4bf2-9b98-0a8e2e2a60fd"
                     }
                 }
             }
@@ -1302,7 +1373,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b9f1209a-9b8f-4640-95eb-1d21ce0211d2?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887604057302&c=redacted&s=redacted&h=redacted",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/28c975ef-fbaa-43db-a292-c6bffa0440c0?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275940056794564&c=redacted&s=redacted&h=redacted",
                 "body": null,
                 "headers": {}
             },
@@ -1312,29 +1383,29 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:36 GMT"
+                    ],
                     "content-length": [
                         "184"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 05A461D2656C4195854BE502DABDBDD9 Ref B: CHI261140506031 Ref C: 2026-10-14T15:33:11Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14999"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:11 GMT"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14996"
+                    "x-msedge-ref": [
+                        "Ref A: DD0EC33F69714CBCBAE4064E0D4BD602 Ref B: CHI261140512062 Ref C: 2026-10-14T17:00:36Z"
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1342,10 +1413,10 @@
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-14T15:32:39.0751673+00:00",
-                        "endTime": "2026-10-14T15:33:03.5814401+00:00",
+                        "startTime": "2026-10-14T17:00:05.4863038+00:00",
+                        "endTime": "2026-10-14T17:00:30.5034334+00:00",
                         "status": "Succeeded",
-                        "name": "b9f1209a-9b8f-4640-95eb-1d21ce0211d2"
+                        "name": "28c975ef-fbaa-43db-a292-c6bffa0440c0"
                     }
                 }
             }
@@ -1363,32 +1434,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:36 GMT"
+                    ],
                     "content-length": [
                         "2197"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: E413FDA2F2C944F1B3070DA2BD1EDD0D Ref B: CHI261140512025 Ref C: 2026-10-14T15:33:11Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23999,Microsoft.Compute/LowCostGetResource;31"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"7\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:10 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: 72D182A6A69C42ACA9547D618A5CCD1A Ref B: CHI261140511029 Ref C: 2026-10-14T17:00:36Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23988,Microsoft.Compute/LowCostGetResource;31"
+                    "etag": [
+                        "\"9\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1457,58 +1528,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"7\""
-                    }
-                }
-            }
-        },
-        {
-            "request": {
-                "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/4c2dcdc0-76d2-4331-ac2e-29d498350e34?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887616703014&c=redacted&s=redacted&h=redacted",
-                "body": null,
-                "headers": {}
-            },
-            "response": {
-                "status": {
-                    "code": 200,
-                    "message": ""
-                },
-                "headers": {
-                    "content-length": [
-                        "184"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 328B0CAC3ECA4D49B908257093215455 Ref B: CHI261140508025 Ref C: 2026-10-14T15:33:12Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:12 GMT"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14995"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ]
-                },
-                "body": {
-                    "data": {
-                        "startTime": "2026-10-14T15:32:40.8725238+00:00",
-                        "endTime": "2026-10-14T15:33:04.9685978+00:00",
-                        "status": "Succeeded",
-                        "name": "4c2dcdc0-76d2-4331-ac2e-29d498350e34"
+                        "etag": "\"9\""
                     }
                 }
             }
@@ -1526,32 +1546,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:36 GMT"
+                    ],
                     "content-length": [
                         "2192"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 0E044905D52C4E3D94092FE5F500AA9E Ref B: CHI261140506029 Ref C: 2026-10-14T15:33:12Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23998,Microsoft.Compute/LowCostGetResource;35"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"7\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:12 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: 53250C2A0E934F02AF5B7205F5AE9BB3 Ref B: CHI261140502036 Ref C: 2026-10-14T17:00:37Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23987,Microsoft.Compute/LowCostGetResource;31"
+                    "etag": [
+                        "\"9\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1620,7 +1640,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"7\""
+                        "etag": "\"9\""
                     }
                 }
             }
@@ -1638,32 +1658,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:37 GMT"
+                    ],
                     "content-length": [
                         "2192"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 92DD61912CD143D89D976AC295F3F8ED Ref B: CHI261140514029 Ref C: 2026-10-14T15:33:12Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23997,Microsoft.Compute/LowCostGetResource;34"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"7\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:12 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: B21913B3F0654586895BC5E190E16FDD Ref B: CHI261140507029 Ref C: 2026-10-14T17:00:37Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23986,Microsoft.Compute/LowCostGetResource;30"
+                    "etag": [
+                        "\"9\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1732,7 +1752,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"7\""
+                        "etag": "\"9\""
                     }
                 }
             }
@@ -1750,32 +1770,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:37 GMT"
+                    ],
                     "content-length": [
                         "2197"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 6FE06D79054342288BB86612EF068A6F Ref B: CHI261140511029 Ref C: 2026-10-14T15:33:13Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23996,Microsoft.Compute/LowCostGetResource;30"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"7\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:12 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: 64D0753748B34514903241B84803AA90 Ref B: CH1AA2030813054 Ref C: 2026-10-14T17:00:37Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23985,Microsoft.Compute/LowCostGetResource;30"
+                    "etag": [
+                        "\"9\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1844,7 +1864,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"7\""
+                        "etag": "\"9\""
                     }
                 }
             }
@@ -1862,32 +1882,32 @@
                     "message": ""
                 },
                 "headers": {
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 17:00:37 GMT"
+                    ],
                     "content-length": [
                         "2180"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 8D0684D37737478B80CACDFF9097F709 Ref B: CHI261140502023 Ref C: 2026-10-14T15:33:13Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23995,Microsoft.Compute/LowCostGetResource;34"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "etag": [
-                        "\"4\""
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Wed, 14 Oct 2026 15:33:13 GMT"
+                    "x-msedge-ref": [
+                        "Ref A: 892E08EB48D047AE8231DD40A80EA3FB Ref B: CHI261140511036 Ref C: 2026-10-14T17:00:38Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23984,Microsoft.Compute/LowCostGetResource;34"
+                    "etag": [
+                        "\"5\""
                     ],
                     "cache-control": [
                         "no-cache"
@@ -1955,7 +1975,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                         },
-                        "etag": "\"4\""
+                        "etag": "\"5\""
                     }
                 }
             }
