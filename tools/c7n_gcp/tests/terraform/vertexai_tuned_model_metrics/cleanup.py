@@ -16,6 +16,7 @@ import sys
 import time
 
 import google.auth
+import requests
 from google.auth.transport.requests import AuthorizedSession
 
 LOCATION = "us-central1"
@@ -25,6 +26,10 @@ def delete(session, resource_name, label):
     url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/{resource_name}"
     resp = session.delete(url, timeout=30)
     if resp.ok:
+        # Deletes return a long-running operation. Wait for it so success
+        # means the resource is gone, not that the request was accepted.
+        if not finish_operation(session, resp.json(), f"delete {label} {resource_name}"):
+            return
         print(f"deleted {label}: {resource_name}", file=sys.stderr)
     else:
         print(f"failed to delete {label} {resource_name}: {resp.status_code} {resp.text}",
@@ -43,6 +48,20 @@ def wait_for_operation(session, operation_name, timeout=300, interval=10):
         if time.time() >= deadline:
             raise TimeoutError(f"{operation_name} did not finish within {timeout}s")
         time.sleep(interval)
+
+
+def finish_operation(session, operation, description):
+    """Wait for operation to finish, reporting failure instead of raising."""
+    try:
+        if not operation.get("done"):
+            operation = wait_for_operation(session, operation["name"])
+    except (requests.RequestException, TimeoutError) as e:
+        print(f"failed to {description}: {e}", file=sys.stderr)
+        return False
+    if "error" in operation:
+        print(f"failed to {description}: {operation['error']}", file=sys.stderr)
+        return False
+    return True
 
 
 def undeploy_all_models(session, endpoint):
@@ -65,8 +84,10 @@ def undeploy_all_models(session, endpoint):
             print(f"failed to undeploy model {deployed_model_id} from {endpoint}: "
                   f"{resp.status_code} {resp.text}", file=sys.stderr)
             continue
-        operation = resp.json()["name"]
-        wait_for_operation(session, operation)
+        if not finish_operation(
+                session, resp.json(),
+                f"undeploy model {deployed_model_id} from {endpoint}"):
+            continue
         print(f"undeployed model {deployed_model_id} from {endpoint}", file=sys.stderr)
 
 
@@ -80,7 +101,8 @@ def delete_model(session, model):
         url = f"https://{LOCATION}-aiplatform.googleapis.com/v1/{model}:deleteVersion"
         resp = session.delete(url, timeout=30)
         if resp.ok:
-            print(f"deleted model version: {model}", file=sys.stderr)
+            if finish_operation(session, resp.json(), f"delete model version {model}"):
+                print(f"deleted model version: {model}", file=sys.stderr)
         else:
             print(f"failed to delete model version {model}: "
                   f"{resp.status_code} {resp.text}", file=sys.stderr)

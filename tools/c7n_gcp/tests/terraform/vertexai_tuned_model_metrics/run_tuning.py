@@ -15,6 +15,7 @@ import os
 import pathlib
 import sys
 import time
+import uuid
 
 import google.auth
 import requests
@@ -27,7 +28,6 @@ DEFAULT_BASE_MODEL = "gemini-2.5-flash"
 # (`gcloud storage ls --project $PROJECT`, named cloud-ai-platform-<uuid>)
 # rather than provisioning a new one.
 STAGING_BUCKET = os.environ.get("VERTEX_STAGING_BUCKET")
-TRAINING_DATA_BLOB = "c7n-11097-tuning/training_data.jsonl"
 # Resolved against this file so the script runs from any directory.
 TRAINING_DATA_FILE = pathlib.Path(__file__).parent / "training_data.jsonl"
 
@@ -35,9 +35,11 @@ TRAINING_DATA_FILE = pathlib.Path(__file__).parent / "training_data.jsonl"
 def upload_training_data(project_id):
     client = storage.Client(project=project_id)
     bucket = client.bucket(STAGING_BUCKET)
-    blob = bucket.blob(TRAINING_DATA_BLOB)
+    # A fresh key per run keeps the upload create-only: overwriting an
+    # existing object would also need storage.objects.delete.
+    blob = bucket.blob(f"c7n-11097-tuning/{uuid.uuid4().hex}/training_data.jsonl")
     blob.upload_from_filename(str(TRAINING_DATA_FILE))
-    return f"gs://{STAGING_BUCKET}/{TRAINING_DATA_BLOB}"
+    return f"gs://{STAGING_BUCKET}/{blob.name}"
 
 
 def create_tuning_job(session, project_id, base_model, training_uri):
@@ -76,6 +78,10 @@ def poll_tuning_job(session, job_name, timeout=3600, interval=30):
             resp = session.get(url, timeout=30)
             resp.raise_for_status()
         except requests.RequestException as e:
+            status = getattr(e.response, "status_code", None)
+            # Auth, permission, and not-found errors won't clear on retry.
+            if status is not None and status < 500 and status != 429:
+                raise
             print(f"poll failed, retrying: {e}", file=sys.stderr)
             if time.time() >= deadline:
                 raise
@@ -102,6 +108,8 @@ def main():
 
     credentials, project_id = google.auth.default(
         scopes=["https://www.googleapis.com/auth/cloud-platform"])
+    if not project_id:
+        parser.error("set GOOGLE_CLOUD_PROJECT or configure a default Google Cloud project")
     session = AuthorizedSession(credentials)
 
     training_uri = upload_training_data(project_id)

@@ -35,11 +35,13 @@ different checkout; run `.venv/bin/python` by path instead:
 ```bash
 source .venv/bin/activate
 export PROJECT=<your-gcp-project>
+export GOOGLE_CLOUD_PROJECT="$PROJECT"
 export VERTEX_STAGING_BUCKET=<cloud-ai-platform-uuid bucket in that project>
 ```
 
 Configure application default credentials, then attach a quota project.
-The scripts authenticate through `google.auth.default()`, and without a
+The scripts authenticate through `google.auth.default()`, which takes the
+project from `GOOGLE_CLOUD_PROJECT`, and without a
 quota project the Vertex AI API bills the request to a shared Google
 placeholder project where the service is disabled, returning
 `PERMISSION_DENIED` with `reason: SERVICE_DISABLED`:

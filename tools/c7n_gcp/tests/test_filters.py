@@ -402,6 +402,16 @@ class TestGCPMetricsFilter(BaseTest):
         ]
         self.assertTrue(self._process_resource(metric_filter, points))
 
+    def test_distribution_value_equal_rejects_small_difference_near_zero(self):
+        metric_filter = self._distribution_filter('equal', 0)
+        points = [{"value": {"distributionValue": {"count": "1", "mean": 5e-13}}}]
+        self.assertFalse(self._process_resource(metric_filter, points))
+
+    def test_distribution_value_equal_rejects_small_difference_at_large_value(self):
+        metric_filter = self._distribution_filter('equal', 1e12)
+        points = [{"value": {"distributionValue": {"count": "1", "mean": 1e12 + 0.5}}}]
+        self.assertFalse(self._process_resource(metric_filter, points))
+
     def test_scalar_value_sums_multiple_points(self):
         policy = self.load_policy({
             "name": "test_distribution_value",

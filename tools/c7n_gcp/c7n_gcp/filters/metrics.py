@@ -5,6 +5,7 @@ Monitoring Metrics suppport for resources
 """
 import math
 import operator
+import sys
 from datetime import datetime, timedelta
 
 from c7n.exceptions import PolicyExecutionError
@@ -274,14 +275,19 @@ class GCPMetricsFilter(Filter):
 
     def compare(self, metric_value, metric):
         # count * mean rebuilds a sum from a rounded mean, so it can differ from the
-        # true sum by a few ulps. An exact == or != would then fail on values such as
-        # 3 * 0.1 against 0.3. Counts are integers and stay exact.
+        # true sum by a few ulps per point. An exact == or != would then fail on
+        # values such as 3 * 0.1 against 0.3. The tolerance scales with the number
+        # of points reduced and the magnitude of the terms summed, so cancellation
+        # to zero still matches while materially different readings do not. Counts
+        # are integers and stay exact.
         approximate = (
             metric is not None and self.value_type != 'count' and
             any('distributionValue' in p["value"] for p in metric["points"]))
         if approximate and self.op in (operator.eq, operator.ne):
+            rel_tol = 2 * (len(metric["points"]) + 1) * sys.float_info.epsilon
+            scale = sum(abs(self.get_point_value(p["value"])) for p in metric["points"])
             close = math.isclose(
-                metric_value, self.value, rel_tol=1e-12, abs_tol=1e-12)
+                metric_value, self.value, rel_tol=rel_tol, abs_tol=rel_tol * scale)
             return close if self.op is operator.eq else not close
         return self.op(metric_value, self.value)
 
