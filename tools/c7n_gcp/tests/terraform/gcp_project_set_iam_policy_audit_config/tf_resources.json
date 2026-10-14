@@ -8,37 +8,48 @@
                 "billing_account": "0189B3-1C2257-05D123",
                 "deletion_policy": "PREVENT",
                 "effective_labels": {
-                    "generative-language": "enabled"
+                    "goog-terraform-provisioned": "true"
                 },
                 "folder_id": "",
-                "id": "projects/stacklet-test-policies",
+                "id": "projects/stkl-kody-mullins",
                 "labels": {
-                    "generative-language": "enabled"
+                    "goog-terraform-provisioned": "true"
                 },
-                "name": "stacklet-test-policies",
-                "number": "859150599087",
+                "name": "stkl-kody-mullins",
+                "number": "82151825516",
                 "org_id": "728386023487",
-                "project_id": "stacklet-test-policies",
+                "project_id": "stkl-kody-mullins",
                 "tags": null,
                 "terraform_labels": {
-                    "generative-language": "enabled"
+                    "goog-terraform-provisioned": "true"
                 }
+            }
+        },
+        "google_project_iam_member": {
+            "sa_viewer": {
+                "condition": [],
+                "etag": "BwZd1JiT0cg=",
+                "id": "stkl-kody-mullins/roles/viewer/serviceAccount:c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "member": "serviceAccount:c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "project": "stkl-kody-mullins",
+                "role": "roles/viewer"
             }
         },
         "google_service_account": {
             "sa": {
                 "account_id": "c7n-audit-config-test",
                 "create_ignore_already_exists": null,
+                "deletion_policy": "DELETE",
                 "description": "",
                 "disabled": false,
                 "display_name": "C7N Audit Config Test SA",
-                "email": "c7n-audit-config-test@stacklet-test-policies.iam.gserviceaccount.com",
-                "id": "projects/cloud-custodian/serviceAccounts/c7n-audit-config-test@stacklet-test-policies.iam.gserviceaccount.com",
-                "member": "serviceAccount:c7n-audit-config-test@stacklet-test-policies.iam.gserviceaccount.com",
-                "name": "projects/cloud-custodian/serviceAccounts/c7n-audit-config-test@stacklet-test-policies.iam.gserviceaccount.com",
-                "project": "stacklet-test-policies",
+                "email": "c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "id": "projects/cloud-custodian/serviceAccounts/c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "member": "serviceAccount:c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "name": "projects/cloud-custodian/serviceAccounts/c7n-audit-config-test@stkl-kody-mullins.iam.gserviceaccount.com",
+                "project": "stkl-kody-mullins",
                 "timeouts": null,
-                "unique_id": "111983412695634630948"
+                "unique_id": "117982589010933747015"
             }
         }
     }

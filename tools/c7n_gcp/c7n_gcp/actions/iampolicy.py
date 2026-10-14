@@ -221,8 +221,14 @@ class SetIamPolicy(MethodAction):
         audit_configs_to_set = self._remove_audit_configs(
             audit_configs_to_set, remove_audit_configs)
 
+        changes_bindings = bool(add_bindings or remove_bindings)
+        changes_audit_configs = bool(add_audit_configs or remove_audit_configs)
+
         new_policy = {}
-        if bindings_to_set:
+        # Audit-only updates leave bindings out of both the body and the update mask, so
+        # conditional bindings (which a non-v3 getIamPolicy returns without their
+        # conditions) are never written back.
+        if bindings_to_set and (changes_bindings or not changes_audit_configs):
             new_policy['bindings'] = bindings_to_set
         if audit_configs_to_set:
             new_policy['auditConfigs'] = audit_configs_to_set
@@ -232,8 +238,10 @@ class SetIamPolicy(MethodAction):
             new_policy['version'] = policy['version']
 
         params['body'] = {'policy': new_policy}
-        if add_audit_configs or remove_audit_configs:
-            params['body']['updateMask'] = 'bindings,etag,auditConfigs'
+        if changes_audit_configs:
+            mask = ['bindings', 'etag', 'auditConfigs'] if changes_bindings else [
+                'etag', 'auditConfigs']
+            params['body']['updateMask'] = ','.join(mask)
         return params
 
     def _get_existing_policy(self, model, resource):
@@ -430,7 +438,19 @@ class SetIamPolicy(MethodAction):
         :param existing: list of auditConfig dicts from the current IAM policy
         :param to_remove: list of auditConfig specs from the policy YAML
         """
-        removals = {spec['service']: spec for spec in to_remove}
+        # Accumulate specs per service and log type so repeated entries don't overwrite
+        # each other. An empty member list means "remove the whole log type" and wins
+        # over any member-level removal for the same log type.
+        removals = {}
+        for spec in to_remove:
+            types = removals.setdefault(spec['service'], {})
+            for lc_spec in spec.get('audit-log-configs', []):
+                log_type = lc_spec['log-type']
+                members = lc_spec.get('exempted-members', [])
+                if not members:
+                    types[log_type] = []
+                elif types.get(log_type) != []:
+                    types[log_type] = types.get(log_type, []) + members
         result = []
 
         for entry in existing:
@@ -439,10 +459,7 @@ class SetIamPolicy(MethodAction):
                 result.append(entry)
                 continue
 
-            types_to_remove = {
-                lc_spec['log-type']: lc_spec.get('exempted-members', [])
-                for lc_spec in removals[service].get('audit-log-configs', [])
-            }
+            types_to_remove = removals[service]
 
             filtered_log_configs = []
             for lc in entry.get('auditLogConfigs', []):

@@ -924,6 +924,17 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
                         return set(lc.get('exemptedMembers', []))
         return set()
 
+    def wait_for_policy(client, predicate, attempts=10):
+        # IAM policy writes are eventually consistent. Replay consumes the same
+        # recorded getIamPolicy responses in order, so the loop is deterministic.
+        for _ in range(attempts):
+            current = client.execute_query('getIamPolicy', {'resource': project_id})
+            if predicate(current):
+                break
+            if test.recording:
+                time.sleep(3)
+        return current
+
     factory = test.replay_flight_data(
         'project-set-iam-policy-audit-configs',
         project_id=project_id,
@@ -953,11 +964,11 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
     resources = policy1.run()
     assert len(resources) == 1
 
-    if test.recording:
-        time.sleep(2)
-
     client1 = policy1.resource_manager.get_client()
-    updated1 = client1.execute_query('getIamPolicy', {'resource': project_id})
+    updated1 = wait_for_policy(
+        client1,
+        lambda p: {'DATA_READ', 'DATA_WRITE'} <= audit_log_types(p, 'allServices'),
+    )
     log_types1 = audit_log_types(updated1, 'allServices')
     assert 'DATA_READ' in log_types1
     assert 'DATA_WRITE' in log_types1
@@ -984,11 +995,11 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
     resources = policy2.run()
     assert len(resources) == 1
 
-    if test.recording:
-        time.sleep(2)
-
     client2 = policy2.resource_manager.get_client()
-    updated2 = client2.execute_query('getIamPolicy', {'resource': project_id})
+    updated2 = wait_for_policy(
+        client2,
+        lambda p: 'DATA_WRITE' not in audit_log_types(p, 'allServices'),
+    )
     log_types2 = audit_log_types(updated2, 'allServices')
     assert 'DATA_READ' in log_types2
     assert 'DATA_WRITE' not in log_types2
@@ -1026,11 +1037,13 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
     resources = policy3.run()
     assert len(resources) == 1
 
-    if test.recording:
-        time.sleep(2)
-
     client3 = policy3.resource_manager.get_client()
-    updated3 = client3.execute_query('getIamPolicy', {'resource': project_id})
+    updated3 = wait_for_policy(
+        client3,
+        lambda p: sa_email in exempted_members(p, 'allServices', 'DATA_READ') and any(
+            b['role'] == 'roles/logging.viewer' and sa_email in b['members']
+            for b in p.get('bindings', [])),
+    )
 
     exempted = exempted_members(updated3, 'allServices', 'DATA_READ')
     assert sa_email in exempted
