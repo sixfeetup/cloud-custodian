@@ -423,7 +423,8 @@ class VMResizeTest(BaseTest):
             baselines[vm_name] = vm
         return baselines
 
-    def _run_resize(self, sizes, action):
+    def _run_resize(self, sizes, action, expected):
+        """Run the resize action; expected is {vm_name: requested_size} for VMs it should update."""
         p = self.load_policy({
             'name': 'test-azure-vm-resize',
             'resource': 'azure.vm',
@@ -434,9 +435,11 @@ class VMResizeTest(BaseTest):
             'azure.mgmt.compute.ComputeManagementClient').virtual_machines)
         begin_update = operations.begin_update
         pollers = []
+        requested = {}
 
-        def track_begin_update(client, *args, **kwargs):
-            poller = begin_update(client, *args, **kwargs)
+        def track_begin_update(client, resource_group, vm_name, parameters, *args, **kwargs):
+            requested[vm_name] = parameters.hardware_profile.vm_size
+            poller = begin_update(client, resource_group, vm_name, parameters, *args, **kwargs)
             pollers.append(poller)
             return poller
 
@@ -444,6 +447,9 @@ class VMResizeTest(BaseTest):
             resources = p.run()
         assert {r['name']: r['properties']['hardwareProfile']['vmSize']
                 for r in resources} == sizes
+        # The cassette doesn't record request bodies, so on playback this is
+        # the only check that each update asked for the right size.
+        assert requested == expected
 
         # The action doesn't wait on its resize operations. Wait here so that,
         # while recording, each poller's requests land in this test's cassette
@@ -462,7 +468,8 @@ class VMResizeTest(BaseTest):
     def test_resize(self):
         sizes = {'cctestvmresize-vmsize': 'Standard_B1s'}
         baselines = self._discover_vms(sizes)
-        self._run_resize(sizes, {'type': 'resize', 'vmSize': 'Standard_B1ms'})
+        self._run_resize(sizes, {'type': 'resize', 'vmSize': 'Standard_B1ms'},
+                         {'cctestvmresize-vmsize': 'Standard_B1ms'})
         self._assert_resized(baselines['cctestvmresize-vmsize'], 'Standard_B1ms')
 
     @arm_template('vm-resize.json')
@@ -481,7 +488,10 @@ class VMResizeTest(BaseTest):
             'type-map': {
                 # matched case-insensitively against the current size
                 'standard_b1s': 'Standard_B1ms',
-                'Standard_B1ms': 'Standard_B1s'}})
+                'Standard_B1ms': 'Standard_B1s'}}, {
+            'cctestvmresize-map-b1s': 'Standard_B1ms',
+            'cctestvmresize-map-b1ms': 'Standard_B1s',
+        })
 
         self._assert_resized(baselines['cctestvmresize-map-b1s'], 'Standard_B1ms')
         self._assert_resized(baselines['cctestvmresize-map-b1ms'], 'Standard_B1s')
@@ -498,7 +508,8 @@ class VMResizeTest(BaseTest):
         self._run_resize(sizes, {
             'type': 'resize',
             'type-map': {'Standard_B2s': 'Standard_B1s'},
-            'default': 'Standard_B1ms'})
+            'default': 'Standard_B1ms'},
+            {'cctestvmresize-default': 'Standard_B1ms'})
         self._assert_resized(baselines['cctestvmresize-default'], 'Standard_B1ms')
 
     def test_resize_logs_result_per_vm(self):
