@@ -1568,3 +1568,108 @@ def test_project_set_iam_policy_audit_configs(test, gcp_project_set_iam_policy_a
     bindings3 = {b['role']: b['members'] for b in updated3.get('bindings', [])}
     assert sa_email in bindings3.get('roles/logging.viewer', [])
     assert sa_email in bindings3.get('roles/viewer', [])
+
+
+def audit_log_configs(policy):
+    return {
+        (ac['service'], lc['logType']): set(lc.get('exemptedMembers', []))
+        for ac in policy.get('auditConfigs', []) for lc in ac.get('auditLogConfigs', [])}
+
+
+def wait_for_iam_policy(test, client, project_id, predicate, attempts=10):
+    # IAM policy writes are eventually consistent. Replay consumes the same
+    # recorded getIamPolicy responses in order, so the loop is deterministic.
+    for _ in range(attempts):
+        current = client.execute_query('getIamPolicy', {'resource': project_id})
+        if predicate(current):
+            break
+        if test.recording:
+            time.sleep(3)
+    return current
+
+
+def run_audit_wildcard_policy(test, fixture, flight, action):
+    project_id = fixture.resources['google_project']['project']['project_id']
+    sa_email = 'serviceAccount:' + fixture.resources['google_service_account']['sa']['email']
+    factory = test.replay_flight_data(flight, project_id=project_id)
+    p = test.load_policy({
+        'name': flight,
+        'resource': 'gcp.project',
+        'filters': [
+            {'type': 'value', 'key': 'projectId', 'value': project_id},
+            {'type': 'iam-policy', 'doc': {
+                'key': 'auditConfigs[].auditLogConfigs[].exemptedMembers[]',
+                'value': 'not-null'}},
+        ],
+        'actions': [dict({'type': 'set-iam-policy'}, **action)],
+    }, session_factory=factory)
+
+    assert len(p.run()) == 1
+
+    updated = wait_for_iam_policy(
+        test, p.resource_manager.get_client(), project_id,
+        lambda policy: not any(audit_log_configs(policy).values()))
+    # The audit-only update must leave existing role bindings untouched.
+    bindings = {b['role']: b['members'] for b in updated.get('bindings', [])}
+    assert sa_email in bindings.get('roles/viewer', [])
+    return audit_log_configs(updated)
+
+
+CLEAR_ALL_EXEMPTIONS = [{'service': '*', 'audit-log-configs': [
+    {'log-type': t, 'exempted-members': '*'}
+    for t in ('ADMIN_READ', 'DATA_READ', 'DATA_WRITE')]}]
+
+
+@terraform("gcp_project_iam_audit_wildcard")
+def test_project_set_iam_policy_audit_wildcard_remove(test, gcp_project_iam_audit_wildcard):
+    configs = run_audit_wildcard_policy(
+        test, gcp_project_iam_audit_wildcard, 'project-audit-wildcard-remove',
+        {'remove-audit-configs': CLEAR_ALL_EXEMPTIONS})
+
+    # Exemptions are cleared on every service, but each log type stays enabled.
+    assert configs[('allServices', 'DATA_WRITE')] == set()
+    assert configs[('storage.googleapis.com', 'DATA_READ')] == set()
+    assert not any(configs.values())
+
+
+@terraform("gcp_project_iam_audit_wildcard")
+def test_project_set_iam_policy_audit_wildcard_add_remove(test, gcp_project_iam_audit_wildcard):
+    configs = run_audit_wildcard_policy(
+        test, gcp_project_iam_audit_wildcard, 'project-audit-wildcard-add-remove', {
+            'add-audit-configs': [{'service': 'allServices', 'audit-log-configs': [
+                {'log-type': t} for t in ('ADMIN_READ', 'DATA_READ', 'DATA_WRITE')]}],
+            'remove-audit-configs': CLEAR_ALL_EXEMPTIONS,
+        })
+
+    # One setIamPolicy enables every log type and clears every exemption.
+    for log_type in ('ADMIN_READ', 'DATA_READ', 'DATA_WRITE'):
+        assert configs[('allServices', log_type)] == set()
+    assert configs[('storage.googleapis.com', 'DATA_READ')] == set()
+    assert not any(configs.values())
+
+
+def set_iam_policy_action(test, **data):
+    p = test.load_policy({
+        'name': 'set-iam-policy-audit-configs',
+        'resource': 'gcp.project',
+        'actions': [dict({'type': 'set-iam-policy'}, **data)],
+    }, validate=True)
+    return p.resource_manager.actions[0]
+
+
+@pytest.mark.parametrize('data, match', [
+    ({'add-audit-configs': [
+        {'service': '*', 'audit-log-configs': [{'log-type': 'DATA_READ'}]}]},
+     "add-audit-configs does not support service"),
+    ({'remove-audit-configs': [
+        {'service': '*', 'audit-log-configs': [
+            {'log-type': 'DATA_READ', 'exempted-members': '*'}, {'log-type': 'DATA_WRITE'}]}]},
+     "requires exempted-members"),
+    ({'add-audit-configs': [
+        {'service': 'allServices', 'audit-log-configs': [
+            {'log-type': 'DATA_READ', 'exempted-members': '*'}]}]},
+     None),
+])
+def test_set_iam_policy_audit_configs_wildcard_validation(test, data, match):
+    with pytest.raises(PolicyValidationError, match=match):
+        set_iam_policy_action(test, **data)

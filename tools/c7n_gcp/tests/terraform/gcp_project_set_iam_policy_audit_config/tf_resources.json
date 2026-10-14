@@ -5,7 +5,7 @@
         "google_project": {
             "project": {
                 "auto_create_network": null,
-                "billing_account": "0189B3-1C2257-05D123",
+                "billing_account": "000000-000000-000000",
                 "deletion_policy": "PREVENT",
                 "effective_labels": {
                     "goog-terraform-provisioned": "true"

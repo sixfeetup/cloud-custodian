@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+from c7n.exceptions import PolicyValidationError
 from c7n.utils import local_session, type_schema
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.filters.iampolicy import IamPolicyFilter
@@ -40,6 +41,36 @@ _AUDIT_CONFIG_SCHEMA = {
     },
 }
 
+# Removals also accept exempted-members: '*' to clear every exempted member.
+_REMOVE_AUDIT_LOG_CONFIG_SCHEMA = {
+    **_AUDIT_LOG_CONFIG_SCHEMA,
+    'properties': {
+        **_AUDIT_LOG_CONFIG_SCHEMA['properties'],
+        'exempted-members': {'oneOf': [
+            _AUDIT_LOG_CONFIG_SCHEMA['properties']['exempted-members'],
+            {'enum': ['*']},
+        ]},
+    },
+}
+
+_REMOVE_AUDIT_CONFIG_SCHEMA = {
+    'type': 'array',
+    'minItems': 1,
+    'items': {
+        'type': 'object',
+        'required': ['service', 'audit-log-configs'],
+        'additionalProperties': False,
+        'properties': {
+            'service': {'type': 'string'},
+            'audit-log-configs': {
+                'type': 'array',
+                'minItems': 1,
+                'items': _REMOVE_AUDIT_LOG_CONFIG_SCHEMA,
+            },
+        },
+    },
+}
+
 
 class SetIamPolicy(MethodAction):
     """ Sets IAM policy. Supports both role bindings and auditConfigs (Data Access audit logs).
@@ -69,6 +100,10 @@ class SetIamPolicy(MethodAction):
         their `exemptedMembers`. When removing, if no `exempted-members` are specified the
         entire `log-type` entry is removed; if `exempted-members` are specified only those
         members are pruned. A service entry is dropped entirely when all its log-types are removed.
+        In `remove-audit-configs` only, `exempted-members: '*'` clears every exempted member
+        while keeping the log type enabled, and `service: '*'` applies the entry to every
+        service in the policy. `service: '*'` requires `exempted-members` on each log type, so
+        it can never disable logging.
 
         Note the `resource` field in the examples that could be changed to another resource that
         has both `setIamPolicy` and `getIamPolicy` methods (such as gcp.spanner-database-instance).
@@ -151,6 +186,30 @@ class SetIamPolicy(MethodAction):
                       - service: allServices
                         audit-log-configs:
                           - log-type: DATA_WRITE
+
+        Example clearing every exempted member on every service while keeping logging on:
+
+        .. code-block:: yaml
+
+            policies:
+              - name: remove-data-access-audit-exemptions
+                resource: gcp.project
+                filters:
+                  - type: iam-policy
+                    doc:
+                      key: "auditConfigs[].auditLogConfigs[].exemptedMembers[]"
+                      value: not-null
+                actions:
+                  - type: set-iam-policy
+                    remove-audit-configs:
+                      - service: '*'
+                        audit-log-configs:
+                          - log-type: ADMIN_READ
+                            exempted-members: '*'
+                          - log-type: DATA_READ
+                            exempted-members: '*'
+                          - log-type: DATA_WRITE
+                            exempted-members: '*'
         """
     schema = type_schema('set-iam-policy',
                          **{
@@ -181,10 +240,25 @@ class SetIamPolicy(MethodAction):
                                  ]
                              },
                              'add-audit-configs': _AUDIT_CONFIG_SCHEMA,
-                             'remove-audit-configs': _AUDIT_CONFIG_SCHEMA,
+                             'remove-audit-configs': _REMOVE_AUDIT_CONFIG_SCHEMA,
                          })
     method_spec = {'op': 'setIamPolicy'}
     schema_alias = True
+
+    def validate(self):
+        super().validate()
+        for spec in self.data.get('add-audit-configs', []):
+            if spec['service'] == '*':
+                raise PolicyValidationError(
+                    f"{self.type}: add-audit-configs does not support service '*'")
+        for spec in self.data.get('remove-audit-configs', []):
+            # Dropping whole log types from every service would wipe all audit logging.
+            if spec['service'] == '*' and any(
+                    'exempted-members' not in lc for lc in spec['audit-log-configs']):
+                raise PolicyValidationError(
+                    f"{self.type}: remove-audit-configs with service '*' requires "
+                    "exempted-members on every audit-log-config")
+        return self
 
     def get_resource_params(self, model, resource):
         """
@@ -425,10 +499,12 @@ class SetIamPolicy(MethodAction):
     def _remove_audit_configs(self, existing, to_remove):
         """Prune auditConfig entries from the existing list.
 
-        For each service in `to_remove`:
+        For each service in `to_remove` (`'*'` matches every service in `existing`):
         - If the service is not present in `existing`, it is skipped (no-op).
         - For each log type in the removal spec:
           - If no `exempted-members` are specified, the entire log type entry is removed.
+          - If `exempted-members` is `'*'`, every exempted member is removed; the log type
+            itself is kept.
           - If `exempted-members` are specified, only those members are removed from the
             `exemptedMembers` list; the log type itself is kept (even if exemptedMembers
             becomes empty, the logType remains enabled).
@@ -438,28 +514,24 @@ class SetIamPolicy(MethodAction):
         :param existing: list of auditConfig dicts from the current IAM policy
         :param to_remove: list of auditConfig specs from the policy YAML
         """
-        # Accumulate specs per service and log type so repeated entries don't overwrite
-        # each other. An empty member list means "remove the whole log type" and wins
-        # over any member-level removal for the same log type.
         removals = {}
         for spec in to_remove:
             types = removals.setdefault(spec['service'], {})
             for lc_spec in spec.get('audit-log-configs', []):
-                log_type = lc_spec['log-type']
-                members = lc_spec.get('exempted-members', [])
-                if not members:
-                    types[log_type] = []
-                elif types.get(log_type) != []:
-                    types[log_type] = types.get(log_type, []) + members
+                self._merge_audit_log_removal(
+                    types, lc_spec['log-type'], lc_spec.get('exempted-members', []))
+        wildcard_types = removals.pop('*', {})
         result = []
 
         for entry in existing:
             service = entry['service']
-            if service not in removals:
+            if service not in removals and not wildcard_types:
                 result.append(entry)
                 continue
 
-            types_to_remove = removals[service]
+            types_to_remove = dict(removals.get(service, {}))
+            for log_type, members in wildcard_types.items():
+                self._merge_audit_log_removal(types_to_remove, log_type, members)
 
             filtered_log_configs = []
             for lc in entry.get('auditLogConfigs', []):
@@ -469,6 +541,9 @@ class SetIamPolicy(MethodAction):
                     continue
                 members_to_remove = types_to_remove[log_type]
                 if not members_to_remove:
+                    continue
+                if members_to_remove == '*':
+                    filtered_log_configs.append({'logType': log_type})
                     continue
                 remaining = [m for m in lc.get('exemptedMembers', []) if m not in members_to_remove]
                 pruned = {'logType': log_type}
@@ -480,6 +555,24 @@ class SetIamPolicy(MethodAction):
                 result.append({'service': service, 'auditLogConfigs': filtered_log_configs})
 
         return result
+
+    def _merge_audit_log_removal(self, types, log_type, members):
+        """Accumulate a log-type removal so repeated specs don't overwrite each other.
+
+        An empty member list (remove the whole log type) wins over `'*'`, which wins over
+        an explicit member list.
+
+        :param types: dict of log type to pending removal, updated in place
+        :param log_type: the log type the removal applies to
+        :param members: `[]`, `'*'`, or a list of exempted members to remove
+        """
+        current = types.get(log_type)
+        if current == [] or not members:
+            types[log_type] = []
+        elif current == '*' or members == '*':
+            types[log_type] = '*'
+        else:
+            types[log_type] = (current or []) + members
 
     def _spec_to_log_config(self, spec):
         """Convert a policy YAML log-config spec to a GCP auditLogConfig dict."""
