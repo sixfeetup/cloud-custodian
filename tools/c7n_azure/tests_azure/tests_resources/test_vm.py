@@ -520,15 +520,15 @@ class VMResizeTest(BaseTest):
                 ('vm-mapped', 'Standard_B1s'),
                 ('vm-unmapped', 'Standard_B2s'),
                 ('vm-same-size', 'Standard_B1ms'))]
-        output = self.capture_logging(action.log.name)
 
-        with patch.object(p.resource_manager, 'get_client') as get_client:
+        with patch.object(p.resource_manager, 'get_client') as get_client, \
+                patch.object(action, 'log') as log:
             action._process_resources(resources, None)
 
         begin_update = get_client.return_value.virtual_machines.begin_update
         assert begin_update.call_count == 1
         assert begin_update.call_args.args[:2] == ('rg', 'vm-mapped')
-        assert output.getvalue().splitlines() == [
+        assert [call.args[0] for call in log.info.call_args_list] == [
             "Action 'resize' modified 'vm-mapped' in resource group 'rg'. "
             "resized from Standard_B1s to Standard_B1ms",
             "Action 'resize' modified 'vm-unmapped' in resource group 'rg'. "
