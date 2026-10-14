@@ -1,9 +1,10 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+
 from azure.mgmt.resource.policy.models import PolicyAssignment
 from azure.mgmt.resource import SubscriptionClient
-from azure.mgmt.monitor import MonitorManagementClient
 
 from c7n.actions import BaseAction
 from c7n.exceptions import PolicyValidationError
@@ -13,7 +14,7 @@ from c7n.manager import ResourceManager
 from c7n.utils import local_session, type_schema
 
 from c7n_azure.actions.tagging import Tag, RemoveTag, TagTrim, TagDelayedAction
-from c7n_azure.filters import TagActionFilter
+from c7n_azure.filters import DiagnosticSettingsFilter, TagActionFilter
 from c7n_azure.provider import resources
 from c7n_azure.query import QueryMeta, TypeInfo
 
@@ -149,14 +150,16 @@ class SubscriptionDiagnosticSettingFilter(ValueFilter):
     )
 
     def _get_subscription_diagnostic_settings(self, session, subscription_id):
-        client = MonitorManagementClient(
-            session.get_credentials(),
-            subscription_id=subscription_id
-        )
+        client = session.client('azure.mgmt.resource.ResourceManagementClient')
+        # Not the monitor SDK: azure-mgmt-monitor 7.0 has no subscription diagnostic settings.
+        # Keep the raw response shape (properties nested, camelCase), which policies key on.
+        response = client.resources.get_by_id(
+            f"/subscriptions/{subscription_id}/providers/Microsoft.Insights/diagnosticSettings",
+            DiagnosticSettingsFilter.api_version,
+            cls=lambda pipeline_response, deserialized, headers: json.loads(
+                pipeline_response.http_response.text()))
 
-        query = client.subscription_diagnostic_settings.list(subscription_id)
-
-        settings = query.serialize(True).get('value', [])
+        settings = response.get('value') or []
 
         # put an empty item in when no diag settings so the absent operator can function
         if not settings:
