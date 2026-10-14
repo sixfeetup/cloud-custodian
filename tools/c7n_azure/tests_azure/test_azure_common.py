@@ -158,6 +158,7 @@ class AzureCommonTest(BaseTest):
             'operationsStatus',
             'operationStatuses',
             'operationResults',
+            'locations/southcentralus/operations',
         ):
             with self.subTest(path=path):
                 url = (

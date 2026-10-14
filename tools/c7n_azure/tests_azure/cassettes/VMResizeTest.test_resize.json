@@ -14,35 +14,35 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "8528"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: CAC607387019439F96F9E9374F8FAD24 Ref B: CHI261140505031 Ref C: 2026-10-14T15:31:59Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 2E9586ABEC9D4E38860BE461ACD4A3F4 Ref B: CHI261140513060 Ref C: 2026-10-14T01:14:20Z"
-                    ],
-                    "content-length": [
-                        "8528"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
                     "x-ms-original-request-ids": [
-                        "0c2b1d91-a37a-4afc-9c27-0e4ed1a6ba32"
+                        "a10d1016-a3a6-4904-8d64-66b07c39edc0"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;899"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:20 GMT"
+                        "Wed, 14 Oct 2026 15:31:59 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;899"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
@@ -110,7 +110,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -174,7 +174,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -238,7 +238,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -301,7 +301,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"3\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -365,7 +365,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             }
                         ]
                     }
@@ -385,35 +385,35 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "2191"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 3A45F5CF176747F6AB921D58257B5EEF Ref B: CHI261140501025 Ref C: 2026-10-14T15:32:00Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: D5D3389980D748529C36A27CD73FCB3F Ref B: CHI261140507036 Ref C: 2026-10-14T01:14:21Z"
-                    ],
-                    "content-length": [
-                        "2191"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23999,Microsoft.Compute/LowCostGetResource;35"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "etag": [
-                        "\"4\""
+                        "\"6\""
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:20 GMT"
+                        "Wed, 14 Oct 2026 15:31:59 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23998,Microsoft.Compute/LowCostGetResource;34"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
@@ -479,7 +479,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                         },
-                        "etag": "\"4\""
+                        "etag": "\"6\""
                     }
                 }
             }
@@ -497,35 +497,35 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "8528"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 2765F5F8175B497A85E17A3866E34C07 Ref B: CHI261140512042 Ref C: 2026-10-14T15:32:00Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 5511E732611B4603B8141EA7C98B4076 Ref B: CHI261140504023 Ref C: 2026-10-14T01:14:21Z"
-                    ],
-                    "content-length": [
-                        "8528"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
                     "x-ms-original-request-ids": [
-                        "a8970757-3da1-4e6f-be9e-be0e75d26141"
+                        "02729270-2124-4b97-863c-7fc94f71c6e3"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;898"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:21 GMT"
+                        "Wed, 14 Oct 2026 15:32:00 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;898"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
@@ -593,7 +593,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -657,7 +657,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -721,7 +721,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -784,7 +784,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"3\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -848,7 +848,7 @@
                                     },
                                     "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"4\""
+                                "etag": "\"6\""
                             }
                         ]
                     }
@@ -868,44 +868,44 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-msedge-ref": [
-                        "Ref A: 61BAF51765374DA299EB4C79C034575C Ref B: CH1AA2020610025 Ref C: 2026-10-14T01:14:22Z"
-                    ],
-                    "content-length": [
-                        "2191"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1499,Microsoft.Compute/UpdateVMResource;11"
-                    ],
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-writes": [
-                        "2999"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-writes": [
                         "199"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "azure-asyncnotification": [
-                        "Enabled"
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-length": [
+                        "2191"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-writes": [
+                        "2999"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: C6B1AE9F23324D8C8E914E25C74646B7 Ref B: CHI261140502036 Ref C: 2026-10-14T15:32:01Z"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
+                    ],
                     "etag": [
-                        "\"5\""
+                        "\"7\""
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:22 GMT"
+                        "Wed, 14 Oct 2026 15:32:00 GMT"
                     ],
-                    "cache-control": [
-                        "no-cache"
+                    "azure-asyncnotification": [
+                        "Enabled"
                     ],
                     "azure-asyncoperation": [
-                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b48a8395-a4b5-4a17-9fed-bb6738593140?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372633184410&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=halESsclTqYx7uAsIdn7Q9d0do8sWOkRusa5Xbs4MKT9rgeYiHUYbk-xSoUgSMt75kCxvBR_vBLBopxunjBgNKdajt_s3y-N0aVKTTuz4ym2HuWK9o25QzGKpWHQ-iNKqcYYsiYW7MV0rAXJcTV1e9Z_Mr6mDJaPnEoDAoHm4TUr7cUoo8aV2uOSICuEMMtZEGE29DH7BgJ_9gVVGIL6lRVRQa0g7Yjm3UWeB-eO0BCpP1mROdSCthZcBM7twVjUwXS0glzT8yW-1hYa5scBJpYhceCC_WaoCWF3lU9Dwh9NT7yYr7zaBjFnlKliwJj815Ye8myBQIfS7KsB41Mm8A&h=O5OVzVBT-x9ruakJIJD4eDHnY4hO7zYPQtHSOvAOB38"
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/ed80d23b-ad9b-4ae3-8dbc-d60a4f6fcba3?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887216587266&c=redacted&s=redacted&h=redacted"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1499,Microsoft.Compute/UpdateVMResource;11"
                     ]
                 },
                 "body": {
@@ -971,7 +971,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                         },
-                        "etag": "\"5\""
+                        "etag": "\"7\""
                     }
                 }
             }
@@ -979,7 +979,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b48a8395-a4b5-4a17-9fed-bb6738593140?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372633184410&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=halESsclTqYx7uAsIdn7Q9d0do8sWOkRusa5Xbs4MKT9rgeYiHUYbk-xSoUgSMt75kCxvBR_vBLBopxunjBgNKdajt_s3y-N0aVKTTuz4ym2HuWK9o25QzGKpWHQ-iNKqcYYsiYW7MV0rAXJcTV1e9Z_Mr6mDJaPnEoDAoHm4TUr7cUoo8aV2uOSICuEMMtZEGE29DH7BgJ_9gVVGIL6lRVRQa0g7Yjm3UWeB-eO0BCpP1mROdSCthZcBM7twVjUwXS0glzT8yW-1hYa5scBJpYhceCC_WaoCWF3lU9Dwh9NT7yYr7zaBjFnlKliwJj815Ye8myBQIfS7KsB41Mm8A&h=O5OVzVBT-x9ruakJIJD4eDHnY4hO7zYPQtHSOvAOB38",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/ed80d23b-ad9b-4ae3-8dbc-d60a4f6fcba3?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887216587266&c=redacted&s=redacted&h=redacted",
                 "body": null,
                 "headers": {}
             },
@@ -989,39 +989,39 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: CEB56F732EAE497CAF98EF2E81DA7A40 Ref B: CHI261140512029 Ref C: 2026-10-14T01:14:23Z"
-                    ],
                     "content-length": [
                         "134"
                     ],
-                    "cache-control": [
-                        "no-cache"
+                    "x-msedge-ref": [
+                        "Ref A: A3FFC833E4DA4517897E1B1795C8891C Ref B: CHI261140501034 Ref C: 2026-10-14T15:32:01Z"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14999"
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:23 GMT"
+                        "Wed, 14 Oct 2026 15:32:02 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14995"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-14T01:14:22.3804499+00:00",
+                        "startTime": "2026-10-14T15:32:01.4567267+00:00",
                         "status": "InProgress",
-                        "name": "b48a8395-a4b5-4a17-9fed-bb6738593140"
+                        "name": "ed80d23b-ad9b-4ae3-8dbc-d60a4f6fcba3"
                     }
                 }
             }
@@ -1029,7 +1029,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b48a8395-a4b5-4a17-9fed-bb6738593140?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372633184410&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=halESsclTqYx7uAsIdn7Q9d0do8sWOkRusa5Xbs4MKT9rgeYiHUYbk-xSoUgSMt75kCxvBR_vBLBopxunjBgNKdajt_s3y-N0aVKTTuz4ym2HuWK9o25QzGKpWHQ-iNKqcYYsiYW7MV0rAXJcTV1e9Z_Mr6mDJaPnEoDAoHm4TUr7cUoo8aV2uOSICuEMMtZEGE29DH7BgJ_9gVVGIL6lRVRQa0g7Yjm3UWeB-eO0BCpP1mROdSCthZcBM7twVjUwXS0glzT8yW-1hYa5scBJpYhceCC_WaoCWF3lU9Dwh9NT7yYr7zaBjFnlKliwJj815Ye8myBQIfS7KsB41Mm8A&h=O5OVzVBT-x9ruakJIJD4eDHnY4hO7zYPQtHSOvAOB38",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/ed80d23b-ad9b-4ae3-8dbc-d60a4f6fcba3?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275887216587266&c=redacted&s=redacted&h=redacted",
                 "body": null,
                 "headers": {}
             },
@@ -1039,40 +1039,40 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "184"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 02E69E41F2584043BC3DF644349EF3C6 Ref B: CHI261140507052 Ref C: 2026-10-14T15:32:32Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 9223D0A481BC457F99F882641A1F8F68 Ref B: CHI261140506036 Ref C: 2026-10-14T01:14:54Z"
-                    ],
-                    "content-length": [
-                        "184"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14998"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:53 GMT"
+                        "Wed, 14 Oct 2026 15:32:34 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14999"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-14T01:14:22.3804499+00:00",
-                        "endTime": "2026-10-14T01:14:49.7752665+00:00",
+                        "startTime": "2026-10-14T15:32:01.4567267+00:00",
+                        "endTime": "2026-10-14T15:32:26.8165499+00:00",
                         "status": "Succeeded",
-                        "name": "b48a8395-a4b5-4a17-9fed-bb6738593140"
+                        "name": "ed80d23b-ad9b-4ae3-8dbc-d60a4f6fcba3"
                     }
                 }
             }
@@ -1090,35 +1090,35 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "2192"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: B5D65FEB5C614B4E808754FB5C0DB606 Ref B: CHI261140512062 Ref C: 2026-10-14T15:32:35Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: F92013A179A94719B5C1BAA0BCE37A76 Ref B: CHI261140514040 Ref C: 2026-10-14T01:14:54Z"
-                    ],
-                    "content-length": [
-                        "2192"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23995,Microsoft.Compute/LowCostGetResource;33"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "etag": [
-                        "\"5\""
+                        "\"7\""
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:53 GMT"
+                        "Wed, 14 Oct 2026 15:32:35 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23999,Microsoft.Compute/LowCostGetResource;35"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
@@ -1184,7 +1184,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                         },
-                        "etag": "\"5\""
+                        "etag": "\"7\""
                     }
                 }
             }
@@ -1202,35 +1202,35 @@
                     "message": ""
                 },
                 "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
+                    "content-length": [
+                        "2192"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 81409282004E41E08419BC0CD3220F7F Ref B: CHI261140505025 Ref C: 2026-10-14T15:32:35Z"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 025784A607374501A58C9522AC177498 Ref B: CHI261140508031 Ref C: 2026-10-14T01:14:54Z"
-                    ],
-                    "content-length": [
-                        "2192"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23994,Microsoft.Compute/LowCostGetResource;32"
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
                     ],
                     "etag": [
-                        "\"5\""
+                        "\"7\""
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
                     "date": [
-                        "Wed, 14 Oct 2026 01:14:53 GMT"
+                        "Wed, 14 Oct 2026 15:32:35 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23998,Microsoft.Compute/LowCostGetResource;34"
+                    ],
+                    "cache-control": [
+                        "no-cache"
                     ]
                 },
                 "body": {
@@ -1296,7 +1296,7 @@
                             },
                             "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                         },
-                        "etag": "\"5\""
+                        "etag": "\"7\""
                     }
                 }
             }

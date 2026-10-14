@@ -1,6 +1,5 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from collections import Counter
 import datetime
 import email.utils as eut
 from functools import wraps
@@ -173,43 +172,55 @@ class AzureVCRBaseTest(VCRTestCase):
             self.addCleanup(self._assert_cassette_fully_played)
 
     def _assert_cassette_fully_played(self):
-        poll_paths, final_gets = self._lro_poller_requests()
-        unplayed = []
-        for i, r in enumerate(self.cassette.requests):
-            if self.cassette.play_counts[i]:
-                continue
-            path = urlparse(r.uri).path.lower()
-            if r.method == 'GET' and path in poll_paths:
-                continue
-            if r.method == 'GET' and final_gets[path]:
-                final_gets[path] -= 1
-                continue
-            unplayed.append('{0} {1}'.format(r.method, r.uri))
+        poller_requests = self._lro_poller_requests()
+        unplayed = [
+            '{0} {1}'.format(r.method, r.uri)
+            for i, r in enumerate(self.cassette.requests)
+            if not self.cassette.play_counts[i] and i not in poller_requests
+        ]
         self.assertFalse(unplayed, 'unplayed cassette interactions')
 
     def _lro_poller_requests(self):
-        """Requests the LRO poller made while the cassette was recorded.
+        """Indexes of requests the LRO poller made while the cassette was recorded.
 
         A recording captures whatever the poller did before the test finished,
         but playback disables polling unless the test requires it, so these
-        can never be replayed. Returns the status URL paths the operations'
-        initial responses pointed to, and a count per resource path of the
-        final GET the poller issues after a PUT or PATCH operation completes.
-        The request that started each operation must still be played.
+        can never be replayed. They are the GETs of the status URLs the
+        operations' initial responses pointed to, and, once a PUT or PATCH
+        operation's status was polled, the next GET of its resource, which the
+        poller issues for the final result. The request that started each
+        operation must still be played.
         """
-        poll_paths, final_gets = set(), Counter()
+        indexes = set()
         if getattr(self, '_requires_polling', False):
-            return poll_paths, final_gets
-        for request, response in self.cassette.data:
+            return indexes
+        poll_paths = set()
+        # Resource path of each PUT or PATCH operation -> its status paths
+        operations = {}
+        polled = set()
+        for i, (request, response) in enumerate(self.cassette.data):
+            path = urlparse(request.uri).path.lower()
+            if request.method == 'GET':
+                if path in poll_paths:
+                    indexes.add(i)
+                    polled.update(
+                        resource for resource, status_paths in operations.items()
+                        if path in status_paths
+                    )
+                elif path in polled:
+                    indexes.add(i)
+                    polled.discard(path)
+                    del operations[path]
+                continue
             headers = response.get('headers') or {}
-            async_urls = headers.get('azure-asyncoperation', [])
-            urls = list(async_urls)
+            urls = list(headers.get('azure-asyncoperation', []))
             if response.get('status', {}).get('code') == 202:
                 urls.extend(headers.get('location', []))
-            poll_paths.update(urlparse(url).path.lower() for url in urls)
-            if async_urls and request.method in ('PUT', 'PATCH'):
-                final_gets[urlparse(request.uri).path.lower()] += 1
-        return poll_paths, final_gets
+            status_paths = {urlparse(url).path.lower() for url in urls}
+            poll_paths.update(status_paths)
+            if status_paths and request.method in ('PUT', 'PATCH'):
+                operations[path] = status_paths
+        return indexes
 
     def is_playback(self):
         # You can't do this in setup because it is actually required by the base class
@@ -440,7 +451,7 @@ class AzureVCRBaseTest(VCRTestCase):
         if not any(
             segment in path
             for segment in ('operationsstatus/', 'operationstatuses/',
-                            'operationresults/')
+                            'operationresults/', '/operations/')
         ):
             return value
 
