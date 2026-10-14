@@ -454,12 +454,13 @@ class VmResizeAction(AzureBaseAction):
     schema = type_schema(
         'resize',
         **{
-            'vmSize': {'type': 'string'},
+            'vmSize': {'type': 'string', 'minLength': 1},
             'type-map': {
                 'type': 'object',
-                'additionalProperties': {'type': 'string'}
+                'minProperties': 1,
+                'additionalProperties': {'type': 'string', 'minLength': 1}
             },
-            'default': {'type': 'string'}
+            'default': {'type': 'string', 'minLength': 1}
         })
 
     def validate(self):

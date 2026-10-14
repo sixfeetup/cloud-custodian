@@ -557,6 +557,11 @@ class VMResizeTest(BaseTest):
                 {'type': 'resize', 'vmSize': 'Standard_A2_v2',
                  'type-map': {'Standard_A1_v2': 'Standard_A2_v2'}},
                 {'type': 'resize', 'type-map': {'Standard_A1_v2': 2}},
+                # present but empty: would pass validation and resize nothing
+                {'type': 'resize', 'vmSize': ''},
+                {'type': 'resize', 'default': ''},
+                {'type': 'resize', 'type-map': {}},
+                {'type': 'resize', 'type-map': {'Standard_A1_v2': ''}},
             ):
                 with pytest.raises((PolicyValidationError, ValidationError)):
                     self.load_policy({
