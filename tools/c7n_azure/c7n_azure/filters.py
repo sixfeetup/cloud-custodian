@@ -596,8 +596,9 @@ class DiagnosticSettingsFilter(ValueFilter):
         a category group such as allLogs.
         """
         response = client.resources.get_by_id(
-            f"{scope_id}/providers/Microsoft.Insights/diagnosticSettings",
-            cls.api_version,
+            # Named arguments: azure-mgmt-resource 26 makes api_version keyword-only.
+            resource_id=f"{scope_id}/providers/Microsoft.Insights/diagnosticSettings",
+            api_version=cls.api_version,
             # The response is a list, not one resource, so keep the raw JSON.
             # text(), not json(): older azure-mgmt-resource releases return
             # responses that have no json() method.

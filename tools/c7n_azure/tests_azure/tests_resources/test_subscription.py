@@ -127,8 +127,9 @@ class SubscriptionDiagnosticSettingsFilterTest(BaseTest):
         self.assertEqual(f._get_subscription_diagnostic_settings(session, 'sub-3'), [{}])
         session.client.assert_called_with('azure.mgmt.resource.ResourceManagementClient')
         self.assertEqual(get_by_id.call_args_list, [
-            call(f'/subscriptions/{sub}/providers/Microsoft.Insights/diagnosticSettings',
-                 '2021-05-01-preview', cls=ANY)
+            call(resource_id=f'/subscriptions/{sub}/providers/Microsoft.Insights'
+                             '/diagnosticSettings',
+                 api_version='2021-05-01-preview', cls=ANY)
             for sub in ('sub-1', 'sub-2', 'sub-3')
         ])
 

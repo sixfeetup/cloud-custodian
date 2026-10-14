@@ -228,8 +228,8 @@ class DiagnosticSettingsFilterTest(BaseTest):
         manager.get_client.assert_called_once_with(
             'azure.mgmt.resource.ResourceManagementClient')
         self.assertEqual(get_by_id.call_args_list, [
-            call(r['id'] + '/providers/Microsoft.Insights/diagnosticSettings',
-                 '2021-05-01-preview', cls=ANY)
+            call(resource_id=r['id'] + '/providers/Microsoft.Insights/diagnosticSettings',
+                 api_version='2021-05-01-preview', cls=ANY)
             for r in resources
         ])
 
@@ -351,13 +351,14 @@ class SetDiagnosticSettingsActionTest(BaseTest):
 
         self.assertIsInstance(action, SetDiagnosticSettingsAction)
         get_client.assert_called_with('azure.mgmt.resource.ResourceManagementClient')
+        setting_ids = [r['id'] + '/providers/Microsoft.Insights/diagnosticSettings/c7n-all-logs'
+                       for r in resources]
         self.assertEqual(put.call_args_list, [
-            call(r['id'] + '/providers/Microsoft.Insights/diagnosticSettings/c7n-all-logs',
-                 '2021-05-01-preview', ANY)
-            for r in resources
+            call(resource_id=setting_id, api_version='2021-05-01-preview', parameters=ANY)
+            for setting_id in setting_ids
         ])
         for put_call in put.call_args_list:
-            self.assertEqual(put_call.args[2].properties, {
+            self.assertEqual(put_call.kwargs['parameters'].properties, {
                 'workspaceId': WORKSPACE_ID,
                 'storageAccountId': STORAGE_ID,
                 'eventHubAuthorizationRuleId': EVENTHUB_RULE_ID,
@@ -393,7 +394,7 @@ class SetDiagnosticSettingsActionTest(BaseTest):
             with self.assertRaisesRegex(HttpResponseError, 'Data sink is already used'):
                 action.process(resources)
 
-        self.assertEqual([c.args[0] for c in put.call_args_list], [
+        self.assertEqual([c.kwargs['resource_id'] for c in put.call_args_list], [
             r['id'] + '/providers/Microsoft.Insights/diagnosticSettings/c7n-http-logs'
             for r in resources
         ])
@@ -431,9 +432,10 @@ class SetDiagnosticSettingsActionTest(BaseTest):
         self.assertTrue(resources[0]['name'].startswith('cctestdiagaction'))
 
         client = self.session.client('azure.mgmt.resource.ResourceManagementClient')
+        setting_id = (f"{resources[0]['id']}/providers/Microsoft.Insights"
+                      "/diagnosticSettings/cctest-http-logs")
         setting = client.resources.get_by_id(
-            f"{resources[0]['id']}/providers/Microsoft.Insights/diagnosticSettings/cctest-http-logs",
-            DiagnosticSettingsFilter.api_version).properties
+            resource_id=setting_id, api_version=DiagnosticSettingsFilter.api_version).properties
         self.assertEqual(setting['workspaceId'].lower(), workspace_id.lower())
         # Azure lists every category the app supports; only the requested one is enabled
         self.assertEqual(

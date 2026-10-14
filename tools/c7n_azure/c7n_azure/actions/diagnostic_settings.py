@@ -152,11 +152,12 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
 
         # Not the monitor SDK: 7.0 has no diagnostic settings, and older releases can't
         # send categoryGroup. Write the setting as a generic resource at the filter's
-        # api-version.
+        # api-version. Arguments are named because azure-mgmt-resource 26 reorders them
+        # and makes api_version keyword-only.
         self.client.resources.begin_create_or_update_by_id(
-            setting_id,
-            DiagnosticSettingsFilter.api_version,
-            GenericResource(properties=body),
+            resource_id=setting_id,
+            api_version=DiagnosticSettingsFilter.api_version,
+            parameters=GenericResource(properties=body),
         ).result()
 
         return "Set diagnostic setting '{}'".format(self.data['name'])
