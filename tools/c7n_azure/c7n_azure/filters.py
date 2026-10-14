@@ -575,16 +575,7 @@ class DiagnosticSettingsFilter(ValueFilter):
         client = self.manager.get_client('azure.mgmt.resource.ResourceManagementClient')
         matched = []
         for resource in resources:
-            # Not the monitor SDK: it lists at 2017-05-01-preview, where Azure leaves out
-            # any setting that uses a category group such as allLogs.
-            response = client.resources.get_by_id(
-                f"{resource['id']}/providers/Microsoft.Insights/diagnosticSettings",
-                self.api_version,
-                # text(), not json(): older azure-mgmt-resource releases return
-                # responses that have no json() method.
-                cls=lambda pipeline_response, deserialized, headers: json.loads(
-                    pipeline_response.http_response.text()))
-            settings = [self._normalize(s) for s in response.get('value') or []]
+            settings = [self._normalize(s) for s in self.get_raw_settings(client, resource['id'])]
             # put an empty item in when no diag settings, so the absent operator can function
             if not settings:
                 settings = [{}]
@@ -594,6 +585,25 @@ class DiagnosticSettingsFilter(ValueFilter):
                 matched.append(resource)
 
         return matched
+
+    @classmethod
+    def get_raw_settings(cls, client, scope_id):
+        """List the diagnostic settings on a resource or subscription id, in the shape
+        Azure's REST API returns them: properties nested, camelCase keys.
+
+        Not the monitor SDK: azure-mgmt-monitor 7.0 has no diagnostic settings, and older
+        releases list at 2017-05-01-preview, where Azure leaves out any setting that uses
+        a category group such as allLogs.
+        """
+        response = client.resources.get_by_id(
+            f"{scope_id}/providers/Microsoft.Insights/diagnosticSettings",
+            cls.api_version,
+            # The response is a list, not one resource, so keep the raw JSON.
+            # text(), not json(): older azure-mgmt-resource releases return
+            # responses that have no json() method.
+            cls=lambda pipeline_response, deserialized, headers: json.loads(
+                pipeline_response.http_response.text()))
+        return response.get('value') or []
 
     @classmethod
     def _normalize(cls, setting):

@@ -1,8 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
-import json
-
 from azure.mgmt.resource.policy.models import PolicyAssignment
 from azure.mgmt.resource import SubscriptionClient
 
@@ -151,15 +149,9 @@ class SubscriptionDiagnosticSettingFilter(ValueFilter):
 
     def _get_subscription_diagnostic_settings(self, session, subscription_id):
         client = session.client('azure.mgmt.resource.ResourceManagementClient')
-        # Not the monitor SDK: azure-mgmt-monitor 7.0 has no subscription diagnostic settings.
-        # Keep the raw response shape (properties nested, camelCase), which policies key on.
-        response = client.resources.get_by_id(
-            f"/subscriptions/{subscription_id}/providers/Microsoft.Insights/diagnosticSettings",
-            DiagnosticSettingsFilter.api_version,
-            cls=lambda pipeline_response, deserialized, headers: json.loads(
-                pipeline_response.http_response.text()))
-
-        settings = response.get('value') or []
+        # Kept in the raw shape (properties nested, camelCase), which policies key on.
+        settings = DiagnosticSettingsFilter.get_raw_settings(
+            client, f"/subscriptions/{subscription_id}")
 
         # put an empty item in when no diag settings so the absent operator can function
         if not settings:
