@@ -489,9 +489,10 @@ class VmResizeAction(AzureBaseAction):
         current_size = resource.get(
             'properties', {}).get('hardwareProfile', {}).get('vmSize')
         target_size = self._get_target_size(current_size)
-        if not target_size or (
-                current_size and target_size.lower() == current_size.lower()):
-            return
+        if not target_size:
+            return f'not resized, no target size for {current_size}'
+        if current_size and target_size.lower() == current_size.lower():
+            return f'not resized, already {current_size}'
 
         hardware_profile = HardwareProfile(vm_size=target_size)
 
@@ -500,3 +501,4 @@ class VmResizeAction(AzureBaseAction):
             resource['name'],
             VirtualMachineUpdate(hardware_profile=hardware_profile)
         )
+        return f'resized from {current_size} to {target_size}'

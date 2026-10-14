@@ -501,6 +501,42 @@ class VMResizeTest(BaseTest):
             'default': 'Standard_B1ms'})
         self._assert_resized(baselines['cctestvmresize-default'], 'Standard_B1ms')
 
+    def test_resize_logs_result_per_vm(self):
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-azure-vm-resize',
+                'resource': 'azure.vm',
+                'actions': [{
+                    'type': 'resize',
+                    'type-map': {
+                        'Standard_B1s': 'Standard_B1ms',
+                        'Standard_B1ms': 'standard_b1ms'}}]
+            }, validate=True)
+        action = p.resource_manager.actions[0]
+        resources = [
+            {'name': name, 'resourceGroup': 'rg',
+             'properties': {'hardwareProfile': {'vmSize': size}}}
+            for name, size in (
+                ('vm-mapped', 'Standard_B1s'),
+                ('vm-unmapped', 'Standard_B2s'),
+                ('vm-same-size', 'Standard_B1ms'))]
+        output = self.capture_logging(action.log.name)
+
+        with patch.object(p.resource_manager, 'get_client') as get_client:
+            action._process_resources(resources, None)
+
+        begin_update = get_client.return_value.virtual_machines.begin_update
+        assert begin_update.call_count == 1
+        assert begin_update.call_args.args[:2] == ('rg', 'vm-mapped')
+        assert output.getvalue().splitlines() == [
+            "Action 'resize' modified 'vm-mapped' in resource group 'rg'. "
+            "resized from Standard_B1s to Standard_B1ms",
+            "Action 'resize' modified 'vm-unmapped' in resource group 'rg'. "
+            "not resized, no target size for Standard_B2s",
+            "Action 'resize' modified 'vm-same-size' in resource group 'rg'. "
+            "not resized, already Standard_B1ms",
+        ]
+
     def test_resize_schema_validation(self):
         with self.sign_out_patch():
             for action in (
