@@ -430,12 +430,15 @@ class SetDiagnosticSettingsActionTest(BaseTest):
         self.assertEqual(len(resources), 1)
         self.assertTrue(resources[0]['name'].startswith('cctestdiagaction'))
 
-        client = self.session.client('azure.mgmt.monitor.MonitorManagementClient')
-        setting = client.diagnostic_settings.get(resources[0]['id'], 'cctest-http-logs')
-        self.assertEqual(setting.workspace_id.lower(), workspace_id.lower())
+        client = self.session.client('azure.mgmt.resource.ResourceManagementClient')
+        setting = client.resources.get_by_id(
+            f"{resources[0]['id']}/providers/Microsoft.Insights/diagnosticSettings/cctest-http-logs",
+            DiagnosticSettingsFilter.api_version).properties
+        self.assertEqual(setting['workspaceId'].lower(), workspace_id.lower())
         # Azure lists every category the app supports; only the requested one is enabled
         self.assertEqual(
-            [log.category for log in setting.logs if log.enabled], ['AppServiceHTTPLogs'])
+            [log['category'] for log in setting['logs'] if log['enabled']],
+            ['AppServiceHTTPLogs'])
 
 
 class EntraIDDiagnosticSettingsFilterTest(BaseTest):
