@@ -17,32 +17,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 715ABB9AE7984994A0B3D3D99D4A5A91 Ref B: CHI261140501040 Ref C: 2026-10-07T15:40:00Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:00 GMT"
-                    ],
-                    "x-ms-original-request-ids": [
-                        "170e534c-8c80-4d3b-a1d5-a85cd7c6cd5e"
-                    ],
-                    "content-length": [
-                        "8415"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: C62D2E191431471581C8F82EA7BBA16A Ref B: CHI261140511040 Ref C: 2026-10-14T01:14:55Z"
+                    ],
+                    "content-length": [
+                        "8529"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "05a4d8d1-e64d-4829-a428-c371bedb172c"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;899"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;897"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:55 GMT"
                     ]
                 },
                 "body": {
@@ -61,7 +61,7 @@
                                         "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "220c0b90-f02b-4664-8943-75ebf9c88e0a",
+                                    "vmId": "7572b5ea-f4d0-49a6-a363-cf6784fb2fbe",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -72,12 +72,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-default_disk1_550be36ea6de4668b006610eed4953b8",
+                                            "name": "cctestvmresize-default_disk1_b2fe9e6139ad4749aa470ffeee8b1788",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-default_disk1_550be36ea6de4668b006610eed4953b8"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-default_disk1_b2fe9e6139ad4749aa470ffeee8b1788"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -93,7 +93,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -107,9 +108,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.0814127+00:00"
+                                    "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -124,7 +125,7 @@
                                         "vmSize": "Standard_B1ms"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                                    "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -135,12 +136,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                            "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -156,7 +157,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -170,9 +172,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -187,7 +189,7 @@
                                         "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
+                                    "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -198,12 +200,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
+                                            "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -219,7 +221,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -233,9 +236,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -250,7 +253,7 @@
                                         "vmSize": "Standard_B2s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "6a6c831a-bebd-48d5-965c-e1b7a1434fb9",
+                                    "vmId": "ab3e10a7-6b18-4522-8c47-76283b6cb932",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -261,12 +264,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213",
+                                            "name": "cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -296,9 +299,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1129309+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"3\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -313,7 +316,7 @@
                                         "vmSize": "Standard_B1ms"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "bfe5b386-72a0-4641-bc2c-baf1917ba5bf",
+                                    "vmId": "99c956d6-1c4f-452e-99b2-13f669e3b242",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -324,12 +327,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-vmsize_disk1_a94c3d854e2846689e1ab8838167933b",
+                                            "name": "cctestvmresize-vmsize_OsDisk_1_f70bd18f4b314d8fb2eeaedfb5737318",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-vmsize_disk1_a94c3d854e2846689e1ab8838167933b"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-vmsize_OsDisk_1_f70bd18f4b314d8fb2eeaedfb5737318"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -360,9 +363,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"3\""
+                                "etag": "\"5\""
                             }
                         ]
                     }
@@ -385,32 +388,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 8FFE137E5F4D46FBB2CE8CEB833EBC8F Ref B: CHI261140503025 Ref C: 2026-10-07T15:40:01Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:01 GMT"
-                    ],
-                    "etag": [
-                        "\"2\""
-                    ],
-                    "content-length": [
-                        "2144"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: 1958796335C64C1694551D8CD4076BF2 Ref B: CHI261140504025 Ref C: 2026-10-14T01:14:56Z"
+                    ],
+                    "content-length": [
+                        "2191"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23993,Microsoft.Compute/LowCostGetResource;35"
+                    ],
+                    "etag": [
+                        "\"4\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23995,Microsoft.Compute/LowCostGetResource;35"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:56 GMT"
                     ]
                 },
                 "body": {
@@ -427,7 +430,7 @@
                                 "vmSize": "Standard_B1s"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
+                            "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -438,12 +441,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
+                                    "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -459,7 +462,8 @@
                                     "patchSettings": {
                                         "patchMode": "ImageDefault",
                                         "assessmentMode": "ImageDefault"
-                                    }
+                                    },
+                                    "enableVMAgentPlatformUpdates": true
                                 },
                                 "secrets": [],
                                 "allowExtensionOperations": true,
@@ -473,9 +477,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"2\""
+                        "etag": "\"4\""
                     }
                 }
             }
@@ -496,32 +500,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 8228FFDF76A449B8AFAD272DBBDE52DA Ref B: CHI261140509031 Ref C: 2026-10-07T15:40:01Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:01 GMT"
-                    ],
-                    "etag": [
-                        "\"2\""
-                    ],
-                    "content-length": [
-                        "2157"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: DD8A4C44ED3C4556867AFDA204329291 Ref B: CHI261140506062 Ref C: 2026-10-14T01:14:56Z"
+                    ],
+                    "content-length": [
+                        "2198"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23992,Microsoft.Compute/LowCostGetResource;35"
+                    ],
+                    "etag": [
+                        "\"4\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23994,Microsoft.Compute/LowCostGetResource;35"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:55 GMT"
                     ]
                 },
                 "body": {
@@ -538,7 +542,7 @@
                                 "vmSize": "Standard_B1ms"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                            "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -549,12 +553,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                    "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -570,7 +574,8 @@
                                     "patchSettings": {
                                         "patchMode": "ImageDefault",
                                         "assessmentMode": "ImageDefault"
-                                    }
+                                    },
+                                    "enableVMAgentPlatformUpdates": true
                                 },
                                 "secrets": [],
                                 "allowExtensionOperations": true,
@@ -584,9 +589,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"2\""
+                        "etag": "\"4\""
                     }
                 }
             }
@@ -607,32 +612,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 060359DDCCAC440F9723A564CE3ABFF1 Ref B: CHI261140503034 Ref C: 2026-10-07T15:40:01Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:01 GMT"
-                    ],
-                    "etag": [
-                        "\"2\""
-                    ],
-                    "content-length": [
-                        "2174"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: F56D721AF52F48D1A42D1218C922C963 Ref B: CHI261140509036 Ref C: 2026-10-14T01:14:57Z"
+                    ],
+                    "content-length": [
+                        "2180"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23991,Microsoft.Compute/LowCostGetResource;35"
+                    ],
+                    "etag": [
+                        "\"3\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23993,Microsoft.Compute/LowCostGetResource;35"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:56 GMT"
                     ]
                 },
                 "body": {
@@ -649,7 +654,7 @@
                                 "vmSize": "Standard_B2s"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "6a6c831a-bebd-48d5-965c-e1b7a1434fb9",
+                            "vmId": "ab3e10a7-6b18-4522-8c47-76283b6cb932",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -660,12 +665,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213",
+                                    "name": "cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -695,9 +700,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1129309+00:00"
+                            "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                         },
-                        "etag": "\"2\""
+                        "etag": "\"3\""
                     }
                 }
             }
@@ -718,32 +723,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: CECC222D116445DA915927433503DB59 Ref B: CHI261140513060 Ref C: 2026-10-07T15:40:02Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:02 GMT"
-                    ],
-                    "x-ms-original-request-ids": [
-                        "ec10b71e-f73c-432f-b34f-e5d910800163"
-                    ],
-                    "content-length": [
-                        "8415"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: D5175A3ED4584451A6D1718855B14004 Ref B: CHI261140504023 Ref C: 2026-10-14T01:14:57Z"
+                    ],
+                    "content-length": [
+                        "8529"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-original-request-ids": [
+                        "b18d2593-f238-4f99-94c8-bcf7c763bc56"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;898"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/HighCostGetSubscriptionMaximum;896"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:57 GMT"
                     ]
                 },
                 "body": {
@@ -762,7 +767,7 @@
                                         "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "220c0b90-f02b-4664-8943-75ebf9c88e0a",
+                                    "vmId": "7572b5ea-f4d0-49a6-a363-cf6784fb2fbe",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -773,12 +778,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-default_disk1_550be36ea6de4668b006610eed4953b8",
+                                            "name": "cctestvmresize-default_disk1_b2fe9e6139ad4749aa470ffeee8b1788",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-default_disk1_550be36ea6de4668b006610eed4953b8"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-default_disk1_b2fe9e6139ad4749aa470ffeee8b1788"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -794,7 +799,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -808,9 +814,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.0814127+00:00"
+                                    "timeCreated": "2026-10-14T01:05:11.9802308+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1ms",
@@ -825,7 +831,7 @@
                                         "vmSize": "Standard_B1ms"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                                    "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -836,12 +842,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                            "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -857,7 +863,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -871,9 +878,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-b1s",
@@ -888,7 +895,7 @@
                                         "vmSize": "Standard_B1s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
+                                    "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -899,12 +906,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
+                                            "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -920,7 +927,8 @@
                                             "patchSettings": {
                                                 "patchMode": "ImageDefault",
                                                 "assessmentMode": "ImageDefault"
-                                            }
+                                            },
+                                            "enableVMAgentPlatformUpdates": true
                                         },
                                         "secrets": [],
                                         "allowExtensionOperations": true,
@@ -934,9 +942,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"4\""
                             },
                             {
                                 "name": "cctestvmresize-map-unmapped",
@@ -951,7 +959,7 @@
                                         "vmSize": "Standard_B2s"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "6a6c831a-bebd-48d5-965c-e1b7a1434fb9",
+                                    "vmId": "ab3e10a7-6b18-4522-8c47-76283b6cb932",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -962,12 +970,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213",
+                                            "name": "cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -997,9 +1005,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1129309+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                                 },
-                                "etag": "\"2\""
+                                "etag": "\"3\""
                             },
                             {
                                 "name": "cctestvmresize-vmsize",
@@ -1014,7 +1022,7 @@
                                         "vmSize": "Standard_B1ms"
                                     },
                                     "provisioningState": "Succeeded",
-                                    "vmId": "bfe5b386-72a0-4641-bc2c-baf1917ba5bf",
+                                    "vmId": "99c956d6-1c4f-452e-99b2-13f669e3b242",
                                     "storageProfile": {
                                         "imageReference": {
                                             "publisher": "Canonical",
@@ -1025,12 +1033,12 @@
                                         },
                                         "osDisk": {
                                             "osType": "Linux",
-                                            "name": "cctestvmresize-vmsize_disk1_a94c3d854e2846689e1ab8838167933b",
+                                            "name": "cctestvmresize-vmsize_OsDisk_1_f70bd18f4b314d8fb2eeaedfb5737318",
                                             "createOption": "FromImage",
                                             "caching": "ReadWrite",
                                             "managedDisk": {
                                                 "storageAccountType": "Standard_LRS",
-                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-vmsize_disk1_a94c3d854e2846689e1ab8838167933b"
+                                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-vmsize_OsDisk_1_f70bd18f4b314d8fb2eeaedfb5737318"
                                             },
                                             "deleteOption": "Delete",
                                             "diskSizeGB": 30
@@ -1061,9 +1069,9 @@
                                             }
                                         ]
                                     },
-                                    "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                                    "timeCreated": "2026-10-14T01:05:12.0020458+00:00"
                                 },
-                                "etag": "\"3\""
+                                "etag": "\"5\""
                             }
                         ]
                     }
@@ -1083,44 +1091,44 @@
                     "message": ""
                 },
                 "headers": {
-                    "etag": [
-                        "\"3\""
+                    "x-msedge-ref": [
+                        "Ref A: 278D5C21E784477CBDC5F712C16D0DD0 Ref B: CHI261140511029 Ref C: 2026-10-14T01:14:57Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-writes": [
-                        "199"
+                    "content-length": [
+                        "2196"
                     ],
                     "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1498,Microsoft.Compute/UpdateVMResource;11"
-                    ],
-                    "azure-asyncnotification": [
-                        "Enabled"
+                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1499,Microsoft.Compute/UpdateVMResource;11"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: B2D68FCF8D4C4FF68598A59ACF51983F Ref B: CHI261140504034 Ref C: 2026-10-07T15:40:02Z"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:02 GMT"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-global-writes": [
                         "2999"
                     ],
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "azure-asyncnotification": [
+                        "Enabled"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:58 GMT"
                     ],
                     "cache-control": [
                         "no-cache"
                     ],
                     "azure-asyncoperation": [
-                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/4f2deec3-5467-4a98-8183-f0100bf8664c?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639269844032529201&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=CbKdpd56Pa8NopwqIH-U0bNJQw0nZQa2RwqrmZLh96Nw_H855cUHRsZGCgteG5LbmIbh5HtJ_FA_AM_EA1KhOrx6s7zCjSZKdFqRQYv10cZx4Qxo0HscSg-_gJAZKGaQtRYrc6aZmMNSiKWuExn41nvtmT-Si70SSxTZk2GZWG0cNgnqZnsX5NzmPyFC2QSF7AQl0XPkr1COVKM9fiV5qk-FcN0MtkS8Jg9SCNaLaBvJCXzm5m-qkmYACb02SOysLrfM9OXt77ji7Vued2PAUDO95jyhc9auIU2FcZ-U1T6Df-kNFm-vEf82-QHiEznv0VbCxr69FiWr5KUtmGc4AQ&h=jtErn1hp6FuZMHRnAXvws2SN7c7cgQ93_AXQAgTUJ_A"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "content-length": [
-                        "2202"
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b7c005c1-aa4b-4a4a-be74-beec5072f568?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372983865761&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=L9V-vJFJVVcuL45CYZlELcl-MRIjG-7L3AKSDG-EtbrKpSxA3cCysV5V4c0j_Ho6TLJOZed8ytWA0wypgP8v0h8GHHLWEp40cL8yAqz12MuLvUv5qpZiE5oJfdLI45B-_7q7YqAbxD3nN2OCK2TFubGzbJAUSjNwETDqHFP-mWiez8uyRFTdiqDLYXF65id5VpB3-tXysW3kqN6qUJUYLgqvFNvFMtDSUSO3x43EGZdocQMYUncBLMjfsLfE3lsAHNqhh-ilp5b7khXcKNMqaUt95wC4oYqkgm3Yp73o-6Ht9o3WVepBwz9DLtczvJ-mhzuySBUOFjQokd643Llm2g&h=_m41ARGg2ZchTusrrwAnKztQAstjBZmHV90o_QSLtXE"
                     ]
                 },
                 "body": {
@@ -1137,7 +1145,7 @@
                                 "vmSize": "Standard_B1s"
                             },
                             "provisioningState": "Updating",
-                            "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                            "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -1148,12 +1156,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                    "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -1184,9 +1192,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"3\""
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -1204,44 +1212,44 @@
                     "message": ""
                 },
                 "headers": {
-                    "etag": [
-                        "\"3\""
+                    "x-msedge-ref": [
+                        "Ref A: 3EA0C5701DB64372A2C87EB7C9DB9B16 Ref B: CHI261140512034 Ref C: 2026-10-14T01:14:58Z"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-writes": [
-                        "199"
+                    "content-length": [
+                        "2191"
                     ],
                     "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1497,Microsoft.Compute/UpdateVMResource;11"
-                    ],
-                    "azure-asyncnotification": [
-                        "Enabled"
+                        "Microsoft.Compute/UpdateVMSubscriptionMaximum;1498,Microsoft.Compute/UpdateVMResource;11"
                     ],
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: E23DDF30E20947A0917B74423BF5EA36 Ref B: CH1AA2030814034 Ref C: 2026-10-07T15:40:03Z"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:03 GMT"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-global-writes": [
                         "2999"
                     ],
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "azure-asyncnotification": [
+                        "Enabled"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:58 GMT"
                     ],
                     "cache-control": [
                         "no-cache"
                     ],
                     "azure-asyncoperation": [
-                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b02a73e6-c675-4386-87b1-ab2cb0c2ef24?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639269844042724694&c=MIIIJjCCBw6gAwIBAgIQHh54qhB6GcmO-uKXbkJHYjANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXQ1VTIENBIDAxMB4XDTI2MDkxNjE3NTQyMFoXDTI2MTIxMTIzNTQyMFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDOKeeoQCEB0GwNKfoV90QWgU5AaO1OIS8b6bhCTscTOwRkQJ4VylAcCWBIO4eSSWR7qwJ8YQe2EN_WOz0brT7XGonklIKewf2iaYLpQAjD_zNPvHcVZkOTKOMFQ7XnkxHGTyyPQSE995LM6y5Sw3b4ir4ZcPlbrVNBWn9Esa4axQd9rwGPfGF4He3QfVVDwO_Gm8o8Tiz3Z7QBl2x6i0k0j1nCmrGA_cjORFNdrOGMJEeA7OfBwfr6G3xxpRh8vcDZ-8nZzWZjSEiLmVNS5PKNBKB9VYdh_BdP11aXjeIrHiUEQbHs_VP71ngYI-HBeWyDqHv4EI0ZoyoDVgATl6RJAgMBAAGjggUkMIIFIDCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBRTdIgmiYF0yklRDiF_s5yIJ2ph2DAfBgNVHSMEGDAWgBQU0jfg9tZ9ft2NurplqwSUJeCWHTCCAfsGA1UdHwSCAfIwggHuMHugeaB3hnVodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwfaB7oHmGd2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3RjZW50cmFsdXMvY3Jscy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxLzIxL2N1cnJlbnQuY3JsMGygaqBohmZodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwgYGgf6B9hntodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwggIABggrBgEFBQcBAQSCAfIwggHuMH4GCCsGAQUFBzAChnJodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jYWNlcnRzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvY2VydC5jZXIwgYAGCCsGAQUFBzAChnRodHRwOi8vc2Vjb25kYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0Y2VudHJhbHVzL2NhY2VydHMvY2NtZXdlc3RjZW50cmFsdXNwa2kvY2NtZXdlc3RjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBvBggrBgEFBQcwAoZjaHR0cDovL2NybC5taWNyb3NvZnQuY29tL3dlc3RjZW50cmFsdXMvY2FjZXJ0cy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxL2NlcnQuY2VyMHgGCCsGAQUFBzAChmxodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEwDQYJKoZIhvcNAQELBQADggEBACwosyWkLNvnLOJ8obwQhoXyGKwg5QPg03ev1FBi_5daRnF9Doa6nzPg7nAGRM6QH9nyWzJnLFoxyVi-6XspnSo-_dyA1i1OZPRhWDNQ9UejaUo5t1dHU2VGRWzMBV8aKLz6SCO8MaMA1HV_de0Lui4G-BJKNHiTktJVVuKj94fs1WT37DsuxcVX-tMS_SSyzSxUpsc-TTzzh1LSRZOU3gOGoQS1MjGC1peVcXiBk-3csV078p1UlG3-c8-EYwxen6rC7UjFKRYkgfimaYIgbS0juor591LpZgTGkGa3pSs_j3IZlaT59tzc8wnq1tKRd2QvJLmYJL0gEkuPtCJCatQ&s=j541v8aEv-XS0E-vTRuWYC11VV6Mf76dfQYosLzaFOaI2csalAAlBYBfQ01Kqel3_PuPxTA5EyhHDAn3H68JmYR1nGxKjJAwmXUiPn0UI7en-A_6JsJiMWjVCIfnzzbHc0mcFFxIf2k9fdDbbK-nbTJdeIFNPpZpo9MfeTKBW694QHrT-U4bkCBAk7S2IuheRsJZKakIgdhKPHg3K34354XFubsaCnLjqNt0WJlOuz0fechJGtdU22nsi4UjxyVnLuDzbFs08Y3OORx65KVgVBOr867qSsyiRYWb8fsIT197_EDuILLjy5g_Nc0PQq92mwCJr0DpNeG7ZAy1MizHYQ&h=lLFXPkKNn3tvGsYQONJ90kEiKyHNbWXDryzXweUQz_4"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "content-length": [
-                        "2191"
+                        "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/76a3d2f8-8c80-4fa7-84ef-d8ab662e1a74?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372991113198&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=alOybrwqudBxwjGqDbzBFbF4c6xMpY-2SwMpmLXmFkjc-l98QdyrUf-bRJv0lQKQfu0Sax5V76a_1XE1eY9MJigqV78RzOl3bb_lBn-W8PPpaWICZK-QqeRm9xjqoMEx_01iIrL7BGtNXQQjrRdPjlD9JFXt03tUBq2rkijiUeWLV3DO5WRKuNeDqFlYWenABk9RK-ZOa9ysAt-RUPI0qYXKQM3xSBPulCPt9CpLxdda3mAeS-qkQIeVDYCLAgZyaUZ0JjM9FKHaYo-z_9yA2vdXwyZnmWFesK_QgZaOlzeSB-g7psE3MswXFx_WVQrlnpUnMuwvH4O4NeksykntfA&h=otd45X8KWxN5bwhLkBDmCUJUWVpwxasRe8YJTZlOFPc"
                     ]
                 },
                 "body": {
@@ -1258,7 +1266,7 @@
                                 "vmSize": "Standard_B1ms"
                             },
                             "provisioningState": "Updating",
-                            "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
+                            "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -1269,12 +1277,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
+                                    "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -1305,9 +1313,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"3\""
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -1315,7 +1323,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b02a73e6-c675-4386-87b1-ab2cb0c2ef24?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639269844042724694&c=MIIIJjCCBw6gAwIBAgIQHh54qhB6GcmO-uKXbkJHYjANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXQ1VTIENBIDAxMB4XDTI2MDkxNjE3NTQyMFoXDTI2MTIxMTIzNTQyMFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDOKeeoQCEB0GwNKfoV90QWgU5AaO1OIS8b6bhCTscTOwRkQJ4VylAcCWBIO4eSSWR7qwJ8YQe2EN_WOz0brT7XGonklIKewf2iaYLpQAjD_zNPvHcVZkOTKOMFQ7XnkxHGTyyPQSE995LM6y5Sw3b4ir4ZcPlbrVNBWn9Esa4axQd9rwGPfGF4He3QfVVDwO_Gm8o8Tiz3Z7QBl2x6i0k0j1nCmrGA_cjORFNdrOGMJEeA7OfBwfr6G3xxpRh8vcDZ-8nZzWZjSEiLmVNS5PKNBKB9VYdh_BdP11aXjeIrHiUEQbHs_VP71ngYI-HBeWyDqHv4EI0ZoyoDVgATl6RJAgMBAAGjggUkMIIFIDCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBRTdIgmiYF0yklRDiF_s5yIJ2ph2DAfBgNVHSMEGDAWgBQU0jfg9tZ9ft2NurplqwSUJeCWHTCCAfsGA1UdHwSCAfIwggHuMHugeaB3hnVodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwfaB7oHmGd2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3RjZW50cmFsdXMvY3Jscy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxLzIxL2N1cnJlbnQuY3JsMGygaqBohmZodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwgYGgf6B9hntodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwggIABggrBgEFBQcBAQSCAfIwggHuMH4GCCsGAQUFBzAChnJodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jYWNlcnRzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvY2VydC5jZXIwgYAGCCsGAQUFBzAChnRodHRwOi8vc2Vjb25kYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0Y2VudHJhbHVzL2NhY2VydHMvY2NtZXdlc3RjZW50cmFsdXNwa2kvY2NtZXdlc3RjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBvBggrBgEFBQcwAoZjaHR0cDovL2NybC5taWNyb3NvZnQuY29tL3dlc3RjZW50cmFsdXMvY2FjZXJ0cy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxL2NlcnQuY2VyMHgGCCsGAQUFBzAChmxodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEwDQYJKoZIhvcNAQELBQADggEBACwosyWkLNvnLOJ8obwQhoXyGKwg5QPg03ev1FBi_5daRnF9Doa6nzPg7nAGRM6QH9nyWzJnLFoxyVi-6XspnSo-_dyA1i1OZPRhWDNQ9UejaUo5t1dHU2VGRWzMBV8aKLz6SCO8MaMA1HV_de0Lui4G-BJKNHiTktJVVuKj94fs1WT37DsuxcVX-tMS_SSyzSxUpsc-TTzzh1LSRZOU3gOGoQS1MjGC1peVcXiBk-3csV078p1UlG3-c8-EYwxen6rC7UjFKRYkgfimaYIgbS0juor591LpZgTGkGa3pSs_j3IZlaT59tzc8wnq1tKRd2QvJLmYJL0gEkuPtCJCatQ&s=j541v8aEv-XS0E-vTRuWYC11VV6Mf76dfQYosLzaFOaI2csalAAlBYBfQ01Kqel3_PuPxTA5EyhHDAn3H68JmYR1nGxKjJAwmXUiPn0UI7en-A_6JsJiMWjVCIfnzzbHc0mcFFxIf2k9fdDbbK-nbTJdeIFNPpZpo9MfeTKBW694QHrT-U4bkCBAk7S2IuheRsJZKakIgdhKPHg3K34354XFubsaCnLjqNt0WJlOuz0fechJGtdU22nsi4UjxyVnLuDzbFs08Y3OORx65KVgVBOr867qSsyiRYWb8fsIT197_EDuILLjy5g_Nc0PQq92mwCJr0DpNeG7ZAy1MizHYQ&h=lLFXPkKNn3tvGsYQONJ90kEiKyHNbWXDryzXweUQz_4",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/76a3d2f8-8c80-4fa7-84ef-d8ab662e1a74?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372991113198&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=alOybrwqudBxwjGqDbzBFbF4c6xMpY-2SwMpmLXmFkjc-l98QdyrUf-bRJv0lQKQfu0Sax5V76a_1XE1eY9MJigqV78RzOl3bb_lBn-W8PPpaWICZK-QqeRm9xjqoMEx_01iIrL7BGtNXQQjrRdPjlD9JFXt03tUBq2rkijiUeWLV3DO5WRKuNeDqFlYWenABk9RK-ZOa9ysAt-RUPI0qYXKQM3xSBPulCPt9CpLxdda3mAeS-qkQIeVDYCLAgZyaUZ0JjM9FKHaYo-z_9yA2vdXwyZnmWFesK_QgZaOlzeSB-g7psE3MswXFx_WVQrlnpUnMuwvH4O4NeksykntfA&h=otd45X8KWxN5bwhLkBDmCUJUWVpwxasRe8YJTZlOFPc",
                 "body": null,
                 "headers": {}
             },
@@ -1328,36 +1336,36 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 7F689BD08B8D43208F91C13476C63E8D Ref B: CHI261140506062 Ref C: 2026-10-07T15:40:04Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:04 GMT"
-                    ],
-                    "content-length": [
-                        "134"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: 7308FCA924DC4A73B6990902CB2D466C Ref B: CHI261140507054 Ref C: 2026-10-14T01:14:59Z"
+                    ],
+                    "content-length": [
+                        "133"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14996"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;44,Microsoft.Compute/GetOperationSubscriptionMaximum;14997"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:14:59 GMT"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-07T15:40:03.9482725+00:00",
+                        "startTime": "2026-10-14T01:14:58.881264+00:00",
                         "status": "InProgress",
-                        "name": "b02a73e6-c675-4386-87b1-ab2cb0c2ef24"
+                        "name": "76a3d2f8-8c80-4fa7-84ef-d8ab662e1a74"
                     }
                 }
             }
@@ -1365,7 +1373,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s?api-version=2024-11-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b7c005c1-aa4b-4a4a-be74-beec5072f568?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372983865761&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=L9V-vJFJVVcuL45CYZlELcl-MRIjG-7L3AKSDG-EtbrKpSxA3cCysV5V4c0j_Ho6TLJOZed8ytWA0wypgP8v0h8GHHLWEp40cL8yAqz12MuLvUv5qpZiE5oJfdLI45B-_7q7YqAbxD3nN2OCK2TFubGzbJAUSjNwETDqHFP-mWiez8uyRFTdiqDLYXF65id5VpB3-tXysW3kqN6qUJUYLgqvFNvFMtDSUSO3x43EGZdocQMYUncBLMjfsLfE3lsAHNqhh-ilp5b7khXcKNMqaUt95wC4oYqkgm3Yp73o-6Ht9o3WVepBwz9DLtczvJ-mhzuySBUOFjQokd643Llm2g&h=_m41ARGg2ZchTusrrwAnKztQAstjBZmHV90o_QSLtXE",
                 "body": null,
                 "headers": {}
             },
@@ -1378,149 +1386,37 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: F4DD604C29F3419696DF4051DAF5EE0D Ref B: CH1AA2020620019 Ref C: 2026-10-07T15:40:19Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:19 GMT"
-                    ],
-                    "etag": [
-                        "\"3\""
-                    ],
-                    "content-length": [
-                        "2191"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23984,Microsoft.Compute/LowCostGetResource;31"
-                    ]
-                },
-                "body": {
-                    "data": {
-                        "name": "cctestvmresize-map-b1s",
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s",
-                        "type": "Microsoft.Compute/virtualMachines",
-                        "location": "southcentralus",
-                        "tags": {
-                            "testtag": "testvalue"
-                        },
-                        "properties": {
-                            "hardwareProfile": {
-                                "vmSize": "Standard_B1ms"
-                            },
-                            "provisioningState": "Updating",
-                            "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
-                            "storageProfile": {
-                                "imageReference": {
-                                    "publisher": "Canonical",
-                                    "offer": "0001-com-ubuntu-server-jammy",
-                                    "sku": "22_04-lts-gen2",
-                                    "version": "latest",
-                                    "exactVersion": "22.04.202608060"
-                                },
-                                "osDisk": {
-                                    "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
-                                    "createOption": "FromImage",
-                                    "caching": "ReadWrite",
-                                    "managedDisk": {
-                                        "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
-                                    },
-                                    "deleteOption": "Delete",
-                                    "diskSizeGB": 30
-                                },
-                                "dataDisks": [],
-                                "diskControllerType": "SCSI"
-                            },
-                            "osProfile": {
-                                "computerName": "cctestvmresize-map-b1s",
-                                "linuxConfiguration": {
-                                    "disablePasswordAuthentication": false,
-                                    "provisionVMAgent": true,
-                                    "patchSettings": {
-                                        "patchMode": "ImageDefault",
-                                        "assessmentMode": "ImageDefault"
-                                    },
-                                    "enableVMAgentPlatformUpdates": true
-                                },
-                                "secrets": [],
-                                "allowExtensionOperations": true,
-                                "requireGuestProvisionSignal": true,
-                                "adminUsername": "testuser"
-                            },
-                            "networkProfile": {
-                                "networkInterfaces": [
-                                    {
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Network/networkInterfaces/cctestvmresize-map-b1s-nic"
-                                    }
-                                ]
-                            },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
-                        },
-                        "etag": "\"3\""
-                    }
-                }
-            }
-        },
-        {
-            "request": {
-                "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/4f2deec3-5467-4a98-8183-f0100bf8664c?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639269844032529201&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=CbKdpd56Pa8NopwqIH-U0bNJQw0nZQa2RwqrmZLh96Nw_H855cUHRsZGCgteG5LbmIbh5HtJ_FA_AM_EA1KhOrx6s7zCjSZKdFqRQYv10cZx4Qxo0HscSg-_gJAZKGaQtRYrc6aZmMNSiKWuExn41nvtmT-Si70SSxTZk2GZWG0cNgnqZnsX5NzmPyFC2QSF7AQl0XPkr1COVKM9fiV5qk-FcN0MtkS8Jg9SCNaLaBvJCXzm5m-qkmYACb02SOysLrfM9OXt77ji7Vued2PAUDO95jyhc9auIU2FcZ-U1T6Df-kNFm-vEf82-QHiEznv0VbCxr69FiWr5KUtmGc4AQ&h=jtErn1hp6FuZMHRnAXvws2SN7c7cgQ93_AXQAgTUJ_A",
-                "body": null,
-                "headers": {}
-            },
-            "response": {
-                "status": {
-                    "code": 200,
-                    "message": ""
-                },
-                "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
                     "x-msedge-ref": [
-                        "Ref A: 7BE71AA61BFE4DC6BD333FBC02C37557 Ref B: CHI261140505042 Ref C: 2026-10-07T15:40:33Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:33 GMT"
+                        "Ref A: 0B1AEFF0E17F4E6083C0D4F6F4F7340F Ref B: CHI261140502052 Ref C: 2026-10-14T01:15:28Z"
                     ],
                     "content-length": [
                         "183"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14999"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14996"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:28 GMT"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-07T15:40:03.0437489+00:00",
-                        "endTime": "2026-10-07T15:40:26.212591+00:00",
+                        "startTime": "2026-10-14T01:14:58.1826134+00:00",
+                        "endTime": "2026-10-14T01:15:24.076419+00:00",
                         "status": "Succeeded",
-                        "name": "4f2deec3-5467-4a98-8183-f0100bf8664c"
+                        "name": "b7c005c1-aa4b-4a4a-be74-beec5072f568"
                     }
                 }
             }
@@ -1541,32 +1437,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 46DD1A11FE584671BF4AA16D58314D5C Ref B: CHI261140510042 Ref C: 2026-10-07T15:40:34Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:33 GMT"
-                    ],
-                    "etag": [
-                        "\"3\""
-                    ],
-                    "content-length": [
-                        "2203"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: 63B2A79965114C50A8F04140FE2664BD Ref B: CHI261140508025 Ref C: 2026-10-14T01:15:29Z"
+                    ],
+                    "content-length": [
+                        "2197"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23995,Microsoft.Compute/LowCostGetResource;33"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23980,Microsoft.Compute/LowCostGetResource;30"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:29 GMT"
                     ]
                 },
                 "body": {
@@ -1583,7 +1479,7 @@
                                 "vmSize": "Standard_B1s"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                            "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -1594,12 +1490,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                    "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -1630,9 +1526,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"3\""
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -1640,7 +1536,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/b02a73e6-c675-4386-87b1-ab2cb0c2ef24?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639269844042724694&c=MIIIJjCCBw6gAwIBAgIQHh54qhB6GcmO-uKXbkJHYjANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXQ1VTIENBIDAxMB4XDTI2MDkxNjE3NTQyMFoXDTI2MTIxMTIzNTQyMFowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDOKeeoQCEB0GwNKfoV90QWgU5AaO1OIS8b6bhCTscTOwRkQJ4VylAcCWBIO4eSSWR7qwJ8YQe2EN_WOz0brT7XGonklIKewf2iaYLpQAjD_zNPvHcVZkOTKOMFQ7XnkxHGTyyPQSE995LM6y5Sw3b4ir4ZcPlbrVNBWn9Esa4axQd9rwGPfGF4He3QfVVDwO_Gm8o8Tiz3Z7QBl2x6i0k0j1nCmrGA_cjORFNdrOGMJEeA7OfBwfr6G3xxpRh8vcDZ-8nZzWZjSEiLmVNS5PKNBKB9VYdh_BdP11aXjeIrHiUEQbHs_VP71ngYI-HBeWyDqHv4EI0ZoyoDVgATl6RJAgMBAAGjggUkMIIFIDCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBRTdIgmiYF0yklRDiF_s5yIJ2ph2DAfBgNVHSMEGDAWgBQU0jfg9tZ9ft2NurplqwSUJeCWHTCCAfsGA1UdHwSCAfIwggHuMHugeaB3hnVodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwfaB7oHmGd2h0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3RjZW50cmFsdXMvY3Jscy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxLzIxL2N1cnJlbnQuY3JsMGygaqBohmZodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdGNlbnRyYWx1cy9jcmxzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwgYGgf6B9hntodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvMjEvY3VycmVudC5jcmwwggIABggrBgEFBQcBAQSCAfIwggHuMH4GCCsGAQUFBzAChnJodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdGNlbnRyYWx1cy9jYWNlcnRzL2NjbWV3ZXN0Y2VudHJhbHVzcGtpL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEvY2VydC5jZXIwgYAGCCsGAQUFBzAChnRodHRwOi8vc2Vjb25kYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0Y2VudHJhbHVzL2NhY2VydHMvY2NtZXdlc3RjZW50cmFsdXNwa2kvY2NtZXdlc3RjZW50cmFsdXNpY2EwMS9jZXJ0LmNlcjBvBggrBgEFBQcwAoZjaHR0cDovL2NybC5taWNyb3NvZnQuY29tL3dlc3RjZW50cmFsdXMvY2FjZXJ0cy9jY21ld2VzdGNlbnRyYWx1c3BraS9jY21ld2VzdGNlbnRyYWx1c2ljYTAxL2NlcnQuY2VyMHgGCCsGAQUFBzAChmxodHRwOi8vY2NtZXdlc3RjZW50cmFsdXNwa2kud2VzdGNlbnRyYWx1cy5wa2kuY29yZS53aW5kb3dzLm5ldC9jZXJ0aWZpY2F0ZUF1dGhvcml0aWVzL2NjbWV3ZXN0Y2VudHJhbHVzaWNhMDEwDQYJKoZIhvcNAQELBQADggEBACwosyWkLNvnLOJ8obwQhoXyGKwg5QPg03ev1FBi_5daRnF9Doa6nzPg7nAGRM6QH9nyWzJnLFoxyVi-6XspnSo-_dyA1i1OZPRhWDNQ9UejaUo5t1dHU2VGRWzMBV8aKLz6SCO8MaMA1HV_de0Lui4G-BJKNHiTktJVVuKj94fs1WT37DsuxcVX-tMS_SSyzSxUpsc-TTzzh1LSRZOU3gOGoQS1MjGC1peVcXiBk-3csV078p1UlG3-c8-EYwxen6rC7UjFKRYkgfimaYIgbS0juor591LpZgTGkGa3pSs_j3IZlaT59tzc8wnq1tKRd2QvJLmYJL0gEkuPtCJCatQ&s=j541v8aEv-XS0E-vTRuWYC11VV6Mf76dfQYosLzaFOaI2csalAAlBYBfQ01Kqel3_PuPxTA5EyhHDAn3H68JmYR1nGxKjJAwmXUiPn0UI7en-A_6JsJiMWjVCIfnzzbHc0mcFFxIf2k9fdDbbK-nbTJdeIFNPpZpo9MfeTKBW694QHrT-U4bkCBAk7S2IuheRsJZKakIgdhKPHg3K34354XFubsaCnLjqNt0WJlOuz0fechJGtdU22nsi4UjxyVnLuDzbFs08Y3OORx65KVgVBOr867qSsyiRYWb8fsIT197_EDuILLjy5g_Nc0PQq92mwCJr0DpNeG7ZAy1MizHYQ&h=lLFXPkKNn3tvGsYQONJ90kEiKyHNbWXDryzXweUQz_4",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.Compute/locations/southcentralus/operations/76a3d2f8-8c80-4fa7-84ef-d8ab662e1a74?p=61484f5e-bd98-4b59-8e50-ecdab74043fd&api-version=2024-11-01&t=639275372991113198&c=MIIHlDCCBnygAwIBAgIQEWqq0LXHm9_RoSQk3rtLtzANBgkqhkiG9w0BAQsFADA2MTQwMgYDVQQDEytDQ01FIEcxIFRMUyBSU0EgMjA0OCBTSEEyNTYgMjA0OSBXVVMyIENBIDAxMB4XDTI2MDkyMzA2MDIzOVoXDTI2MTIxODEyMDIzOVowQDE-MDwGA1UEAxM1YXN5bmNvcGVyYXRpb25zaWduaW5nY2VydGlmaWNhdGUubWFuYWdlbWVudC5henVyZS5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTL3s1G4HRJxCxQWgaa1QhZF9rCHBTzLl8phyc14DtHqFD1UEEvU8TdKIkn63TfPvm-CD5nDTQJhmqP3TQ4a1zbeIZvN26UwO-f2zs8v284_6vqmQYpp074W-XCE3yUu6xZi0c2RjrWXRE0C83U9RwiZBkm4sAg6EaNrBTlMtlbtByJMhA9KOAfS_ME_eoDeS2P_o__hD4yg538D4itpA1Yp3-XcF3vu3MgpyPUf4o8rU8J3Y9-jIPfdgYdhE-QPuKdwKQu0Aov3aNNHzv_aJivc4z22sXdAC9MeLP59Q0e1QaF_moRqk0Sr9AyE7J1ohMafagWSkQ-fj_5H83r6J9AgMBAAGjggSSMIIEjjCBnQYDVR0gBIGVMIGSMAwGCisGAQQBgjd7AQEwZgYKKwYBBAGCN3sCAjBYMFYGCCsGAQUFBwICMEoeSAAzADMAZQAwADEAOQAyADEALQA0AGQANgA0AC0ANABmADgAYwAtAGEAMAA1ADUALQA1AGIAZABhAGYAZgBkADUAZQAzADMAZDAMBgorBgEEAYI3ewMCMAwGCisGAQQBgjd7BAIwDAYDVR0TAQH_BAIwADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDgYDVR0PAQH_BAQDAgWgMB0GA1UdDgQWBBTI83RcASQN5gnS06-jdiNGf7b_JDAfBgNVHSMEGDAWgBSs43L6A7Jznj2VyO-HW67dG6HtaDCCAbIGA1UdHwSCAakwggGlMGmgZ6BlhmNodHRwOi8vcHJpbWFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwa6BpoGeGZWh0dHA6Ly9zZWNvbmRhcnktY2RuLnBraS5jb3JlLndpbmRvd3MubmV0L3dlc3R1czIvY3Jscy9jY21ld2VzdHVzMnBraS9jY21ld2VzdHVzMmljYTAxLzk3L2N1cnJlbnQuY3JsMFqgWKBWhlRodHRwOi8vY3JsLm1pY3Jvc29mdC5jb20vd2VzdHVzMi9jcmxzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvOTcvY3VycmVudC5jcmwwb6BtoGuGaWh0dHA6Ly9jY21ld2VzdHVzMnBraS53ZXN0dXMyLnBraS5jb3JlLndpbmRvd3MubmV0L2NlcnRpZmljYXRlQXV0aG9yaXRpZXMvY2NtZXdlc3R1czJpY2EwMS85Ny9jdXJyZW50LmNybDCCAbcGCCsGAQUFBwEBBIIBqTCCAaUwbAYIKwYBBQUHMAKGYGh0dHA6Ly9wcmltYXJ5LWNkbi5wa2kuY29yZS53aW5kb3dzLm5ldC93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBuBggrBgEFBQcwAoZiaHR0cDovL3NlY29uZGFyeS1jZG4ucGtpLmNvcmUud2luZG93cy5uZXQvd2VzdHVzMi9jYWNlcnRzL2NjbWV3ZXN0dXMycGtpL2NjbWV3ZXN0dXMyaWNhMDEvY2VydC5jZXIwXQYIKwYBBQUHMAKGUWh0dHA6Ly9jcmwubWljcm9zb2Z0LmNvbS93ZXN0dXMyL2NhY2VydHMvY2NtZXdlc3R1czJwa2kvY2NtZXdlc3R1czJpY2EwMS9jZXJ0LmNlcjBmBggrBgEFBQcwAoZaaHR0cDovL2NjbWV3ZXN0dXMycGtpLndlc3R1czIucGtpLmNvcmUud2luZG93cy5uZXQvY2VydGlmaWNhdGVBdXRob3JpdGllcy9jY21ld2VzdHVzMmljYTAxMA0GCSqGSIb3DQEBCwUAA4IBAQBtlTS-mdvGIKziCDp4X9OVPqRLuoH48ib0L8ZVUxxNXw-O3sl-lio6Y7V0Xqv47B1Ru94KfFJZpXsF6u0Gk7IcfpKl2PltvEAmAKSdpsOElmGW0MeH-AsmLU-uRKqaIGsDrnsyJuLqtILSJ_GCMnG1VbnaqOJFmoBMj7f_unbCkVhb6MmyJC4sd_klisVbuUnjtp_Cgp2Wc_HeRKPemyn8alnsmHVOO0NHWIR41o6dNQCt7LJ5nM5rQd2Fww6uP0eqn3jQiNE0nl_zOqY8Me96xb0gWGe9D4aRXyAG_j-B4_gTga7SVfy92csbUhBWi9huq3gKSoRRpuS_4dQqvDVj&s=alOybrwqudBxwjGqDbzBFbF4c6xMpY-2SwMpmLXmFkjc-l98QdyrUf-bRJv0lQKQfu0Sax5V76a_1XE1eY9MJigqV78RzOl3bb_lBn-W8PPpaWICZK-QqeRm9xjqoMEx_01iIrL7BGtNXQQjrRdPjlD9JFXt03tUBq2rkijiUeWLV3DO5WRKuNeDqFlYWenABk9RK-ZOa9ysAt-RUPI0qYXKQM3xSBPulCPt9CpLxdda3mAeS-qkQIeVDYCLAgZyaUZ0JjM9FKHaYo-z_9yA2vdXwyZnmWFesK_QgZaOlzeSB-g7psE3MswXFx_WVQrlnpUnMuwvH4O4NeksykntfA&h=otd45X8KWxN5bwhLkBDmCUJUWVpwxasRe8YJTZlOFPc",
                 "body": null,
                 "headers": {}
             },
@@ -1653,149 +1549,37 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 76C68B31E9CF4112B29E1A3B324952E0 Ref B: CHI261140503042 Ref C: 2026-10-07T15:40:34Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:34 GMT"
-                    ],
-                    "content-length": [
-                        "184"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: A9BFE2EA7DF044BC86BF97348147C56E Ref B: CHI261140504025 Ref C: 2026-10-14T01:15:29Z"
+                    ],
+                    "content-length": [
+                        "183"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14998"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/GetOperationResource;43,Microsoft.Compute/GetOperationSubscriptionMaximum;14995"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:30 GMT"
                     ]
                 },
                 "body": {
                     "data": {
-                        "startTime": "2026-10-07T15:40:03.9482725+00:00",
-                        "endTime": "2026-10-07T15:40:30.1665143+00:00",
+                        "startTime": "2026-10-14T01:14:58.881264+00:00",
+                        "endTime": "2026-10-14T01:15:25.5914181+00:00",
                         "status": "Succeeded",
-                        "name": "b02a73e6-c675-4386-87b1-ab2cb0c2ef24"
-                    }
-                }
-            }
-        },
-        {
-            "request": {
-                "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s?api-version=2024-11-01",
-                "body": null,
-                "headers": {}
-            },
-            "response": {
-                "status": {
-                    "code": 200,
-                    "message": ""
-                },
-                "headers": {
-                    "x-ms-need-to-refresh-epl-cache": [
-                        "False"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 3DEF8B216E4647CDA488256A3AD1CE2C Ref B: CHI261140512054 Ref C: 2026-10-07T15:40:35Z"
-                    ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:34 GMT"
-                    ],
-                    "etag": [
-                        "\"3\""
-                    ],
-                    "content-length": [
-                        "2192"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23979,Microsoft.Compute/LowCostGetResource;34"
-                    ]
-                },
-                "body": {
-                    "data": {
-                        "name": "cctestvmresize-map-b1s",
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s",
-                        "type": "Microsoft.Compute/virtualMachines",
-                        "location": "southcentralus",
-                        "tags": {
-                            "testtag": "testvalue"
-                        },
-                        "properties": {
-                            "hardwareProfile": {
-                                "vmSize": "Standard_B1ms"
-                            },
-                            "provisioningState": "Succeeded",
-                            "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
-                            "storageProfile": {
-                                "imageReference": {
-                                    "publisher": "Canonical",
-                                    "offer": "0001-com-ubuntu-server-jammy",
-                                    "sku": "22_04-lts-gen2",
-                                    "version": "latest",
-                                    "exactVersion": "22.04.202608060"
-                                },
-                                "osDisk": {
-                                    "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
-                                    "createOption": "FromImage",
-                                    "caching": "ReadWrite",
-                                    "managedDisk": {
-                                        "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
-                                    },
-                                    "deleteOption": "Delete",
-                                    "diskSizeGB": 30
-                                },
-                                "dataDisks": [],
-                                "diskControllerType": "SCSI"
-                            },
-                            "osProfile": {
-                                "computerName": "cctestvmresize-map-b1s",
-                                "linuxConfiguration": {
-                                    "disablePasswordAuthentication": false,
-                                    "provisionVMAgent": true,
-                                    "patchSettings": {
-                                        "patchMode": "ImageDefault",
-                                        "assessmentMode": "ImageDefault"
-                                    },
-                                    "enableVMAgentPlatformUpdates": true
-                                },
-                                "secrets": [],
-                                "allowExtensionOperations": true,
-                                "requireGuestProvisionSignal": true,
-                                "adminUsername": "testuser"
-                            },
-                            "networkProfile": {
-                                "networkInterfaces": [
-                                    {
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Network/networkInterfaces/cctestvmresize-map-b1s-nic"
-                                    }
-                                ]
-                            },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
-                        },
-                        "etag": "\"3\""
+                        "name": "76a3d2f8-8c80-4fa7-84ef-d8ab662e1a74"
                     }
                 }
             }
@@ -1816,32 +1600,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 6AA046393EE1475998CFA2CDEC7A511D Ref B: CHI261140502040 Ref C: 2026-10-07T15:40:35Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:35 GMT"
-                    ],
-                    "etag": [
-                        "\"3\""
-                    ],
-                    "content-length": [
-                        "2192"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: 458083BEBE9845B5A03374CC341E8B3A Ref B: CH1AA2020617035 Ref C: 2026-10-14T01:15:30Z"
+                    ],
+                    "content-length": [
+                        "2192"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23994,Microsoft.Compute/LowCostGetResource;33"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23978,Microsoft.Compute/LowCostGetResource;33"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:30 GMT"
                     ]
                 },
                 "body": {
@@ -1858,7 +1642,7 @@
                                 "vmSize": "Standard_B1ms"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "33d7c6d7-f3e4-4835-a301-fcd6ea4e932d",
+                            "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -1869,12 +1653,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a",
+                                    "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_09eee52dc05d4818ae0eb6cac37cd42a"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -1905,9 +1689,121 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
                         },
-                        "etag": "\"3\""
+                        "etag": "\"5\""
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s?api-version=2024-11-01",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": ""
+                },
+                "headers": {
+                    "x-ms-need-to-refresh-epl-cache": [
+                        "False"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 721AD87F1F054AFDA766E122B91F4D8F Ref B: CHI261140506023 Ref C: 2026-10-14T01:15:31Z"
+                    ],
+                    "content-length": [
+                        "2192"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23993,Microsoft.Compute/LowCostGetResource;32"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:31 GMT"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "name": "cctestvmresize-map-b1s",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/virtualMachines/cctestvmresize-map-b1s",
+                        "type": "Microsoft.Compute/virtualMachines",
+                        "location": "southcentralus",
+                        "tags": {
+                            "testtag": "testvalue"
+                        },
+                        "properties": {
+                            "hardwareProfile": {
+                                "vmSize": "Standard_B1ms"
+                            },
+                            "provisioningState": "Succeeded",
+                            "vmId": "cb6e2a97-53e4-40ff-9e72-c46377f19315",
+                            "storageProfile": {
+                                "imageReference": {
+                                    "publisher": "Canonical",
+                                    "offer": "0001-com-ubuntu-server-jammy",
+                                    "sku": "22_04-lts-gen2",
+                                    "version": "latest",
+                                    "exactVersion": "22.04.202608060"
+                                },
+                                "osDisk": {
+                                    "osType": "Linux",
+                                    "name": "cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f",
+                                    "createOption": "FromImage",
+                                    "caching": "ReadWrite",
+                                    "managedDisk": {
+                                        "storageAccountType": "Standard_LRS",
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1s_disk1_e1fe4673e38a48b289fa3c4e9d3cb12f"
+                                    },
+                                    "deleteOption": "Delete",
+                                    "diskSizeGB": 30
+                                },
+                                "dataDisks": [],
+                                "diskControllerType": "SCSI"
+                            },
+                            "osProfile": {
+                                "computerName": "cctestvmresize-map-b1s",
+                                "linuxConfiguration": {
+                                    "disablePasswordAuthentication": false,
+                                    "provisionVMAgent": true,
+                                    "patchSettings": {
+                                        "patchMode": "ImageDefault",
+                                        "assessmentMode": "ImageDefault"
+                                    },
+                                    "enableVMAgentPlatformUpdates": true
+                                },
+                                "secrets": [],
+                                "allowExtensionOperations": true,
+                                "requireGuestProvisionSignal": true,
+                                "adminUsername": "testuser"
+                            },
+                            "networkProfile": {
+                                "networkInterfaces": [
+                                    {
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Network/networkInterfaces/cctestvmresize-map-b1s-nic"
+                                    }
+                                ]
+                            },
+                            "timeCreated": "2026-10-14T01:05:12.0123878+00:00"
+                        },
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -1928,32 +1824,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 21B9ADF9713B40C9B7F778300E6A9F96 Ref B: CHI261140514040 Ref C: 2026-10-07T15:40:35Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:35 GMT"
-                    ],
-                    "etag": [
-                        "\"3\""
-                    ],
-                    "content-length": [
-                        "2203"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: 2C0CAAA9DEDF418AB9E3F39847D59A35 Ref B: CHI261140512025 Ref C: 2026-10-14T01:15:31Z"
+                    ],
+                    "content-length": [
+                        "2197"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23992,Microsoft.Compute/LowCostGetResource;32"
+                    ],
+                    "etag": [
+                        "\"5\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23977,Microsoft.Compute/LowCostGetResource;29"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:30 GMT"
                     ]
                 },
                 "body": {
@@ -1970,7 +1866,7 @@
                                 "vmSize": "Standard_B1s"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "3825d3aa-d56e-4435-9f6f-3950dd7b036c",
+                            "vmId": "95f0706a-91ba-4eef-a179-29d6724d7f5f",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -1981,12 +1877,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72",
+                                    "name": "cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_OsDisk_1_51a344f2a0e0498497568d3486821d72"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-b1ms_disk1_be27e6f9e3e543939b8443380fb7c2b5"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -2017,9 +1913,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1076254+00:00"
+                            "timeCreated": "2026-10-14T01:05:11.9916035+00:00"
                         },
-                        "etag": "\"3\""
+                        "etag": "\"5\""
                     }
                 }
             }
@@ -2040,32 +1936,32 @@
                     "x-ms-need-to-refresh-epl-cache": [
                         "False"
                     ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 91F1B0E3DD4F4BF68798461B8B172613 Ref B: CH1AA2030814023 Ref C: 2026-10-07T15:40:35Z"
-                    ],
                     "content-type": [
                         "application/json; charset=utf-8"
-                    ],
-                    "date": [
-                        "Wed, 07 Oct 2026 15:40:35 GMT"
-                    ],
-                    "etag": [
-                        "\"2\""
-                    ],
-                    "content-length": [
-                        "2174"
                     ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
+                    "x-msedge-ref": [
+                        "Ref A: E363AD213E2B4F2ABC2F8A938C48D217 Ref B: CHI261140508023 Ref C: 2026-10-14T01:15:31Z"
+                    ],
+                    "content-length": [
+                        "2180"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-ms-ratelimit-remaining-resource": [
+                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23991,Microsoft.Compute/LowCostGetResource;34"
+                    ],
+                    "etag": [
+                        "\"3\""
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "x-ms-ratelimit-remaining-resource": [
-                        "Microsoft.Compute/LowCostGetSubscriptionMaximum;23976,Microsoft.Compute/LowCostGetResource;35"
+                    "date": [
+                        "Wed, 14 Oct 2026 01:15:31 GMT"
                     ]
                 },
                 "body": {
@@ -2082,7 +1978,7 @@
                                 "vmSize": "Standard_B2s"
                             },
                             "provisioningState": "Succeeded",
-                            "vmId": "6a6c831a-bebd-48d5-965c-e1b7a1434fb9",
+                            "vmId": "ab3e10a7-6b18-4522-8c47-76283b6cb932",
                             "storageProfile": {
                                 "imageReference": {
                                     "publisher": "Canonical",
@@ -2093,12 +1989,12 @@
                                 },
                                 "osDisk": {
                                     "osType": "Linux",
-                                    "name": "cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213",
+                                    "name": "cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea",
                                     "createOption": "FromImage",
                                     "caching": "ReadWrite",
                                     "managedDisk": {
                                         "storageAccountType": "Standard_LRS",
-                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_disk1_7ac917ff5ce14914b00d3396521cb213"
+                                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_vm-resize/providers/Microsoft.Compute/disks/cctestvmresize-map-unmapped_OsDisk_1_3e2d2133c2cd433687349fc1f02508ea"
                                     },
                                     "deleteOption": "Delete",
                                     "diskSizeGB": 30
@@ -2128,9 +2024,9 @@
                                     }
                                 ]
                             },
-                            "timeCreated": "2026-10-07T15:38:18.1129309+00:00"
+                            "timeCreated": "2026-10-14T01:05:12.0649567+00:00"
                         },
-                        "etag": "\"2\""
+                        "etag": "\"3\""
                     }
                 }
             }

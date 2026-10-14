@@ -3,7 +3,7 @@
 import datetime
 
 import pytest
-from ..azure_common import BaseTest, arm_template, cassette_name
+from ..azure_common import BaseTest, arm_template, cassette_name, strict_cassette
 from c7n_azure.session import Session
 from dateutil import tz as tzutils
 from jsonschema.exceptions import ValidationError
@@ -430,9 +430,27 @@ class VMResizeTest(BaseTest):
             'filters': self._name_filter(sizes),
             'actions': [action]
         })
-        resources = p.run()
+        operations = type(local_session(Session).client(
+            'azure.mgmt.compute.ComputeManagementClient').virtual_machines)
+        begin_update = operations.begin_update
+        pollers = []
+
+        def track_begin_update(client, *args, **kwargs):
+            poller = begin_update(client, *args, **kwargs)
+            pollers.append(poller)
+            return poller
+
+        with patch.object(operations, 'begin_update', track_begin_update):
+            resources = p.run()
         assert {r['name']: r['properties']['hardwareProfile']['vmSize']
                 for r in resources} == sizes
+
+        # The action doesn't wait on its resize operations. Wait here so that,
+        # while recording, each poller's requests land in this test's cassette
+        # rather than the next test's. Playback disables polling, so this
+        # returns immediately.
+        for poller in pollers:
+            poller.wait()
 
     def _assert_resized(self, baseline, vm_size):
         vm = self._wait_for_vm_size(baseline.name, vm_size)
@@ -440,6 +458,7 @@ class VMResizeTest(BaseTest):
         assert vm.os_profile.computer_name == baseline.os_profile.computer_name
 
     @arm_template('vm-resize.json')
+    @strict_cassette('test_resize')
     def test_resize(self):
         sizes = {'cctestvmresize-vmsize': 'Standard_B1s'}
         baselines = self._discover_vms(sizes)
@@ -447,6 +466,7 @@ class VMResizeTest(BaseTest):
         self._assert_resized(baselines['cctestvmresize-vmsize'], 'Standard_B1ms')
 
     @arm_template('vm-resize.json')
+    @strict_cassette('test_resize_type_map')
     def test_resize_type_map(self):
         # One policy over VMs of different sizes: each mapped VM gets its own
         # target, and a VM whose size is not in the map (no default) is skipped.
@@ -471,6 +491,7 @@ class VMResizeTest(BaseTest):
         assert unmapped.provisioning_state == 'Succeeded'
 
     @arm_template('vm-resize.json')
+    @strict_cassette('test_resize_type_map_default')
     def test_resize_type_map_default(self):
         sizes = {'cctestvmresize-default': 'Standard_B1s'}
         baselines = self._discover_vms(sizes)
