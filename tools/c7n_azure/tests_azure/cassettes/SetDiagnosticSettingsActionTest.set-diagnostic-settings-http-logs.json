@@ -14,52 +14,52 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "9057"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "x-ms-original-request-ids": [
+                        "58b42049-170a-42db-a228-a8e98860cb26"
                     ],
-                    "date": [
-                        "Tue, 13 Oct 2026 16:33:03 GMT"
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: 79A5E0E31CA942408B6D32FC0062B504 Ref B: CHI261140509062 Ref C: 2026-10-13T16:33:03Z"
+                        "Ref A: BCF7F77E9AC0439B8E2BD54382CDCCA8 Ref B: CH1AA2020610051 Ref C: 2026-10-14T18:16:41Z"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-length": [
+                        "8680"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 18:16:41 GMT"
                     ],
                     "etag": [
-                        "\"1DD5B305A7ECC40\""
-                    ],
-                    "x-ms-original-request-ids": [
-                        "47c03a95-a0a7-44d9-9b78-c3f223d976c6"
+                        "\"1DD5C081741D3AB\""
                     ]
                 },
                 "body": {
                     "data": {
                         "value": [
                             {
-                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction097490230851",
-                                "name": "cctestdiagaction097490230851",
+                                "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction744778383113",
+                                "name": "cctestdiagaction744778383113",
                                 "type": "Microsoft.Web/sites",
                                 "kind": "app",
                                 "location": "South Central US",
                                 "properties": {
-                                    "name": "cctestdiagaction097490230851",
+                                    "name": "cctestdiagaction744778383113",
                                     "state": "Running",
                                     "hostNames": [
-                                        "cctestdiagaction097490230851.azurewebsites.net"
+                                        "cctestdiagaction744778383113.azurewebsites.net"
                                     ],
                                     "webSpace": "test_diagnostic-settings-action-SouthCentralUSwebspace",
-                                    "selfLink": "https://waws-prod-sn1-189.api.azurewebsites.windows.net:455/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/webspaces/test_diagnostic-settings-action-SouthCentralUSwebspace/sites/cctestdiagaction097490230851",
-                                    "repositorySiteName": "cctestdiagaction097490230851",
+                                    "selfLink": "https://waws-prod-sn1-017.api.azurewebsites.windows.net:455/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/webspaces/test_diagnostic-settings-action-SouthCentralUSwebspace/sites/cctestdiagaction744778383113",
+                                    "repositorySiteName": "cctestdiagaction744778383113",
                                     "owner": null,
                                     "usageState": "Normal",
                                     "enabled": true,
@@ -67,8 +67,8 @@
                                     "siteScopedCertificatesEnabled": false,
                                     "afdEnabled": false,
                                     "enabledHostNames": [
-                                        "cctestdiagaction097490230851.azurewebsites.net",
-                                        "cctestdiagaction097490230851.scm.azurewebsites.net"
+                                        "cctestdiagaction744778383113.azurewebsites.net",
+                                        "cctestdiagaction744778383113.scm.azurewebsites.net"
                                     ],
                                     "siteProperties": {
                                         "metadata": null,
@@ -91,7 +91,7 @@
                                     "siteMode": null,
                                     "hostNameSslStates": [
                                         {
-                                            "name": "cctestdiagaction097490230851.azurewebsites.net",
+                                            "name": "cctestdiagaction744778383113.azurewebsites.net",
                                             "sslState": "Disabled",
                                             "ipBasedSslResult": null,
                                             "virtualIP": null,
@@ -104,7 +104,7 @@
                                             "hostType": "Standard"
                                         },
                                         {
-                                            "name": "cctestdiagaction097490230851.scm.azurewebsites.net",
+                                            "name": "cctestdiagaction744778383113.scm.azurewebsites.net",
                                             "sslState": "Disabled",
                                             "ipBasedSslResult": null,
                                             "virtualIP": null,
@@ -125,7 +125,7 @@
                                     "isXenon": false,
                                     "hyperV": false,
                                     "sandboxType": null,
-                                    "lastModifiedTimeUtc": "2026-10-13T16:31:52.58",
+                                    "lastModifiedTimeUtc": "2026-10-14T18:16:11.0666667",
                                     "storageRecoveryDefaultState": "Running",
                                     "contentAvailabilityState": "Normal",
                                     "runtimeAvailabilityState": "Normal",
@@ -243,7 +243,7 @@
                                     "functionAppConfig": null,
                                     "daprConfig": null,
                                     "aiIntegration": null,
-                                    "deploymentId": "cctestdiagaction097490230851",
+                                    "deploymentId": "cctestdiagaction744778383113",
                                     "slotName": null,
                                     "trafficManagerHostNames": null,
                                     "sku": "Basic",
@@ -269,28 +269,28 @@
                                     "managedEnvironmentId": null,
                                     "workloadProfileName": null,
                                     "resourceConfig": null,
-                                    "inboundIpAddress": "40.119.12.20",
-                                    "possibleInboundIpAddresses": "40.119.12.20,20.97.36.31",
-                                    "inboundIpv6Address": "2603:1030:807:3::42e",
-                                    "possibleInboundIpv6Addresses": "2603:1030:807:3::42e",
-                                    "ftpUsername": "cctestdiagaction097490230851\\$cctestdiagaction097490230851",
-                                    "ftpsHostName": "ftps://waws-prod-sn1-189.ftp.azurewebsites.windows.net/site/wwwroot",
-                                    "outboundIpAddresses": "20.88.235.117,20.88.235.9,20.88.237.52,20.88.238.204,20.88.238.215,20.88.237.210,40.119.12.20",
-                                    "possibleOutboundIpAddresses": "20.88.235.117,20.88.235.9,20.88.237.52,20.88.238.204,20.88.238.215,20.88.237.210,52.255.121.206,20.88.238.222,20.88.238.226,20.88.238.238,20.88.234.113,20.88.238.251,20.88.239.14,20.88.239.32,20.88.239.38,20.88.239.52,20.88.239.95,20.88.239.202,20.88.239.233,20.88.239.238,20.88.239.254,20.97.96.15,20.97.96.37,20.97.96.59,20.97.96.76,20.97.96.82,20.97.96.106,20.97.96.118,20.88.235.96,20.97.96.156,20.97.96.158,40.119.12.20",
-                                    "outboundIpv6Addresses": "2603:1030:803:c::cf,2603:1030:803:8::3ac,2603:1030:803:c::d0,2603:1030:803:e::ac,2603:1030:805:f::b9,2603:1030:803:11::c1,2603:1030:807:3::42e,2603:10e1:100:2::2877:c14,2603:1030:807:3::4dc,2603:10e1:100:2::1461:241f",
-                                    "possibleOutboundIpv6Addresses": "2603:1030:803:c::cf,2603:1030:803:8::3ac,2603:1030:803:c::d0,2603:1030:803:e::ac,2603:1030:805:f::b9,2603:1030:803:11::c1,2603:1030:803:11::c2,2603:1030:803:11::c3,2603:1030:805:8::dc,2603:1030:803:12::8c,2603:1030:803:c::d2,2603:1030:805:d::c6,2603:1030:803:12::8d,2603:1030:805:f::ba,2603:1030:803:c::d5,2603:1030:805:c::b3,2603:1030:805:c::b4,2603:1030:805:d::c8,2603:1030:803:d::bd,2603:1030:805:8::e0,2603:1030:805:d::c9,2603:1030:803:10::b7,2603:1030:803:e::b4,2603:1030:805:7::ca,2603:1030:803:8::454,2603:1030:803:f::d6,2603:1030:803:c::d8,2603:1030:805:9::d5,2603:1030:805:a::f3,2603:1030:803:9::e0,2603:1030:807:3::42e,2603:10e1:100:2::2877:c14,2603:1030:807:3::4dc,2603:10e1:100:2::1461:241f",
+                                    "inboundIpAddress": "",
+                                    "possibleInboundIpAddresses": "104.214.20.19,20.97.35.18,40.84.232.28",
+                                    "inboundIpv6Address": "2603:1030:807:3::467",
+                                    "possibleInboundIpv6Addresses": "2603:1030:807:3::467",
+                                    "ftpUsername": "cctestdiagaction744778383113\\$cctestdiagaction744778383113",
+                                    "ftpsHostName": "ftps://waws-prod-sn1-017.ftp.azurewebsites.windows.net/site/wwwroot",
+                                    "outboundIpAddresses": "40.84.237.20,40.84.238.55,40.84.237.25,40.84.236.152,",
+                                    "possibleOutboundIpAddresses": "40.84.237.20,40.84.238.55,40.84.237.25,40.84.236.152,172.202.240.231,104.210.146.18,104.210.146.241,104.214.112.21,104.210.146.158,104.210.147.19,20.88.237.174,20.97.96.187,20.97.96.227,20.97.97.111,20.97.97.115,20.97.97.117,20.97.85.117,20.97.85.155,20.97.85.181,20.97.85.192,20.97.85.200,20.97.85.206",
+                                    "outboundIpv6Addresses": "2603:1030:805:e::8f,2603:1030:805:a::35,2603:1030:805:a::b1,2603:1030:805:b::a8,2603:1030:807:3::467,2603:10e1:100:2::2854:e81c,2603:1030:807:3::478,2603:10e1:100:2::1461:2312",
+                                    "possibleOutboundIpv6Addresses": "2603:1030:805:e::8f,2603:1030:805:a::35,2603:1030:805:a::b1,2603:1030:805:b::a8,2603:1030:803:d::44,2603:1030:803:8::7f,2603:1030:803:9::a7,2603:1030:803:13::4f,2603:1030:803:10::50,2603:1030:803:9::a8,2603:1030:803:13::8f,2603:1030:803:12::c9,2603:1030:805:d::45,2603:1030:803:13::96,2603:1030:803:11::4,2603:1030:805:e::80,2603:1030:805:e::81,2603:1030:803:14::43,2603:1030:803:e::3b,2603:1030:803:e::76,2603:1030:805:a::1c,2603:1030:807:3::467,2603:10e1:100:2::2854:e81c,2603:1030:807:3::478,2603:10e1:100:2::1461:2312",
                                     "containerSize": 0,
                                     "dailyMemoryTimeQuota": 0,
                                     "suspendedTill": null,
                                     "siteDisabledReason": 0,
                                     "functionExecutionUnitsCache": null,
                                     "maxNumberOfWorkers": null,
-                                    "homeStamp": "waws-prod-sn1-189",
+                                    "homeStamp": "waws-prod-sn1-017",
                                     "cloningInfo": null,
                                     "hostingEnvironmentId": null,
                                     "tags": null,
                                     "resourceGroup": "test_diagnostic-settings-action",
-                                    "defaultHostName": "cctestdiagaction097490230851.azurewebsites.net",
+                                    "defaultHostName": "cctestdiagaction744778383113.azurewebsites.net",
                                     "slotSwapStatus": null,
                                     "httpsOnly": true,
                                     "endToEndEncryptionEnabled": false,
@@ -323,7 +323,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction097490230851/providers/Microsoft.Insights/diagnosticSettings?api-version=2021-05-01-preview",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction744778383113/providers/Microsoft.Insights/diagnosticSettings?api-version=2021-05-01-preview",
                 "body": null,
                 "headers": {}
             },
@@ -333,26 +333,26 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "12"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "date": [
-                        "Tue, 13 Oct 2026 16:33:05 GMT"
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: C0302AE64651401A82F291C815ECD3CF Ref B: CH1AA2030814060 Ref C: 2026-10-13T16:33:04Z"
+                        "Ref A: CD7741C2DAFD4012AD47218FA4BA9A4D Ref B: CHI261140507031 Ref C: 2026-10-14T18:16:42Z"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-length": [
+                        "12"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 18:16:43 GMT"
                     ]
                 },
                 "body": {
@@ -365,7 +365,7 @@
         {
             "request": {
                 "method": "PUT",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction097490230851/providers/Microsoft.Insights/diagnosticSettings/cctest-http-logs?api-version=2021-05-01-preview",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction744778383113/providers/Microsoft.Insights/diagnosticSettings/cctest-http-logs?api-version=2021-05-01-preview",
                 "body": "mock_body",
                 "headers": {}
             },
@@ -375,31 +375,31 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "845"
-                    ],
-                    "cache-control": [
-                        "no-cache"
+                    "content-type": [
+                        "application/json; charset=utf-8"
                     ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "content-type": [
-                        "application/json; charset=utf-8"
+                    "x-msedge-ref": [
+                        "Ref A: 982E9F07B43749C4B41A0E4B0BEF2DDB Ref B: CHI261140514034 Ref C: 2026-10-14T18:16:44Z"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-length": [
+                        "845"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 18:17:01 GMT"
                     ],
                     "x-ms-ratelimit-remaining-subscription-resource-requests": [
                         "99"
-                    ],
-                    "date": [
-                        "Tue, 13 Oct 2026 16:33:22 GMT"
-                    ],
-                    "x-msedge-ref": [
-                        "Ref A: 33838B73639447FDB6A7A134EAA2783F Ref B: CH1AA2030814031 Ref C: 2026-10-13T16:33:05Z"
                     ]
                 },
                 "body": {
                     "data": {
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_diagnostic-settings-action/providers/microsoft.web/sites/cctestdiagaction097490230851/providers/microsoft.insights/diagnosticSettings/cctest-http-logs",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_diagnostic-settings-action/providers/microsoft.web/sites/cctestdiagaction744778383113/providers/microsoft.insights/diagnosticSettings/cctest-http-logs",
                         "type": "Microsoft.Insights/diagnosticSettings",
                         "name": "cctest-http-logs",
                         "location": null,
@@ -433,7 +433,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction097490230851/providers/microsoft.insights/diagnosticSettings/cctest-http-logs?api-version=2017-05-01-preview",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_diagnostic-settings-action/providers/Microsoft.Web/sites/cctestdiagaction744778383113/providers/Microsoft.Insights/diagnosticSettings/cctest-http-logs?api-version=2021-05-01-preview",
                 "body": null,
                 "headers": {}
             },
@@ -443,31 +443,31 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "content-length": [
-                        "1662"
-                    ],
-                    "cache-control": [
-                        "no-cache"
-                    ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
                     "x-ms-ratelimit-remaining-subscription-global-reads": [
                         "3749"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
                     ],
-                    "date": [
-                        "Tue, 13 Oct 2026 16:33:24 GMT"
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: 7C2A042C78564E7CBBA04BD4CF10FE3F Ref B: CHI261140505042 Ref C: 2026-10-13T16:33:23Z"
+                        "Ref A: B25C2AFC707A4BE58D27454EBF8FC237 Ref B: CHI261140513042 Ref C: 2026-10-14T18:17:02Z"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-length": [
+                        "1662"
+                    ],
+                    "date": [
+                        "Wed, 14 Oct 2026 18:17:02 GMT"
                     ]
                 },
                 "body": {
                     "data": {
-                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_diagnostic-settings-action/providers/microsoft.web/sites/cctestdiagaction097490230851/providers/microsoft.insights/diagnosticSettings/cctest-http-logs",
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourcegroups/test_diagnostic-settings-action/providers/microsoft.web/sites/cctestdiagaction744778383113/providers/microsoft.insights/diagnosticSettings/cctest-http-logs",
                         "type": "Microsoft.Insights/diagnosticSettings",
                         "name": "cctest-http-logs",
                         "location": "southcentralus",

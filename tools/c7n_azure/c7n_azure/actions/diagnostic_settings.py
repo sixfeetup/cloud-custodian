@@ -150,8 +150,9 @@ class SetDiagnosticSettingsAction(AzureBaseAction):
             resource['id'], self.data['name'])
         body = {k: self.data[k] for k in self.PROPERTIES if k in self.data}
 
-        # The monitor SDK's diagnostic_settings can't send categoryGroup, so
-        # write the setting as a generic resource at the filter's api-version.
+        # Not the monitor SDK: 7.0 has no diagnostic settings, and older releases can't
+        # send categoryGroup. Write the setting as a generic resource at the filter's
+        # api-version.
         self.client.resources.begin_create_or_update_by_id(
             setting_id,
             DiagnosticSettingsFilter.api_version,
