@@ -1,0 +1,151 @@
+{
+    "status_code": 200,
+    "data": {
+        "Spaces": [
+            {
+                "DomainId": "d-nkbilpxwtecf",
+                "SpaceName": "c7n-jupyterlab-frank-terrier",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 39,
+                    "second": 58,
+                    "microsecond": 941000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 4,
+                    "microsecond": 365000
+                },
+                "SpaceSettingsSummary": {
+                    "AppType": "JupyterLab",
+                    "SpaceStorageSettings": {
+                        "EbsStorageSettings": {
+                            "EbsVolumeSizeInGb": 5
+                        }
+                    }
+                },
+                "SpaceSharingSettingsSummary": {
+                    "SharingType": "Private"
+                },
+                "OwnershipSettingsSummary": {
+                    "OwnerUserProfileName": "c7n-owner-frank-terrier"
+                }
+            },
+            {
+                "DomainId": "d-nkbilpxwtecf",
+                "SpaceName": "c7n-codeeditor-frank-terrier",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 39,
+                    "second": 57,
+                    "microsecond": 436000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 2,
+                    "microsecond": 683000
+                },
+                "SpaceSettingsSummary": {
+                    "AppType": "JupyterLab",
+                    "SpaceStorageSettings": {
+                        "EbsStorageSettings": {
+                            "EbsVolumeSizeInGb": 5
+                        }
+                    }
+                },
+                "SpaceSharingSettingsSummary": {
+                    "SharingType": "Private"
+                },
+                "OwnershipSettingsSummary": {
+                    "OwnerUserProfileName": "c7n-owner-frank-terrier"
+                }
+            },
+            {
+                "DomainId": "d-nkbilpxwtecf",
+                "SpaceName": "c7n-cpu-frank-terrier",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 39,
+                    "second": 57,
+                    "microsecond": 435000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 2,
+                    "microsecond": 481000
+                },
+                "SpaceSettingsSummary": {
+                    "AppType": "JupyterLab",
+                    "SpaceStorageSettings": {
+                        "EbsStorageSettings": {
+                            "EbsVolumeSizeInGb": 5
+                        }
+                    }
+                },
+                "SpaceSharingSettingsSummary": {
+                    "SharingType": "Private"
+                },
+                "OwnershipSettingsSummary": {
+                    "OwnerUserProfileName": "c7n-owner-frank-terrier"
+                }
+            },
+            {
+                "DomainId": "d-nkbilpxwtecf",
+                "SpaceName": "c7n-classic-frank-terrier",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 39,
+                    "second": 53,
+                    "microsecond": 813000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 15,
+                    "hour": 14,
+                    "minute": 39,
+                    "second": 55,
+                    "microsecond": 911000
+                },
+                "SpaceSettingsSummary": {}
+            }
+        ],
+        "ResponseMetadata": {}
+    }
+}

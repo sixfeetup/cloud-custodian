@@ -1,0 +1,50 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-nkbilpxwtecf",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-codeeditor-frank-terrier",
+        "SpaceName": "c7n-codeeditor-frank-terrier",
+        "Status": "InService",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 15,
+            "hour": 14,
+            "minute": 40,
+            "second": 2,
+            "microsecond": 683000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 15,
+            "hour": 14,
+            "minute": 39,
+            "second": 57,
+            "microsecond": 436000
+        },
+        "SpaceSettings": {
+            "CodeEditorAppSettings": {
+                "DefaultResourceSpec": {
+                    "InstanceType": "ml.g4dn.xlarge"
+                }
+            },
+            "AppType": "JupyterLab",
+            "SpaceStorageSettings": {
+                "EbsStorageSettings": {
+                    "EbsVolumeSizeInGb": 5
+                }
+            }
+        },
+        "OwnershipSettings": {
+            "OwnerUserProfileName": "c7n-owner-frank-terrier"
+        },
+        "SpaceSharingSettings": {
+            "SharingType": "Private"
+        },
+        "Url": "https://4w9m8mawfi9lm9s.studio.us-east-1.sagemaker.aws/jupyterlab/default",
+        "ResponseMetadata": {}
+    }
+}

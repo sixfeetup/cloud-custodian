@@ -1,0 +1,39 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-nkbilpxwtecf",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-classic-frank-terrier",
+        "SpaceName": "c7n-classic-frank-terrier",
+        "HomeEfsFileSystemUid": "200005",
+        "Status": "InService",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 15,
+            "hour": 14,
+            "minute": 39,
+            "second": 55,
+            "microsecond": 911000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 15,
+            "hour": 14,
+            "minute": 39,
+            "second": 53,
+            "microsecond": 813000
+        },
+        "SpaceSettings": {
+            "KernelGatewayAppSettings": {
+                "DefaultResourceSpec": {
+                    "InstanceType": "ml.g4dn.xlarge"
+                }
+            }
+        },
+        "Url": "https://huvf7fj5bgqmscv.studio.us-east-1.sagemaker.aws",
+        "ResponseMetadata": {}
+    }
+}
