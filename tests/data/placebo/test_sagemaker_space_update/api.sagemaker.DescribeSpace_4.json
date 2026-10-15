@@ -1,39 +1,50 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-nkbilpxwtecf",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-classic-frank-terrier",
-        "SpaceName": "c7n-classic-frank-terrier",
-        "HomeEfsFileSystemUid": "200005",
+        "DomainId": "d-daav7aqyl5cl",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-codeeditor-selected-quail",
+        "SpaceName": "c7n-codeeditor-selected-quail",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 15,
-            "hour": 14,
-            "minute": 39,
-            "second": 55,
-            "microsecond": 911000
+            "hour": 16,
+            "minute": 4,
+            "second": 31,
+            "microsecond": 729000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 15,
-            "hour": 14,
-            "minute": 39,
-            "second": 53,
-            "microsecond": 813000
+            "hour": 16,
+            "minute": 4,
+            "second": 26,
+            "microsecond": 621000
         },
         "SpaceSettings": {
-            "KernelGatewayAppSettings": {
+            "CodeEditorAppSettings": {
                 "DefaultResourceSpec": {
                     "InstanceType": "ml.g4dn.xlarge"
                 }
+            },
+            "AppType": "CodeEditor",
+            "SpaceStorageSettings": {
+                "EbsStorageSettings": {
+                    "EbsVolumeSizeInGb": 5
+                }
             }
         },
-        "Url": "https://huvf7fj5bgqmscv.studio.us-east-1.sagemaker.aws",
+        "OwnershipSettings": {
+            "OwnerUserProfileName": "c7n-owner-selected-quail"
+        },
+        "SpaceSharingSettings": {
+            "SharingType": "Private"
+        },
+        "Url": "https://wylacvr3ubqdows.studio.us-east-1.sagemaker.aws/codeeditor/default",
         "ResponseMetadata": {}
     }
 }

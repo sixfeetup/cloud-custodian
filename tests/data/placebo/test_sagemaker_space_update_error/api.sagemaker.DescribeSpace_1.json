@@ -1,55 +1,39 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-nkbilpxwtecf",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-jupyterlab-frank-terrier",
-        "SpaceName": "c7n-jupyterlab-frank-terrier",
+        "DomainId": "d-daav7aqyl5cl",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-classic-selected-quail",
+        "SpaceName": "c7n-classic-selected-quail",
+        "HomeEfsFileSystemUid": "200010",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 15,
-            "hour": 14,
-            "minute": 40,
-            "second": 7,
-            "microsecond": 354000
+            "hour": 16,
+            "minute": 4,
+            "second": 40,
+            "microsecond": 395000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 15,
-            "hour": 14,
-            "minute": 39,
-            "second": 58,
-            "microsecond": 941000
+            "hour": 16,
+            "minute": 4,
+            "second": 35,
+            "microsecond": 348000
         },
         "SpaceSettings": {
-            "CodeEditorAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
-                }
-            },
-            "JupyterLabAppSettings": {
+            "KernelGatewayAppSettings": {
                 "DefaultResourceSpec": {
                     "InstanceType": "ml.t3.medium"
                 }
-            },
-            "AppType": "JupyterLab",
-            "SpaceStorageSettings": {
-                "EbsStorageSettings": {
-                    "EbsVolumeSizeInGb": 5
-                }
             }
         },
-        "OwnershipSettings": {
-            "OwnerUserProfileName": "c7n-owner-frank-terrier"
-        },
-        "SpaceSharingSettings": {
-            "SharingType": "Private"
-        },
-        "Url": "https://yhmd5qdy41weewp.studio.us-east-1.sagemaker.aws/jupyterlab/default",
+        "Url": "https://51h2gnxdztpndko.studio.us-east-1.sagemaker.aws",
         "ResponseMetadata": {}
     }
 }

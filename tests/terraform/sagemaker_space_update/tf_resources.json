@@ -93,16 +93,16 @@
         },
         "aws_iam_role": {
             "execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-space-update-frank-terrier",
+                "arn": "arn:aws:iam::644160558196:role/c7n-space-update-selected-quail",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-15T18:37:59Z",
+                "create_date": "2026-10-15T20:02:28Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-space-update-frank-terrier",
+                "id": "c7n-space-update-selected-quail",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-space-update-frank-terrier",
+                "name": "c7n-space-update-selected-quail",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
@@ -115,13 +115,13 @@
             "main": {
                 "app_network_access_type": "PublicInternetOnly",
                 "app_security_group_management": "",
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:domain/d-nkbilpxwtecf",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:domain/d-daav7aqyl5cl",
                 "auth_mode": "IAM",
                 "default_space_settings": [
                     {
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-space-update-frank-terrier",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-space-update-selected-quail",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -137,7 +137,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "studio::",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-space-update-frank-terrier",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-space-update-selected-quail",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -157,10 +157,10 @@
                         "tensor_board_app_settings": []
                     }
                 ],
-                "domain_name": "c7n-space-update-frank-terrier",
+                "domain_name": "c7n-space-update-selected-quail",
                 "domain_settings": [],
-                "home_efs_file_system_id": "fs-0600a60a7973408f7",
-                "id": "d-nkbilpxwtecf",
+                "home_efs_file_system_id": "fs-07a377627f73db78d",
+                "id": "d-daav7aqyl5cl",
                 "kms_key_id": "",
                 "region": "us-east-1",
                 "retention_policy": [
@@ -177,20 +177,20 @@
                 "tag_propagation": "DISABLED",
                 "tags": null,
                 "tags_all": {},
-                "url": "https://d-nkbilpxwtecf.studio.us-east-1.sagemaker.aws",
+                "url": "https://d-daav7aqyl5cl.studio.us-east-1.sagemaker.aws",
                 "vpc_id": "vpc-0e5ef750468976cb3"
             }
         },
         "aws_sagemaker_space": {
             "classic": {
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-classic-frank-terrier",
-                "domain_id": "d-nkbilpxwtecf",
-                "home_efs_file_system_uid": "200005",
-                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-classic-frank-terrier",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-classic-selected-quail",
+                "domain_id": "d-daav7aqyl5cl",
+                "home_efs_file_system_uid": "200010",
+                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-classic-selected-quail",
                 "ownership_settings": [],
                 "region": "us-east-1",
                 "space_display_name": "",
-                "space_name": "c7n-classic-frank-terrier",
+                "space_name": "c7n-classic-selected-quail",
                 "space_settings": [
                     {
                         "app_type": "",
@@ -219,24 +219,24 @@
                 "space_sharing_settings": [],
                 "tags": null,
                 "tags_all": {},
-                "url": "https://huvf7fj5bgqmscv.studio.us-east-1.sagemaker.aws"
+                "url": "https://51h2gnxdztpndko.studio.us-east-1.sagemaker.aws"
             },
             "codeeditor": {
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-codeeditor-frank-terrier",
-                "domain_id": "d-nkbilpxwtecf",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-codeeditor-selected-quail",
+                "domain_id": "d-daav7aqyl5cl",
                 "home_efs_file_system_uid": "",
-                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-codeeditor-frank-terrier",
+                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-codeeditor-selected-quail",
                 "ownership_settings": [
                     {
-                        "owner_user_profile_name": "c7n-owner-frank-terrier"
+                        "owner_user_profile_name": "c7n-owner-selected-quail"
                     }
                 ],
                 "region": "us-east-1",
                 "space_display_name": "",
-                "space_name": "c7n-codeeditor-frank-terrier",
+                "space_name": "c7n-codeeditor-selected-quail",
                 "space_settings": [
                     {
-                        "app_type": "JupyterLab",
+                        "app_type": "CodeEditor",
                         "code_editor_app_settings": [
                             {
                                 "app_lifecycle_management": [],
@@ -273,21 +273,21 @@
                 ],
                 "tags": null,
                 "tags_all": {},
-                "url": "https://4w9m8mawfi9lm9s.studio.us-east-1.sagemaker.aws/jupyterlab/default"
+                "url": "https://wylacvr3ubqdows.studio.us-east-1.sagemaker.aws/codeeditor/default"
             },
             "cpu": {
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-cpu-frank-terrier",
-                "domain_id": "d-nkbilpxwtecf",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-cpu-selected-quail",
+                "domain_id": "d-daav7aqyl5cl",
                 "home_efs_file_system_uid": "",
-                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-cpu-frank-terrier",
+                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-cpu-selected-quail",
                 "ownership_settings": [
                     {
-                        "owner_user_profile_name": "c7n-owner-frank-terrier"
+                        "owner_user_profile_name": "c7n-owner-selected-quail"
                     }
                 ],
                 "region": "us-east-1",
                 "space_display_name": "",
-                "space_name": "c7n-cpu-frank-terrier",
+                "space_name": "c7n-cpu-selected-quail",
                 "space_settings": [
                     {
                         "app_type": "JupyterLab",
@@ -328,21 +328,21 @@
                 ],
                 "tags": null,
                 "tags_all": {},
-                "url": "https://7snoramikofosec.studio.us-east-1.sagemaker.aws/jupyterlab/default"
+                "url": "https://sbf1vwwakk9xlga.studio.us-east-1.sagemaker.aws/jupyterlab/default"
             },
             "jupyterlab": {
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-jupyterlab-frank-terrier",
-                "domain_id": "d-nkbilpxwtecf",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-jupyterlab-selected-quail",
+                "domain_id": "d-daav7aqyl5cl",
                 "home_efs_file_system_uid": "",
-                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-jupyterlab-frank-terrier",
+                "id": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-jupyterlab-selected-quail",
                 "ownership_settings": [
                     {
-                        "owner_user_profile_name": "c7n-owner-frank-terrier"
+                        "owner_user_profile_name": "c7n-owner-selected-quail"
                     }
                 ],
                 "region": "us-east-1",
                 "space_display_name": "",
-                "space_name": "c7n-jupyterlab-frank-terrier",
+                "space_name": "c7n-jupyterlab-selected-quail",
                 "space_settings": [
                     {
                         "app_type": "JupyterLab",
@@ -396,27 +396,27 @@
                 ],
                 "tags": null,
                 "tags_all": {},
-                "url": "https://yhmd5qdy41weewp.studio.us-east-1.sagemaker.aws/jupyterlab/default"
+                "url": "https://tozbxn5bmorxeqr.studio.us-east-1.sagemaker.aws/jupyterlab/default"
             }
         },
         "aws_sagemaker_user_profile": {
             "owner": {
-                "arn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-nkbilpxwtecf/c7n-owner-frank-terrier",
-                "domain_id": "d-nkbilpxwtecf",
-                "home_efs_file_system_uid": "200010",
-                "id": "d-nkbilpxwtecf/c7n-owner-frank-terrier",
+                "arn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-daav7aqyl5cl/c7n-owner-selected-quail",
+                "domain_id": "d-daav7aqyl5cl",
+                "home_efs_file_system_uid": "200005",
+                "id": "d-daav7aqyl5cl/c7n-owner-selected-quail",
                 "region": "us-east-1",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-owner-frank-terrier",
+                "user_profile_name": "c7n-owner-selected-quail",
                 "user_settings": []
             }
         },
         "random_pet": {
             "space": {
-                "id": "frank-terrier",
+                "id": "selected-quail",
                 "keepers": null,
                 "length": 2,
                 "prefix": null,

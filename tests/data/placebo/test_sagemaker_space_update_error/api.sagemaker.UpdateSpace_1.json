@@ -1,7 +1,10 @@
 {
-    "status_code": 200,
+    "status_code": 400,
     "data": {
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-nkbilpxwtecf/c7n-cpu-frank-terrier",
+        "Error": {
+            "Message": "Updating AppType for Space is not supported.",
+            "Code": "ValidationException"
+        },
         "ResponseMetadata": {}
     }
 }

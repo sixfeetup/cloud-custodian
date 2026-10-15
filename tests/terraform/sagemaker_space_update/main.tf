@@ -85,7 +85,7 @@ resource "aws_sagemaker_space" "jupyterlab" {
   }
 }
 
-# Only a GPU Code Editor default on a private space.
+# A Code Editor space with a GPU default.
 resource "aws_sagemaker_space" "codeeditor" {
   domain_id  = aws_sagemaker_domain.main.id
   space_name = "c7n-codeeditor-${random_pet.space.id}"
@@ -99,7 +99,7 @@ resource "aws_sagemaker_space" "codeeditor" {
   }
 
   space_settings {
-    app_type = "JupyterLab"
+    app_type = "CodeEditor"
 
     code_editor_app_settings {
       default_resource_spec {
@@ -109,10 +109,17 @@ resource "aws_sagemaker_space" "codeeditor" {
   }
 }
 
-# A Studio Classic space: no owner, GPU KernelGateway default.
+# A Studio Classic space: no owner, GPU KernelGateway default. Created last,
+# so ListSpaces returns it first.
 resource "aws_sagemaker_space" "classic" {
   domain_id  = aws_sagemaker_domain.main.id
   space_name = "c7n-classic-${random_pet.space.id}"
+
+  depends_on = [
+    aws_sagemaker_space.jupyterlab,
+    aws_sagemaker_space.codeeditor,
+    aws_sagemaker_space.cpu,
+  ]
 
   space_settings {
     kernel_gateway_app_settings {

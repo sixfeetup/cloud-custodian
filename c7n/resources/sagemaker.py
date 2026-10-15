@@ -7,7 +7,6 @@ import importlib.resources
 import typing
 
 import yaml
-from botocore.exceptions import ClientError
 
 from c7n.actions import BaseAction
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
@@ -1876,8 +1875,8 @@ class UpdateSagemakerSpace(BaseAction):
                     DomainId=r['DomainId'], SpaceName=r['SpaceName'], **update)
             except client.exceptions.ResourceNotFound:
                 continue
-            except ClientError as e:
-                self.log.error("Unable to update space %s: %s", r['SpaceArn'], e)
+            except Exception:
+                self.log.exception("Unable to update space %s", r['SpaceArn'])
                 errors += 1
         if skipped:
             self.log.warning(
