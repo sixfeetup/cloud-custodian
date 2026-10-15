@@ -416,19 +416,21 @@ def test_vertexai_index_query(test, vertexai_index) -> None:
         'vertexai-index-query',
         project_id=test.project_id,
     )
+    names = vertexai_index.outputs['index_display_names']['value']
     policy = test.load_policy(
         {
             'name': 'vertexai-indexes',
             'resource': 'gcp.vertex-ai-index',
             'query': [{'location': 'us-central1'}, {'location': 'us-east1'}],
+            'filters': [
+                {'type': 'value', 'key': 'displayName', 'op': 'in',
+                 'value': list(names.values())},
+            ],
         },
         session_factory=session_factory,
     )
     indexes = policy.run()
-    assert {r['displayName'] for r in indexes} == {
-        'c7n-test-index-central',
-        'c7n-test-index-east',
-    }
+    assert {r['displayName'] for r in indexes} == set(names.values())
     assert {r['c7n:location']['name'] for r in indexes} == {
         'us-central1',
         'us-east1',
@@ -444,8 +446,9 @@ def test_vertexai_index_query(test, vertexai_index) -> None:
 @terraform('vertexai_index', scope='module')
 def test_vertexai_index_filtering(test, vertexai_index) -> None:
     session_factory = test.replay_flight_data('vertexai-index-filtering')
-    central = 'c7n-test-index-central'
-    east = 'c7n-test-index-east'
+    names = vertexai_index.outputs['index_display_names']['value']
+    central = names['central']
+    east = names['east']
     undeployed = {
         'or': [
             {'type': 'value', 'key': 'deployedIndexes', 'value': 'absent'},
@@ -473,7 +476,11 @@ def test_vertexai_index_filtering(test, vertexai_index) -> None:
                 'name': 'vertexai-index-filter',
                 'resource': 'gcp.vertex-ai-index',
                 'query': [{'location': 'us-central1'}, {'location': 'us-east1'}],
-                'filters': filters,
+                'filters': [
+                    {'type': 'value', 'key': 'displayName', 'op': 'in',
+                     'value': [central, east]},
+                    *filters,
+                ],
             },
             session_factory=session_factory,
         )
@@ -493,8 +500,12 @@ def test_vertexai_index_get_resource(test, vertexai_index) -> None:
     index = policy.resource_manager.get_resource({'resourceName': name})
     # The response can identify the project by number rather than ID.
     assert index['name'].split('/', 2)[2] == name.split('/', 2)[2]
-    assert index['displayName'] == 'c7n-test-index-central'
-    assert index['deployedIndexes'][0]['deployedIndexId'] == 'c7n_test_index'
+    assert index['displayName'] == (
+        vertexai_index.outputs['index_display_names']['value']['central']
+    )
+    assert index['deployedIndexes'][0]['deployedIndexId'] == (
+        vertexai_index.outputs['deployed_index_id']['value']
+    )
 
 
 def test_vertexai_dataset_resource_registered(test):

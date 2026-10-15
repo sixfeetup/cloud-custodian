@@ -2,7 +2,7 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Wed, 14 Oct 2026 23:00:49 GMT",
+    "date": "Thu, 15 Oct 2026 13:38:26 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
@@ -10,13 +10,13 @@
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1066",
+    "content-length": "1084",
     "-content-encoding": "gzip",
-    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/indexes/3435496648753545216?alt=json"
+    "content-location": "https://us-central1-aiplatform.googleapis.com/v1/projects/cloud-custodian/locations/us-central1/indexes/7999331921140121600?alt=json"
   },
   "body": {
-    "name": "projects/cloud-custodian/locations/us-central1/indexes/3435496648753545216",
-    "displayName": "c7n-test-index-central",
+    "name": "projects/cloud-custodian/locations/us-central1/indexes/7999331921140121600",
+    "displayName": "c7n-test-index-central-413a81aa",
     "metadataSchemaUri": "gs://google-cloud-aiplatform/schema/matchingengine/metadata/nearest_neighbor_search_1.0.0.yaml",
     "metadata": {
       "config": {
@@ -31,17 +31,17 @@
     },
     "deployedIndexes": [
       {
-        "indexEndpoint": "projects/cloud-custodian/locations/us-central1/indexEndpoints/6534096337686757376",
-        "deployedIndexId": "c7n_test_index"
+        "indexEndpoint": "projects/cloud-custodian/locations/us-central1/indexEndpoints/5704871056297164800",
+        "deployedIndexId": "c7n_test_index_413a81aa"
       }
     ],
-    "etag": "AMEw9yPNXQRSGSOAylynRaXTg-gLy1pHDzNzr_QENXpWANMygMQlvxDT2TkIf4evBuL3",
+    "etag": "AMEw9yNczHYZ-P8KHE-U32fUEdByIiSplELRQvA2XEs4yM4nD8XwOJbNaSP4soAtBwI=",
     "labels": {
       "goog-terraform-provisioned": "true",
       "owner": "custodian"
     },
-    "createTime": "2026-10-14T22:28:28.338261Z",
-    "updateTime": "2026-10-14T22:28:54.433235Z",
+    "createTime": "2026-10-15T13:06:48.101510Z",
+    "updateTime": "2026-10-15T13:07:16.134834Z",
     "indexStats": {
       "shardsCount": 1
     },
