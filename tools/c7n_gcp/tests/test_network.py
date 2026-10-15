@@ -208,13 +208,18 @@ def test_subnet_set_flow_log(test, gcp_subnet_set_flow_log):
         'metadata': 'INCLUDE_ALL_METADATA',
     }
 
-    if test.recording:
-        time.sleep(2)
-
     client = policy.resource_manager.get_client()
-    subnet = client.execute_query(
-        'get', {'project': project_id, 'region': region, 'subnetwork': subnet_name}
-    )
+    for _ in range(10):
+        subnet = client.execute_query(
+            'get', {'project': project_id, 'region': region, 'subnetwork': subnet_name}
+        )
+        if subnet.get('logConfig', {}).get('enable'):
+            break
+        if test.recording:
+            time.sleep(3)
+    else:
+        raise AssertionError('Timed out waiting for flow logs to be enabled')
+
     assert subnet['logConfig']['enable'] is True
     assert subnet['logConfig']['aggregationInterval'] == 'INTERVAL_5_SEC'
     assert subnet['logConfig']['flowSampling'] == 0.5
@@ -266,13 +271,18 @@ def test_subnet_set_flow_log_custom_metadata(test, gcp_subnet_set_flow_log_custo
         'filterExpr': 'true',
     }
 
-    if test.recording:
-        time.sleep(2)
-
     client = policy.resource_manager.get_client()
-    subnet = client.execute_query(
-        'get', {'project': project_id, 'region': region, 'subnetwork': subnet_name}
-    )
+    for _ in range(10):
+        subnet = client.execute_query(
+            'get', {'project': project_id, 'region': region, 'subnetwork': subnet_name}
+        )
+        if subnet.get('logConfig', {}).get('enable'):
+            break
+        if test.recording:
+            time.sleep(3)
+    else:
+        raise AssertionError('Timed out waiting for flow logs to be enabled')
+
     assert subnet['logConfig']['enable'] is True
     assert subnet['logConfig']['metadata'] == 'CUSTOM_METADATA'
     assert set(subnet['logConfig']['metadataFields']) == {
