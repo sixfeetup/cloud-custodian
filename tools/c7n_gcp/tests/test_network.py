@@ -1,8 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import time
+from unittest.mock import patch
 
-from c7n_gcp.resources.network import Interconnect, InterconnectAttachment
+from c7n_gcp.resources.network import Interconnect, InterconnectAttachment, SetFlowLog
 from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
 
@@ -189,9 +190,23 @@ def test_subnet_set_flow_log(test, gcp_subnet_set_flow_log):
         session_factory=factory,
     )
 
-    resources = policy.run()
+    with patch.object(
+        SetFlowLog, 'invoke_api', autospec=True, side_effect=SetFlowLog.invoke_api
+    ) as invoke_api:
+        resources = policy.run()
     assert len(resources) == 1
     assert resources[0]['name'] == subnet_name
+
+    # Replay serves canned responses regardless of request body, so check
+    # the PATCH payload the action sent.
+    _, _, op_name, params = invoke_api.call_args.args
+    assert op_name == 'patch'
+    assert params['body']['logConfig'] == {
+        'enable': True,
+        'aggregationInterval': 'INTERVAL_5_SEC',
+        'flowSampling': 0.5,
+        'metadata': 'INCLUDE_ALL_METADATA',
+    }
 
     if test.recording:
         time.sleep(2)
@@ -235,9 +250,21 @@ def test_subnet_set_flow_log_custom_metadata(test, gcp_subnet_set_flow_log_custo
         session_factory=factory,
     )
 
-    resources = policy.run()
+    with patch.object(
+        SetFlowLog, 'invoke_api', autospec=True, side_effect=SetFlowLog.invoke_api
+    ) as invoke_api:
+        resources = policy.run()
     assert len(resources) == 1
     assert resources[0]['name'] == subnet_name
+
+    _, _, op_name, params = invoke_api.call_args.args
+    assert op_name == 'patch'
+    assert params['body']['logConfig'] == {
+        'enable': True,
+        'metadata': 'CUSTOM_METADATA',
+        'metadataFields': ['src_instance', 'dest_instance', 'src_vpc', 'dest_vpc'],
+        'filterExpr': 'true',
+    }
 
     if test.recording:
         time.sleep(2)
