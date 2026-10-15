@@ -1,0 +1,188 @@
+{
+    "pytest-terraform": 1,
+    "outputs": {
+        "central_index_name": {
+            "value": "projects/cloud-custodian/locations/us-central1/indexes/3435496648753545216",
+            "type": "string"
+        }
+    },
+    "resources": {
+        "google_vertex_ai_index": {
+            "central": {
+                "create_time": "2026-10-14T22:28:28.338261Z",
+                "deletion_policy": "DELETE",
+                "deployed_indexes": [],
+                "description": "",
+                "display_name": "c7n-test-index-central",
+                "effective_labels": {
+                    "goog-terraform-provisioned": "true",
+                    "owner": "custodian"
+                },
+                "encryption_spec": [],
+                "etag": null,
+                "id": "projects/cloud-custodian/locations/us-central1/indexes/3435496648753545216",
+                "index_stats": [
+                    {
+                        "shards_count": 1,
+                        "vectors_count": ""
+                    }
+                ],
+                "index_update_method": "STREAM_UPDATE",
+                "labels": {
+                    "owner": "custodian"
+                },
+                "metadata": [
+                    {
+                        "config": [
+                            {
+                                "algorithm_config": [
+                                    {
+                                        "brute_force_config": [
+                                            {}
+                                        ],
+                                        "tree_ah_config": []
+                                    }
+                                ],
+                                "approximate_neighbors_count": 0,
+                                "dimensions": 2,
+                                "distance_measure_type": "DOT_PRODUCT_DISTANCE",
+                                "feature_norm_type": "NONE",
+                                "shard_size": "SHARD_SIZE_SMALL"
+                            }
+                        ],
+                        "contents_delta_uri": "",
+                        "is_complete_overwrite": false
+                    }
+                ],
+                "metadata_schema_uri": "gs://google-cloud-aiplatform/schema/matchingengine/metadata/nearest_neighbor_search_1.0.0.yaml",
+                "name": "3435496648753545216",
+                "project": "stkl-jim-fulton",
+                "region": "us-central1",
+                "terraform_labels": {
+                    "goog-terraform-provisioned": "true",
+                    "owner": "custodian"
+                },
+                "timeouts": null,
+                "update_time": "2026-10-14T22:28:54.433235Z"
+            },
+            "east": {
+                "create_time": "2026-10-14T22:28:28.640144Z",
+                "deletion_policy": "DELETE",
+                "deployed_indexes": [],
+                "description": "",
+                "display_name": "c7n-test-index-east",
+                "effective_labels": {
+                    "goog-terraform-provisioned": "true"
+                },
+                "encryption_spec": [],
+                "etag": null,
+                "id": "projects/cloud-custodian/locations/us-east1/indexes/7135579775615107072",
+                "index_stats": [
+                    {
+                        "shards_count": 1,
+                        "vectors_count": ""
+                    }
+                ],
+                "index_update_method": "STREAM_UPDATE",
+                "labels": null,
+                "metadata": [
+                    {
+                        "config": [
+                            {
+                                "algorithm_config": [
+                                    {
+                                        "brute_force_config": [
+                                            {}
+                                        ],
+                                        "tree_ah_config": []
+                                    }
+                                ],
+                                "approximate_neighbors_count": 0,
+                                "dimensions": 2,
+                                "distance_measure_type": "DOT_PRODUCT_DISTANCE",
+                                "feature_norm_type": "NONE",
+                                "shard_size": "SHARD_SIZE_SMALL"
+                            }
+                        ],
+                        "contents_delta_uri": "",
+                        "is_complete_overwrite": false
+                    }
+                ],
+                "metadata_schema_uri": "gs://google-cloud-aiplatform/schema/matchingengine/metadata/nearest_neighbor_search_1.0.0.yaml",
+                "name": "7135579775615107072",
+                "project": "stkl-jim-fulton",
+                "region": "us-east1",
+                "terraform_labels": {
+                    "goog-terraform-provisioned": "true"
+                },
+                "timeouts": null,
+                "update_time": "2026-10-14T22:42:16.689405Z"
+            }
+        },
+        "google_vertex_ai_index_endpoint": {
+            "central": {
+                "create_time": "2026-10-14T22:28:28.311352Z",
+                "deletion_policy": "DELETE",
+                "description": "",
+                "display_name": "c7n-test-index-endpoint",
+                "effective_labels": {
+                    "goog-terraform-provisioned": "true"
+                },
+                "encryption_spec": [],
+                "etag": null,
+                "id": "projects/cloud-custodian/locations/us-central1/indexEndpoints/6534096337686757376",
+                "labels": null,
+                "name": "6534096337686757376",
+                "network": "",
+                "private_service_connect_config": [
+                    {
+                        "enable_private_service_connect": false,
+                        "project_allowlist": [],
+                        "psc_automation_configs": []
+                    }
+                ],
+                "project": "stkl-jim-fulton",
+                "public_endpoint_domain_name": "1744044032.us-central1-693936050605.vdb.vertexai.goog",
+                "public_endpoint_enabled": true,
+                "region": "us-central1",
+                "terraform_labels": {
+                    "goog-terraform-provisioned": "true"
+                },
+                "timeouts": null,
+                "update_time": "2026-10-14T22:28:29.455184Z"
+            }
+        },
+        "google_vertex_ai_index_endpoint_deployed_index": {
+            "central": {
+                "automatic_resources": [],
+                "create_time": "2026-10-14T22:28:59.785348Z",
+                "dedicated_resources": [
+                    {
+                        "machine_spec": [
+                            {
+                                "machine_type": "e2-standard-2"
+                            }
+                        ],
+                        "max_replica_count": 1,
+                        "min_replica_count": 1
+                    }
+                ],
+                "deletion_policy": "DELETE",
+                "deployed_index_auth_config": [],
+                "deployed_index_id": "c7n_test_index",
+                "deployment_group": "default",
+                "display_name": "",
+                "enable_access_logging": false,
+                "id": "projects/cloud-custodian/locations/us-central1/indexEndpoints/6534096337686757376/deployedIndex/c7n_test_index",
+                "index": "projects/cloud-custodian/locations/us-central1/indexes/3435496648753545216",
+                "index_endpoint": "projects/cloud-custodian/locations/us-central1/indexEndpoints/6534096337686757376",
+                "index_sync_time": "2026-10-14T23:00:38.767399Z",
+                "name": "",
+                "private_endpoints": [],
+                "region": "us-central1",
+                "reserved_ip_ranges": null,
+                "timeouts": null
+            }
+        }
+    }
+}
