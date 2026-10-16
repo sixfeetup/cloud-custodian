@@ -111,10 +111,11 @@ OPERATORS = {
     'intersect': intersect,
     'mod': mod}
 
-# Operators that work on two timedeltas; the rest never match a duration.
+# Comparisons between two timedeltas. Other operators never match a
+# duration, and mod would divide by zero on a PT0S value.
 DURATION_OPERATORS = {
     'eq', 'equal', 'ne', 'not-equal', 'gt', 'greater-than', 'ge', 'gte',
-    'le', 'lte', 'lt', 'less-than', 'mod'}
+    'le', 'lte', 'lt', 'less-than'}
 
 
 VALUE_TYPES = [

@@ -631,7 +631,7 @@ class TestValueTypes(BaseFilterTest):
         filters.factory(fdata, {}).validate()
 
         # operators that can't compare two durations are rejected
-        for op in ("regex", "in", "contains"):
+        for op in ("regex", "in", "contains", "mod"):
             fdata["op"] = op
             self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
         fdata["op"] = "less-than"
