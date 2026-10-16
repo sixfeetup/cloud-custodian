@@ -3,7 +3,7 @@
     "data": {
         "Spaces": [
             {
-                "DomainId": "d-daav7aqyl5cl",
+                "DomainId": "d-000000000001",
                 "SpaceName": "c7n-classic-selected-quail",
                 "Status": "InService",
                 "CreationTime": {
@@ -29,7 +29,7 @@
                 "SpaceSettingsSummary": {}
             },
             {
-                "DomainId": "d-daav7aqyl5cl",
+                "DomainId": "d-000000000001",
                 "SpaceName": "c7n-jupyterlab-selected-quail",
                 "Status": "InService",
                 "CreationTime": {
@@ -68,7 +68,7 @@
                 }
             },
             {
-                "DomainId": "d-daav7aqyl5cl",
+                "DomainId": "d-000000000001",
                 "SpaceName": "c7n-cpu-selected-quail",
                 "Status": "InService",
                 "CreationTime": {
@@ -107,7 +107,7 @@
                 }
             },
             {
-                "DomainId": "d-daav7aqyl5cl",
+                "DomainId": "d-000000000001",
                 "SpaceName": "c7n-codeeditor-selected-quail",
                 "Status": "InService",
                 "CreationTime": {

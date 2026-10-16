@@ -1,8 +1,8 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-daav7aqyl5cl",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-classic-selected-quail",
+        "DomainId": "d-000000000001",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-000000000001/c7n-classic-selected-quail",
         "SpaceName": "c7n-classic-selected-quail",
         "HomeEfsFileSystemUid": "200010",
         "Status": "InService",
@@ -33,7 +33,7 @@
                 }
             }
         },
-        "Url": "https://51h2gnxdztpndko.studio.us-east-1.sagemaker.aws",
+        "Url": "https://000000000000001.studio.us-east-1.sagemaker.aws",
         "ResponseMetadata": {}
     }
 }

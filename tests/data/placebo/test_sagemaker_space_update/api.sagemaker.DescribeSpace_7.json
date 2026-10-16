@@ -1,8 +1,8 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-daav7aqyl5cl",
-        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-daav7aqyl5cl/c7n-codeeditor-selected-quail",
+        "DomainId": "d-000000000001",
+        "SpaceArn": "arn:aws:sagemaker:us-east-1:644160558196:space/d-000000000001/c7n-codeeditor-selected-quail",
         "SpaceName": "c7n-codeeditor-selected-quail",
         "Status": "InService",
         "LastModifiedTime": {
@@ -44,7 +44,7 @@
         "SpaceSharingSettings": {
             "SharingType": "Private"
         },
-        "Url": "https://wylacvr3ubqdows.studio.us-east-1.sagemaker.aws/codeeditor/default",
+        "Url": "https://000000000000002.studio.us-east-1.sagemaker.aws/codeeditor/default",
         "ResponseMetadata": {}
     }
 }
