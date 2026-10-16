@@ -46,6 +46,8 @@ class MachineLearningWorkspaceTest(BaseTest):
 
 class MachineLearningWorkspaceComputeInstancesFilterTest(BaseTest):
 
+    recording_resource_group = 'test_machine-learning-compute-instance'
+
     def test_query(self):
         p = self.load_policy({
             'name': 'compute',
@@ -80,6 +82,47 @@ class MachineLearningWorkspaceComputeInstancesFilterTest(BaseTest):
         resources = p.run()
         self.assertEqual(1, len(resources))
         self.assertEqual(resources[0]['c7n:ComputeInstances'][0]['name'], 'vvmlwrkspc11')
+
+    @arm_template('machine-learning-compute-instance.json')
+    def test_idle_shutdown_duration(self):
+        p = self.load_policy({
+            'name': 'compute-instance-idle-shutdown-over-an-hour',
+            'resource': 'azure.machine-learning-workspace',
+            'filters': [
+                {
+                    'type': 'value',
+                    'key': 'resourceGroup',
+                    'value_type': 'normalize',
+                    'value': self.recording_resource_group
+                },
+                {
+                    'type': 'compute-instances',
+                    'attrs': [
+                        {
+                            'type': 'value',
+                            'key': 'properties.computeType',
+                            'value': 'ComputeInstance'
+                        },
+                        {
+                            'type': 'value',
+                            'key': 'properties.properties.idleTimeBeforeShutdown',
+                            'op': 'greater-than',
+                            'value_type': 'duration',
+                            'value': 'PT1H'
+                        },
+                    ]
+                },
+            ],
+        })
+        resources = p.run()
+
+        assert len(resources) == 1
+        # Azure stores the template's PT2H as PT120M. cctest-ci-idle-60m (PT60M)
+        # equals the threshold, so only the 2h instance matches.
+        assert [
+            (c['name'], c['properties']['properties']['idleTimeBeforeShutdown'])
+            for c in resources[0]['c7n:ComputeInstances']
+        ] == [('cctest-ci-idle-2h', 'PT120M')]
 
 
 class MachineLearningWorkspaceResourceLockFilterTest(BaseTest):

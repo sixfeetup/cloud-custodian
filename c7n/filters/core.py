@@ -30,6 +30,7 @@ from c7n.utils import (
     type_schema,
     parse_cidr,
     parse_date,
+    parse_duration,
     jmespath_search,
     jmespath_compile
 )
@@ -114,7 +115,7 @@ OPERATORS = {
 VALUE_TYPES = [
     'age', 'integer', 'expiration', 'normalize', 'size',
     'cidr', 'cidr_size', 'swap', 'resource_count', 'expr',
-    'unique_size', 'date', 'version', 'float']
+    'unique_size', 'date', 'version', 'float', 'duration']
 
 
 class FilterRegistry(PluginRegistry):
@@ -655,6 +656,11 @@ class ValueFilter(BaseValueFilter):
                 raise PolicyValidationError(
                     "value_type: date with invalid date value:%s",
                     self.data.get('value', ''))
+        elif self.data.get('value_type') == 'duration':
+            if 'value' in self.data and parse_duration(self.data['value']) is None:
+                raise PolicyValidationError(
+                    "value_type: duration needs an ISO 8601 duration value, "
+                    "such as PT1H, got: %s" % self.data['value'])
         if 'key' not in self.data and 'key' in self.required_keys:
             raise PolicyValidationError(
                 "Missing 'key' in value filter %s" % self.data)
@@ -813,6 +819,8 @@ class ValueFilter(BaseValueFilter):
             return value, sentinel
         elif self.vtype == 'date':
             return parse_date(sentinel), parse_date(value)
+        elif self.vtype == 'duration':
+            return parse_duration(sentinel), parse_duration(value)
         elif self.vtype == 'age':
             if not isinstance(sentinel, datetime.datetime):
                 sentinel = datetime.datetime.now(tz=tzutc()) - timedelta(sentinel)

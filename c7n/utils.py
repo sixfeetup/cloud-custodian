@@ -163,6 +163,35 @@ def parse_date(v, tz=None):
     return isinstance(v, datetime) and v or None
 
 
+# ISO 8601 durations built from fixed-length units. Years and months
+# vary in length, so a duration using them does not match.
+ISO_DURATION = re.compile(r"""
+    P
+    (?:(?P<weeks>\d+(?:\.\d+)?)W)?
+    (?:(?P<days>\d+(?:\.\d+)?)D)?
+    (?:T(?=\d)
+        (?:(?P<hours>\d+(?:\.\d+)?)H)?
+        (?:(?P<minutes>\d+(?:\.\d+)?)M)?
+        (?:(?P<seconds>\d+(?:\.\d+)?)S)?
+    )?
+""", re.VERBOSE)
+
+
+def parse_duration(v):
+    """Parse an ISO 8601 duration such as ``PT30M`` or ``P1DT12H`` to a timedelta.
+
+    Returns None for anything else, including durations in years or months.
+    """
+    if isinstance(v, timedelta):
+        return v
+    if not isinstance(v, str):
+        return None
+    match = ISO_DURATION.fullmatch(v)
+    if match is None or not any(match.groups()):
+        return None
+    return timedelta(**{unit: float(n) for unit, n in match.groupdict().items() if n})
+
+
 if typing.TYPE_CHECKING:
     from c7n.element import ElementJSONSchema
 
