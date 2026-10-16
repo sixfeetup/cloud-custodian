@@ -981,16 +981,19 @@ def test_parse_date_floor():
     ('PT1.5H', timedelta(minutes=90)),
     ('PT1,5H', timedelta(minutes=90)),
     ('PT1M30S', timedelta(seconds=90)),
+    ('P1DT1.5H', timedelta(days=1, minutes=90)),
 ])
 def test_parse_duration(value, expected):
     assert utils.parse_duration(value) == expected
 
 
 # P1Y and P1M (a month) vary in length, so they are rejected too, as are
-# durations too large for a timedelta and non-ASCII digits.
+# durations too large for a timedelta and non-ASCII digits. Weeks can't be
+# combined with other units, and only the smallest unit may have a fraction.
 @pytest.mark.parametrize('value', [
     'P', 'PT', 'P1DT', 'PT1', 'P1Y', 'P1M', 'pt1h', '1h', None, 3600,
-    'P1000000000D', 'P' + '9' * 20 + 'D', 'PT١H'])
+    'P1000000000D', 'P' + '9' * 20 + 'D', 'PT١H',
+    'P1W1D', 'P1WT1H', 'PT1.5H30M'])
 def test_parse_duration_invalid(value):
     assert utils.parse_duration(value) is None
 

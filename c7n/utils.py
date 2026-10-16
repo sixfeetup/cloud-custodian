@@ -186,11 +186,18 @@ def parse_duration(v):
     if not isinstance(v, str):
         return None
     match = ISO_DURATION.fullmatch(v)
-    if match is None or not any(match.groups()):
+    if match is None:
+        return None
+    parts = {unit: n for unit, n in match.groupdict().items() if n}
+    if not parts:
+        return None
+    # ISO 8601: weeks stand alone, and only the smallest unit given may have a fraction
+    if 'weeks' in parts and len(parts) > 1:
+        return None
+    if any(sep in n for n in list(parts.values())[:-1] for sep in '.,'):
         return None
     try:
-        return timedelta(**{
-            unit: float(n.replace(',', '.')) for unit, n in match.groupdict().items() if n})
+        return timedelta(**{unit: float(n.replace(',', '.')) for unit, n in parts.items()})
     except OverflowError:
         return None
 
