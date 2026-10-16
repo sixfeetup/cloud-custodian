@@ -259,7 +259,9 @@ Value Type Transformations
   - ``swap`` - swap the value and the evaluated key
   - ``date`` - parse the filter's value as a date.
   - ``duration`` - parse ISO 8601 durations such as ``PT30M`` or ``P1DT12H``
-    (weeks, days, hours, minutes and seconds; not years or months)
+    (weeks, days, hours, minutes and seconds; not years or months) for comparison
+    operators such as ``greater-than``. A resource value in any other format, such
+    as ``P1Y`` or a number of seconds, never matches.
 
   Note that the `age` and `expiration` transformations expect a value given as
   a number of days. Use a floating point value to match time periods shorter than
@@ -310,12 +312,15 @@ Value Type Transformations
        value_type: age
        value: 0.5
 
-     # Compare ISO 8601 durations, such as a retention period kept in a tag
-     - type: value
-       key: tag:RetentionPeriod
-       op: greater-than
-       value_type: duration
-       value: P30D
+     # Find Azure ML workspaces with a compute instance that stays idle for
+     # more than an hour before it shuts down
+     - type: compute-instances
+       attrs:
+         - type: value
+           key: properties.properties.idleTimeBeforeShutdown
+           op: greater-than
+           value_type: duration
+           value: PT1H
 
      # Use `resource_count` to filter resources based on the number that matched
      # Note that no `key` is used for this value_type since it is matching on

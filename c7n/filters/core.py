@@ -111,6 +111,7 @@ OPERATORS = {
     'intersect': intersect,
     'mod': mod}
 
+
 # Comparisons between two timedeltas. Other operators never match a
 # duration, and mod would divide by zero on a PT0S value.
 DURATION_OPERATORS = {
@@ -663,13 +664,18 @@ class ValueFilter(BaseValueFilter):
                     "value_type: date with invalid date value:%s",
                     self.data.get('value', ''))
         elif self.data.get('value_type') == 'duration':
-            if parse_duration(self.data.get('value')) is None:
-                raise PolicyValidationError(
-                    "value_type: duration needs an ISO 8601 duration value, "
-                    "such as PT1H, got: %s" % self.data.get('value'))
             if 'op' in self.data and self.data['op'] not in DURATION_OPERATORS:
                 raise PolicyValidationError(
                     "value_type: duration can't be used with op: %s" % self.data['op'])
+            if 'value' not in self.data:
+                raise PolicyValidationError(
+                    "value_type: duration needs a literal value; "
+                    "value_from and value_path aren't supported")
+            if parse_duration(self.data['value']) is None:
+                raise PolicyValidationError(
+                    "value_type: duration needs an ISO 8601 duration in weeks, days, "
+                    "hours, minutes or seconds, such as PT1H (years and months aren't "
+                    "supported), got: %s" % self.data['value'])
         if 'key' not in self.data and 'key' in self.required_keys:
             raise PolicyValidationError(
                 "Missing 'key' in value filter %s" % self.data)

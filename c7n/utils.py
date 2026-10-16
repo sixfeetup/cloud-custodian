@@ -180,12 +180,13 @@ ISO_DURATION = re.compile(r"""
 def parse_duration(v):
     """Parse an ISO 8601 duration such as ``PT30M`` or ``P1DT12H`` to a timedelta.
 
-    Returns None for anything else, including durations in years or months and
-    durations too large for a timedelta.
+    Weeks stand alone, only the smallest unit may have a fraction, and either
+    ``.`` or ``,`` marks the decimal. Returns None for anything else, including
+    durations in years or months and durations too large for a timedelta.
     """
     if not isinstance(v, str):
         return None
-    match = ISO_DURATION.fullmatch(v)
+    match = ISO_DURATION.fullmatch(v.strip())
     if match is None:
         return None
     parts = {unit: n for unit, n in match.groupdict().items() if n}

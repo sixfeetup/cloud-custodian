@@ -608,9 +608,12 @@ class TestValueTypes(BaseFilterTest):
         self.assertFilter(fdata, instance(), False)
         self.assertFilter(fdata, i("P1000000000D"), False)
 
-        # the same length written in different units is equal
+        # the same length written in different units is equal, with or without op
         fdata["op"] = "equal"
         self.assertFilter(fdata, i("PT60M"), True)
+        del fdata["op"]
+        self.assertFilter(fdata, i("PT60M"), True)
+        self.assertFilter(fdata, i("PT30M"), False)
 
     def test_duration_validation(self):
         fdata = {
@@ -625,22 +628,30 @@ class TestValueTypes(BaseFilterTest):
         # years and months vary in length, so they are rejected
         for value in ("P1Y", "P1M"):
             fdata["value"] = value
-            self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+            self.assertRaisesRegex(
+                PolicyValidationError, "years and months", filters.factory(fdata, {}).validate)
 
         fdata["value"] = "PT1H"
         filters.factory(fdata, {}).validate()
 
-        # operators that can't compare two durations are rejected
+        # operators that can't compare two durations are rejected, before the value is checked
         for op in ("regex", "in", "contains", "mod"):
             fdata["op"] = op
-            self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+            self.assertRaisesRegex(
+                PolicyValidationError, "op: %s" % op, filters.factory(fdata, {}).validate)
+        fdata["op"] = "in"
+        fdata["value"] = ["PT1H", "PT2H"]
+        self.assertRaisesRegex(
+            PolicyValidationError, "op: in", filters.factory(fdata, {}).validate)
         fdata["op"] = "less-than"
+        fdata["value"] = "PT1H"
         filters.factory(fdata, {}).validate()
 
         # like value_type: date, a literal value is required
         del fdata["value"]
         fdata["value_path"] = "MaxIdleTime"
-        self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+        self.assertRaisesRegex(
+            PolicyValidationError, "literal value", filters.factory(fdata, {}).validate)
 
     def test_expiration(self):
 
