@@ -107,6 +107,7 @@ class CognitiveServiceUpdateAction(AzureBaseAction):
           - name: cognitive-services-disable-local-auth
             resource: azure.cognitiveservice
             filters:
+              - kind: CognitiveServices
               - type: value
                 key: properties.disableLocalAuth
                 op: ne

@@ -8,8 +8,10 @@ from unittest import mock
 from parameterized import parameterized
 
 import c7n.policy
+from c7n import schema, utils
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n_azure.constants import CONTAINER_EVENT_TRIGGER_MODE
+from c7n_azure.resources import ai_foundry
 
 from ..azure_common import (
     BaseTest,
@@ -119,6 +121,47 @@ class CognitiveServiceTest(BaseTest):
 
 
 class CognitiveServiceUpdateTest(BaseTest):
+    def test_update_example_targets_cognitive_services_with_local_auth(self) -> None:
+        doc = schema.ElementSchema.doc(ai_foundry.CognitiveServiceUpdateAction)
+        example = utils.yaml_load(doc.split('.. code-block:: yaml', 1)[1])['policies'][0]
+        with self.sign_out_patch():
+            policy = self.load_policy(example, validate=True)
+        resources = [
+            {
+                'id': '/accounts/cognitive',
+                'kind': 'CognitiveServices',
+                'properties': {'disableLocalAuth': False},
+            },
+            {
+                'id': '/accounts/already-disabled',
+                'kind': 'CognitiveServices',
+                'properties': {'disableLocalAuth': True},
+            },
+            {
+                'id': '/accounts/openai',
+                'kind': 'OpenAI',
+                'properties': {'disableLocalAuth': False},
+            },
+            {
+                'id': '/accounts/unverified',
+                'kind': 'HealthInsights',
+                'properties': {'disableLocalAuth': False},
+            },
+        ]
+        manager = policy.resource_manager
+        selected = manager.filter_resources(resources)
+        self.assertEqual([r['id'] for r in selected], ['/accounts/cognitive'])
+        session = mock.Mock()
+        session.resource_api_version.return_value = '2025-06-01'
+        with mock.patch.object(manager, 'get_session', return_value=session), \
+                mock.patch.object(manager, 'get_client') as get_client:
+            manager.actions[0].process(selected)
+            update = get_client.return_value.resources.begin_update_by_id
+            self.assertEqual(
+                [(call.args[0], call.args[2].serialize()) for call in update.call_args_list],
+                [('/accounts/cognitive', {'properties': {'disableLocalAuth': True}})],
+            )
+
     @parameterized.expand([
         ('local_auth_on', {'disableLocalAuth': False}),
         ('local_auth_off', {'disableLocalAuth': True}),
