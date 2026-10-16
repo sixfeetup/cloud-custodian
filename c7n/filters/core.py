@@ -111,6 +111,11 @@ OPERATORS = {
     'intersect': intersect,
     'mod': mod}
 
+# Operators that work on two timedeltas; the rest never match a duration.
+DURATION_OPERATORS = {
+    'eq', 'equal', 'ne', 'not-equal', 'gt', 'greater-than', 'ge', 'gte',
+    'le', 'lte', 'lt', 'less-than', 'mod'}
+
 
 VALUE_TYPES = [
     'age', 'integer', 'expiration', 'normalize', 'size',
@@ -661,6 +666,9 @@ class ValueFilter(BaseValueFilter):
                 raise PolicyValidationError(
                     "value_type: duration needs an ISO 8601 duration value, "
                     "such as PT1H, got: %s" % self.data.get('value'))
+            if 'op' in self.data and self.data['op'] not in DURATION_OPERATORS:
+                raise PolicyValidationError(
+                    "value_type: duration can't be used with op: %s" % self.data['op'])
         if 'key' not in self.data and 'key' in self.required_keys:
             raise PolicyValidationError(
                 "Missing 'key' in value filter %s" % self.data)

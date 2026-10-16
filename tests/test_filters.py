@@ -630,6 +630,13 @@ class TestValueTypes(BaseFilterTest):
         fdata["value"] = "PT1H"
         filters.factory(fdata, {}).validate()
 
+        # operators that can't compare two durations are rejected
+        for op in ("regex", "in", "contains"):
+            fdata["op"] = op
+            self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+        fdata["op"] = "less-than"
+        filters.factory(fdata, {}).validate()
+
         # like value_type: date, a literal value is required
         del fdata["value"]
         fdata["value_path"] = "MaxIdleTime"
