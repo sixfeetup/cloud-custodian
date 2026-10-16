@@ -586,6 +586,55 @@ class TestValueTypes(BaseFilterTest):
         self.assertFilter(fdata, i("1.9.11"), True)
         self.assertFilter(fdata, i("1.1"), True)
 
+    def test_duration(self):
+        fdata = {
+            "type": "value",
+            "key": "IdleTimeBeforeShutdown",
+            "op": "greater-than",
+            "value_type": "duration",
+            "value": "PT1H",
+        }
+
+        def i(d):
+            return instance(IdleTimeBeforeShutdown=d)
+
+        self.assertFilter(fdata, i("PT120M"), True)
+        self.assertFilter(fdata, i("P1D"), True)
+        self.assertFilter(fdata, i("PT60M"), False)
+        self.assertFilter(fdata, i("PT30M"), False)
+        # values that aren't durations, or are missing, aren't greater than anything,
+        # and one too large for a timedelta doesn't raise
+        self.assertFilter(fdata, i("30 minutes"), False)
+        self.assertFilter(fdata, instance(), False)
+        self.assertFilter(fdata, i("P1000000000D"), False)
+
+        # the same length written in different units is equal
+        fdata["op"] = "equal"
+        self.assertFilter(fdata, i("PT60M"), True)
+
+    def test_duration_validation(self):
+        fdata = {
+            "type": "value",
+            "key": "IdleTimeBeforeShutdown",
+            "op": "greater-than",
+            "value_type": "duration",
+            "value": "1h",
+        }
+        self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+
+        # years and months vary in length, so they are rejected
+        for value in ("P1Y", "P1M"):
+            fdata["value"] = value
+            self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+
+        fdata["value"] = "PT1H"
+        filters.factory(fdata, {}).validate()
+
+        # like value_type: date, a literal value is required
+        del fdata["value"]
+        fdata["value_path"] = "MaxIdleTime"
+        self.assertRaises(PolicyValidationError, filters.factory(fdata, {}).validate)
+
     def test_expiration(self):
 
         now = datetime.now(tz=tz.tzutc())
