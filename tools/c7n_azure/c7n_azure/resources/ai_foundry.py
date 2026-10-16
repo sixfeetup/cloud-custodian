@@ -8,6 +8,7 @@ from azure.mgmt.resource.resources.models import GenericResource
 from msrestazure.tools import parse_resource_id
 
 from c7n.utils import type_schema
+from c7n_azure import utils
 from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
 from c7n_azure.query import ChildResourceManager, ChildTypeInfo
@@ -135,29 +136,28 @@ class CognitiveServiceUsage(ChildResourceManager):
         **params: object,
     ) -> list[dict]:
         session = self.get_session()
-        token = session.credentials.get_token(f'{session.resource_endpoint}.default')
         url = (
             f'{session.cloud_endpoints.endpoints.resource_manager.rstrip("/")}'
             f'{parent_resource["id"]}/usages'
         )
         query = {'api-version': type_info.api_version}
         values = []
-        while url:
-            response = requests.get(
-                url,
-                headers={'Authorization': f'Bearer {token.token}'},
-                params=query,
-                timeout=30,
-            )
-            response.raise_for_status()
-            payload = response.json()
-            for usage in payload['value']:
-                usage['c7n:usage-id'] = (
-                    f'{parent_resource["id"]}/usages/{usage["name"]["value"]}'
+        with utils.requests_session(session, max_retries=3) as http:
+            while url:
+                response = http.get(
+                    url,
+                    params=query,
+                    timeout=30,
                 )
-                values.append(usage)
-            url = payload.get('nextLink')
-            query = None
+                response.raise_for_status()
+                payload = response.json()
+                for usage in payload['value']:
+                    usage['c7n:usage-id'] = (
+                        f'{parent_resource["id"]}/usages/{usage["name"]["value"]}'
+                    )
+                    values.append(usage)
+                url = payload.get('nextLink')
+                query = None
         return values
 
 

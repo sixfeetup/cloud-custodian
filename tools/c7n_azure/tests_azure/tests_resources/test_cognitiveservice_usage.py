@@ -1,15 +1,18 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import io
 import json
 from types import SimpleNamespace
 from unittest import mock
 
 import requests
+import urllib3
 
 import c7n.policy
 
 from c7n.exceptions import PolicyValidationError
+from c7n_azure.session import Session
 
 from ..azure_common import BaseTest, arm_template
 
@@ -52,18 +55,12 @@ class CognitiveServiceUsageUnitTest(BaseTest):
         response._content = json.dumps(payload).encode()
         return response
 
-    def fake_session(self) -> SimpleNamespace:
-        return SimpleNamespace(
-            resource_endpoint='https://management.azure.com/',
-            cloud_endpoints=SimpleNamespace(
-                endpoints=SimpleNamespace(
-                    resource_manager='https://management.azure.com/',
-                ),
-            ),
-            credentials=SimpleNamespace(
-                get_token=lambda scope: SimpleNamespace(token='test-token'),
-            ),
+    def fake_session(self) -> Session:
+        session = Session()
+        session.credentials = SimpleNamespace(
+            get_token=lambda scope: SimpleNamespace(token='test-token'),
         )
+        return session
 
     def test_enumerate_pages_preserves_fields_and_account_identity(self) -> None:
         manager = self.load_usage_policy().resource_manager
@@ -81,7 +78,7 @@ class CognitiveServiceUsageUnitTest(BaseTest):
         other_parent = {**self.parent, 'id': self.parent['id'] + '-two'}
         with (
             mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
-            mock.patch('c7n_azure.resources.ai_foundry.requests.get', side_effect=responses) as get,
+            mock.patch('requests.Session.get', side_effect=responses) as get,
         ):
             rows = manager.enumerate_resources(self.parent, manager.resource_type)
             other_rows = manager.enumerate_resources(other_parent, manager.resource_type)
@@ -120,7 +117,7 @@ class CognitiveServiceUsageUnitTest(BaseTest):
             ),
             mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
             mock.patch(
-                'c7n_azure.resources.ai_foundry.requests.get',
+                'requests.Session.get',
                 return_value=self.response(
                     {
                         'value': [
@@ -141,25 +138,25 @@ class CognitiveServiceUsageUnitTest(BaseTest):
         )
         self.assertEqual(rows[0]['c7n:parent-id'], self.parent['id'])
 
-    def test_http_failure_is_not_an_empty_result(self) -> None:
+    def test_permanent_http_failure_is_not_retried(self) -> None:
         manager = self.load_usage_policy().resource_manager
         with (
             mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
             mock.patch(
-                'c7n_azure.resources.ai_foundry.requests.get',
-                return_value=self.response({'error': {}}, 403),
-            ),
+                'urllib3.connectionpool.HTTPSConnectionPool._make_request',
+                return_value=self.transport_response({'error': {}}, 403),
+            ) as send,
         ):
-            with self.assertRaises(requests.HTTPError):
+            with self.assertRaises(requests.HTTPError) as error:
                 manager.enumerate_resources(self.parent, manager.resource_type)
+        self.assertEqual(error.exception.response.status_code, 403)
+        self.assertEqual(send.call_count, 1)
 
     def test_missing_value_is_not_an_empty_result(self) -> None:
         manager = self.load_usage_policy().resource_manager
         with (
             mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
-            mock.patch(
-                'c7n_azure.resources.ai_foundry.requests.get', return_value=self.response({})
-            ),
+            mock.patch('requests.Session.get', return_value=self.response({})),
         ):
             with self.assertRaises(KeyError):
                 manager.enumerate_resources(self.parent, manager.resource_type)
@@ -169,11 +166,88 @@ class CognitiveServiceUsageUnitTest(BaseTest):
         with (
             mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
             mock.patch(
-                'c7n_azure.resources.ai_foundry.requests.get',
+                'requests.Session.get',
                 return_value=self.response({'value': []}),
             ),
         ):
             self.assertEqual(manager.enumerate_resources(self.parent, manager.resource_type), [])
+
+    @staticmethod
+    def transport_response(payload: dict, status: int = 200) -> urllib3.HTTPResponse:
+        return urllib3.HTTPResponse(
+            body=io.BytesIO(json.dumps(payload).encode()),
+            status=status,
+            headers={'Content-Type': 'application/json', 'Retry-After': '0'},
+            preload_content=False,
+        )
+
+    def test_enumerates_with_uninitialized_credentials(self) -> None:
+        manager = self.load_usage_policy().resource_manager
+        session = Session()
+        self.assertIsNone(session.credentials)
+        with (
+            mock.patch.object(manager, 'get_session', return_value=session),
+            mock.patch(
+                'c7n_azure.session.AzureCredential', return_value=self.fake_session().credentials
+            ),
+            mock.patch(
+                'urllib3.connectionpool.HTTPSConnectionPool._make_request',
+                return_value=self.transport_response(
+                    {
+                        'value': [self.usage('Transactions')],
+                    }
+                ),
+            ) as send,
+        ):
+            rows = manager.enumerate_resources(self.parent, manager.resource_type)
+        self.assertEqual([row['name']['value'] for row in rows], ['Transactions'])
+        self.assertEqual(send.call_args.kwargs['headers']['Authorization'], 'Bearer test-token')
+
+    def test_retries_transient_errors_across_pages(self) -> None:
+        manager = self.load_usage_policy().resource_manager
+        with (
+            mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
+            mock.patch(
+                'urllib3.connectionpool.HTTPSConnectionPool._make_request',
+                side_effect=[
+                    self.transport_response({'error': {}}, 429),
+                    self.transport_response(
+                        {
+                            'value': [self.usage('Transactions')],
+                            'nextLink': 'https://management.azure.com/usage-next-page',
+                        }
+                    ),
+                    self.transport_response({'error': {}}, 503),
+                    self.transport_response(
+                        {
+                            'value': [self.usage('ProvisionedCapacity')],
+                        }
+                    ),
+                ],
+            ) as send,
+        ):
+            rows = manager.enumerate_resources(self.parent, manager.resource_type)
+        self.assertEqual(
+            [row['name']['value'] for row in rows],
+            ['Transactions', 'ProvisionedCapacity'],
+        )
+        self.assertEqual(send.call_count, 4)
+
+    def test_retry_exhaustion_raises_http_error(self) -> None:
+        manager = self.load_usage_policy().resource_manager
+        for status in (429, 503):
+            with (
+                self.subTest(status=status),
+                mock.patch.object(manager, 'get_session', return_value=self.fake_session()),
+                mock.patch(
+                    'urllib3.connectionpool.HTTPSConnectionPool._make_request',
+                    side_effect=[self.transport_response({'error': {}}, status) for _ in range(4)],
+                ) as send,
+            ):
+                with self.assertRaises(requests.HTTPError) as error:
+                    manager.enumerate_resources(self.parent, manager.resource_type)
+                self.assertEqual(error.exception.response.status_code, status)
+                self.assertEqual(send.call_count, 4)
 
     def test_arm_actions_are_not_available(self) -> None:
         self.load_usage_policy()
