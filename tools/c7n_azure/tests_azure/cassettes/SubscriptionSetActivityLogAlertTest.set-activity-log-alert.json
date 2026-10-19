@@ -1,0 +1,233 @@
+{
+    "version": 1,
+    "interactions": [
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47?api-version=2022-12-01",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "content-length": [
+                        "478"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: D715C35CD6BE4D70922AA1CA2D81A15C Ref B: CHI261140505031 Ref C: 2026-10-19T18:03:56Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Mon, 19 Oct 2026 18:03:56 GMT"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47",
+                        "authorizationSource": "RoleBased",
+                        "managedByTenants": [],
+                        "subscriptionId": "ea42f556-5106-4743-99b0-c129bfa71a47",
+                        "tenantId": "00000000-0000-0000-0000-000000000003",
+                        "displayName": "Test Subscription",
+                        "state": "Enabled",
+                        "subscriptionPolicies": {
+                            "locationPlacementId": "Public_2014-09-01",
+                            "quotaId": "PayAsYouGo_2014-09-01",
+                            "spendingLimit": "Off"
+                        },
+                        "promotions": [
+                            {
+                                "category": "freetier",
+                                "endDateTime": "2025-09-13T21:06:45.7634916Z"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "PUT",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/activityLogAlerts/cctest-nsg-write-alert?api-version=2017-04-01",
+                "body": "mock_body",
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 201,
+                    "message": "Created"
+                },
+                "headers": {
+                    "content-length": [
+                        "720"
+                    ],
+                    "api-supported-versions": [
+                        "2017-03-01-preview, 2017-04-01, 2020-10-01, 2023-01-01-preview, 2026-01-01"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "x-rate-limit-remaining": [
+                        "29"
+                    ],
+                    "set-cookie": [
+                        "ARRAffinity=8822bf0968f987766d394fcb39b3e1e02adf468ae02eb0e7287c47abc373715c;Path=/;HttpOnly;Secure;Domain=ala.global.prod.alertsrp.azure.com",
+                        "ARRAffinitySameSite=8822bf0968f987766d394fcb39b3e1e02adf468ae02eb0e7287c47abc373715c;Path=/;HttpOnly;SameSite=None;Secure;Domain=ala.global.prod.alertsrp.azure.com"
+                    ],
+                    "x-rate-limit-reset": [
+                        "2026-10-19T18:04:58.7441389Z"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "date": [
+                        "Mon, 19 Oct 2026 18:04:00 GMT"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-writes": [
+                        "2999"
+                    ],
+                    "x-rate-limit-limit": [
+                        "1m"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: B6E90FE824264D25A6068B34597F5EE0 Ref B: CHI261140504031 Ref C: 2026-10-19T18:03:58Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/activityLogAlerts/cctest-nsg-write-alert",
+                        "name": "cctest-nsg-write-alert",
+                        "type": "Microsoft.Insights/ActivityLogAlerts",
+                        "location": "Global",
+                        "properties": {
+                            "scopes": [
+                                "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47"
+                            ],
+                            "condition": {
+                                "allOf": [
+                                    {
+                                        "field": "category",
+                                        "equals": "Administrative"
+                                    },
+                                    {
+                                        "field": "operationName",
+                                        "equals": "Microsoft.Network/networkSecurityGroups/write"
+                                    }
+                                ]
+                            },
+                            "actions": {
+                                "actionGroups": [
+                                    {
+                                        "actionGroupId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/actionGroups/cctest-activity-alert"
+                                    }
+                                ]
+                            },
+                            "enabled": true
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "request": {
+                "method": "GET",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/activityLogAlerts/cctest-nsg-write-alert?api-version=2017-04-01",
+                "body": null,
+                "headers": {}
+            },
+            "response": {
+                "status": {
+                    "code": 200,
+                    "message": "OK"
+                },
+                "headers": {
+                    "content-length": [
+                        "720"
+                    ],
+                    "api-supported-versions": [
+                        "2017-03-01-preview, 2017-04-01, 2020-10-01, 2023-01-01-preview, 2026-01-01"
+                    ],
+                    "x-ms-orig-api-version": [
+                        "2017-04-01"
+                    ],
+                    "content-type": [
+                        "application/json; charset=utf-8"
+                    ],
+                    "set-cookie": [
+                        "ARRAffinity=25818f7a4137a42c02225abe913505506469b332b78b4cd6eaadab368c5b6fb3;Path=/;HttpOnly;Secure;Domain=ala.global.prod.alertsrp.azure.com",
+                        "ARRAffinitySameSite=25818f7a4137a42c02225abe913505506469b332b78b4cd6eaadab368c5b6fb3;Path=/;HttpOnly;SameSite=None;Secure;Domain=ala.global.prod.alertsrp.azure.com"
+                    ],
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "date": [
+                        "Mon, 19 Oct 2026 18:04:00 GMT"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 6FAB09FC959A42C69D8C2CBBBC5EF4EA Ref B: CHI261140503060 Ref C: 2026-10-19T18:04:00Z"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ]
+                },
+                "body": {
+                    "data": {
+                        "id": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/activityLogAlerts/cctest-nsg-write-alert",
+                        "name": "cctest-nsg-write-alert",
+                        "type": "Microsoft.Insights/ActivityLogAlerts",
+                        "location": "Global",
+                        "properties": {
+                            "scopes": [
+                                "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47"
+                            ],
+                            "condition": {
+                                "allOf": [
+                                    {
+                                        "field": "category",
+                                        "equals": "Administrative"
+                                    },
+                                    {
+                                        "field": "operationName",
+                                        "equals": "Microsoft.Network/networkSecurityGroups/write"
+                                    }
+                                ]
+                            },
+                            "actions": {
+                                "actionGroups": [
+                                    {
+                                        "actionGroupId": "/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_activity-log-alert/providers/microsoft.insights/actionGroups/cctest-activity-alert"
+                                    }
+                                ]
+                            },
+                            "enabled": true
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
