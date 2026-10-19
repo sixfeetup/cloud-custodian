@@ -1,0 +1,568 @@
+tests/test_cloudtrail.py
+  h_07d49deca46b44 3,7-11,266-446
+c7n/actions/invoke.py
+  h_07d49deca46b44 84
+c7n/resources/account.py
+  h_07d49deca46b44 15,628-766
+c7n/resources/ami.py
+  h_07d49deca46b44 13-14,30,227-298
+c7n/resources/cfn.py
+  h_07d49deca46b44 20-22
+c7n/resources/cloudtrail.py
+  h_07d49deca46b44 5-6,8,248-363
+c7n/resources/ec2.py
+  h_07d49deca46b44 46-52,80,95,112,114-134,142
+c7n/resources/kafka.py
+  h_07d49deca46b44 8-11,17,61-139
+c7n/resources/resource_map.py
+  h_07d49deca46b44 216
+c7n/resources/sagemaker.py
+  h_07d49deca46b44 12,15,1803-1899
+c7n/resources/secretsmanager.py
+  h_07d49deca46b44 19-25
+c7n/resources/securityhub.py
+  h_07d49deca46b44 325-345,675,677
+c7n/resources/vpc.py
+  h_07d49deca46b44 889-901,918
+tests/data/placebo/test_ami_set_disabled_disable/ec2.DescribeImages_1.json
+  h_07d49deca46b44 1-194
+tests/data/placebo/test_ami_set_disabled_disable/ec2.DisableImage_1.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_ami_set_disabled_disable/ec2.DisableImage_2.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_ami_set_disabled_enable/ec2.DescribeImages_1.json
+  h_07d49deca46b44 1-156
+tests/data/placebo/test_ami_set_disabled_enable/ec2.EnableImage_1.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_ami_set_disabled_enable/ec2.EnableImage_2.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.DescribeTrails_1.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.DescribeTrails_2.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.GetEventSelectors_1.json
+  h_07d49deca46b44 1-15
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.GetEventSelectors_2.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.GetEventSelectors_3.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors/cloudtrail.PutEventSelectors_1.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors/tagging.GetResources_2.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.DescribeTrails_1.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.DescribeTrails_2.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.GetEventSelectors_1.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.GetEventSelectors_2.json
+  h_07d49deca46b44 1-22
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.PutEventSelectors_1.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/cloudtrail.PutEventSelectors_2.json
+  h_07d49deca46b44 1-22
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_basic/tagging.GetResources_2.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_error/cloudtrail.DescribeTrails_1.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors_error/cloudtrail.PutEventSelectors_1.json
+  h_07d49deca46b44 1-10
+tests/data/placebo/test_cloudtrail_set_event_selectors_error/cloudtrail.PutEventSelectors_2.json
+  h_07d49deca46b44 1-10
+tests/data/placebo/test_cloudtrail_set_event_selectors_error/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.DescribeTrails_1.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.DescribeTrails_2.json
+  h_07d49deca46b44 1-60
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.GetEventSelectors_1.json
+  h_07d49deca46b44 1-15
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.GetEventSelectors_2.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.PutEventSelectors_1.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/cloudtrail.PutEventSelectors_2.json
+  h_07d49deca46b44 1-43
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_mismatch/tagging.GetResources_2.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_cloudtrail_set_event_selectors_not_found/cloudtrail.PutEventSelectors_1.json
+  h_07d49deca46b44 1-10
+tests/data/placebo/test_create_access_analyzer/access-analyzer.CreateAnalyzer_1.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_create_access_analyzer/access-analyzer.ListAnalyzers_1.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_create_access_analyzer/access-analyzer.ListAnalyzers_2.json
+  h_07d49deca46b44 1-25
+tests/data/placebo/test_create_access_analyzer/iam.ListAccountAliases_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_create_access_analyzer/iam.ListAccountAliases_2.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_ec2_augment_tags_instance_state/ec2.DescribeInstances_1.json
+  h_07d49deca46b44 1-199
+tests/data/placebo/test_ec2_augment_tags_lookup/ec2.DescribeInstances_1.json
+  h_07d49deca46b44 1-199
+tests/data/placebo/test_ec2_augment_tags_lookup/ec2.DescribeTags_1.json
+  h_07d49deca46b44 1-26
+tests/data/placebo/test_ec2_augment_tags_lookup_many/ec2.DescribeInstances_1.json
+  h_07d49deca46b44 1-390
+tests/data/placebo/test_ec2_augment_tags_lookup_many/ec2.DescribeTags_1.json
+  h_07d49deca46b44 1-39
+tests/data/placebo/test_ec2_augment_tags_lookup_many/ec2.DescribeTags_2.json
+  h_07d49deca46b44 1-14
+tests/data/placebo/test_ec2_augment_tags_short_circuit/ec2.DescribeInstances_1.json
+  h_07d49deca46b44 1-199
+tests/data/placebo/test_kafka_broker_metrics/kafka.ListClustersV2_1.json
+  h_07d49deca46b44 1-99
+tests/data/placebo/test_kafka_broker_metrics/kafka.ListNodes_1.json
+  h_07d49deca46b44 1-44
+tests/data/placebo/test_kafka_broker_metrics/monitoring.GetMetricStatistics_1.json
+  h_07d49deca46b44 1-23
+tests/data/placebo/test_kafka_broker_metrics/monitoring.GetMetricStatistics_2.json
+  h_07d49deca46b44 1-23
+tests/data/placebo/test_kafka_broker_query/kafka.ListClustersV2_1.json
+  h_07d49deca46b44 1-99
+tests/data/placebo/test_kafka_broker_query/kafka.ListNodes_1.json
+  h_07d49deca46b44 1-44
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_1.json
+  h_07d49deca46b44 1-39
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_2.json
+  h_07d49deca46b44 1-55
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_3.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_4.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_5.json
+  h_07d49deca46b44 1-55
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_6.json
+  h_07d49deca46b44 1-39
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.DescribeSpace_7.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.ListSpaces_1.json
+  h_07d49deca46b44 1-151
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.UpdateSpace_1.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_sagemaker_space_update/api.sagemaker.UpdateSpace_2.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_sagemaker_space_update/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.DescribeSpace_1.json
+  h_07d49deca46b44 1-39
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.DescribeSpace_2.json
+  h_07d49deca46b44 1-55
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.DescribeSpace_3.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.DescribeSpace_4.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.DescribeSpace_5.json
+  h_07d49deca46b44 1-50
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.ListSpaces_1.json
+  h_07d49deca46b44 1-151
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.UpdateSpace_1.json
+  h_07d49deca46b44 1-10
+tests/data/placebo/test_sagemaker_space_update_error/api.sagemaker.UpdateSpace_2.json
+  h_07d49deca46b44 1-7
+tests/data/placebo/test_sagemaker_space_update_error/tagging.GetResources_1.json
+  h_07d49deca46b44 1-8
+tests/terraform/cloudtrail_set_event_selectors/main.tf
+  h_07d49deca46b44 1-104
+tests/terraform/cloudtrail_set_event_selectors/tf_resources.json
+  h_07d49deca46b44 1-210
+tests/terraform/ec2_augment_tags/ami.tf
+  h_07d49deca46b44 1-12
+tests/terraform/ec2_augment_tags/main.tf
+  h_07d49deca46b44 1-23
+tests/terraform/ec2_augment_tags/network.tf
+  h_07d49deca46b44 1-8
+tests/terraform/ec2_augment_tags/tf_resources.json
+  h_07d49deca46b44 1-408
+tests/terraform/kafka_broker/main.tf
+  h_07d49deca46b44 1-43
+tests/terraform/kafka_broker/network.tf
+  h_07d49deca46b44 1-49
+tests/terraform/kafka_broker/providers.tf
+  h_07d49deca46b44 1-17
+tests/terraform/kafka_broker/tf_resources.json
+  h_07d49deca46b44 1-285
+tests/terraform/sagemaker_space_update/main.tf
+  h_07d49deca46b44 1-155
+tests/terraform/sagemaker_space_update/tf_resources.json
+  h_07d49deca46b44 1-427
+tests/test_account_access_analyzer.py
+  h_07d49deca46b44 1-391
+tests/test_actions.py
+  h_07d49deca46b44 3-5,12-40
+tests/test_ami.py
+  h_07d49deca46b44 3-4,9,12-13,480-576
+tests/test_cfn.py
+  h_07d49deca46b44 351-356,369-370,381-385,390
+tests/test_ec2.py
+  h_07d49deca46b44 190-330
+tests/test_kafka.py
+  h_07d49deca46b44 321-362
+tests/test_policy.py
+  h_07d49deca46b44 996-997
+tests/test_sagemaker.py
+  h_07d49deca46b44 9,16,1588-1759
+tests/test_secretsmanager.py
+  h_07d49deca46b44 280-290
+tests/test_securityhub.py
+  h_07d49deca46b44 6-10,13,139-186
+tests/test_vpc.py
+  h_07d49deca46b44 6,4928-4965
+tools/c7n_azure/c7n_azure/resources/arm.py
+  h_07d49deca46b44 29-30
+tools/c7n_azure/c7n_azure/resources/disk.py
+  h_07d49deca46b44 10-11,536-630
+tools/c7n_azure/c7n_azure/resources/machine_learning_compute_cluster.py
+  h_07d49deca46b44 1-357
+tools/c7n_azure/c7n_azure/resources/machine_learning_environment_version.py
+  h_07d49deca46b44 1-84
+tools/c7n_azure/c7n_azure/resources/machine_learning_schedule.py
+  h_07d49deca46b44 1-79
+tools/c7n_azure/c7n_azure/resources/resource_map.py
+  h_07d49deca46b44 71,73,77
+tools/c7n_azure/c7n_azure/resources/vm.py
+  h_07d49deca46b44 8,418-451,457-463,466-476,480-487,490-498,505
+tools/c7n_azure/c7n_azure/utils.py
+  h_07d49deca46b44 12,26-27,614-649
+tools/c7n_azure/tests_azure/azure_common.py
+  h_07d49deca46b44 3,13,120,176-190,193-232,289-291,302-313,329-339,355,365-383,385-389,397,432-474,502-504,511-515,527-530,735-739
+tools/c7n_azure/tests_azure/cassettes/DiskSnapshotTest.disk-snapshot-full.json
+  h_07d49deca46b44 1-583
+tools/c7n_azure/tests_azure/cassettes/DiskSnapshotTest.disk-snapshot-tag-limit.json
+  h_07d49deca46b44 1-631
+tools/c7n_azure/tests_azure/cassettes/DiskSnapshotTest.disk-snapshot.json
+  h_07d49deca46b44 1-586
+tools/c7n_azure/tests_azure/cassettes/MachineLearningComputeClusterTest.machine-learning-compute-cluster-inactive-current.json
+  h_07d49deca46b44 1-876
+tools/c7n_azure/tests_azure/cassettes/MachineLearningComputeClusterTest.machine-learning-compute-cluster-inactive-recent.json
+  h_07d49deca46b44 1-772
+tools/c7n_azure/tests_azure/cassettes/MachineLearningComputeClusterTest.machine-learning-compute-cluster-query.json
+  h_07d49deca46b44 1-221
+tools/c7n_azure/tests_azure/cassettes/MachineLearningComputeClusterTest.machine-learning-compute-cluster-set-min-nodes.json
+  h_07d49deca46b44 1-1143
+tools/c7n_azure/tests_azure/cassettes/MachineLearningEnvironmentVersionTest.machine-learning-environment-versions.json
+  h_07d49deca46b44 1-787
+tools/c7n_azure/tests_azure/cassettes/MachineLearningScheduleTest.machine-learning-schedules.json
+  h_07d49deca46b44 1-294
+tools/c7n_azure/tests_azure/cassettes/VMResizeTest.test_resize.json
+  h_07d49deca46b44 1-1305
+tools/c7n_azure/tests_azure/cassettes/VMResizeTest.test_resize_type_map.json
+  h_07d49deca46b44 1-1984
+tools/c7n_azure/tests_azure/cassettes/VMResizeTest.test_resize_type_map_default.json
+  h_07d49deca46b44 1-1305
+tools/c7n_azure/tests_azure/templates/disk-snapshot-full.json
+  h_07d49deca46b44 1-24
+tools/c7n_azure/tests_azure/templates/disk-snapshot-tag-limit.json
+  h_07d49deca46b44 1-91
+tools/c7n_azure/tests_azure/templates/disk-snapshot.json
+  h_07d49deca46b44 1-24
+tools/c7n_azure/tests_azure/templates/machine-learning-compute-cluster-jobs.sh
+  h_07d49deca46b44 1-206
+tools/c7n_azure/tests_azure/templates/machine-learning-compute-cluster.json
+  h_07d49deca46b44 1-105
+tools/c7n_azure/tests_azure/templates/machine-learning-environment-version.json
+  h_07d49deca46b44 1-130
+tools/c7n_azure/tests_azure/templates/machine-learning-schedule.json
+  h_07d49deca46b44 1-126
+tools/c7n_azure/tests_azure/templates/vm-resize.json
+  h_07d49deca46b44 1-112
+tools/c7n_azure/tests_azure/test_azure_common.py
+  h_07d49deca46b44 1-211
+tools/c7n_azure/tests_azure/test_azure_utils.py
+  h_07d49deca46b44 9,51-86
+tools/c7n_azure/tests_azure/tests_resources/test_disk.py
+  h_07d49deca46b44 3,5,11-16,567-755
+tools/c7n_azure/tests_azure/tests_resources/test_machine_learning_compute_cluster.py
+  h_07d49deca46b44 1-1021
+tools/c7n_azure/tests_azure/tests_resources/test_machine_learning_environment_version.py
+  h_07d49deca46b44 1-171
+tools/c7n_azure/tests_azure/tests_resources/test_machine_learning_schedule.py
+  h_07d49deca46b44 1-171
+tools/c7n_azure/tests_azure/tests_resources/test_vm.py
+  h_07d49deca46b44 5-6,9,12,368-582
+tools/c7n_gcp/c7n_gcp/filters/metrics.py
+  h_07d49deca46b44 116-130,134,156-174,177,181-187,264-265
+tools/c7n_gcp/c7n_gcp/query.py
+  h_07d49deca46b44 456-459
+tools/c7n_gcp/c7n_gcp/resources/appengine.py
+  h_07d49deca46b44 174-186,193-196,201,212-216
+tools/c7n_gcp/c7n_gcp/resources/compute.py
+  h_07d49deca46b44 374-433
+tools/c7n_gcp/c7n_gcp/resources/kms.py
+  h_07d49deca46b44 257-287
+tools/c7n_gcp/c7n_gcp/resources/loadbalancer.py
+  h_07d49deca46b44 3,6-8,14-15,282-368
+tools/c7n_gcp/c7n_gcp/resources/logging.py
+  h_07d49deca46b44 3-4,6,11-17,97-269
+tools/c7n_gcp/c7n_gcp/resources/resourcemanager.py
+  h_07d49deca46b44 6,12,15-16,142-223,576-744
+tools/c7n_gcp/c7n_gcp/resources/storage.py
+  h_07d49deca46b44 102-152
+tools/c7n_gcp/c7n_gcp/resources/vertexai.py
+  h_07d49deca46b44 300,1434-1457,1485-1493
+tools/c7n_gcp/c7n_gcp/utils.py
+  h_07d49deca46b44 1-681
+tools/c7n_gcp/tests/data/events/app-engine-version-create-first.json
+  h_07d49deca46b44 1-72
+tools/c7n_gcp/tests/data/events/app-engine-version-create-last.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian-services-default-versions-c7n-always-fd72_1.json
+  h_07d49deca46b44 1-70
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian-services-default-versions-c7n-always-fd72_2.json
+  h_07d49deca46b44 1-70
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian-services-default_1.json
+  h_07d49deca46b44 1-26
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian-services-default_2.json
+  h_07d49deca46b44 1-26
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian_1.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_audit/get-appengine.googleapis.com-v1-apps-cloud-custodian_2.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_full_view/get-appengine.googleapis.com-v1-apps-cloud-custodian-services-default-versions_1.json
+  h_07d49deca46b44 1-179
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_full_view/get-appengine.googleapis.com-v1-apps-cloud-custodian-services_1.json
+  h_07d49deca46b44 1-30
+tools/c7n_gcp/tests/data/flights/app_engine_service_version_full_view/get-appengine.googleapis.com-v1-apps-cloud-custodian_1.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/bucket-public-access-enforced/get-storage.googleapis.com-storage-v1-b-c7n-pap-test-k3v9xq2m_1.json
+  h_07d49deca46b44 1-50
+tools/c7n_gcp/tests/data/flights/bucket-public-access-enforced/get-storage.googleapis.com-storage-v1-b_1.json
+  h_07d49deca46b44 1-54
+tools/c7n_gcp/tests/data/flights/bucket-public-access-enforced/patch-storage.googleapis.com-storage-v1-b-c7n-pap-test-k3v9xq2m_1.json
+  h_07d49deca46b44 1-29
+tools/c7n_gcp/tests/data/flights/bucket-public-access-inherited/get-storage.googleapis.com-storage-v1-b-c7n-pap-inh-r7t2wd5n_1.json
+  h_07d49deca46b44 1-50
+tools/c7n_gcp/tests/data/flights/bucket-public-access-inherited/get-storage.googleapis.com-storage-v1-b_1.json
+  h_07d49deca46b44 1-54
+tools/c7n_gcp/tests/data/flights/bucket-public-access-inherited/patch-storage.googleapis.com-storage-v1-b-c7n-pap-inh-r7t2wd5n_1.json
+  h_07d49deca46b44 1-29
+tools/c7n_gcp/tests/data/flights/instance-set-can-ip-forward/get-compute-v1-projects-cloud-custodian-aggregated-instances_1.json
+  h_07d49deca46b44 1-1700
+tools/c7n_gcp/tests/data/flights/instance-set-can-ip-forward/get-compute-v1-projects-cloud-custodian-zones-us-central1-a-instances-sacred-dassie_1.json
+  h_07d49deca46b44 1-140
+tools/c7n_gcp/tests/data/flights/instance-set-can-ip-forward/put-compute-v1-projects-cloud-custodian-zones-us-central1-a-instances-sacred-dassie_1.json
+  h_07d49deca46b44 1-31
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-8f5962e0-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-ea33b5a9-cryptoKeys_1.json
+  h_07d49deca46b44 1-68
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dp-kr-442b-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-002c1dda-cryptoKeys_1.json
+  h_07d49deca46b44 1-114
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-drea-5734-cryptoKeys_1.json
+  h_07d49deca46b44 1-123
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-bunny-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-firefly-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_1.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_2.json
+  h_07d49deca46b44 1-41
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys_1.json
+  h_07d49deca46b44 1-43
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-hyena-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-katydid-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings_1.json
+  h_07d49deca46b44 1-62
+tools/c7n_gcp/tests/data/flights/kms-key-iam-add/post-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-setIamPolicy_1.json
+  h_07d49deca46b44 1-40
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-8f5962e0-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-ea33b5a9-cryptoKeys_1.json
+  h_07d49deca46b44 1-68
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dp-kr-442b-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-002c1dda-cryptoKeys_1.json
+  h_07d49deca46b44 1-114
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-drea-5734-cryptoKeys_1.json
+  h_07d49deca46b44 1-123
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-bunny-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-firefly-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_1.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_2.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_3.json
+  h_07d49deca46b44 1-29
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys_1.json
+  h_07d49deca46b44 1-43
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-hyena-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-katydid-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings_1.json
+  h_07d49deca46b44 1-62
+tools/c7n_gcp/tests/data/flights/kms-key-iam-matched/post-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-setIamPolicy_1.json
+  h_07d49deca46b44 1-28
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-8f5962e0-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dataproc-kr-ea33b5a9-cryptoKeys_1.json
+  h_07d49deca46b44 1-68
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-dp-kr-442b-cryptoKeys_1.json
+  h_07d49deca46b44 1-45
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-002c1dda-cryptoKeys_1.json
+  h_07d49deca46b44 1-114
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-kr-drea-5734-cryptoKeys_1.json
+  h_07d49deca46b44 1-123
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-bunny-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-firefly-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_1.json
+  h_07d49deca46b44 1-41
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-getIamPolicy_2.json
+  h_07d49deca46b44 1-35
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys_1.json
+  h_07d49deca46b44 1-43
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-hyena-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-katydid-cryptoKeys_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/get-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings_1.json
+  h_07d49deca46b44 1-62
+tools/c7n_gcp/tests/data/flights/kms-key-iam-remove/post-cloudkms.googleapis.com-v1-projects-cloud-custodian-locations-us-central1-keyRings-c7n-test-keyring-gibbon-cryptoKeys-c7n-test-cryptokey-setIamPolicy_1.json
+  h_07d49deca46b44 1-34
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-good/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-sslPolicies-c7n-default-aa7f-good_1.json
+  h_07d49deca46b44 1-39
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-good/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-targetHttpsProxies_1.json
+  h_07d49deca46b44 1-84
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-none/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-targetHttpsProxies_1.json
+  h_07d49deca46b44 1-84
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-not-none/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-targetHttpsProxies_1.json
+  h_07d49deca46b44 1-84
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-shared/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-sslPolicies-c7n-default-aa7f-weak_1.json
+  h_07d49deca46b44 1-44
+tools/c7n_gcp/tests/data/flights/lb-https-ssl-shared/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-targetHttpsProxies_1.json
+  h_07d49deca46b44 1-84
+tools/c7n_gcp/tests/data/flights/lb-sslproxy-ssl-weak/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-sslPolicies-c7n-default-3e3a-weak_1.json
+  h_07d49deca46b44 1-44
+tools/c7n_gcp/tests/data/flights/lb-sslproxy-ssl-weak/get-compute.googleapis.com-compute-v1-projects-cloud-custodian-global-targetSslProxies_1.json
+  h_07d49deca46b44 1-38
+tools/c7n_gcp/tests/data/flights/log-project-sink-exact/get-v2-projects-cloud-custodian-sinks_1.json
+  h_07d49deca46b44 1-104
+tools/c7n_gcp/tests/data/flights/log-project-sink-overlap/get-v2-projects-cloud-custodian-sinks_1.json
+  h_07d49deca46b44 1-120
+tools/c7n_gcp/tests/data/flights/project-dlp-discovery-configs/get-cloudresourcemanager.googleapis.com-v1-projects_1.json
+  h_07d49deca46b44 1-36
+tools/c7n_gcp/tests/data/flights/project-dlp-discovery-configs/get-dlp.googleapis.com-v2-projects-cloud-custodian-locations---discoveryConfigs_1.json
+  h_07d49deca46b44 1-41
+tools/c7n_gcp/tests/data/flights/project-dlp-discovery-configs/get-dlp.googleapis.com-v2-projects-cloud-custodian-locations---discoveryConfigs_2.json
+  h_07d49deca46b44 1-18
+tools/c7n_gcp/tests/data/flights/project-metric-filter-missing-value/get-cloudresourcemanager.googleapis.com-v1-projects_1.json
+  h_07d49deca46b44 1-33
+tools/c7n_gcp/tests/data/flights/project-metric-filter-missing-value/get-monitoring.googleapis.com-v3-projects-cloud-custodian-timeSeries_1.json
+  h_07d49deca46b44 1-20
+tools/c7n_gcp/tests/data/flights/project-metric-filter-multiple-series/get-cloudresourcemanager.googleapis.com-v1-projects_1.json
+  h_07d49deca46b44 1-33
+tools/c7n_gcp/tests/data/flights/project-metric-filter-multiple-series/get-monitoring.googleapis.com-v3-projects-cloud-custodian-timeSeries_1.json
+  h_07d49deca46b44 1-90
+tools/c7n_gcp/tests/data/flights/project-metric-filter/get-cloudresourcemanager.googleapis.com-v1-projects_1.json
+  h_07d49deca46b44 1-33
+tools/c7n_gcp/tests/data/flights/project-metric-filter/get-cloudresourcemanager.googleapis.com-v1-projects_2.json
+  h_07d49deca46b44 1-33
+tools/c7n_gcp/tests/data/flights/project-metric-filter/get-monitoring.googleapis.com-v3-projects-cloud-custodian-timeSeries_1.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/project-metric-filter/get-monitoring.googleapis.com-v3-projects-cloud-custodian-timeSeries_2.json
+  h_07d49deca46b44 1-46
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-aiplatform.googleapis.com-v1beta1-publishers-anthropic-models_1.json
+  h_07d49deca46b44 1-567
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-aiplatform.googleapis.com-v1beta1-publishers-cohere-models_1.json
+  h_07d49deca46b44 1-18
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-aiplatform.googleapis.com-v1beta1-publishers-google-models_1.json
+  h_07d49deca46b44 1-298
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-aiplatform.googleapis.com-v1beta1-publishers-meta-models_1.json
+  h_07d49deca46b44 1-18
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-aiplatform.googleapis.com-v1beta1-publishers-mistralai-models_1.json
+  h_07d49deca46b44 1-121
+tools/c7n_gcp/tests/data/flights/vertex-ai-publisher-model-metrics/get-monitoring.googleapis.com-v3-projects-cloud-custodian-timeSeries_1.json
+  h_07d49deca46b44 1-47
+tools/c7n_gcp/tests/terraform/app_engine_service_version/README.md
+  h_07d49deca46b44 1-86
+tools/c7n_gcp/tests/terraform/app_engine_service_version/app/app.js
+  h_07d49deca46b44 1-3
+tools/c7n_gcp/tests/terraform/app_engine_service_version/app/package.json
+  h_07d49deca46b44 1-6
+tools/c7n_gcp/tests/terraform/app_engine_service_version/main.tf
+  h_07d49deca46b44 1-75
+tools/c7n_gcp/tests/terraform/app_engine_service_version/tf_resources.json
+  h_07d49deca46b44 1-297
+tools/c7n_gcp/tests/terraform/bucket_public_access_enforced/main.tf
+  h_07d49deca46b44 1-9
+tools/c7n_gcp/tests/terraform/bucket_public_access_enforced/tf_resources.json
+  h_07d49deca46b44 1-57
+tools/c7n_gcp/tests/terraform/bucket_public_access_inherited/main.tf
+  h_07d49deca46b44 1-9
+tools/c7n_gcp/tests/terraform/bucket_public_access_inherited/tf_resources.json
+  h_07d49deca46b44 1-57
+tools/c7n_gcp/tests/terraform/gcp_instance_set_can_ip_forward/main.tf
+  h_07d49deca46b44 1-44
+tools/c7n_gcp/tests/terraform/gcp_instance_set_can_ip_forward/tf_resources.json
+  h_07d49deca46b44 1-219
+tools/c7n_gcp/tests/terraform/kms_cryptokey_set_iam_policy/main.tf
+  h_07d49deca46b44 1-32
+tools/c7n_gcp/tests/terraform/kms_cryptokey_set_iam_policy/tf_resources.json
+  h_07d49deca46b44 1-93
+tools/c7n_gcp/tests/terraform/lb_https_proxy_ssl_policy/main.tf
+  h_07d49deca46b44 1-83
+tools/c7n_gcp/tests/terraform/lb_https_proxy_ssl_policy/tf_resources.json
+  h_07d49deca46b44 1-345
+tools/c7n_gcp/tests/terraform/lb_ssl_proxy_ssl_policy/main.tf
+  h_07d49deca46b44 1-55
+tools/c7n_gcp/tests/terraform/lb_ssl_proxy_ssl_policy/tf_resources.json
+  h_07d49deca46b44 1-235
+tools/c7n_gcp/tests/terraform/log_project_sink_exact/main.tf
+  h_07d49deca46b44 1-65
+tools/c7n_gcp/tests/terraform/log_project_sink_exact/tf_resources.json
+  h_07d49deca46b44 1-158
+tools/c7n_gcp/tests/terraform/log_project_sink_overlap/main.tf
+  h_07d49deca46b44 1-78
+tools/c7n_gcp/tests/terraform/log_project_sink_overlap/tf_resources.json
+  h_07d49deca46b44 1-180
+tools/c7n_gcp/tests/terraform/project_dlp_discovery_configs/main.tf
+  h_07d49deca46b44 1-36
+tools/c7n_gcp/tests/terraform/project_dlp_discovery_configs/tf_resources.json
+  h_07d49deca46b44 1-84
+tools/c7n_gcp/tests/test_appengine.py
+  h_07d49deca46b44 4-10,301-390
+tools/c7n_gcp/tests/test_compute.py
+  h_07d49deca46b44 7,9,282-342
+tools/c7n_gcp/tests/test_gcp_storage.py
+  h_07d49deca46b44 60-108
+tools/c7n_gcp/tests/test_gcp_utils.py
+  h_07d49deca46b44 1-465
+tools/c7n_gcp/tests/test_kms.py
+  h_07d49deca46b44 476-576
+tools/c7n_gcp/tests/test_loadbalancer.py
+  h_07d49deca46b44 3,5-6,8-9,11,1045-1132
+tools/c7n_gcp/tests/test_logging.py
+  h_07d49deca46b44 7,96-289
+tools/c7n_gcp/tests/test_resourcemanager.py
+  h_07d49deca46b44 3,10-11,16,22-39,313-355,373-612,1205-1417
+tools/c7n_gcp/tests/test_vertexai.py
+  h_07d49deca46b44 8,17,734-851,855,873-892,2030-2075
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e4ab17f2f23cfd43cc7e0ec67d411095aa0c7c1f",
+  "prompts": {},
+  "humans": {
+    "h_07d49deca46b44": {
+      "author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
