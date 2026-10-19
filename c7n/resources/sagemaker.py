@@ -11,6 +11,7 @@ import yaml
 from c7n.actions import BaseAction
 from c7n.exceptions import PolicyValidationError
 from c7n.manager import resources
+from c7n.resources.aws import get_service_shape, shape_validate
 from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, ConfigSource
 from c7n.utils import local_session, type_schema, QueryParser
 from c7n.tags import RemoveTag, Tag, TagActionFilter, TagDelayedAction, universal_augment
@@ -1753,6 +1754,66 @@ class SagemakerUserProfile(QueryResourceManager):
         universal_taggable = object()
 
     source_mapping = {'describe': SagemakerUserProfileDescribe}
+
+
+@SagemakerUserProfile.action_registry.register('update')
+class UpdateSagemakerUserProfile(BaseAction):
+    """Update SageMaker Studio user settings.
+
+    Updates defaults without resizing running apps. KernelGateway instance-type
+    defaults apply to CLI and CloudFormation app creation, not the Studio UI.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: sagemaker-user-profile-cpu-default
+            resource: aws.sagemaker-user-profile
+            filters:
+              - type: value
+                key: UserSettings.KernelGatewayAppSettings.DefaultResourceSpec.InstanceType
+                op: regex
+                value: '^ml[.](g|p)[a-z0-9.]+$'
+            actions:
+              - type: update
+                UserSettings:
+                  KernelGatewayAppSettings:
+                    DefaultResourceSpec:
+                      InstanceType: ml.t3.medium
+    """
+
+    schema = type_schema(
+        'update',
+        required=['UserSettings'],
+        UserSettings={'type': 'object'},
+    )
+    permissions = ('sagemaker:UpdateUserProfile',)
+
+    def validate(self):
+        settings = self.data['UserSettings']
+        shape_validate(settings, 'UserSettings', 'sagemaker')
+        instance_types = get_service_shape('sagemaker', 'AppInstanceType').enum
+        for app in (
+            'KernelGatewayAppSettings',
+            'JupyterLabAppSettings',
+            'CodeEditorAppSettings',
+        ):
+            spec = settings.get(app, {}).get('DefaultResourceSpec', {})
+            instance_type = spec.get('InstanceType')
+            if instance_type is not None and instance_type not in instance_types:
+                raise PolicyValidationError(f'Invalid instance type: {instance_type}')
+        return self
+
+    def process(self, resources):
+        client = local_session(self.manager.session_factory).client('sagemaker')
+        for resource in resources:
+            self.manager.retry(
+                client.update_user_profile,
+                DomainId=resource['DomainId'],
+                UserProfileName=resource['UserProfileName'],
+                UserSettings=self.data['UserSettings'],
+            )
 
 
 class SagemakerSpaceDescribe(DescribeSource):

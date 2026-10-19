@@ -1546,6 +1546,111 @@ class CompilationJobQueryParse(BaseTest):
                 {'StatusEquals': ['INPROGRESS', 'COMPLETED']}])
 
 
+@pytest.mark.parametrize('app', [
+    'KernelGatewayAppSettings',
+    'JupyterLabAppSettings',
+    'CodeEditorAppSettings',
+])
+def test_sagemaker_user_profile_update_validate(test, app):
+    policy = test.load_policy(
+        {
+            'name': 'update-user-profile',
+            'resource': 'aws.sagemaker-user-profile',
+            'actions': [{
+                'type': 'update',
+                'UserSettings': {app: {
+                    'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'},
+                }},
+            }],
+        },
+        validate=True,
+    )
+    assert 'sagemaker:UpdateUserProfile' in policy.get_permissions()
+
+
+@pytest.mark.parametrize('settings', [
+    {'UnknownSetting': True},
+    {'KernelGatewayAppSettings': {'DefaultResourceSpec': {'InstanceType': 42}}},
+    {'JupyterLabAppSettings': {'DefaultResourceSpec': {'UnknownSetting': 'x'}}},
+    {'CodeEditorAppSettings': {'DefaultResourceSpec': {'InstanceType': []}}},
+    {'KernelGatewayAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
+    {'JupyterLabAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
+    {'CodeEditorAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
+])
+def test_sagemaker_user_profile_update_invalid_settings(test, settings):
+    with pytest.raises(PolicyValidationError):
+        test.load_policy({
+            'name': 'update-user-profile',
+            'resource': 'aws.sagemaker-user-profile',
+            'actions': [{'type': 'update', 'UserSettings': settings}],
+        })
+
+
+@pytest.mark.audited
+@terraform('sagemaker_user_profile_update')
+def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
+    factory = test.replay_flight_data('test_sagemaker_user_profile_update')
+    client = factory().client('sagemaker')
+    domain_id = sagemaker_user_profile_update['aws_sagemaker_domain.main.id']
+    profile_name = sagemaker_user_profile_update[
+        'aws_sagemaker_user_profile.main.user_profile_name']
+    apps = (
+        'KernelGatewayAppSettings',
+        'JupyterLabAppSettings',
+        'CodeEditorAppSettings',
+    )
+    before = client.describe_user_profile(
+        DomainId=domain_id,
+        UserProfileName=profile_name,
+    )['UserSettings']
+    for app in apps:
+        assert before[app]['DefaultResourceSpec']['InstanceType'] == 'ml.g4dn.xlarge'
+    policy = test.load_policy(
+        {
+            'name': 'sagemaker-user-profile-cpu-default',
+            'resource': 'aws.sagemaker-user-profile',
+            'filters': [
+                {'DomainId': domain_id},
+                {'UserProfileName': profile_name},
+                {
+                    'type': 'value',
+                    'key': ('UserSettings.KernelGatewayAppSettings.'
+                            'DefaultResourceSpec.InstanceType'),
+                    'op': 'regex',
+                    'value': '^ml[.](g|p)[a-z0-9.]+$',
+                },
+            ],
+            'actions': [{
+                'type': 'update',
+                'UserSettings': {
+                    app: {'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'}}
+                    for app in apps
+                },
+            }],
+        },
+        session_factory=factory,
+    )
+    [resource] = policy.run()
+    assert resource['UserProfileName'] == profile_name
+    for _ in range(60):
+        updated = client.describe_user_profile(
+            DomainId=domain_id,
+            UserProfileName=profile_name,
+        )
+        if updated['Status'] == 'InService':
+            break
+        if test.recording:
+            time.sleep(5)
+    assert updated['Status'] == 'InService'
+    settings = updated['UserSettings']
+    for app in apps:
+        assert settings[app]['DefaultResourceSpec']['InstanceType'] == 'ml.t3.medium'
+    assert settings['ExecutionRole'] == before['ExecutionRole']
+    assert settings['JupyterLabAppSettings']['CodeRepositories'] == [{
+        'RepositoryUrl': 'https://github.com/cloud-custodian/cloud-custodian',
+    }]
+
+
 @pytest.mark.audited
 @terraform('sagemaker_studio', scope='module')
 def test_sagemaker_user_profile(test, sagemaker_studio):

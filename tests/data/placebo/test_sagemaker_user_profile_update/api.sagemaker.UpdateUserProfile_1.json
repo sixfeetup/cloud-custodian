@@ -1,0 +1,7 @@
+{
+    "status_code": 200,
+    "data": {
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-a8sxmenlk3g5/c7n-profile-update-trusting-imp",
+        "ResponseMetadata": {}
+    }
+}
