@@ -6,6 +6,7 @@ import functools
 import importlib.resources
 import typing
 
+import jsonschema
 import yaml
 
 from c7n.actions import BaseAction
@@ -1758,7 +1759,7 @@ class SagemakerUserProfile(QueryResourceManager):
 
 @SagemakerUserProfile.action_registry.register('update')
 class UpdateSagemakerUserProfile(BaseAction):
-    """Update SageMaker Studio user settings.
+    """Update default instance types for KernelGateway, JupyterLab, and Code Editor.
 
     Updates defaults without resizing running apps. KernelGateway instance-type
     defaults apply to CLI and CloudFormation app creation, not the Studio UI.
@@ -1786,16 +1787,44 @@ class UpdateSagemakerUserProfile(BaseAction):
     schema = type_schema(
         'update',
         required=['UserSettings'],
-        **shape_schema(
-            'sagemaker',
-            'UpdateUserProfileRequest',
-            drop_fields=('DomainId', 'UserProfileName'),
-        ),
+        UserSettings={
+            'type': 'object',
+            'additionalProperties': False,
+            'minProperties': 1,
+            'properties': {
+                app: {
+                    'type': 'object',
+                    'additionalProperties': False,
+                    'required': ['DefaultResourceSpec'],
+                    'properties': {
+                        'DefaultResourceSpec': {
+                            'type': 'object',
+                            'additionalProperties': False,
+                            'required': ['InstanceType'],
+                            'properties': {
+                                'InstanceType': shape_schema(
+                                    'sagemaker',
+                                    'ResourceSpec',
+                                )['InstanceType'],
+                            },
+                        },
+                    },
+                }
+                for app in (
+                    'KernelGatewayAppSettings',
+                    'JupyterLabAppSettings',
+                    'CodeEditorAppSettings',
+                )
+            },
+        },
     )
     permissions = ('sagemaker:UpdateUserProfile',)
 
     def validate(self):
-        shape_validate(self.data['UserSettings'], 'UserSettings', 'sagemaker')
+        try:
+            jsonschema.validate(self.data, self.schema)
+        except jsonschema.ValidationError as error:
+            raise PolicyValidationError(error.message) from error
         return self
 
     def process(self, resources):

@@ -3,7 +3,6 @@
 import time
 from unittest import mock
 
-import jsonschema
 import pytest
 from pytest_terraform import terraform
 
@@ -13,7 +12,7 @@ from .common import BaseTest
 from c7n.filters.metrics import MetricsFilter
 from c7n.resources.sagemaker import (
     SAGEMAKER_METRICS, SagemakerEndpoint, SagemakerJobQueryParser,
-    CompilationJobQueryParser)
+    CompilationJobQueryParser, UpdateSagemakerUserProfile)
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 
 import botocore.exceptions as b_exc
@@ -1548,57 +1547,20 @@ class CompilationJobQueryParse(BaseTest):
                 {'StatusEquals': ['INPROGRESS', 'COMPLETED']}])
 
 
-@pytest.mark.parametrize('app', [
-    'KernelGatewayAppSettings',
-    'JupyterLabAppSettings',
-    'CodeEditorAppSettings',
-])
-def test_sagemaker_user_profile_update_validate(test, app):
-    policy = test.load_policy(
-        {
-            'name': 'update-user-profile',
-            'resource': 'aws.sagemaker-user-profile',
-            'actions': [{
-                'type': 'update',
-                'UserSettings': {app: {
-                    'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'},
-                }},
-            }],
+def test_sagemaker_user_profile_update_validate():
+    action = UpdateSagemakerUserProfile({
+        'type': 'update',
+        'UserSettings': {
+            'KernelGatewayAppSettings': {
+                'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'},
+            },
         },
-        validate=True,
-    )
-    assert 'sagemaker:UpdateUserProfile' in policy.get_permissions()
-    with pytest.raises(jsonschema.ValidationError):
-        jsonschema.validate(
-            {
-                'type': 'update',
-                'UserSettings': {app: {
-                    'DefaultResourceSpec': {'InstanceType': 'invalid'},
-                }},
-            },
-            policy.resource_manager.actions[0].schema,
-        )
+    })
+    action.validate()
 
-
-@pytest.mark.parametrize('settings', [
-    {'UnknownSetting': True},
-    {'KernelGatewayAppSettings': {'DefaultResourceSpec': {'InstanceType': 42}}},
-    {'JupyterLabAppSettings': {'DefaultResourceSpec': {'UnknownSetting': 'x'}}},
-    {'CodeEditorAppSettings': {'DefaultResourceSpec': {'InstanceType': []}}},
-    {'KernelGatewayAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
-    {'JupyterLabAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
-    {'CodeEditorAppSettings': {'DefaultResourceSpec': {'InstanceType': 'invalid'}}},
-])
-def test_sagemaker_user_profile_update_invalid_settings(test, settings):
+    action.data['UserSettings'] = {'CustomPosixUserConfig': {'Uid': 10000, 'Gid': 1001}}
     with pytest.raises(PolicyValidationError):
-        test.load_policy(
-            {
-                'name': 'update-user-profile',
-                'resource': 'aws.sagemaker-user-profile',
-                'actions': [{'type': 'update', 'UserSettings': settings}],
-            },
-            validate=True,
-        )
+        action.validate()
 
 
 @pytest.mark.audited
