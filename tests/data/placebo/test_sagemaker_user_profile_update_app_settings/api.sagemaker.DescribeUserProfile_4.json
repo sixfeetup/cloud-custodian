@@ -1,0 +1,59 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-permq6ogjmo8",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-settings-sacred-marmoset",
+        "UserProfileName": "c7n-settings-sacred-marmoset",
+        "HomeEfsFileSystemUid": "200010",
+        "Status": "InService",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 41,
+            "second": 13,
+            "microsecond": 413000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 40,
+            "second": 44,
+            "microsecond": 346000
+        },
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-updated-sacred-marmoset",
+            "SecurityGroups": [
+                "sg-0c5e34bd6914fcad1"
+            ],
+            "SharingSettings": {
+                "NotebookOutputOption": "Disabled",
+                "S3OutputPath": "s3://c7n-profile-sharing-44b7ff648e5c4fece7df609edf/notebooks/",
+                "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/3b85dbee-7452-45fc-9c36-25a417301170"
+            },
+            "SpaceStorageSettings": {
+                "DefaultEbsStorageSettings": {
+                    "DefaultEbsVolumeSizeInGb": 10,
+                    "MaximumEbsVolumeSizeInGb": 30
+                }
+            },
+            "DefaultLandingUri": "app:JupyterServer:",
+            "StudioWebPortal": "DISABLED",
+            "CustomFileSystemConfigs": [],
+            "StudioWebPortalSettings": {
+                "HiddenMlTools": [],
+                "HiddenAppTypes": [],
+                "HiddenInstanceTypes": [],
+                "HiddenSageMakerImageVersionAliases": [],
+                "ExecutionRoleSessionNameMode": "STATIC"
+            },
+            "AutoMountHomeEFS": "Enabled"
+        },
+        "ResponseMetadata": {}
+    }
+}

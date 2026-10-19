@@ -3,103 +3,128 @@
     "data": {
         "UserProfiles": [
             {
-                "DomainId": "d-ku8tinhyebc3",
-                "UserProfileName": "c7n-rstudio-endless-wren",
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-profile-update-sacred-marmoset",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 5,
-                    "second": 58,
-                    "microsecond": 671000
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 54,
+                    "microsecond": 486000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 6,
-                    "second": 2,
-                    "microsecond": 684000
-                }
-            },
-            {
-                "DomainId": "d-ku8tinhyebc3",
-                "UserProfileName": "c7n-profile-update-endless-wren",
-                "Status": "InService",
-                "CreationTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 10,
-                    "day": 19,
-                    "hour": 13,
-                    "minute": 5,
+                    "hour": 14,
+                    "minute": 40,
                     "second": 57,
-                    "microsecond": 260000
-                },
-                "LastModifiedTime": {
-                    "__class__": "datetime",
-                    "year": 2026,
-                    "month": 10,
-                    "day": 19,
-                    "hour": 13,
-                    "minute": 6,
-                    "second": 0,
-                    "microsecond": 82000
+                    "microsecond": 297000
                 }
             },
             {
-                "DomainId": "d-ku8tinhyebc3",
-                "UserProfileName": "c7n-canvas-endless-wren",
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-apps-sacred-marmoset",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 5,
-                    "second": 55,
-                    "microsecond": 17000
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 48,
+                    "microsecond": 781000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 5,
-                    "second": 57,
-                    "microsecond": 870000
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 51,
+                    "microsecond": 754000
                 }
             },
             {
-                "DomainId": "d-ku8tinhyebc3",
-                "UserProfileName": "c7n-settings-endless-wren",
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-rstudio-sacred-marmoset",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 5,
-                    "second": 53,
-                    "microsecond": 523000
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 45,
+                    "microsecond": 646000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 13,
-                    "minute": 5,
-                    "second": 56,
-                    "microsecond": 520000
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 48,
+                    "microsecond": 643000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-settings-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 44,
+                    "microsecond": 346000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 47,
+                    "microsecond": 302000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-canvas-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 44,
+                    "microsecond": 250000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 47,
+                    "microsecond": 257000
                 }
             }
         ],

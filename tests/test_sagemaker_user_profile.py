@@ -1,5 +1,6 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import copy
 import time
 import typing
 
@@ -10,6 +11,8 @@ from pytest_terraform import terraform
 
 from c7n.exceptions import PolicyValidationError
 from c7n.resources.sagemaker import UpdateSagemakerUserProfile
+
+from .apicallcaptor import ApiCallCaptor
 
 
 def test_sagemaker_user_profile_update_validate():
@@ -47,6 +50,10 @@ def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
     )['UserSettings']
     for app in apps:
         assert before[app]['DefaultResourceSpec']['InstanceType'] == 'ml.g4dn.xlarge'
+    user_settings = {
+        app: {'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'}}
+        for app in apps
+    }
     policy = test.load_policy(
         {
             'name': 'sagemaker-user-profile-cpu-default',
@@ -64,16 +71,22 @@ def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
             ],
             'actions': [{
                 'type': 'update',
-                'UserSettings': {
-                    app: {'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'}}
-                    for app in apps
-                },
+                'UserSettings': copy.deepcopy(user_settings),
             }],
         },
         session_factory=factory,
     )
+    captor = ApiCallCaptor.start_capture()
     [resource] = policy.run()
     assert resource['UserProfileName'] == profile_name
+    assert [
+        call['params'] for call in captor.calls
+        if call.get('operation') == 'UpdateUserProfile'
+    ] == [{
+        'DomainId': domain_id,
+        'UserProfileName': profile_name,
+        'UserSettings': user_settings,
+    }]
     for _ in range(60):
         updated = client.describe_user_profile(
             DomainId=domain_id,
@@ -104,7 +117,9 @@ def describe_user_profile(
             DomainId=domain_id,
             UserProfileName=profile_name,
         )
-        if profile['Status'] == 'InService':
+        status = profile['Status']
+        assert status in ('Pending', 'Updating', 'InService'), profile.get('FailureReason')
+        if status == 'InService':
             break
         if test.recording:
             time.sleep(5)
@@ -127,12 +142,21 @@ def update_user_profile(
                 {'DomainId': domain_id},
                 {'UserProfileName': profile_name},
             ],
-            'actions': [{'type': 'update', 'UserSettings': settings}],
+            'actions': [{'type': 'update', 'UserSettings': copy.deepcopy(settings)}],
         },
         session_factory=factory,
     )
+    captor = ApiCallCaptor.start_capture()
     [resource] = policy.run()
     assert resource['UserProfileName'] == profile_name
+    assert [
+        call['params'] for call in captor.calls
+        if call.get('operation') == 'UpdateUserProfile'
+    ] == [{
+        'DomainId': domain_id,
+        'UserProfileName': profile_name,
+        'UserSettings': settings,
+    }]
     return describe_user_profile(
         test,
         factory().client('sagemaker'),
@@ -329,3 +353,131 @@ def test_sagemaker_user_profile_update_canvas_settings(
             assert updated['CanvasAppSettings'][app] == []
         else:
             assert updated['CanvasAppSettings'][app]['Status'] == settings['Status']
+
+
+def assert_settings(actual: dict, expected: dict) -> None:
+    for name, value in expected.items():
+        if isinstance(value, dict):
+            assert_settings(actual[name], value)
+        else:
+            assert actual[name] == value, name
+
+
+@pytest.mark.audited
+@terraform('sagemaker_user_profile_update', scope='module')
+def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile_update):
+    fixture = sagemaker_user_profile_update
+    factory = test.replay_flight_data('test_sagemaker_user_profile_update_app_settings')
+    domain_id = fixture['aws_sagemaker_domain.main.id']
+    profile_name = fixture['aws_sagemaker_user_profile.app.user_profile_name']
+    lifecycle_configs = fixture.outputs['lifecycle_configs']['value']
+    apps = {
+        'JupyterServerAppSettings': 'JupyterServer',
+        'KernelGatewayAppSettings': 'KernelGateway',
+        'TensorBoardAppSettings': 'TensorBoard',
+        'RSessionAppSettings': 'RSessionGateway',
+        'CodeEditorAppSettings': 'CodeEditor',
+        'JupyterLabAppSettings': 'JupyterLab',
+    }
+    settings = {}
+    clear = {}
+    for app, app_type in apps.items():
+        instance_type = 'system' if app_type == 'JupyterServer' else 'ml.t3.medium'
+        image_arn = fixture['aws_sagemaker_image.app.arn']
+        if app_type == 'JupyterServer':
+            image_arn = fixture.outputs['jupyter_server_image']['value']
+        spec = {'SageMakerImageArn': image_arn, 'InstanceType': instance_type}
+        app_settings = {'DefaultResourceSpec': spec}
+        app_clear = {}
+        if app in lifecycle_configs:
+            lifecycle = lifecycle_configs[app]
+            spec['LifecycleConfigArn'] = lifecycle['default']
+            app_settings['LifecycleConfigArns'] = [lifecycle['default']]
+            app_clear['LifecycleConfigArns'] = []
+            app_clear['DefaultResourceSpec'] = {'InstanceType': instance_type}
+            if app_type != 'JupyterServer':
+                app_clear['DefaultResourceSpec']['LifecycleConfigArn'] = 'None'
+        if app_type in ('KernelGateway', 'RSessionGateway', 'CodeEditor', 'JupyterLab'):
+            app_settings['CustomImages'] = [{
+                'ImageName': fixture['aws_sagemaker_image.app.image_name'],
+                'ImageVersionNumber': fixture['aws_sagemaker_image_version.updated.version'],
+                'AppImageConfigName': fixture.outputs['app_image_configs']['value'][app_type],
+            }]
+            app_clear['CustomImages'] = []
+        if app_type in ('JupyterServer', 'JupyterLab'):
+            app_settings['CodeRepositories'] = [{
+                'RepositoryUrl': 'https://github.com/cloud-custodian/cloud-custodian',
+            }]
+            app_clear['CodeRepositories'] = []
+        if app_type in ('JupyterLab', 'CodeEditor'):
+            app_settings['BuiltInLifecycleConfigArn'] = lifecycle_configs[app]['builtin']
+            app_settings['AppLifecycleManagement'] = {'IdleSettings': {
+                'LifecycleManagement': 'ENABLED',
+                'IdleTimeoutInMinutes': 120,
+                'MinIdleTimeoutInMinutes': 60,
+                'MaxIdleTimeoutInMinutes': 240,
+            }}
+            app_clear['AppLifecycleManagement'] = {'IdleSettings': {
+                'LifecycleManagement': 'DISABLED',
+            }}
+        if app_type == 'JupyterLab':
+            app_settings['EmrSettings'] = {
+                'AssumableRoleArns': [fixture['aws_iam_role.emr_assumable.arn']],
+                'ExecutionRoleArns': [fixture['aws_iam_role.canvas.arn']],
+            }
+            app_clear['EmrSettings'] = {'AssumableRoleArns': [], 'ExecutionRoleArns': []}
+        settings[app] = app_settings
+        if app_clear:
+            clear[app] = app_clear
+
+    updated = update_user_profile(test, factory, domain_id, profile_name, settings)
+    assert_settings(updated, settings)
+    assert updated['ExecutionRole'] == fixture['aws_iam_role.execution.arn']
+
+    versioned_apps = (
+        'KernelGatewayAppSettings',
+        'TensorBoardAppSettings',
+        'RSessionAppSettings',
+        'CodeEditorAppSettings',
+        'JupyterLabAppSettings',
+    )
+    initial_version = fixture['aws_sagemaker_image_version.initial.arn']
+    versions = {
+        app: {'DefaultResourceSpec': {'SageMakerImageVersionArn': initial_version}}
+        for app in versioned_apps
+    }
+    updated = update_user_profile(test, factory, domain_id, profile_name, versions)
+    assert_settings(updated, versions)
+    updated = update_user_profile(
+        test,
+        factory,
+        domain_id,
+        profile_name,
+        {
+            app: {'DefaultResourceSpec': {'SageMakerImageVersionArn': 'None'}}
+            for app in versioned_apps
+        },
+    )
+    for app in versioned_apps:
+        assert updated[app]['DefaultResourceSpec'].get('SageMakerImageVersionArn') in (
+            None,
+            'None',
+        )
+    aliases = {
+        app: {'DefaultResourceSpec': {
+            'SageMakerImageVersionAlias': '1' if app_type == 'JupyterServer' else '2.0.0',
+        }}
+        for app, app_type in apps.items()
+    }
+    aliases['JupyterServerAppSettings']['DefaultResourceSpec']['LifecycleConfigArn'] = (
+        lifecycle_configs['JupyterServerAppSettings']['default']
+    )
+    updated = update_user_profile(test, factory, domain_id, profile_name, aliases)
+    assert_settings(updated, aliases)
+    updated = update_user_profile(test, factory, domain_id, profile_name, clear)
+    for app, app_clear in clear.items():
+        for field, value in app_clear.items():
+            if field == 'DefaultResourceSpec':
+                assert updated[app][field].get('LifecycleConfigArn') in (None, 'None')
+            else:
+                assert_settings(updated[app], {field: value})

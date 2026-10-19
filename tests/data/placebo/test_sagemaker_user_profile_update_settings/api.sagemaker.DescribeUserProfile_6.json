@@ -1,59 +1,58 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-ku8tinhyebc3",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-settings-endless-wren",
-        "UserProfileName": "c7n-settings-endless-wren",
+        "DomainId": "d-permq6ogjmo8",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-canvas-sacred-marmoset",
+        "UserProfileName": "c7n-canvas-sacred-marmoset",
         "HomeEfsFileSystemUid": "200005",
-        "Status": "Updating",
+        "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 13,
-            "minute": 6,
-            "second": 13,
-            "microsecond": 829000
+            "hour": 14,
+            "minute": 40,
+            "second": 47,
+            "microsecond": 257000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 13,
-            "minute": 5,
-            "second": 53,
-            "microsecond": 523000
+            "hour": 14,
+            "minute": 40,
+            "second": 44,
+            "microsecond": 250000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
-            "SecurityGroups": [
-                "sg-0fbb5d94df7c1d2c5"
-            ],
-            "SharingSettings": {
-                "NotebookOutputOption": "Disabled"
-            },
-            "SpaceStorageSettings": {
-                "DefaultEbsStorageSettings": {
-                    "DefaultEbsVolumeSizeInGb": 5,
-                    "MaximumEbsVolumeSizeInGb": 20
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "CanvasAppSettings": {
+                "TimeSeriesForecastingSettings": {
+                    "Status": "DISABLED"
+                },
+                "ModelRegisterSettings": {
+                    "Status": "DISABLED"
+                },
+                "IdentityProviderOAuthSettings": [
+                    {
+                        "DataSourceName": "SalesforceGenie",
+                        "Status": "DISABLED",
+                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs"
+                    }
+                ],
+                "DirectDeploySettings": {
+                    "Status": "DISABLED"
+                },
+                "KendraSettings": {
+                    "Status": "DISABLED"
+                },
+                "EmrServerlessSettings": {
+                    "Status": "DISABLED"
                 }
             },
-            "DefaultLandingUri": "app:JupyterServer:",
-            "StudioWebPortal": "ENABLED",
             "CustomFileSystemConfigs": [],
-            "StudioWebPortalSettings": {
-                "HiddenMlTools": [
-                    "Experiments"
-                ],
-                "HiddenAppTypes": [
-                    "Canvas"
-                ],
-                "HiddenInstanceTypes": [
-                    "ml.g5.xlarge"
-                ]
-            },
             "AutoMountHomeEFS": "DefaultAsDomain"
         },
         "ResponseMetadata": {}

@@ -1767,7 +1767,7 @@ def _user_profile_schema(
     shape: botocore.model.Shape,
     fields: dict[str, typing.Any] | None,
 ) -> dict:
-    """Build a schema for explicitly selected user-profile fields."""
+    """Select supported fields and apply optional scalar schema overrides."""
     schema = {'type': MODEL_SCHEMA_TYPE_MAP[shape.type_name]}
     if shape.type_name == 'structure':
         schema.update({
@@ -1794,6 +1794,8 @@ def _user_profile_schema(
         for model_name, schema_name in zip(('min', 'max'), bounds[schema['type']]):
             if model_name in shape.metadata:
                 schema[schema_name] = shape.metadata[model_name]
+    if shape.type_name not in ('structure', 'list') and fields:
+        schema.update(fields)
     return schema
 
 
@@ -1801,9 +1803,13 @@ def _user_profile_schema(
 class UpdateSagemakerUserProfile(BaseAction):
     """Update SageMaker Studio user settings.
 
-    Updates defaults without resizing running apps. KernelGateway instance-type
-    defaults apply to CLI and CloudFormation app creation, not the Studio UI.
-    Choose an RStudio UserGroup when enabling RStudio access for the first time.
+    Changing default instance types does not resize running apps. KernelGateway
+    instance-type defaults apply to CLI and CloudFormation app creation, not the
+    Studio UI. JupyterServer requires an AWS-managed image and does not accept
+    image-version ARNs. When updating its DefaultResourceSpec, include
+    LifecycleConfigArn to retain the default lifecycle config; omitting it
+    removes the default. Choose an RStudio UserGroup when enabling RStudio
+    access for the first time.
 
     :example:
 
@@ -1824,6 +1830,31 @@ class UpdateSagemakerUserProfile(BaseAction):
                     DefaultResourceSpec:
                       InstanceType: ml.t3.medium
     """
+
+    # TODO: Record TrainingPlanArn updates for JupyterLab and CodeEditor.
+    _resource_spec_fields = dict.fromkeys((
+        'SageMakerImageArn',
+        'SageMakerImageVersionArn',
+        'SageMakerImageVersionAlias',
+        'InstanceType',
+    ))
+    _lifecycle_resource_spec_fields = {
+        **_resource_spec_fields,
+        'LifecycleConfigArn': None,
+    }
+    _custom_image_fields = dict.fromkeys((
+        'ImageName',
+        'ImageVersionNumber',
+        'AppImageConfigName',
+    ))
+    _app_lifecycle_fields = {
+        'IdleSettings': dict.fromkeys((
+            'LifecycleManagement',
+            'IdleTimeoutInMinutes',
+            'MinIdleTimeoutInMinutes',
+            'MaxIdleTimeoutInMinutes',
+        )),
+    }
 
     schema = type_schema(
         'update',
@@ -1887,19 +1918,54 @@ class UpdateSagemakerUserProfile(BaseAction):
                         'ExecutionRoleArn': None,
                     },
                 },
-                # TODO: Record TrainingPlanArn updates for JupyterLab and CodeEditor.
-                **{
-                    app: {'DefaultResourceSpec': {'InstanceType': None}}
-                    for app in (
-                        'KernelGatewayAppSettings',
-                        'JupyterLabAppSettings',
-                        'CodeEditorAppSettings',
-                    )
+                'JupyterServerAppSettings': {
+                    'DefaultResourceSpec': {
+                        'SageMakerImageArn': None,
+                        'SageMakerImageVersionAlias': None,
+                        'InstanceType': {'enum': ['system']},
+                        'LifecycleConfigArn': {
+                            'pattern': (
+                                r'^arn:aws[a-z\-]*:sagemaker:[a-z0-9\-]*:'
+                                r'[0-9]{12}:studio-lifecycle-config/.*$'
+                            ),
+                        },
+                    },
+                    'LifecycleConfigArns': None,
+                    'CodeRepositories': {'RepositoryUrl': None},
+                },
+                'KernelGatewayAppSettings': {
+                    'DefaultResourceSpec': _lifecycle_resource_spec_fields,
+                    'LifecycleConfigArns': None,
+                    'CustomImages': _custom_image_fields,
+                },
+                'TensorBoardAppSettings': {'DefaultResourceSpec': _resource_spec_fields},
+                'RSessionAppSettings': {
+                    'DefaultResourceSpec': _resource_spec_fields,
+                    'CustomImages': _custom_image_fields,
+                },
+                'CodeEditorAppSettings': {
+                    'DefaultResourceSpec': _lifecycle_resource_spec_fields,
+                    'LifecycleConfigArns': None,
+                    'CustomImages': _custom_image_fields,
+                    'AppLifecycleManagement': _app_lifecycle_fields,
+                    'BuiltInLifecycleConfigArn': None,
+                },
+                'JupyterLabAppSettings': {
+                    'DefaultResourceSpec': _lifecycle_resource_spec_fields,
+                    'LifecycleConfigArns': None,
+                    'CustomImages': _custom_image_fields,
+                    'CodeRepositories': {'RepositoryUrl': None},
+                    'AppLifecycleManagement': _app_lifecycle_fields,
+                    'BuiltInLifecycleConfigArn': None,
+                    'EmrSettings': {
+                        'AssumableRoleArns': None,
+                        'ExecutionRoleArns': None,
+                    },
                 },
             },
         ),
     )
-    permissions = ('sagemaker:UpdateUserProfile',)
+    permissions = ('sagemaker:UpdateUserProfile', 'iam:PassRole')
 
     def validate(self):
         try:

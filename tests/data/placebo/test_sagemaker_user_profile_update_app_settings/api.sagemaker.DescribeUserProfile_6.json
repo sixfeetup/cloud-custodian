@@ -1,0 +1,36 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-permq6ogjmo8",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
+        "UserProfileName": "c7n-apps-sacred-marmoset",
+        "HomeEfsFileSystemUid": "200020",
+        "Status": "Updating",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 41,
+            "second": 40,
+            "microsecond": 89000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 40,
+            "second": 48,
+            "microsecond": 781000
+        },
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "CustomFileSystemConfigs": [],
+            "AutoMountHomeEFS": "DefaultAsDomain"
+        },
+        "ResponseMetadata": {}
+    }
+}

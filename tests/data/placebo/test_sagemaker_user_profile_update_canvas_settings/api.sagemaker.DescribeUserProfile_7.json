@@ -1,36 +1,66 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-ku8tinhyebc3",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-rstudio-endless-wren",
-        "UserProfileName": "c7n-rstudio-endless-wren",
-        "HomeEfsFileSystemUid": "200020",
+        "DomainId": "d-permq6ogjmo8",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-canvas-sacred-marmoset",
+        "UserProfileName": "c7n-canvas-sacred-marmoset",
+        "HomeEfsFileSystemUid": "200005",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 13,
-            "minute": 6,
+            "hour": 14,
+            "minute": 41,
             "second": 27,
-            "microsecond": 84000
+            "microsecond": 381000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 13,
-            "minute": 5,
-            "second": 58,
-            "microsecond": 671000
+            "hour": 14,
+            "minute": 40,
+            "second": 44,
+            "microsecond": 250000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
-            "RStudioServerProAppSettings": {
-                "AccessStatus": "ENABLED",
-                "UserGroup": "R_STUDIO_ADMIN"
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "CanvasAppSettings": {
+                "TimeSeriesForecastingSettings": {
+                    "Status": "ENABLED",
+                    "AmazonForecastRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                },
+                "ModelRegisterSettings": {
+                    "Status": "ENABLED",
+                    "CrossAccountModelRegisterRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                },
+                "WorkspaceSettings": {
+                    "S3ArtifactPath": "s3://c7n-profile-sharing-44b7ff648e5c4fece7df609edf/canvas/",
+                    "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/3b85dbee-7452-45fc-9c36-25a417301170"
+                },
+                "IdentityProviderOAuthSettings": [
+                    {
+                        "DataSourceName": "Snowflake",
+                        "Status": "ENABLED",
+                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt"
+                    }
+                ],
+                "DirectDeploySettings": {
+                    "Status": "ENABLED"
+                },
+                "KendraSettings": {
+                    "Status": "ENABLED"
+                },
+                "GenerativeAiSettings": {
+                    "AmazonBedrockRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                },
+                "EmrServerlessSettings": {
+                    "ExecutionRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset",
+                    "Status": "ENABLED"
+                }
             },
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"

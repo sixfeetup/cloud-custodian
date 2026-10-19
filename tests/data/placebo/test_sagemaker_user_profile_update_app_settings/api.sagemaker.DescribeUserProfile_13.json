@@ -1,0 +1,152 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-permq6ogjmo8",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
+        "UserProfileName": "c7n-apps-sacred-marmoset",
+        "HomeEfsFileSystemUid": "200020",
+        "Status": "Updating",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 41,
+            "second": 46,
+            "microsecond": 172000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 14,
+            "minute": 40,
+            "second": 48,
+            "microsecond": 781000
+        },
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "JupyterServerAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/jupyter-server-3",
+                    "InstanceType": "system",
+                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-sacred-marmoset"
+                },
+                "LifecycleConfigArns": [
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-sacred-marmoset"
+                ],
+                "CodeRepositories": [
+                    {
+                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
+                    }
+                ]
+            },
+            "KernelGatewayAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                    "InstanceType": "ml.t3.medium",
+                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-sacred-marmoset"
+                },
+                "CustomImages": [
+                    {
+                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageVersionNumber": 2,
+                        "AppImageConfigName": "c7n-kernelgateway-sacred-marmoset"
+                    }
+                ],
+                "LifecycleConfigArns": [
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-sacred-marmoset"
+                ]
+            },
+            "TensorBoardAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                    "InstanceType": "ml.t3.medium"
+                }
+            },
+            "RSessionAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                    "InstanceType": "ml.t3.medium"
+                },
+                "CustomImages": [
+                    {
+                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageVersionNumber": 2,
+                        "AppImageConfigName": "c7n-rsession-sacred-marmoset"
+                    }
+                ]
+            },
+            "CodeEditorAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                    "InstanceType": "ml.t3.medium",
+                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-sacred-marmoset"
+                },
+                "CustomImages": [
+                    {
+                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageVersionNumber": 2,
+                        "AppImageConfigName": "c7n-codeeditor-sacred-marmoset"
+                    }
+                ],
+                "LifecycleConfigArns": [
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-sacred-marmoset"
+                ],
+                "AppLifecycleManagement": {
+                    "IdleSettings": {
+                        "LifecycleManagement": "ENABLED",
+                        "IdleTimeoutInMinutes": 120,
+                        "MinIdleTimeoutInMinutes": 60,
+                        "MaxIdleTimeoutInMinutes": 240
+                    }
+                },
+                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-sacred-marmoset"
+            },
+            "JupyterLabAppSettings": {
+                "DefaultResourceSpec": {
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                    "InstanceType": "ml.t3.medium",
+                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-sacred-marmoset"
+                },
+                "CustomImages": [
+                    {
+                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageVersionNumber": 2,
+                        "AppImageConfigName": "c7n-jupyterlab-sacred-marmoset"
+                    }
+                ],
+                "LifecycleConfigArns": [
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-sacred-marmoset"
+                ],
+                "CodeRepositories": [
+                    {
+                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
+                    }
+                ],
+                "AppLifecycleManagement": {
+                    "IdleSettings": {
+                        "LifecycleManagement": "ENABLED",
+                        "IdleTimeoutInMinutes": 120,
+                        "MinIdleTimeoutInMinutes": 60,
+                        "MaxIdleTimeoutInMinutes": 240
+                    }
+                },
+                "EmrSettings": {
+                    "AssumableRoleArns": [
+                        "arn:aws:iam::644160558196:role/c7n-emr-assumable-sacred-marmoset"
+                    ],
+                    "ExecutionRoleArns": [
+                        "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                    ]
+                },
+                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-sacred-marmoset"
+            },
+            "CustomFileSystemConfigs": [],
+            "AutoMountHomeEFS": "DefaultAsDomain"
+        },
+        "ResponseMetadata": {}
+    }
+}

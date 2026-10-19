@@ -1,0 +1,133 @@
+{
+    "status_code": 200,
+    "data": {
+        "UserProfiles": [
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-profile-update-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 54,
+                    "microsecond": 486000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 41,
+                    "second": 0,
+                    "microsecond": 200000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-apps-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 48,
+                    "microsecond": 781000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 51,
+                    "microsecond": 754000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-rstudio-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 45,
+                    "microsecond": 646000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 41,
+                    "second": 20,
+                    "microsecond": 452000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-settings-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 44,
+                    "microsecond": 346000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 41,
+                    "second": 13,
+                    "microsecond": 413000
+                }
+            },
+            {
+                "DomainId": "d-permq6ogjmo8",
+                "UserProfileName": "c7n-canvas-sacred-marmoset",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 40,
+                    "second": 44,
+                    "microsecond": 250000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 14,
+                    "minute": 41,
+                    "second": 33,
+                    "microsecond": 346000
+                }
+            }
+        ],
+        "ResponseMetadata": {}
+    }
+}

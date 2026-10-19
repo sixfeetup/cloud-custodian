@@ -1,7 +1,7 @@
 {
     "status_code": 200,
     "data": {
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-rstudio-endless-wren",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-rstudio-sacred-marmoset",
         "ResponseMetadata": {}
     }
 }
