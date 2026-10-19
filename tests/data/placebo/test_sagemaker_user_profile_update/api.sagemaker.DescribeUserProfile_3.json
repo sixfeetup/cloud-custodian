@@ -1,54 +1,59 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-a8sxmenlk3g5",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-a8sxmenlk3g5/c7n-profile-update-trusting-imp",
-        "UserProfileName": "c7n-profile-update-trusting-imp",
+        "DomainId": "d-oqpklo5ndw7o",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+        "UserProfileName": "c7n-settings-tolerant-cheetah",
         "HomeEfsFileSystemUid": "200005",
-        "Status": "Updating",
+        "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 9,
-            "minute": 37,
-            "second": 59,
-            "microsecond": 795000
+            "hour": 12,
+            "minute": 40,
+            "second": 32,
+            "microsecond": 905000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 9,
-            "minute": 37,
-            "second": 54,
-            "microsecond": 700000
+            "hour": 12,
+            "minute": 40,
+            "second": 29,
+            "microsecond": 374000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-trusting-imp",
-            "KernelGatewayAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+            "SecurityGroups": [
+                "sg-0989a0bc44d24b8c2"
+            ],
+            "SharingSettings": {
+                "NotebookOutputOption": "Disabled"
+            },
+            "SpaceStorageSettings": {
+                "DefaultEbsStorageSettings": {
+                    "DefaultEbsVolumeSizeInGb": 5,
+                    "MaximumEbsVolumeSizeInGb": 20
                 }
             },
-            "CodeEditorAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
-                }
-            },
-            "JupyterLabAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
-                },
-                "CodeRepositories": [
-                    {
-                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
-                    }
+            "DefaultLandingUri": "app:JupyterServer:",
+            "StudioWebPortal": "ENABLED",
+            "CustomFileSystemConfigs": [],
+            "StudioWebPortalSettings": {
+                "HiddenMlTools": [
+                    "Experiments"
+                ],
+                "HiddenAppTypes": [
+                    "Canvas"
+                ],
+                "HiddenInstanceTypes": [
+                    "ml.g5.xlarge"
                 ]
             },
-            "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"
         },
         "ResponseMetadata": {}

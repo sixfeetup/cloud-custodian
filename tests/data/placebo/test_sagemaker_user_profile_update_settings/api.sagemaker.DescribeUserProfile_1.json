@@ -1,0 +1,61 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-oqpklo5ndw7o",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+        "UserProfileName": "c7n-settings-tolerant-cheetah",
+        "HomeEfsFileSystemUid": "200005",
+        "Status": "InService",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 12,
+            "minute": 40,
+            "second": 32,
+            "microsecond": 905000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 12,
+            "minute": 40,
+            "second": 29,
+            "microsecond": 374000
+        },
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+            "SecurityGroups": [
+                "sg-0989a0bc44d24b8c2"
+            ],
+            "SharingSettings": {
+                "NotebookOutputOption": "Disabled"
+            },
+            "SpaceStorageSettings": {
+                "DefaultEbsStorageSettings": {
+                    "DefaultEbsVolumeSizeInGb": 5,
+                    "MaximumEbsVolumeSizeInGb": 20
+                }
+            },
+            "DefaultLandingUri": "app:JupyterServer:",
+            "StudioWebPortal": "ENABLED",
+            "CustomFileSystemConfigs": [],
+            "StudioWebPortalSettings": {
+                "HiddenMlTools": [
+                    "Experiments"
+                ],
+                "HiddenAppTypes": [
+                    "Canvas"
+                ],
+                "HiddenInstanceTypes": [
+                    "ml.g5.xlarge"
+                ]
+            },
+            "AutoMountHomeEFS": "DefaultAsDomain"
+        },
+        "ResponseMetadata": {}
+    }
+}

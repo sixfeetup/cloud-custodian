@@ -3,28 +3,53 @@
     "data": {
         "UserProfiles": [
             {
-                "DomainId": "d-a8sxmenlk3g5",
-                "UserProfileName": "c7n-profile-update-trusting-imp",
+                "DomainId": "d-oqpklo5ndw7o",
+                "UserProfileName": "c7n-profile-update-tolerant-cheetah",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 9,
-                    "minute": 37,
-                    "second": 54,
-                    "microsecond": 700000
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 29,
+                    "microsecond": 457000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 9,
-                    "minute": 37,
-                    "second": 57,
-                    "microsecond": 561000
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 33,
+                    "microsecond": 392000
+                }
+            },
+            {
+                "DomainId": "d-oqpklo5ndw7o",
+                "UserProfileName": "c7n-settings-tolerant-cheetah",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 29,
+                    "microsecond": 374000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 32,
+                    "microsecond": 905000
                 }
             }
         ],

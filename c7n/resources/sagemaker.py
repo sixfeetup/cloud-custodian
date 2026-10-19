@@ -6,6 +6,7 @@ import functools
 import importlib.resources
 import typing
 
+import botocore.model
 import jsonschema
 import yaml
 
@@ -13,7 +14,12 @@ from c7n.actions import BaseAction
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n.manager import resources
 from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, ConfigSource
-from c7n.resources.aws import shape_schema, shape_validate
+from c7n.resources.aws import (
+    MODEL_SCHEMA_TYPE_MAP,
+    get_service_shape,
+    shape_schema,
+    shape_validate,
+)
 from c7n.utils import local_session, type_schema, QueryParser
 from c7n.tags import RemoveTag, Tag, TagActionFilter, TagDelayedAction, universal_augment
 from c7n.filters.vpc import SubnetFilter, SecurityGroupFilter, NetworkLocation
@@ -1757,9 +1763,43 @@ class SagemakerUserProfile(QueryResourceManager):
     source_mapping = {'describe': SagemakerUserProfileDescribe}
 
 
+def _user_profile_schema(
+    shape: botocore.model.Shape,
+    fields: dict[str, typing.Any] | None,
+) -> dict:
+    """Build a schema for explicitly selected user-profile fields."""
+    schema = {'type': MODEL_SCHEMA_TYPE_MAP[shape.type_name]}
+    if shape.type_name == 'structure':
+        schema.update({
+            'additionalProperties': False,
+            'minProperties': 1,
+            'properties': {
+                name: _user_profile_schema(shape.members[name], children)
+                for name, children in fields.items()
+            },
+        })
+        if shape.required_members:
+            schema['required'] = shape.required_members
+    elif shape.type_name == 'list':
+        schema['items'] = _user_profile_schema(shape.member, fields)
+    for name in ('enum', 'pattern'):
+        if name in shape.metadata:
+            schema[name] = shape.metadata[name]
+    bounds = {
+        'string': ('minLength', 'maxLength'),
+        'array': ('minItems', 'maxItems'),
+        'integer': ('minimum', 'maximum'),
+    }
+    if schema['type'] in bounds:
+        for model_name, schema_name in zip(('min', 'max'), bounds[schema['type']]):
+            if model_name in shape.metadata:
+                schema[schema_name] = shape.metadata[model_name]
+    return schema
+
+
 @SagemakerUserProfile.action_registry.register('update')
 class UpdateSagemakerUserProfile(BaseAction):
-    """Update default instance types for KernelGateway, JupyterLab, and Code Editor.
+    """Update SageMaker Studio user settings.
 
     Updates defaults without resizing running apps. KernelGateway instance-type
     defaults apply to CLI and CloudFormation app creation, not the Studio UI.
@@ -1787,36 +1827,46 @@ class UpdateSagemakerUserProfile(BaseAction):
     schema = type_schema(
         'update',
         required=['UserSettings'],
-        UserSettings={
-            'type': 'object',
-            'additionalProperties': False,
-            'minProperties': 1,
-            'properties': {
-                app: {
-                    'type': 'object',
-                    'additionalProperties': False,
-                    'required': ['DefaultResourceSpec'],
-                    'properties': {
-                        'DefaultResourceSpec': {
-                            'type': 'object',
-                            'additionalProperties': False,
-                            'required': ['InstanceType'],
-                            'properties': {
-                                'InstanceType': shape_schema(
-                                    'sagemaker',
-                                    'ResourceSpec',
-                                )['InstanceType'],
-                            },
-                        },
+        UserSettings=_user_profile_schema(
+            get_service_shape('sagemaker', 'UserSettings'),
+            {
+                'ExecutionRole': None,
+                'SecurityGroups': None,
+                'SharingSettings': {
+                    'NotebookOutputOption': None,
+                    'S3OutputPath': None,
+                    'S3KmsKeyId': None,
+                },
+                'DefaultLandingUri': None,
+                'StudioWebPortal': None,
+                'SpaceStorageSettings': {
+                    'DefaultEbsStorageSettings': {
+                        'DefaultEbsVolumeSizeInGb': None,
+                        'MaximumEbsVolumeSizeInGb': None,
                     },
-                }
-                for app in (
-                    'KernelGatewayAppSettings',
-                    'JupyterLabAppSettings',
-                    'CodeEditorAppSettings',
-                )
+                },
+                'AutoMountHomeEFS': None,
+                'StudioWebPortalSettings': {
+                    'HiddenMlTools': None,
+                    'HiddenAppTypes': None,
+                    'HiddenInstanceTypes': None,
+                    'HiddenSageMakerImageVersionAliases': {
+                        'SageMakerImageName': None,
+                        'VersionAliases': None,
+                    },
+                    'ExecutionRoleSessionNameMode': None,
+                },
+                # TODO: Record TrainingPlanArn updates for JupyterLab and CodeEditor.
+                **{
+                    app: {'DefaultResourceSpec': {'InstanceType': None}}
+                    for app in (
+                        'KernelGatewayAppSettings',
+                        'JupyterLabAppSettings',
+                        'CodeEditorAppSettings',
+                    )
+                },
             },
-        },
+        ),
     )
     permissions = ('sagemaker:UpdateUserProfile',)
 

@@ -12,7 +12,7 @@ from .common import BaseTest
 from c7n.filters.metrics import MetricsFilter
 from c7n.resources.sagemaker import (
     SAGEMAKER_METRICS, SagemakerEndpoint, SagemakerJobQueryParser,
-    CompilationJobQueryParser, UpdateSagemakerUserProfile)
+    CompilationJobQueryParser)
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 
 import botocore.exceptions as b_exc
@@ -1545,87 +1545,6 @@ class CompilationJobQueryParse(BaseTest):
         self.assertRaises(
             PolicyValidationError, SagemakerJobQueryParser.parse, [
                 {'StatusEquals': ['INPROGRESS', 'COMPLETED']}])
-
-
-def test_sagemaker_user_profile_update_validate():
-    action = UpdateSagemakerUserProfile({
-        'type': 'update',
-        'UserSettings': {
-            'KernelGatewayAppSettings': {
-                'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'},
-            },
-        },
-    })
-    action.validate()
-
-    action.data['UserSettings'] = {'CustomPosixUserConfig': {'Uid': 10000, 'Gid': 1001}}
-    with pytest.raises(PolicyValidationError):
-        action.validate()
-
-
-@pytest.mark.audited
-@terraform('sagemaker_user_profile_update')
-def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
-    factory = test.replay_flight_data('test_sagemaker_user_profile_update')
-    client = factory().client('sagemaker')
-    domain_id = sagemaker_user_profile_update['aws_sagemaker_domain.main.id']
-    profile_name = sagemaker_user_profile_update[
-        'aws_sagemaker_user_profile.main.user_profile_name']
-    apps = (
-        'KernelGatewayAppSettings',
-        'JupyterLabAppSettings',
-        'CodeEditorAppSettings',
-    )
-    before = client.describe_user_profile(
-        DomainId=domain_id,
-        UserProfileName=profile_name,
-    )['UserSettings']
-    for app in apps:
-        assert before[app]['DefaultResourceSpec']['InstanceType'] == 'ml.g4dn.xlarge'
-    policy = test.load_policy(
-        {
-            'name': 'sagemaker-user-profile-cpu-default',
-            'resource': 'aws.sagemaker-user-profile',
-            'filters': [
-                {'DomainId': domain_id},
-                {'UserProfileName': profile_name},
-                {
-                    'type': 'value',
-                    'key': ('UserSettings.KernelGatewayAppSettings.'
-                            'DefaultResourceSpec.InstanceType'),
-                    'op': 'regex',
-                    'value': '^ml[.](g|p)[a-z0-9.]+$',
-                },
-            ],
-            'actions': [{
-                'type': 'update',
-                'UserSettings': {
-                    app: {'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'}}
-                    for app in apps
-                },
-            }],
-        },
-        session_factory=factory,
-    )
-    [resource] = policy.run()
-    assert resource['UserProfileName'] == profile_name
-    for _ in range(60):
-        updated = client.describe_user_profile(
-            DomainId=domain_id,
-            UserProfileName=profile_name,
-        )
-        if updated['Status'] == 'InService':
-            break
-        if test.recording:
-            time.sleep(5)
-    assert updated['Status'] == 'InService'
-    settings = updated['UserSettings']
-    for app in apps:
-        assert settings[app]['DefaultResourceSpec']['InstanceType'] == 'ml.t3.medium'
-    assert settings['ExecutionRole'] == before['ExecutionRole']
-    assert settings['JupyterLabAppSettings']['CodeRepositories'] == [{
-        'RepositoryUrl': 'https://github.com/cloud-custodian/cloud-custodian',
-    }]
 
 
 @pytest.mark.audited

@@ -91,29 +91,132 @@
         },
         "aws_iam_role": {
             "execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-trusting-imp",
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T15:36:00Z",
+                "create_date": "2026-10-19T18:38:35Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-profile-update-trusting-imp",
+                "id": "c7n-profile-update-tolerant-cheetah",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-profile-update-trusting-imp",
+                "name": "c7n-profile-update-tolerant-cheetah",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWXS2BTTQRKW"
+                "unique_id": "AROAV7EQQKWXQNF4RSGT3"
+            },
+            "updated_execution": {
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-updated-tolerant-cheetah",
+                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                "create_date": "2026-10-19T18:38:35Z",
+                "description": "",
+                "force_detach_policies": false,
+                "id": "c7n-profile-updated-tolerant-cheetah",
+                "inline_policy": [],
+                "managed_policy_arns": [],
+                "max_session_duration": 3600,
+                "name": "c7n-profile-updated-tolerant-cheetah",
+                "name_prefix": "",
+                "path": "/",
+                "permissions_boundary": "",
+                "tags": null,
+                "tags_all": {},
+                "unique_id": "AROAV7EQQKWXZZTNM24UO"
+            }
+        },
+        "aws_kms_key": {
+            "sharing": {
+                "arn": "arn:aws:kms:us-west-2:644160558196:key/b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "bypass_policy_lockout_safety_check": false,
+                "custom_key_store_id": "",
+                "customer_master_key_spec": "SYMMETRIC_DEFAULT",
+                "deletion_window_in_days": 7,
+                "description": "SageMaker profile update test",
+                "enable_key_rotation": false,
+                "id": "b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "is_enabled": true,
+                "key_id": "b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "key_usage": "ENCRYPT_DECRYPT",
+                "multi_region": false,
+                "policy": "{\"Id\":\"key-default-1\",\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::644160558196:root\"},\"Resource\":\"*\",\"Sid\":\"Enable IAM User Permissions\"}],\"Version\":\"2012-10-17\"}",
+                "region": "us-west-2",
+                "rotation_period_in_days": 0,
+                "tags": null,
+                "tags_all": {},
+                "timeouts": null,
+                "xks_key_id": ""
+            }
+        },
+        "aws_s3_bucket": {
+            "sharing": {
+                "acceleration_status": "",
+                "acl": null,
+                "arn": "arn:aws:s3:::c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
+                "bucket": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
+                "bucket_domain_name": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61.s3.amazonaws.com",
+                "bucket_namespace": "global",
+                "bucket_prefix": "c7n-profile-sharing-",
+                "bucket_region": "us-west-2",
+                "bucket_regional_domain_name": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61.s3.us-west-2.amazonaws.com",
+                "cors_rule": [],
+                "force_destroy": true,
+                "grant": [
+                    {
+                        "id": "46af83c9c3bd517b24c5e1f559f1a1e4694a3a119004c8db795b301befae00ca",
+                        "permissions": [
+                            "FULL_CONTROL"
+                        ],
+                        "type": "CanonicalUser",
+                        "uri": ""
+                    }
+                ],
+                "hosted_zone_id": "Z3BJ6K6RIION7M",
+                "id": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
+                "lifecycle_rule": [],
+                "logging": [],
+                "object_lock_configuration": [],
+                "object_lock_enabled": false,
+                "policy": "",
+                "region": "us-west-2",
+                "replication_configuration": [],
+                "request_payer": "BucketOwner",
+                "server_side_encryption_configuration": [
+                    {
+                        "rule": [
+                            {
+                                "apply_server_side_encryption_by_default": [
+                                    {
+                                        "kms_master_key_id": "",
+                                        "sse_algorithm": "AES256"
+                                    }
+                                ],
+                                "bucket_key_enabled": false
+                            }
+                        ]
+                    }
+                ],
+                "tags": null,
+                "tags_all": {},
+                "timeouts": null,
+                "versioning": [
+                    {
+                        "enabled": false,
+                        "mfa_delete": false
+                    }
+                ],
+                "website": [],
+                "website_domain": null,
+                "website_endpoint": null
             }
         },
         "aws_sagemaker_domain": {
             "main": {
                 "app_network_access_type": "PublicInternetOnly",
                 "app_security_group_management": "",
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-a8sxmenlk3g5",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-oqpklo5ndw7o",
                 "auth_mode": "IAM",
                 "default_space_settings": [],
                 "default_user_settings": [
@@ -124,7 +227,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "studio::",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-trusting-imp",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -144,10 +247,10 @@
                         "tensor_board_app_settings": []
                     }
                 ],
-                "domain_name": "c7n-profile-update-trusting-imp",
+                "domain_name": "c7n-profile-update-tolerant-cheetah",
                 "domain_settings": [],
-                "home_efs_file_system_id": "fs-021f162f83e1d77b2",
-                "id": "d-a8sxmenlk3g5",
+                "home_efs_file_system_id": "fs-0daa8971da1175dc5",
+                "id": "d-oqpklo5ndw7o",
                 "kms_key_id": "",
                 "region": "us-west-2",
                 "retention_policy": [
@@ -164,22 +267,22 @@
                 "tag_propagation": "DISABLED",
                 "tags": null,
                 "tags_all": {},
-                "url": "https://d-a8sxmenlk3g5.studio.us-west-2.sagemaker.aws",
+                "url": "https://d-oqpklo5ndw7o.studio.us-west-2.sagemaker.aws",
                 "vpc_id": "vpc-049c0030ea410c65b"
             }
         },
         "aws_sagemaker_user_profile": {
             "main": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-a8sxmenlk3g5/c7n-profile-update-trusting-imp",
-                "domain_id": "d-a8sxmenlk3g5",
-                "home_efs_file_system_uid": "200005",
-                "id": "d-a8sxmenlk3g5/c7n-profile-update-trusting-imp",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-profile-update-tolerant-cheetah",
+                "domain_id": "d-oqpklo5ndw7o",
+                "home_efs_file_system_uid": "200010",
+                "id": "d-oqpklo5ndw7o/c7n-profile-update-tolerant-cheetah",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-profile-update-trusting-imp",
+                "user_profile_name": "c7n-profile-update-tolerant-cheetah",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -204,7 +307,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-trusting-imp",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
                         "jupyter_lab_app_settings": [
                             {
                                 "app_lifecycle_management": [],
@@ -254,11 +357,108 @@
                         "tensor_board_app_settings": []
                     }
                 ]
+            },
+            "settings": {
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+                "domain_id": "d-oqpklo5ndw7o",
+                "home_efs_file_system_uid": "200005",
+                "id": "d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+                "region": "us-west-2",
+                "single_sign_on_user_identifier": "",
+                "single_sign_on_user_value": "",
+                "tags": null,
+                "tags_all": {},
+                "user_profile_name": "c7n-settings-tolerant-cheetah",
+                "user_settings": [
+                    {
+                        "auto_mount_home_efs": "DefaultAsDomain",
+                        "canvas_app_settings": [],
+                        "code_editor_app_settings": [],
+                        "custom_file_system_config": [],
+                        "custom_posix_user_config": [],
+                        "default_landing_uri": "app:JupyterServer:",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+                        "jupyter_lab_app_settings": [],
+                        "jupyter_server_app_settings": [],
+                        "kernel_gateway_app_settings": [],
+                        "r_session_app_settings": [],
+                        "r_studio_server_pro_app_settings": [],
+                        "security_groups": [
+                            "sg-0989a0bc44d24b8c2"
+                        ],
+                        "sharing_settings": [
+                            {
+                                "notebook_output_option": "Disabled",
+                                "s3_kms_key_id": "",
+                                "s3_output_path": ""
+                            }
+                        ],
+                        "space_storage_settings": [
+                            {
+                                "default_ebs_storage_settings": [
+                                    {
+                                        "default_ebs_volume_size_in_gb": 5,
+                                        "maximum_ebs_volume_size_in_gb": 20
+                                    }
+                                ]
+                            }
+                        ],
+                        "studio_web_portal": "ENABLED",
+                        "studio_web_portal_settings": [
+                            {
+                                "hidden_app_types": [
+                                    "Canvas"
+                                ],
+                                "hidden_instance_types": [
+                                    "ml.g5.xlarge"
+                                ],
+                                "hidden_ml_tools": [
+                                    "Experiments"
+                                ]
+                            }
+                        ],
+                        "tensor_board_app_settings": []
+                    }
+                ]
+            }
+        },
+        "aws_security_group": {
+            "initial": {
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-0989a0bc44d24b8c2",
+                "description": "Managed by Terraform",
+                "egress": [],
+                "id": "sg-0989a0bc44d24b8c2",
+                "ingress": [],
+                "name": "c7n-profile-initial-08dfde697186bfe7d898584b5b",
+                "name_prefix": "c7n-profile-initial-",
+                "owner_id": "644160558196",
+                "region": "us-west-2",
+                "revoke_rules_on_delete": false,
+                "tags": null,
+                "tags_all": {},
+                "timeouts": null,
+                "vpc_id": "vpc-049c0030ea410c65b"
+            },
+            "updated": {
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-08833a1a3125290f2",
+                "description": "Managed by Terraform",
+                "egress": [],
+                "id": "sg-08833a1a3125290f2",
+                "ingress": [],
+                "name": "c7n-profile-updated-45397d320d1afea712f3cd2b0a",
+                "name_prefix": "c7n-profile-updated-",
+                "owner_id": "644160558196",
+                "region": "us-west-2",
+                "revoke_rules_on_delete": false,
+                "tags": null,
+                "tags_all": {},
+                "timeouts": null,
+                "vpc_id": "vpc-049c0030ea410c65b"
             }
         },
         "random_pet": {
             "profile": {
-                "id": "trusting-imp",
+                "id": "tolerant-cheetah",
                 "keepers": null,
                 "length": 2,
                 "prefix": null,

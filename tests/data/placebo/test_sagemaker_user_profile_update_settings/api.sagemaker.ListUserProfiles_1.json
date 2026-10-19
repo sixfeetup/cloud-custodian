@@ -1,0 +1,58 @@
+{
+    "status_code": 200,
+    "data": {
+        "UserProfiles": [
+            {
+                "DomainId": "d-oqpklo5ndw7o",
+                "UserProfileName": "c7n-profile-update-tolerant-cheetah",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 29,
+                    "microsecond": 457000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 38,
+                    "microsecond": 11000
+                }
+            },
+            {
+                "DomainId": "d-oqpklo5ndw7o",
+                "UserProfileName": "c7n-settings-tolerant-cheetah",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 29,
+                    "microsecond": 374000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 12,
+                    "minute": 40,
+                    "second": 32,
+                    "microsecond": 905000
+                }
+            }
+        ],
+        "ResponseMetadata": {}
+    }
+}

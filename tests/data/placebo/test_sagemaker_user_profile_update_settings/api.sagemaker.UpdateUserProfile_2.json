@@ -1,0 +1,7 @@
+{
+    "status_code": 200,
+    "data": {
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+        "ResponseMetadata": {}
+    }
+}
