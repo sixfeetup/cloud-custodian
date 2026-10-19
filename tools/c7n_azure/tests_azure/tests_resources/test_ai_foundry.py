@@ -6,7 +6,13 @@ from unittest.mock import MagicMock
 
 from c7n.exceptions import PolicyValidationError
 
-from ..azure_common import BaseTest, arm_template, cassette_name, requires_arm_polling, strict_cassette
+from ..azure_common import (
+    BaseTest,
+    arm_template,
+    cassette_name,
+    requires_arm_polling,
+    strict_cassette,
+)
 
 
 class AiFoundryDeploymentTest(BaseTest):
