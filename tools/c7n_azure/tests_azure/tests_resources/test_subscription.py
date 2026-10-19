@@ -316,7 +316,7 @@ class SubscriptionTaggingTest(BaseTest):
 
 
 class SubscriptionSetActivityLogAlertTest(BaseTest):
-    resource_group = 'test_activity-log-alert'
+    resource_group = 'test_subscription-activity-log-alert'
     alert_name = 'cctest-nsg-write-alert'
     conditions = [
         {'field': 'category', 'equals': 'Administrative'},
@@ -343,6 +343,16 @@ class SubscriptionSetActivityLogAlertTest(BaseTest):
     def _alert_body_for(self, **options):
         action = self._load_alert_policy(**options).resource_manager.actions[0]
         return action.alert_body({'id': f'/subscriptions/{DEFAULT_SUBSCRIPTION_ID}'})
+
+    def _action_group_id(self):
+        return (
+            f'/subscriptions/{self.session.get_subscription_id()}'
+            f'/resourceGroups/{self.resource_group}'
+            '/providers/microsoft.insights/actionGroups/cctest-activity-alert')
+
+    def _get_alert(self, name):
+        client = self.session.client('azure.mgmt.monitor.MonitorManagementClient')
+        return client.activity_log_alerts.get(self.resource_group, name)
 
     def test_schema_rejects_empty_name(self):
         with pytest.raises(PolicyValidationError, match="'' should be non-empty"):
@@ -393,20 +403,16 @@ class SubscriptionSetActivityLogAlertTest(BaseTest):
             },
         }
 
-    @arm_template('activity-log-alert.json')
+    @arm_template('subscription-activity-log-alert.json')
     @strict_cassette('set-activity-log-alert')
     def test_creates_alert_scoped_to_subscription(self):
-        subscription_id = self.session.get_subscription_id()
-        action_group_id = (
-            f'/subscriptions/{subscription_id}/resourceGroups/{self.resource_group}'
-            '/providers/microsoft.insights/actionGroups/cctest-activity-alert')
+        action_group_id = self._action_group_id()
 
         resources = self._alert_policy(**{'action-groups': [action_group_id]}).run()
 
-        client = self.session.client('azure.mgmt.monitor.MonitorManagementClient')
-        alert = client.activity_log_alerts.get(self.resource_group, self.alert_name)
+        alert = self._get_alert(self.alert_name)
         assert len(resources) == 1
-        assert alert.scopes == [f'/subscriptions/{subscription_id}']
+        assert alert.scopes == [f'/subscriptions/{self.session.get_subscription_id()}']
         assert [(c.field, c.equals) for c in alert.condition.all_of] == [
             ('category', 'Administrative'),
             ('operationName', 'Microsoft.Network/networkSecurityGroups/write'),
@@ -414,3 +420,22 @@ class SubscriptionSetActivityLogAlertTest(BaseTest):
         assert [g.action_group_id.lower() for g in alert.actions.action_groups] == [
             action_group_id.lower()]
         assert alert.enabled is True
+
+    @arm_template('subscription-activity-log-alert.json')
+    @strict_cassette('replace-activity-log-alert')
+    def test_rerun_replaces_existing_alert_whole(self):
+        name = 'cctest-replaced-alert'
+        action_group_id = self._action_group_id()
+        self._alert_policy(
+            name=name, description='NSG writes', **{'action-groups': [action_group_id]}).run()
+        before = self._get_alert(name)
+
+        self._alert_policy(name=name).run()
+
+        after = self._get_alert(name)
+        assert [g.action_group_id.lower() for g in before.actions.action_groups] == [
+            action_group_id.lower()]
+        assert before.description == 'NSG writes'
+        assert after.actions.action_groups == []
+        assert after.description is None
+        assert after.enabled is True
