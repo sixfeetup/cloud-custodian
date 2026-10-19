@@ -1,0 +1,25 @@
+tests/test_sagemaker.py
+  s_e9eb695c1c4a20::t_e902225fdcbcc0 3
+  s_e9eb695c1c4a20::t_79de028bbf4943 2189-2260
+c7n/resources/sagemaker.py
+  s_e9eb695c1c4a20::t_0dc79c992447be 511-512,748-773
+docs/source/aws/examples/sagemakermetrics.rst
+  s_e9eb695c1c4a20::t_ef82189eb42de2 157-164,167
+  s_e9eb695c1c4a20::t_539524fed841f7 165-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "93784cbd58099f40d2e519c555c23a34f8de63c3",
+  "prompts": {},
+  "sessions": {
+    "s_e9eb695c1c4a20": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fd10e6f3-501a-497f-aa1f-64a701a32470",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
