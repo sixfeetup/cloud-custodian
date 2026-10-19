@@ -1,0 +1,70 @@
+{
+    "status_code": 200,
+    "data": {
+        "DomainId": "d-ku8tinhyebc3",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-canvas-endless-wren",
+        "UserProfileName": "c7n-canvas-endless-wren",
+        "HomeEfsFileSystemUid": "200010",
+        "Status": "Updating",
+        "LastModifiedTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 13,
+            "minute": 6,
+            "second": 39,
+            "microsecond": 372000
+        },
+        "CreationTime": {
+            "__class__": "datetime",
+            "year": 2026,
+            "month": 10,
+            "day": 19,
+            "hour": 13,
+            "minute": 5,
+            "second": 55,
+            "microsecond": 17000
+        },
+        "UserSettings": {
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
+            "CanvasAppSettings": {
+                "TimeSeriesForecastingSettings": {
+                    "Status": "ENABLED",
+                    "AmazonForecastRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-endless-wren"
+                },
+                "ModelRegisterSettings": {
+                    "Status": "ENABLED",
+                    "CrossAccountModelRegisterRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-endless-wren"
+                },
+                "WorkspaceSettings": {
+                    "S3ArtifactPath": "s3://c7n-profile-sharing-039a849f2cede40f2ca9a8ee43/canvas/",
+                    "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/0e37aca2-016d-4476-b0b6-8afb32734189"
+                },
+                "IdentityProviderOAuthSettings": [
+                    {
+                        "DataSourceName": "Snowflake",
+                        "Status": "ENABLED",
+                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C"
+                    }
+                ],
+                "DirectDeploySettings": {
+                    "Status": "ENABLED"
+                },
+                "KendraSettings": {
+                    "Status": "ENABLED"
+                },
+                "GenerativeAiSettings": {
+                    "AmazonBedrockRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-endless-wren"
+                },
+                "EmrServerlessSettings": {
+                    "ExecutionRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-endless-wren",
+                    "Status": "ENABLED"
+                }
+            },
+            "CustomFileSystemConfigs": [],
+            "AutoMountHomeEFS": "DefaultAsDomain"
+        },
+        "ResponseMetadata": {}
+    }
+}

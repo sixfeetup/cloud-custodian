@@ -229,3 +229,103 @@ def test_sagemaker_user_profile_update_settings(test, sagemaker_user_profile_upd
         'HiddenSageMakerImageVersionAliases': [],
         'ExecutionRoleSessionNameMode': 'STATIC',
     }
+
+
+@pytest.mark.audited
+@terraform('sagemaker_user_profile_update', scope='module')
+def test_sagemaker_user_profile_update_rstudio(test, sagemaker_user_profile_update):
+    fixture = sagemaker_user_profile_update
+    factory = test.replay_flight_data('test_sagemaker_user_profile_update_rstudio')
+    domain_id = fixture['aws_sagemaker_domain.main.id']
+    profile_name = fixture['aws_sagemaker_user_profile.rstudio.user_profile_name']
+    before = describe_user_profile(
+        test,
+        factory().client('sagemaker'),
+        domain_id,
+        profile_name,
+    )['UserSettings']
+    assert before['RStudioServerProAppSettings']['AccessStatus'] == 'DISABLED'
+    updated = update_user_profile(
+        test,
+        factory,
+        domain_id,
+        profile_name,
+        {
+            'RStudioServerProAppSettings': {
+                'AccessStatus': 'ENABLED',
+                'UserGroup': 'R_STUDIO_ADMIN',
+            },
+        },
+    )
+    assert updated['RStudioServerProAppSettings'] == {
+        'AccessStatus': 'ENABLED',
+        'UserGroup': 'R_STUDIO_ADMIN',
+    }
+
+
+@pytest.mark.audited
+@terraform('sagemaker_user_profile_update', scope='module')
+def test_sagemaker_user_profile_update_canvas_settings(
+    test,
+    sagemaker_user_profile_update,
+):
+    fixture = sagemaker_user_profile_update
+    factory = test.replay_flight_data('test_sagemaker_user_profile_update_canvas_settings')
+    domain_id = fixture['aws_sagemaker_domain.main.id']
+    profile_name = fixture['aws_sagemaker_user_profile.canvas.user_profile_name']
+    canvas = {
+        'TimeSeriesForecastingSettings': {
+            'Status': 'ENABLED',
+            'AmazonForecastRoleArn': fixture['aws_iam_role.canvas.arn'],
+        },
+        'ModelRegisterSettings': {
+            'Status': 'ENABLED',
+            'CrossAccountModelRegisterRoleArn': fixture['aws_iam_role.canvas.arn'],
+        },
+        'WorkspaceSettings': {
+            'S3ArtifactPath': f"s3://{fixture['aws_s3_bucket.sharing.bucket']}/canvas/",
+            'S3KmsKeyId': fixture['aws_kms_key.sharing.arn'],
+        },
+        'IdentityProviderOAuthSettings': [{
+            'DataSourceName': 'Snowflake',
+            'Status': 'ENABLED',
+            'SecretArn': fixture['aws_secretsmanager_secret.oauth.arn'],
+        }],
+        'DirectDeploySettings': {'Status': 'ENABLED'},
+        'KendraSettings': {'Status': 'ENABLED'},
+        'GenerativeAiSettings': {
+            'AmazonBedrockRoleArn': fixture['aws_iam_role.canvas.arn'],
+        },
+        'EmrServerlessSettings': {
+            'Status': 'ENABLED',
+            'ExecutionRoleArn': fixture['aws_iam_role.canvas.arn'],
+        },
+    }
+    updated = update_user_profile(
+        test,
+        factory,
+        domain_id,
+        profile_name,
+        {'CanvasAppSettings': canvas},
+    )
+    assert updated['CanvasAppSettings'] == canvas
+    disabled = {
+        'TimeSeriesForecastingSettings': {'Status': 'DISABLED'},
+        'ModelRegisterSettings': {'Status': 'DISABLED'},
+        'DirectDeploySettings': {'Status': 'DISABLED'},
+        'KendraSettings': {'Status': 'DISABLED'},
+        'EmrServerlessSettings': {'Status': 'DISABLED'},
+        'IdentityProviderOAuthSettings': [],
+    }
+    updated = update_user_profile(
+        test,
+        factory,
+        domain_id,
+        profile_name,
+        {'CanvasAppSettings': disabled},
+    )
+    for app, settings in disabled.items():
+        if app == 'IdentityProviderOAuthSettings':
+            assert updated['CanvasAppSettings'][app] == []
+        else:
+            assert updated['CanvasAppSettings'][app]['Status'] == settings['Status']

@@ -1,52 +1,56 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-oqpklo5ndw7o",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-profile-update-tolerant-cheetah",
-        "UserProfileName": "c7n-profile-update-tolerant-cheetah",
+        "DomainId": "d-ku8tinhyebc3",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-canvas-endless-wren",
+        "UserProfileName": "c7n-canvas-endless-wren",
         "HomeEfsFileSystemUid": "200010",
-        "Status": "Updating",
+        "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 12,
-            "minute": 40,
-            "second": 37,
-            "microsecond": 646000
+            "hour": 13,
+            "minute": 5,
+            "second": 57,
+            "microsecond": 870000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 19,
-            "hour": 12,
-            "minute": 40,
-            "second": 29,
-            "microsecond": 457000
+            "hour": 13,
+            "minute": 5,
+            "second": 55,
+            "microsecond": 17000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
-            "KernelGatewayAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
-                }
-            },
-            "CodeEditorAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
-                }
-            },
-            "JupyterLabAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.g4dn.xlarge"
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
+            "CanvasAppSettings": {
+                "TimeSeriesForecastingSettings": {
+                    "Status": "DISABLED"
                 },
-                "CodeRepositories": [
+                "ModelRegisterSettings": {
+                    "Status": "DISABLED"
+                },
+                "IdentityProviderOAuthSettings": [
                     {
-                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
+                        "DataSourceName": "SalesforceGenie",
+                        "Status": "DISABLED",
+                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC"
                     }
-                ]
+                ],
+                "DirectDeploySettings": {
+                    "Status": "DISABLED"
+                },
+                "KendraSettings": {
+                    "Status": "DISABLED"
+                },
+                "EmrServerlessSettings": {
+                    "Status": "DISABLED"
+                }
             },
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"

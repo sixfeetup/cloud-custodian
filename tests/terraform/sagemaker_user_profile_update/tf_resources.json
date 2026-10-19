@@ -35,6 +35,42 @@
                     }
                 ],
                 "version": "2012-10-17"
+            },
+            "canvas_assume_role": {
+                "id": "1862292154",
+                "json": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": [\n          \"sagemaker.amazonaws.com\",\n          \"forecast.amazonaws.com\",\n          \"emr-serverless.amazonaws.com\",\n          \"bedrock.amazonaws.com\"\n        ]\n      }\n    }\n  ]\n}",
+                "minified_json": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"sts:AssumeRole\",\"Principal\":{\"Service\":[\"sagemaker.amazonaws.com\",\"forecast.amazonaws.com\",\"emr-serverless.amazonaws.com\",\"bedrock.amazonaws.com\"]}}]}",
+                "override_json": null,
+                "override_policy_documents": null,
+                "policy_id": null,
+                "source_json": null,
+                "source_policy_documents": null,
+                "statement": [
+                    {
+                        "actions": [
+                            "sts:AssumeRole"
+                        ],
+                        "condition": [],
+                        "effect": "Allow",
+                        "not_actions": [],
+                        "not_principals": [],
+                        "not_resources": [],
+                        "principals": [
+                            {
+                                "identifiers": [
+                                    "bedrock.amazonaws.com",
+                                    "emr-serverless.amazonaws.com",
+                                    "forecast.amazonaws.com",
+                                    "sagemaker.amazonaws.com"
+                                ],
+                                "type": "Service"
+                            }
+                        ],
+                        "resources": [],
+                        "sid": ""
+                    }
+                ],
+                "version": "2012-10-17"
             }
         },
         "aws_subnets": {
@@ -90,55 +126,73 @@
             }
         },
         "aws_iam_role": {
-            "execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
-                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T18:38:35Z",
+            "canvas": {
+                "arn": "arn:aws:iam::644160558196:role/c7n-canvas-endless-wren",
+                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"sagemaker.amazonaws.com\",\"forecast.amazonaws.com\",\"emr-serverless.amazonaws.com\",\"bedrock.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}",
+                "create_date": "2026-10-19T19:03:59Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-profile-update-tolerant-cheetah",
+                "id": "c7n-canvas-endless-wren",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-profile-update-tolerant-cheetah",
+                "name": "c7n-canvas-endless-wren",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWXQNF4RSGT3"
+                "unique_id": "AROAV7EQQKWXZ53SFNR53"
+            },
+            "execution": {
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
+                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
+                "create_date": "2026-10-19T19:03:59Z",
+                "description": "",
+                "force_detach_policies": false,
+                "id": "c7n-profile-update-endless-wren",
+                "inline_policy": [],
+                "managed_policy_arns": [],
+                "max_session_duration": 3600,
+                "name": "c7n-profile-update-endless-wren",
+                "name_prefix": "",
+                "path": "/",
+                "permissions_boundary": "",
+                "tags": null,
+                "tags_all": {},
+                "unique_id": "AROAV7EQQKWXQ24RUXFC5"
             },
             "updated_execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-profile-updated-tolerant-cheetah",
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-updated-endless-wren",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T18:38:35Z",
+                "create_date": "2026-10-19T19:03:59Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-profile-updated-tolerant-cheetah",
+                "id": "c7n-profile-updated-endless-wren",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-profile-updated-tolerant-cheetah",
+                "name": "c7n-profile-updated-endless-wren",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWXZZTNM24UO"
+                "unique_id": "AROAV7EQQKWX4ULZV6RRJ"
             }
         },
         "aws_kms_key": {
             "sharing": {
-                "arn": "arn:aws:kms:us-west-2:644160558196:key/b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "arn": "arn:aws:kms:us-west-2:644160558196:key/0e37aca2-016d-4476-b0b6-8afb32734189",
                 "bypass_policy_lockout_safety_check": false,
                 "custom_key_store_id": "",
                 "customer_master_key_spec": "SYMMETRIC_DEFAULT",
                 "deletion_window_in_days": 7,
                 "description": "SageMaker profile update test",
                 "enable_key_rotation": false,
-                "id": "b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "id": "0e37aca2-016d-4476-b0b6-8afb32734189",
                 "is_enabled": true,
-                "key_id": "b5e4416f-8dab-4ea8-bb1e-eabb821e257b",
+                "key_id": "0e37aca2-016d-4476-b0b6-8afb32734189",
                 "key_usage": "ENCRYPT_DECRYPT",
                 "multi_region": false,
                 "policy": "{\"Id\":\"key-default-1\",\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::644160558196:root\"},\"Resource\":\"*\",\"Sid\":\"Enable IAM User Permissions\"}],\"Version\":\"2012-10-17\"}",
@@ -154,13 +208,13 @@
             "sharing": {
                 "acceleration_status": "",
                 "acl": null,
-                "arn": "arn:aws:s3:::c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
-                "bucket": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
-                "bucket_domain_name": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61.s3.amazonaws.com",
+                "arn": "arn:aws:s3:::c7n-profile-sharing-039a849f2cede40f2ca9a8ee43",
+                "bucket": "c7n-profile-sharing-039a849f2cede40f2ca9a8ee43",
+                "bucket_domain_name": "c7n-profile-sharing-039a849f2cede40f2ca9a8ee43.s3.amazonaws.com",
                 "bucket_namespace": "global",
                 "bucket_prefix": "c7n-profile-sharing-",
                 "bucket_region": "us-west-2",
-                "bucket_regional_domain_name": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61.s3.us-west-2.amazonaws.com",
+                "bucket_regional_domain_name": "c7n-profile-sharing-039a849f2cede40f2ca9a8ee43.s3.us-west-2.amazonaws.com",
                 "cors_rule": [],
                 "force_destroy": true,
                 "grant": [
@@ -174,7 +228,7 @@
                     }
                 ],
                 "hosted_zone_id": "Z3BJ6K6RIION7M",
-                "id": "c7n-profile-sharing-a193adb4eb2a95cd997f08ac61",
+                "id": "c7n-profile-sharing-039a849f2cede40f2ca9a8ee43",
                 "lifecycle_rule": [],
                 "logging": [],
                 "object_lock_configuration": [],
@@ -216,7 +270,7 @@
             "main": {
                 "app_network_access_type": "PublicInternetOnly",
                 "app_security_group_management": "",
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-oqpklo5ndw7o",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-ku8tinhyebc3",
                 "auth_mode": "IAM",
                 "default_space_settings": [],
                 "default_user_settings": [
@@ -227,7 +281,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "studio::",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -247,10 +301,10 @@
                         "tensor_board_app_settings": []
                     }
                 ],
-                "domain_name": "c7n-profile-update-tolerant-cheetah",
+                "domain_name": "c7n-profile-update-endless-wren",
                 "domain_settings": [],
-                "home_efs_file_system_id": "fs-0daa8971da1175dc5",
-                "id": "d-oqpklo5ndw7o",
+                "home_efs_file_system_id": "fs-0c26861ca2b25b3c4",
+                "id": "d-ku8tinhyebc3",
                 "kms_key_id": "",
                 "region": "us-west-2",
                 "retention_policy": [
@@ -267,22 +321,96 @@
                 "tag_propagation": "DISABLED",
                 "tags": null,
                 "tags_all": {},
-                "url": "https://d-oqpklo5ndw7o.studio.us-west-2.sagemaker.aws",
+                "url": "https://d-ku8tinhyebc3.studio.us-west-2.sagemaker.aws",
                 "vpc_id": "vpc-049c0030ea410c65b"
             }
         },
         "aws_sagemaker_user_profile": {
-            "main": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-profile-update-tolerant-cheetah",
-                "domain_id": "d-oqpklo5ndw7o",
+            "canvas": {
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-canvas-endless-wren",
+                "domain_id": "d-ku8tinhyebc3",
                 "home_efs_file_system_uid": "200010",
-                "id": "d-oqpklo5ndw7o/c7n-profile-update-tolerant-cheetah",
+                "id": "d-ku8tinhyebc3/c7n-canvas-endless-wren",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-profile-update-tolerant-cheetah",
+                "user_profile_name": "c7n-canvas-endless-wren",
+                "user_settings": [
+                    {
+                        "auto_mount_home_efs": "DefaultAsDomain",
+                        "canvas_app_settings": [
+                            {
+                                "direct_deploy_settings": [
+                                    {
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "emr_serverless_settings": [
+                                    {
+                                        "execution_role_arn": "",
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "generative_ai_settings": [],
+                                "identity_provider_oauth_settings": [
+                                    {
+                                        "data_source_name": "SalesforceGenie",
+                                        "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "kendra_settings": [
+                                    {
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "model_register_settings": [
+                                    {
+                                        "cross_account_model_register_role_arn": "",
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "time_series_forecasting_settings": [
+                                    {
+                                        "amazon_forecast_role_arn": "",
+                                        "status": "DISABLED"
+                                    }
+                                ],
+                                "workspace_settings": []
+                            }
+                        ],
+                        "code_editor_app_settings": [],
+                        "custom_file_system_config": [],
+                        "custom_posix_user_config": [],
+                        "default_landing_uri": "",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
+                        "jupyter_lab_app_settings": [],
+                        "jupyter_server_app_settings": [],
+                        "kernel_gateway_app_settings": [],
+                        "r_session_app_settings": [],
+                        "r_studio_server_pro_app_settings": [],
+                        "security_groups": null,
+                        "sharing_settings": [],
+                        "space_storage_settings": [],
+                        "studio_web_portal": "",
+                        "studio_web_portal_settings": [],
+                        "tensor_board_app_settings": []
+                    }
+                ]
+            },
+            "main": {
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-profile-update-endless-wren",
+                "domain_id": "d-ku8tinhyebc3",
+                "home_efs_file_system_uid": "200015",
+                "id": "d-ku8tinhyebc3/c7n-profile-update-endless-wren",
+                "region": "us-west-2",
+                "single_sign_on_user_identifier": "",
+                "single_sign_on_user_value": "",
+                "tags": null,
+                "tags_all": {},
+                "user_profile_name": "c7n-profile-update-endless-wren",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -307,7 +435,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
                         "jupyter_lab_app_settings": [
                             {
                                 "app_lifecycle_management": [],
@@ -358,17 +486,56 @@
                     }
                 ]
             },
-            "settings": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
-                "domain_id": "d-oqpklo5ndw7o",
-                "home_efs_file_system_uid": "200005",
-                "id": "d-oqpklo5ndw7o/c7n-settings-tolerant-cheetah",
+            "rstudio": {
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-rstudio-endless-wren",
+                "domain_id": "d-ku8tinhyebc3",
+                "home_efs_file_system_uid": "200020",
+                "id": "d-ku8tinhyebc3/c7n-rstudio-endless-wren",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-settings-tolerant-cheetah",
+                "user_profile_name": "c7n-rstudio-endless-wren",
+                "user_settings": [
+                    {
+                        "auto_mount_home_efs": "DefaultAsDomain",
+                        "canvas_app_settings": [],
+                        "code_editor_app_settings": [],
+                        "custom_file_system_config": [],
+                        "custom_posix_user_config": [],
+                        "default_landing_uri": "",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
+                        "jupyter_lab_app_settings": [],
+                        "jupyter_server_app_settings": [],
+                        "kernel_gateway_app_settings": [],
+                        "r_session_app_settings": [],
+                        "r_studio_server_pro_app_settings": [
+                            {
+                                "access_status": "DISABLED",
+                                "user_group": ""
+                            }
+                        ],
+                        "security_groups": null,
+                        "sharing_settings": [],
+                        "space_storage_settings": [],
+                        "studio_web_portal": "",
+                        "studio_web_portal_settings": [],
+                        "tensor_board_app_settings": []
+                    }
+                ]
+            },
+            "settings": {
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-ku8tinhyebc3/c7n-settings-endless-wren",
+                "domain_id": "d-ku8tinhyebc3",
+                "home_efs_file_system_uid": "200005",
+                "id": "d-ku8tinhyebc3/c7n-settings-endless-wren",
+                "region": "us-west-2",
+                "single_sign_on_user_identifier": "",
+                "single_sign_on_user_value": "",
+                "tags": null,
+                "tags_all": {},
+                "user_profile_name": "c7n-settings-endless-wren",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -377,14 +544,14 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "app:JupyterServer:",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-tolerant-cheetah",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-endless-wren",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
                         "r_session_app_settings": [],
                         "r_studio_server_pro_app_settings": [],
                         "security_groups": [
-                            "sg-0989a0bc44d24b8c2"
+                            "sg-0fbb5d94df7c1d2c5"
                         ],
                         "sharing_settings": [
                             {
@@ -422,14 +589,82 @@
                 ]
             }
         },
+        "aws_secretsmanager_secret": {
+            "oauth": {
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C",
+                "description": "",
+                "force_overwrite_replica_secret": false,
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C",
+                "kms_key_id": "",
+                "name": "c7n-profile-oauth-dc87ea219d0a5a9c7316222961",
+                "name_prefix": "c7n-profile-oauth-",
+                "policy": "",
+                "recovery_window_in_days": 0,
+                "region": "us-west-2",
+                "replica": [],
+                "tags": null,
+                "tags_all": {},
+                "type": ""
+            },
+            "oauth_initial": {
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                "description": "",
+                "force_overwrite_replica_secret": false,
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                "kms_key_id": "",
+                "name": "c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce",
+                "name_prefix": "c7n-profile-oauth-initial-",
+                "policy": "",
+                "recovery_window_in_days": 0,
+                "region": "us-west-2",
+                "replica": [],
+                "tags": null,
+                "tags_all": {},
+                "type": ""
+            }
+        },
+        "aws_secretsmanager_secret_version": {
+            "oauth": {
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C",
+                "has_secret_string_wo": null,
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C|terraform-Y31tsN2dh1glcHVss3CHkd1YRX",
+                "region": "us-west-2",
+                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C",
+                "secret_binary": "",
+                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-dc87ea219d0a5a9c7316222961-N9vm3C",
+                "secret_string": "{\"client_id\":\"c7n-test-client\",\"client_secret\":\"c7n-test-secret\"}",
+                "secret_string_wo": null,
+                "secret_string_wo_version": null,
+                "version_id": "terraform-Y31tsN2dh1glcHVss3CHkd1YRX",
+                "version_stages": [
+                    "AWSCURRENT"
+                ]
+            },
+            "oauth_initial": {
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                "has_secret_string_wo": null,
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC|terraform-DJy3ln3taWa6Gm70JYkH4gqzTQ",
+                "region": "us-west-2",
+                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                "secret_binary": "",
+                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-3a0661eb974919f3f4731d53ce-l6l2HC",
+                "secret_string": "{\"client_id\":\"c7n-test-client\",\"client_secret\":\"c7n-test-secret\"}",
+                "secret_string_wo": null,
+                "secret_string_wo_version": null,
+                "version_id": "terraform-DJy3ln3taWa6Gm70JYkH4gqzTQ",
+                "version_stages": [
+                    "AWSCURRENT"
+                ]
+            }
+        },
         "aws_security_group": {
             "initial": {
-                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-0989a0bc44d24b8c2",
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-0fbb5d94df7c1d2c5",
                 "description": "Managed by Terraform",
                 "egress": [],
-                "id": "sg-0989a0bc44d24b8c2",
+                "id": "sg-0fbb5d94df7c1d2c5",
                 "ingress": [],
-                "name": "c7n-profile-initial-08dfde697186bfe7d898584b5b",
+                "name": "c7n-profile-initial-37b3064b2ffc4ded6da62b99af",
                 "name_prefix": "c7n-profile-initial-",
                 "owner_id": "644160558196",
                 "region": "us-west-2",
@@ -440,12 +675,12 @@
                 "vpc_id": "vpc-049c0030ea410c65b"
             },
             "updated": {
-                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-08833a1a3125290f2",
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-00c7227c0baff7c7e",
                 "description": "Managed by Terraform",
                 "egress": [],
-                "id": "sg-08833a1a3125290f2",
+                "id": "sg-00c7227c0baff7c7e",
                 "ingress": [],
-                "name": "c7n-profile-updated-45397d320d1afea712f3cd2b0a",
+                "name": "c7n-profile-updated-90087c9def5e941c205be7b143",
                 "name_prefix": "c7n-profile-updated-",
                 "owner_id": "644160558196",
                 "region": "us-west-2",
@@ -458,7 +693,7 @@
         },
         "random_pet": {
             "profile": {
-                "id": "tolerant-cheetah",
+                "id": "endless-wren",
                 "keepers": null,
                 "length": 2,
                 "prefix": null,

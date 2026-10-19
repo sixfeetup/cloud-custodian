@@ -1803,6 +1803,7 @@ class UpdateSagemakerUserProfile(BaseAction):
 
     Updates defaults without resizing running apps. KernelGateway instance-type
     defaults apply to CLI and CloudFormation app creation, not the Studio UI.
+    Choose an RStudio UserGroup when enabling RStudio access for the first time.
 
     :example:
 
@@ -1855,6 +1856,36 @@ class UpdateSagemakerUserProfile(BaseAction):
                         'VersionAliases': None,
                     },
                     'ExecutionRoleSessionNameMode': None,
+                },
+                'RStudioServerProAppSettings': {
+                    'AccessStatus': None,
+                    'UserGroup': None,
+                },
+                'CanvasAppSettings': {
+                    'TimeSeriesForecastingSettings': {
+                        'Status': None,
+                        'AmazonForecastRoleArn': None,
+                    },
+                    'ModelRegisterSettings': {
+                        'Status': None,
+                        'CrossAccountModelRegisterRoleArn': None,
+                    },
+                    'WorkspaceSettings': {
+                        'S3ArtifactPath': None,
+                        'S3KmsKeyId': None,
+                    },
+                    'IdentityProviderOAuthSettings': {
+                        'DataSourceName': None,
+                        'Status': None,
+                        'SecretArn': None,
+                    },
+                    'DirectDeploySettings': {'Status': None},
+                    'KendraSettings': {'Status': None},
+                    'GenerativeAiSettings': {'AmazonBedrockRoleArn': None},
+                    'EmrServerlessSettings': {
+                        'Status': None,
+                        'ExecutionRoleArn': None,
+                    },
                 },
                 # TODO: Record TrainingPlanArn updates for JupyterLab and CodeEditor.
                 **{

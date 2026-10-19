@@ -3,53 +3,103 @@
     "data": {
         "UserProfiles": [
             {
-                "DomainId": "d-oqpklo5ndw7o",
-                "UserProfileName": "c7n-profile-update-tolerant-cheetah",
+                "DomainId": "d-ku8tinhyebc3",
+                "UserProfileName": "c7n-rstudio-endless-wren",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 12,
-                    "minute": 40,
-                    "second": 29,
-                    "microsecond": 457000
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 58,
+                    "microsecond": 671000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 12,
-                    "minute": 40,
-                    "second": 33,
-                    "microsecond": 392000
+                    "hour": 13,
+                    "minute": 6,
+                    "second": 2,
+                    "microsecond": 684000
                 }
             },
             {
-                "DomainId": "d-oqpklo5ndw7o",
-                "UserProfileName": "c7n-settings-tolerant-cheetah",
+                "DomainId": "d-ku8tinhyebc3",
+                "UserProfileName": "c7n-profile-update-endless-wren",
                 "Status": "InService",
                 "CreationTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 12,
-                    "minute": 40,
-                    "second": 29,
-                    "microsecond": 374000
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 57,
+                    "microsecond": 260000
                 },
                 "LastModifiedTime": {
                     "__class__": "datetime",
                     "year": 2026,
                     "month": 10,
                     "day": 19,
-                    "hour": 12,
-                    "minute": 40,
-                    "second": 32,
-                    "microsecond": 905000
+                    "hour": 13,
+                    "minute": 6,
+                    "second": 0,
+                    "microsecond": 82000
+                }
+            },
+            {
+                "DomainId": "d-ku8tinhyebc3",
+                "UserProfileName": "c7n-canvas-endless-wren",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 55,
+                    "microsecond": 17000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 57,
+                    "microsecond": 870000
+                }
+            },
+            {
+                "DomainId": "d-ku8tinhyebc3",
+                "UserProfileName": "c7n-settings-endless-wren",
+                "Status": "InService",
+                "CreationTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 53,
+                    "microsecond": 523000
+                },
+                "LastModifiedTime": {
+                    "__class__": "datetime",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 19,
+                    "hour": 13,
+                    "minute": 5,
+                    "second": 56,
+                    "microsecond": 520000
                 }
             }
         ],
