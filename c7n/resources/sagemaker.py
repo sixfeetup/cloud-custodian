@@ -11,9 +11,8 @@ import yaml
 from c7n.actions import BaseAction
 from c7n.exceptions import PolicyExecutionError, PolicyValidationError
 from c7n.manager import resources
-from c7n.resources.aws import get_service_shape, shape_validate
 from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, ConfigSource
-from c7n.resources.aws import shape_schema, shape_validate
+from c7n.resources.aws import get_service_shape, shape_schema, shape_validate
 from c7n.utils import local_session, type_schema, QueryParser
 from c7n.tags import RemoveTag, Tag, TagActionFilter, TagDelayedAction, universal_augment
 from c7n.filters.vpc import SubnetFilter, SecurityGroupFilter, NetworkLocation
