@@ -3,6 +3,7 @@
 import time
 from unittest import mock
 
+import jsonschema
 import pytest
 from pytest_terraform import terraform
 
@@ -1567,6 +1568,16 @@ def test_sagemaker_user_profile_update_validate(test, app):
         validate=True,
     )
     assert 'sagemaker:UpdateUserProfile' in policy.get_permissions()
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(
+            {
+                'type': 'update',
+                'UserSettings': {app: {
+                    'DefaultResourceSpec': {'InstanceType': 'invalid'},
+                }},
+            },
+            policy.resource_manager.actions[0].schema,
+        )
 
 
 @pytest.mark.parametrize('settings', [
@@ -1580,11 +1591,14 @@ def test_sagemaker_user_profile_update_validate(test, app):
 ])
 def test_sagemaker_user_profile_update_invalid_settings(test, settings):
     with pytest.raises(PolicyValidationError):
-        test.load_policy({
-            'name': 'update-user-profile',
-            'resource': 'aws.sagemaker-user-profile',
-            'actions': [{'type': 'update', 'UserSettings': settings}],
-        })
+        test.load_policy(
+            {
+                'name': 'update-user-profile',
+                'resource': 'aws.sagemaker-user-profile',
+                'actions': [{'type': 'update', 'UserSettings': settings}],
+            },
+            validate=True,
+        )
 
 
 @pytest.mark.audited
