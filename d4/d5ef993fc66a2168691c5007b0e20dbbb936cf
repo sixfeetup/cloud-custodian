@@ -1,11 +1,13 @@
 tests/test_sagemaker.py
   s_e9eb695c1c4a20::t_e902225fdcbcc0 3
   s_e9eb695c1c4a20::t_79de028bbf4943 2018-2076,2087-2099
+  s_e9eb695c1c4a20::t_a5c2361f3a6cb6 2077-2086
 c7n/resources/sagemaker.py
   s_e9eb695c1c4a20::t_0dc79c992447be 510-511,747-772
 docs/source/aws/examples/sagemakermetrics.rst
   s_e9eb695c1c4a20::t_ef82189eb42de2 177-184
   s_e9eb695c1c4a20::t_539524fed841f7 185
+  s_e9eb695c1c4a20::t_777901019e301b 186-187,191,211-218
 ---
 {
   "schema_version": "authorship/3.0.0",
