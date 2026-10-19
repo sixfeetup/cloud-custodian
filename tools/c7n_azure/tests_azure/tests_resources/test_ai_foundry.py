@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from unittest.mock import MagicMock
 
 from c7n.exceptions import PolicyValidationError
 
@@ -74,6 +75,32 @@ class AiFoundryDeploymentTest(BaseTest):
         )
         resources = p.run()
         self.assertGreaterEqual(len(resources), 1)
+
+    def test_ai_foundry_deployment_set_capacity_payload(self):
+        with self.sign_out_patch():
+            p = self.load_policy(
+                {
+                    'name': 'test-set-capacity-payload',
+                    'resource': 'azure.ai-foundry-deployment',
+                    'actions': [{'type': 'set-capacity', 'capacity': 42}],
+                }
+            )
+
+        action = p.resource_manager.actions[0]
+        mock_client = MagicMock()
+        action.client = mock_client
+        resource = {
+            'id': '/subscriptions/sub/resourceGroups/rg/providers/'
+                  'Microsoft.CognitiveServices/accounts/acct/deployments/dep',
+            'name': 'dep',
+            'sku': {'name': 'ProvisionedManaged', 'capacity': 100},
+        }
+        action._process_resource(resource)
+
+        call_args = mock_client.resources.begin_update_by_id.call_args[0]
+        payload = call_args[2]
+        self.assertEqual(payload.sku.capacity, 42)
+        self.assertEqual(payload.sku.name, 'ProvisionedManaged')
 
     def test_ai_foundry_deployment_tagging_not_implemented(self):
         with self.assertRaises(PolicyValidationError):

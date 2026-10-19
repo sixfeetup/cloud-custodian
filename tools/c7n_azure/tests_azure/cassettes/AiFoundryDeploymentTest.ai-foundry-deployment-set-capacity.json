@@ -4,7 +4,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.CognitiveServices/accounts?api-version=2024-10-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/providers/Microsoft.CognitiveServices/accounts?api-version=2025-06-01",
                 "body": null,
                 "headers": {}
             },
@@ -70,7 +70,7 @@
         {
             "request": {
                 "method": "GET",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_cognitive-service-deployment/providers/Microsoft.CognitiveServices/accounts/cctestcogdeploy/deployments?api-version=2024-10-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_cognitive-service-deployment/providers/Microsoft.CognitiveServices/accounts/cctestcogdeploy/deployments?api-version=2025-06-01",
                 "body": null,
                 "headers": {}
             },
@@ -136,7 +136,7 @@
         {
             "request": {
                 "method": "PATCH",
-                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_cognitive-service-deployment/providers/Microsoft.CognitiveServices/accounts/cctestcogdeploy/deployments/cctest-gpt4o-ptu?api-version=2024-10-01",
+                "uri": "https://management.azure.com/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47/resourceGroups/test_cognitive-service-deployment/providers/Microsoft.CognitiveServices/accounts/cctestcogdeploy/deployments/cctest-gpt4o-ptu?api-version=2025-06-01",
                 "body": "mock_body",
                 "headers": {}
             },
