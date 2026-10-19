@@ -243,18 +243,21 @@ class SetActivityLogAlert(BaseAction):
     """Create or update an activity log alert on the subscription.
 
     The alert watches the subscription's activity log and fires when an event
-    matches every entry in ``conditions``. It is written by ``name``, so running
-    the action again updates the existing alert rather than adding a second one.
+    matches every entry in ``conditions``. It is identified by ``resource-group``
+    and ``name``. If that alert already exists it is replaced as a whole, so any
+    action groups or description on it that the policy doesn't set are removed.
 
     - ``name``: the alert's name.
-    - ``resource_group``: the resource group to create the alert in. It must
+    - ``resource-group``: the resource group to create the alert in. It must
       already exist.
     - ``conditions``: a list of ``field`` and ``equals`` pairs. An event must
       match all of them to fire the alert.
-    - ``action_groups``: optional list of action group IDs to notify. Defaults
+    - ``action-groups``: optional list of action group IDs to notify. Defaults
       to none.
     - ``description``: optional description for the alert.
     - ``enabled``: optional, defaults to ``true``.
+
+    Needs ``Microsoft.Insights/ActivityLogAlerts/Write`` on the resource group.
 
     :example:
 
@@ -280,7 +283,7 @@ class SetActivityLogAlert(BaseAction):
             actions:
               - type: set-activity-log-alert
                 name: nsg-write-alert
-                resource_group: my-alerts-rg
+                resource-group: my-alerts-rg
                 conditions:
                   - field: category
                     equals: Administrative
@@ -290,9 +293,8 @@ class SetActivityLogAlert(BaseAction):
 
     schema = type_schema(
         'set-activity-log-alert',
-        required=['name', 'resource_group', 'conditions'],
-        name={'type': 'string', 'minLength': 1},
-        resource_group={'type': 'string', 'minLength': 1},
+        required=['name', 'resource-group', 'conditions'],
+        name={'type': 'string', 'minLength': 1, 'maxLength': 260},
         conditions={
             'type': 'array',
             'minItems': 1,
@@ -301,38 +303,49 @@ class SetActivityLogAlert(BaseAction):
                 'additionalProperties': False,
                 'required': ['field', 'equals'],
                 'properties': {
-                    'field': {'type': 'string'},
-                    'equals': {'type': 'string'},
+                    'field': {'type': 'string', 'minLength': 1},
+                    'equals': {'type': 'string', 'minLength': 1},
                 },
             },
         },
-        action_groups={'type': 'array', 'items': {'type': 'string'}},
         description={'type': 'string'},
         enabled={'type': 'boolean'},
+        **{
+            'resource-group': {'type': 'string', 'minLength': 1, 'maxLength': 90},
+            'action-groups': {
+                'type': 'array',
+                'uniqueItems': True,
+                'items': {'type': 'string', 'minLength': 1},
+            },
+        }
     )
 
     def alert_body(self, subscription):
         """Return the request body that creates the alert on ``subscription``."""
-        body = {
-            'location': 'Global',
+        properties = {
             'scopes': [subscription['id']],
             'condition': {'allOf': self.data['conditions']},
             'actions': {'actionGroups': [
                 {'actionGroupId': group_id}
-                for group_id in self.data.get('action_groups', [])
+                for group_id in self.data.get('action-groups', [])
             ]},
             'enabled': self.data.get('enabled', True),
         }
         if 'description' in self.data:
-            body['description'] = self.data['description']
-        return body
+            properties['description'] = self.data['description']
+        # The REST API's own shape. Older SDKs reshape a flattened dict, but
+        # 8.x sends a dict as-is, so only this shape is right on every version.
+        return {'location': 'Global', 'properties': properties}
 
     def process(self, subscriptions):
         client = self.manager.get_session().client(
             'azure.mgmt.monitor.MonitorManagementClient')
 
         for s in subscriptions:
-            # Positional on purpose: azure-mgmt-monitor 7.0 renamed the third
-            # parameter, so naming it would break on either 2.0 or 7.0.
+            # Positional on purpose: the body parameter's name differs between
+            # azure-mgmt-monitor major versions.
             client.activity_log_alerts.create_or_update(
-                self.data['resource_group'], self.data['name'], self.alert_body(s))
+                self.data['resource-group'], self.data['name'], self.alert_body(s))
+            self.log.info(
+                "Set activity log alert %s in resource group %s on subscription %s",
+                self.data['name'], self.data['resource-group'], s['subscriptionId'])

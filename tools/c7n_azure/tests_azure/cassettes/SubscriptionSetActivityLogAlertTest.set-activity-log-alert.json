@@ -49,13 +49,7 @@
                             "locationPlacementId": "Public_2014-09-01",
                             "quotaId": "PayAsYouGo_2014-09-01",
                             "spendingLimit": "Off"
-                        },
-                        "promotions": [
-                            {
-                                "category": "freetier",
-                                "endDateTime": "2025-09-13T21:06:45.7634916Z"
-                            }
-                        ]
+                        }
                     }
                 }
             }

@@ -4,7 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from ..azure_common import BaseTest, arm_template, cassette_name, strict_cassette
+from ..azure_common import (
+    DEFAULT_SUBSCRIPTION_ID, BaseTest, arm_template, cassette_name, strict_cassette,
+)
 from c7n_azure.session import Session
 from c7n.exceptions import PolicyValidationError
 from c7n.utils import local_session
@@ -321,22 +323,26 @@ class SubscriptionSetActivityLogAlertTest(BaseTest):
         {'field': 'operationName', 'equals': 'Microsoft.Network/networkSecurityGroups/write'},
     ]
 
-    def _load_alert_policy(self, **options):
+    def _alert_policy(self, **options):
         return self.load_policy({
             'name': 'test-set-activity-log-alert',
             'resource': 'azure.subscription',
             'actions': [{
                 'type': 'set-activity-log-alert',
                 'name': self.alert_name,
-                'resource_group': self.resource_group,
+                'resource-group': self.resource_group,
                 'conditions': self.conditions,
                 **options,
             }],
         }, validate=True)
 
+    def _load_alert_policy(self, **options):
+        with self.sign_out_patch():
+            return self._alert_policy(**options)
+
     def _alert_body_for(self, **options):
         action = self._load_alert_policy(**options).resource_manager.actions[0]
-        return action.alert_body({'id': '/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47'})
+        return action.alert_body({'id': f'/subscriptions/{DEFAULT_SUBSCRIPTION_ID}'})
 
     def test_schema_rejects_empty_name(self):
         with pytest.raises(PolicyValidationError, match="'' should be non-empty"):
@@ -349,36 +355,53 @@ class SubscriptionSetActivityLogAlertTest(BaseTest):
     def test_alert_body_defaults_to_enabled_with_no_action_groups(self):
         assert self._alert_body_for() == {
             'location': 'Global',
-            'scopes': ['/subscriptions/ea42f556-5106-4743-99b0-c129bfa71a47'],
-            'condition': {'allOf': self.conditions},
-            'actions': {'actionGroups': []},
-            'enabled': True,
+            'properties': {
+                'scopes': [f'/subscriptions/{DEFAULT_SUBSCRIPTION_ID}'],
+                'condition': {'allOf': [
+                    {'field': 'category', 'equals': 'Administrative'},
+                    {'field': 'operationName',
+                     'equals': 'Microsoft.Network/networkSecurityGroups/write'},
+                ]},
+                'actions': {'actionGroups': []},
+                'enabled': True,
+            },
         }
 
     def test_alert_body_sends_every_option(self):
         groups = '/subscriptions/x/resourceGroups/rg/providers/microsoft.insights/actionGroups/'
 
         body = self._alert_body_for(
-            action_groups=[groups + 'a', groups + 'b'],
             description='NSG writes',
-            enabled=False)
+            enabled=False,
+            **{'action-groups': [groups + 'a', groups + 'b']})
 
-        assert body['actions'] == {'actionGroups': [
-            {'actionGroupId': groups + 'a'},
-            {'actionGroupId': groups + 'b'},
-        ]}
-        assert body['description'] == 'NSG writes'
-        assert body['enabled'] is False
+        assert body == {
+            'location': 'Global',
+            'properties': {
+                'scopes': [f'/subscriptions/{DEFAULT_SUBSCRIPTION_ID}'],
+                'condition': {'allOf': [
+                    {'field': 'category', 'equals': 'Administrative'},
+                    {'field': 'operationName',
+                     'equals': 'Microsoft.Network/networkSecurityGroups/write'},
+                ]},
+                'actions': {'actionGroups': [
+                    {'actionGroupId': groups + 'a'},
+                    {'actionGroupId': groups + 'b'},
+                ]},
+                'enabled': False,
+                'description': 'NSG writes',
+            },
+        }
 
     @arm_template('activity-log-alert.json')
     @strict_cassette('set-activity-log-alert')
-    def test_set_activity_log_alert(self):
+    def test_creates_alert_scoped_to_subscription(self):
         subscription_id = self.session.get_subscription_id()
         action_group_id = (
             f'/subscriptions/{subscription_id}/resourceGroups/{self.resource_group}'
             '/providers/microsoft.insights/actionGroups/cctest-activity-alert')
 
-        resources = self._load_alert_policy(action_groups=[action_group_id]).run()
+        resources = self._alert_policy(**{'action-groups': [action_group_id]}).run()
 
         client = self.session.client('azure.mgmt.monitor.MonitorManagementClient')
         alert = client.activity_log_alerts.get(self.resource_group, self.alert_name)
