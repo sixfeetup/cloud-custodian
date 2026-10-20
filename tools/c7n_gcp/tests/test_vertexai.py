@@ -526,8 +526,24 @@ def test_vertexai_evaluation_run_no_augment_without_completion_time_filter(test)
          ]},
         session_factory=test.session_factory)
 
-    mgr = policy.resource_manager
-    assert not mgr._needs_completion_time()
+    assert not policy.resource_manager._needs_completion_time()
+    resources = policy.run()
+    assert resources
+    assert all('completionTime' not in r for r in resources)
+
+
+def test_vertexai_evaluation_run_needs_completion_time_matching():
+    """Only filter keys count: literal values are ignored, JMESPath keys match."""
+    from c7n_gcp.utils import filter_tree_has_key
+
+    literal = [{'type': 'value', 'key': 'state',
+                'value': [{'key': 'completionTime'}]}]
+    assert not filter_tree_has_key(literal, 'completionTime')
+    assert not filter_tree_has_key([{'type': 'value', 'key': 'completionTimeX'}],
+                                   'completionTime')
+    assert filter_tree_has_key(
+        [{'not': [{'type': 'value', 'key': 'length(completionTime)', 'value': 1}]}],
+        'completionTime')
 
 
 def test_vertexai_evaluation_run_needs_completion_time_deeply_nested(test):

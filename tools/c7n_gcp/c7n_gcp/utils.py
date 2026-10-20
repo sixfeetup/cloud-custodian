@@ -680,14 +680,23 @@ def _coerce_cloud_logging_ordered_value(value, severity=False):
 
 
 def filter_tree_has_key(node, key):
-    """Recursively check whether a policy filter structure references `key`."""
-    if isinstance(node, dict):
-        if node.get('key') == key:
-            return True
-        return any(filter_tree_has_key(v, key) for v in node.values())
+    """Check whether a policy filter structure references `key`.
+
+    Recurses only through boolean clauses (and/or/not) so literal filter
+    arguments are never mistaken for filters. Leaf `key` values may be
+    JMESPath expressions, so match `key` as an identifier within them.
+    """
     if isinstance(node, list):
         return any(filter_tree_has_key(item, key) for item in node)
-    return False
+    if not isinstance(node, dict):
+        return False
+    for op in ('and', 'or', 'not'):
+        if op in node:
+            return filter_tree_has_key(node[op], key)
+    leaf_key = node.get('key')
+    if not isinstance(leaf_key, str):
+        return False
+    return re.search(r'(?<!\w)%s(?!\w)' % re.escape(key), leaf_key) is not None
 
 
 def get_firewall_port_ranges(firewall_resources):
