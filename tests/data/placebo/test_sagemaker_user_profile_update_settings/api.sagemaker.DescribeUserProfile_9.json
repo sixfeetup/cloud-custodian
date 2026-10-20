@@ -1,52 +1,56 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-profile-update-sacred-marmoset",
-        "UserProfileName": "c7n-profile-update-sacred-marmoset",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-canvas-quick-seal",
+        "UserProfileName": "c7n-canvas-quick-seal",
         "HomeEfsFileSystemUid": "200025",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 41,
-            "second": 0,
-            "microsecond": 200000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 8,
+            "microsecond": 894000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 54,
-            "microsecond": 486000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 5,
+            "microsecond": 971000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
-            "KernelGatewayAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.t3.medium"
-                }
-            },
-            "CodeEditorAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.t3.medium"
-                }
-            },
-            "JupyterLabAppSettings": {
-                "DefaultResourceSpec": {
-                    "InstanceType": "ml.t3.medium"
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
+            "CanvasAppSettings": {
+                "TimeSeriesForecastingSettings": {
+                    "Status": "DISABLED"
                 },
-                "CodeRepositories": [
+                "ModelRegisterSettings": {
+                    "Status": "DISABLED"
+                },
+                "IdentityProviderOAuthSettings": [
                     {
-                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
+                        "DataSourceName": "SalesforceGenie",
+                        "Status": "DISABLED",
+                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8"
                     }
-                ]
+                ],
+                "DirectDeploySettings": {
+                    "Status": "DISABLED"
+                },
+                "KendraSettings": {
+                    "Status": "DISABLED"
+                },
+                "EmrServerlessSettings": {
+                    "Status": "DISABLED"
+                }
             },
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"

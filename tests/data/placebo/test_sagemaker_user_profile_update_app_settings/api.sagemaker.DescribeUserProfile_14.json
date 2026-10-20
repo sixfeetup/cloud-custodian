@@ -1,41 +1,41 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
-        "UserProfileName": "c7n-apps-sacred-marmoset",
-        "HomeEfsFileSystemUid": "200020",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-apps-quick-seal",
+        "UserProfileName": "c7n-apps-quick-seal",
+        "HomeEfsFileSystemUid": "200015",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 41,
-            "second": 46,
-            "microsecond": 924000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 58,
+            "microsecond": 848000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 48,
-            "microsecond": 781000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 2,
+            "microsecond": 542000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
             "JupyterServerAppSettings": {
                 "DefaultResourceSpec": {
                     "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/jupyter-server-3",
                     "InstanceType": "system",
-                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-sacred-marmoset"
+                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-quick-seal"
                 },
                 "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-sacred-marmoset"
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-quick-seal"
                 ],
                 "CodeRepositories": [
                     {
@@ -45,57 +45,57 @@
             },
             "KernelGatewayAppSettings": {
                 "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
                     "InstanceType": "ml.t3.medium"
                 },
                 "CustomImages": [
                     {
-                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageName": "c7n-profile-image-quick-seal",
                         "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-kernelgateway-sacred-marmoset"
+                        "AppImageConfigName": "c7n-kernelgateway-quick-seal"
                     }
                 ],
                 "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-sacred-marmoset"
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-quick-seal"
                 ]
             },
             "TensorBoardAppSettings": {
                 "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
                     "InstanceType": "ml.t3.medium"
                 }
             },
             "RSessionAppSettings": {
                 "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
                     "InstanceType": "ml.t3.medium"
                 },
                 "CustomImages": [
                     {
-                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageName": "c7n-profile-image-quick-seal",
                         "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-rsession-sacred-marmoset"
+                        "AppImageConfigName": "c7n-rsession-quick-seal"
                     }
                 ]
             },
             "CodeEditorAppSettings": {
                 "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
                     "InstanceType": "ml.t3.medium"
                 },
                 "CustomImages": [
                     {
-                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageName": "c7n-profile-image-quick-seal",
                         "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-codeeditor-sacred-marmoset"
+                        "AppImageConfigName": "c7n-codeeditor-quick-seal"
                     }
                 ],
                 "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-sacred-marmoset"
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-quick-seal"
                 ],
                 "AppLifecycleManagement": {
                     "IdleSettings": {
@@ -105,23 +105,23 @@
                         "MaxIdleTimeoutInMinutes": 240
                     }
                 },
-                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-sacred-marmoset"
+                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-quick-seal"
             },
             "JupyterLabAppSettings": {
                 "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
+                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                    "SageMakerImageVersionArn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
                     "InstanceType": "ml.t3.medium"
                 },
                 "CustomImages": [
                     {
-                        "ImageName": "c7n-profile-image-sacred-marmoset",
+                        "ImageName": "c7n-profile-image-quick-seal",
                         "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-jupyterlab-sacred-marmoset"
+                        "AppImageConfigName": "c7n-jupyterlab-quick-seal"
                     }
                 ],
                 "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-sacred-marmoset"
+                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-quick-seal"
                 ],
                 "CodeRepositories": [
                     {
@@ -138,13 +138,13 @@
                 },
                 "EmrSettings": {
                     "AssumableRoleArns": [
-                        "arn:aws:iam::644160558196:role/c7n-emr-assumable-sacred-marmoset"
+                        "arn:aws:iam::644160558196:role/c7n-emr-assumable-quick-seal"
                     ],
                     "ExecutionRoleArns": [
-                        "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                        "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
                     ]
                 },
-                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-sacred-marmoset"
+                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-quick-seal"
             },
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"

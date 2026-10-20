@@ -1,40 +1,40 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-settings-sacred-marmoset",
-        "UserProfileName": "c7n-settings-sacred-marmoset",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-settings-quick-seal",
+        "UserProfileName": "c7n-settings-quick-seal",
         "HomeEfsFileSystemUid": "200010",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 41,
-            "second": 7,
-            "microsecond": 315000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 18,
+            "microsecond": 791000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 44,
-            "microsecond": 346000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 1,
+            "microsecond": 225000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-updated-sacred-marmoset",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-updated-quick-seal",
             "SecurityGroups": [
-                "sg-0c5e34bd6914fcad1"
+                "sg-093abb2c6a9362c86"
             ],
             "SharingSettings": {
                 "NotebookOutputOption": "Allowed",
-                "S3OutputPath": "s3://c7n-profile-sharing-44b7ff648e5c4fece7df609edf/notebooks/",
-                "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/3b85dbee-7452-45fc-9c36-25a417301170"
+                "S3OutputPath": "s3://c7n-profile-sharing-4a484f7c00b79026147b608b7b/notebooks/",
+                "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9"
             },
             "SpaceStorageSettings": {
                 "DefaultEbsStorageSettings": {

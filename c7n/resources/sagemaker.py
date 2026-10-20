@@ -1808,10 +1808,10 @@ class UpdateSagemakerUserProfile(BaseAction):
     Changing default instance types does not resize running apps. KernelGateway
     instance-type defaults apply to CLI and CloudFormation app creation, not the
     Studio UI. JupyterServer requires an AWS-managed image and does not accept
-    image-version ARNs. When updating its DefaultResourceSpec, include
-    LifecycleConfigArn to retain the default lifecycle config; omitting it
-    removes the default. Choose an RStudio UserGroup when enabling RStudio
-    access for the first time.
+    image-version ARNs. For JupyterServer, KernelGateway, CodeEditor, and
+    JupyterLab, include LifecycleConfigArn in each DefaultResourceSpec update
+    to retain the default lifecycle config; omitting it removes the default.
+    Choose an RStudio UserGroup when enabling RStudio access for the first time.
 
     :example:
 

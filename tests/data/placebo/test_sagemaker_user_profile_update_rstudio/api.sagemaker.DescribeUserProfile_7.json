@@ -1,33 +1,33 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-rstudio-sacred-marmoset",
-        "UserProfileName": "c7n-rstudio-sacred-marmoset",
-        "HomeEfsFileSystemUid": "200015",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-rstudio-quick-seal",
+        "UserProfileName": "c7n-rstudio-quick-seal",
+        "HomeEfsFileSystemUid": "200005",
         "Status": "Updating",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 41,
-            "second": 20,
-            "microsecond": 132000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 31,
+            "microsecond": 759000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 45,
-            "microsecond": 646000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 1,
+            "microsecond": 132000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
             "RStudioServerProAppSettings": {
                 "AccessStatus": "DISABLED"
             },

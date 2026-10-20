@@ -1,33 +1,53 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
-        "UserProfileName": "c7n-apps-sacred-marmoset",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-profile-update-quick-seal",
+        "UserProfileName": "c7n-profile-update-quick-seal",
         "HomeEfsFileSystemUid": "200020",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 51,
-            "microsecond": 754000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 6,
+            "microsecond": 64000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 48,
-            "microsecond": 781000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 2,
+            "microsecond": 547000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
+            "KernelGatewayAppSettings": {
+                "DefaultResourceSpec": {
+                    "InstanceType": "ml.g4dn.xlarge"
+                }
+            },
+            "CodeEditorAppSettings": {
+                "DefaultResourceSpec": {
+                    "InstanceType": "ml.g4dn.xlarge"
+                }
+            },
+            "JupyterLabAppSettings": {
+                "DefaultResourceSpec": {
+                    "InstanceType": "ml.g4dn.xlarge"
+                },
+                "CodeRepositories": [
+                    {
+                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
+                    }
+                ]
+            },
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"
         },

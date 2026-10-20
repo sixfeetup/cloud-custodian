@@ -1,44 +1,44 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-permq6ogjmo8",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-canvas-sacred-marmoset",
-        "UserProfileName": "c7n-canvas-sacred-marmoset",
-        "HomeEfsFileSystemUid": "200005",
+        "DomainId": "d-hgyw5epv3wwt",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-canvas-quick-seal",
+        "UserProfileName": "c7n-canvas-quick-seal",
+        "HomeEfsFileSystemUid": "200025",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 41,
-            "second": 33,
-            "microsecond": 346000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 45,
+            "microsecond": 38000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
-            "day": 19,
-            "hour": 14,
-            "minute": 40,
-            "second": 44,
-            "microsecond": 250000
+            "day": 20,
+            "hour": 7,
+            "minute": 20,
+            "second": 5,
+            "microsecond": 971000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
             "CanvasAppSettings": {
                 "TimeSeriesForecastingSettings": {
                     "Status": "DISABLED",
-                    "AmazonForecastRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                    "AmazonForecastRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
                 },
                 "ModelRegisterSettings": {
                     "Status": "DISABLED"
                 },
                 "WorkspaceSettings": {
-                    "S3ArtifactPath": "s3://c7n-profile-sharing-44b7ff648e5c4fece7df609edf/canvas/",
-                    "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/3b85dbee-7452-45fc-9c36-25a417301170"
+                    "S3ArtifactPath": "s3://c7n-profile-sharing-4a484f7c00b79026147b608b7b/canvas/",
+                    "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9"
                 },
                 "IdentityProviderOAuthSettings": [],
                 "DirectDeploySettings": {
@@ -48,10 +48,10 @@
                     "Status": "DISABLED"
                 },
                 "GenerativeAiSettings": {
-                    "AmazonBedrockRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset"
+                    "AmazonBedrockRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
                 },
                 "EmrServerlessSettings": {
-                    "ExecutionRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset",
+                    "ExecutionRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal",
                     "Status": "DISABLED"
                 }
             },

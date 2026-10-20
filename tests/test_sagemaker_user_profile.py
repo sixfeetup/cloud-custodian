@@ -448,6 +448,12 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
     }
     updated = update_user_profile(test, factory, domain_id, profile_name, versions)
     assert_settings(updated, versions)
+    for app in (
+        'KernelGatewayAppSettings',
+        'CodeEditorAppSettings',
+        'JupyterLabAppSettings',
+    ):
+        assert 'LifecycleConfigArn' not in updated[app]['DefaultResourceSpec']
     updated = update_user_profile(
         test,
         factory,
@@ -469,9 +475,8 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
         }}
         for app, app_type in apps.items()
     }
-    aliases['JupyterServerAppSettings']['DefaultResourceSpec']['LifecycleConfigArn'] = (
-        lifecycle_configs['JupyterServerAppSettings']['default']
-    )
+    for app, lifecycle in lifecycle_configs.items():
+        aliases[app]['DefaultResourceSpec']['LifecycleConfigArn'] = lifecycle['default']
     updated = update_user_profile(test, factory, domain_id, profile_name, aliases)
     assert_settings(updated, aliases)
     updated = update_user_profile(test, factory, domain_id, profile_name, clear)

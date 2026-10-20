@@ -1,7 +1,7 @@
 {
     "status_code": 200,
     "data": {
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
+        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-apps-quick-seal",
         "ResponseMetadata": {}
     }
 }

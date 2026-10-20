@@ -3,10 +3,10 @@
     "outputs": {
         "app_image_configs": {
             "value": {
-                "CodeEditor": "c7n-codeeditor-sacred-marmoset",
-                "JupyterLab": "c7n-jupyterlab-sacred-marmoset",
-                "KernelGateway": "c7n-kernelgateway-sacred-marmoset",
-                "RSessionGateway": "c7n-rsession-sacred-marmoset"
+                "CodeEditor": "c7n-codeeditor-quick-seal",
+                "JupyterLab": "c7n-jupyterlab-quick-seal",
+                "KernelGateway": "c7n-kernelgateway-quick-seal",
+                "RSessionGateway": "c7n-rsession-quick-seal"
             },
             "type": [
                 "object",
@@ -25,20 +25,20 @@
         "lifecycle_configs": {
             "value": {
                 "CodeEditorAppSettings": {
-                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-sacred-marmoset",
-                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-sacred-marmoset"
+                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-quick-seal",
+                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-quick-seal"
                 },
                 "JupyterLabAppSettings": {
-                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-sacred-marmoset",
-                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-sacred-marmoset"
+                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-quick-seal",
+                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-quick-seal"
                 },
                 "JupyterServerAppSettings": {
-                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-builtin-sacred-marmoset",
-                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-sacred-marmoset"
+                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-builtin-quick-seal",
+                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-quick-seal"
                 },
                 "KernelGatewayAppSettings": {
-                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-builtin-sacred-marmoset",
-                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-sacred-marmoset"
+                    "builtin": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-builtin-quick-seal",
+                    "default": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-quick-seal"
                 }
             },
             "type": [
@@ -211,7 +211,7 @@
         },
         "aws_ecr_repository": {
             "image": {
-                "arn": "arn:aws:ecr:us-west-2:644160558196:repository/c7n-profile-image-sacred-marmoset",
+                "arn": "arn:aws:ecr:us-west-2:644160558196:repository/c7n-profile-image-quick-seal",
                 "encryption_configuration": [
                     {
                         "encryption_type": "AES256",
@@ -219,7 +219,7 @@
                     }
                 ],
                 "force_delete": true,
-                "id": "c7n-profile-image-sacred-marmoset",
+                "id": "c7n-profile-image-quick-seal",
                 "image_scanning_configuration": [
                     {
                         "scan_on_push": false
@@ -227,10 +227,10 @@
                 ],
                 "image_tag_mutability": "MUTABLE",
                 "image_tag_mutability_exclusion_filter": [],
-                "name": "c7n-profile-image-sacred-marmoset",
+                "name": "c7n-profile-image-quick-seal",
                 "region": "us-west-2",
                 "registry_id": "644160558196",
-                "repository_url": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset",
+                "repository_url": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal",
                 "tags": null,
                 "tags_all": {},
                 "timeouts": null
@@ -238,99 +238,99 @@
         },
         "aws_iam_role": {
             "canvas": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-canvas-sacred-marmoset",
+                "arn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":[\"sagemaker.amazonaws.com\",\"forecast.amazonaws.com\",\"emr-serverless.amazonaws.com\",\"bedrock.amazonaws.com\"]}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T20:38:48Z",
+                "create_date": "2026-10-20T13:18:05Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-canvas-sacred-marmoset",
+                "id": "c7n-canvas-quick-seal",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-canvas-sacred-marmoset",
+                "name": "c7n-canvas-quick-seal",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWX67NTK57MC"
+                "unique_id": "AROAV7EQQKWXT3FJGRQOV"
             },
             "emr_assumable": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-emr-assumable-sacred-marmoset",
-                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T20:38:58Z",
+                "arn": "arn:aws:iam::644160558196:role/c7n-emr-assumable-quick-seal",
+                "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal\"}}],\"Version\":\"2012-10-17\"}",
+                "create_date": "2026-10-20T13:18:15Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-emr-assumable-sacred-marmoset",
+                "id": "c7n-emr-assumable-quick-seal",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-emr-assumable-sacred-marmoset",
+                "name": "c7n-emr-assumable-quick-seal",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWX5CF42E4CM"
+                "unique_id": "AROAV7EQQKWXRXGEB4WDM"
             },
             "execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T20:38:49Z",
+                "create_date": "2026-10-20T13:18:05Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-profile-update-sacred-marmoset",
+                "id": "c7n-profile-update-quick-seal",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-profile-update-sacred-marmoset",
+                "name": "c7n-profile-update-quick-seal",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWX4K3BF2LT2"
+                "unique_id": "AROAV7EQQKWX2LTAA7SIU"
             },
             "updated_execution": {
-                "arn": "arn:aws:iam::644160558196:role/c7n-profile-updated-sacred-marmoset",
+                "arn": "arn:aws:iam::644160558196:role/c7n-profile-updated-quick-seal",
                 "assume_role_policy": "{\"Statement\":[{\"Action\":\"sts:AssumeRole\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"sagemaker.amazonaws.com\"}}],\"Version\":\"2012-10-17\"}",
-                "create_date": "2026-10-19T20:38:48Z",
+                "create_date": "2026-10-20T13:18:05Z",
                 "description": "",
                 "force_detach_policies": false,
-                "id": "c7n-profile-updated-sacred-marmoset",
+                "id": "c7n-profile-updated-quick-seal",
                 "inline_policy": [],
                 "managed_policy_arns": [],
                 "max_session_duration": 3600,
-                "name": "c7n-profile-updated-sacred-marmoset",
+                "name": "c7n-profile-updated-quick-seal",
                 "name_prefix": "",
                 "path": "/",
                 "permissions_boundary": "",
                 "tags": null,
                 "tags_all": {},
-                "unique_id": "AROAV7EQQKWXVYEPYPRK7"
+                "unique_id": "AROAV7EQQKWXUDEHP5UDO"
             }
         },
         "aws_iam_role_policy": {
             "image_read": {
-                "id": "c7n-profile-update-sacred-marmoset:terraform-a4caae34b562d6d3079a9d3094",
-                "name": "terraform-a4caae34b562d6d3079a9d3094",
+                "id": "c7n-profile-update-quick-seal:terraform-61625821d2980faf39635c4076",
+                "name": "terraform-61625821d2980faf39635c4076",
                 "name_prefix": "terraform-",
-                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\"],\"Effect\":\"Allow\",\"Resource\":\"*\"},{\"Action\":[\"ecr:BatchGetImage\",\"ecr:BatchCheckLayerAvailability\",\"ecr:GetDownloadUrlForLayer\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ecr:us-west-2:644160558196:repository/c7n-profile-image-sacred-marmoset\"},{\"Action\":[\"sagemaker:DescribeImage\",\"sagemaker:DescribeImageVersion\",\"sagemaker:DescribeAppImageConfig\",\"sagemaker:DescribeStudioLifecycleConfig\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}]}",
-                "role": "c7n-profile-update-sacred-marmoset"
+                "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Action\":[\"ecr:GetAuthorizationToken\"],\"Effect\":\"Allow\",\"Resource\":\"*\"},{\"Action\":[\"ecr:BatchGetImage\",\"ecr:BatchCheckLayerAvailability\",\"ecr:GetDownloadUrlForLayer\"],\"Effect\":\"Allow\",\"Resource\":\"arn:aws:ecr:us-west-2:644160558196:repository/c7n-profile-image-quick-seal\"},{\"Action\":[\"sagemaker:DescribeImage\",\"sagemaker:DescribeImageVersion\",\"sagemaker:DescribeAppImageConfig\",\"sagemaker:DescribeStudioLifecycleConfig\"],\"Effect\":\"Allow\",\"Resource\":\"*\"}]}",
+                "role": "c7n-profile-update-quick-seal"
             }
         },
         "aws_kms_key": {
             "sharing": {
-                "arn": "arn:aws:kms:us-west-2:644160558196:key/3b85dbee-7452-45fc-9c36-25a417301170",
+                "arn": "arn:aws:kms:us-west-2:644160558196:key/a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9",
                 "bypass_policy_lockout_safety_check": false,
                 "custom_key_store_id": "",
                 "customer_master_key_spec": "SYMMETRIC_DEFAULT",
                 "deletion_window_in_days": 7,
                 "description": "SageMaker profile update test",
                 "enable_key_rotation": false,
-                "id": "3b85dbee-7452-45fc-9c36-25a417301170",
+                "id": "a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9",
                 "is_enabled": true,
-                "key_id": "3b85dbee-7452-45fc-9c36-25a417301170",
+                "key_id": "a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9",
                 "key_usage": "ENCRYPT_DECRYPT",
                 "multi_region": false,
                 "policy": "{\"Id\":\"key-default-1\",\"Statement\":[{\"Action\":\"kms:*\",\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"arn:aws:iam::644160558196:root\"},\"Resource\":\"*\",\"Sid\":\"Enable IAM User Permissions\"}],\"Version\":\"2012-10-17\"}",
@@ -346,13 +346,13 @@
             "sharing": {
                 "acceleration_status": "",
                 "acl": null,
-                "arn": "arn:aws:s3:::c7n-profile-sharing-44b7ff648e5c4fece7df609edf",
-                "bucket": "c7n-profile-sharing-44b7ff648e5c4fece7df609edf",
-                "bucket_domain_name": "c7n-profile-sharing-44b7ff648e5c4fece7df609edf.s3.amazonaws.com",
+                "arn": "arn:aws:s3:::c7n-profile-sharing-4a484f7c00b79026147b608b7b",
+                "bucket": "c7n-profile-sharing-4a484f7c00b79026147b608b7b",
+                "bucket_domain_name": "c7n-profile-sharing-4a484f7c00b79026147b608b7b.s3.amazonaws.com",
                 "bucket_namespace": "global",
                 "bucket_prefix": "c7n-profile-sharing-",
                 "bucket_region": "us-west-2",
-                "bucket_regional_domain_name": "c7n-profile-sharing-44b7ff648e5c4fece7df609edf.s3.us-west-2.amazonaws.com",
+                "bucket_regional_domain_name": "c7n-profile-sharing-4a484f7c00b79026147b608b7b.s3.us-west-2.amazonaws.com",
                 "cors_rule": [],
                 "force_destroy": true,
                 "grant": [
@@ -366,7 +366,7 @@
                     }
                 ],
                 "hosted_zone_id": "Z3BJ6K6RIION7M",
-                "id": "c7n-profile-sharing-44b7ff648e5c4fece7df609edf",
+                "id": "c7n-profile-sharing-4a484f7c00b79026147b608b7b",
                 "lifecycle_rule": [],
                 "logging": [],
                 "object_lock_configuration": [],
@@ -406,8 +406,8 @@
         },
         "aws_sagemaker_app_image_config": {
             "app": {
-                "app_image_config_name": "c7n-codeeditor-sacred-marmoset",
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:app-image-config/c7n-codeeditor-sacred-marmoset",
+                "app_image_config_name": "c7n-codeeditor-quick-seal",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:app-image-config/c7n-codeeditor-quick-seal",
                 "code_editor_app_image_config": [
                     {
                         "container_config": [],
@@ -420,7 +420,7 @@
                         ]
                     }
                 ],
-                "id": "c7n-codeeditor-sacred-marmoset",
+                "id": "c7n-codeeditor-quick-seal",
                 "jupyter_lab_image_config": [],
                 "kernel_gateway_image_config": [],
                 "region": "us-west-2",
@@ -432,7 +432,7 @@
             "main": {
                 "app_network_access_type": "PublicInternetOnly",
                 "app_security_group_management": "",
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-permq6ogjmo8",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:domain/d-hgyw5epv3wwt",
                 "auth_mode": "IAM",
                 "default_space_settings": [],
                 "default_user_settings": [
@@ -443,7 +443,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "studio::",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -463,10 +463,10 @@
                         "tensor_board_app_settings": []
                     }
                 ],
-                "domain_name": "c7n-profile-update-sacred-marmoset",
+                "domain_name": "c7n-profile-update-quick-seal",
                 "domain_settings": [],
-                "home_efs_file_system_id": "fs-0e119afe0ea0519ff",
-                "id": "d-permq6ogjmo8",
+                "home_efs_file_system_id": "fs-021f7cd75538e9b81",
+                "id": "d-hgyw5epv3wwt",
                 "kms_key_id": "",
                 "region": "us-west-2",
                 "retention_policy": [
@@ -483,19 +483,19 @@
                 "tag_propagation": "DISABLED",
                 "tags": null,
                 "tags_all": {},
-                "url": "https://d-permq6ogjmo8.studio.us-west-2.sagemaker.aws",
+                "url": "https://d-hgyw5epv3wwt.studio.us-west-2.sagemaker.aws",
                 "vpc_id": "vpc-049c0030ea410c65b"
             }
         },
         "aws_sagemaker_image": {
             "app": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
                 "description": "",
                 "display_name": "",
-                "id": "c7n-profile-image-sacred-marmoset",
-                "image_name": "c7n-profile-image-sacred-marmoset",
+                "id": "c7n-profile-image-quick-seal",
+                "image_name": "c7n-profile-image-quick-seal",
                 "region": "us-west-2",
-                "role_arn": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                "role_arn": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                 "tags": null,
                 "tags_all": {}
             }
@@ -505,13 +505,13 @@
                 "aliases": [
                     "1.0.0"
                 ],
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/1",
-                "base_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset:initial",
-                "container_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset@sha256:401ef2860713c858a863f5276b6a53338cb7f66e457ec8336d7a7e71fcede51a",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/1",
+                "base_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal:initial",
+                "container_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal@sha256:4d05d2bdc9e380515c79457d5c355bdf6d2f4150f87b08d6cf7d13b2b4ed8b93",
                 "horovod": false,
-                "id": "c7n-profile-image-sacred-marmoset,1",
-                "image_arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                "image_name": "c7n-profile-image-sacred-marmoset",
+                "id": "c7n-profile-image-quick-seal,1",
+                "image_arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                "image_name": "c7n-profile-image-quick-seal",
                 "job_type": "",
                 "ml_framework": "",
                 "processor": "",
@@ -525,13 +525,13 @@
                 "aliases": [
                     "2.0.0"
                 ],
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-sacred-marmoset/2",
-                "base_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset:updated",
-                "container_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset@sha256:265cd4ccee2775799d400fa330582cb9532af95a6374147a1915f44751f54114",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:image-version/c7n-profile-image-quick-seal/2",
+                "base_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal:updated",
+                "container_image": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal@sha256:a74cc981b9368daaad451e143acba87750dd667e28ad1ce8a2e13e542d4ccd5a",
                 "horovod": false,
-                "id": "c7n-profile-image-sacred-marmoset,2",
-                "image_arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-sacred-marmoset",
-                "image_name": "c7n-profile-image-sacred-marmoset",
+                "id": "c7n-profile-image-quick-seal,2",
+                "image_arn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
+                "image_name": "c7n-profile-image-quick-seal",
                 "job_type": "",
                 "ml_framework": "",
                 "processor": "",
@@ -544,28 +544,28 @@
         },
         "aws_sagemaker_studio_lifecycle_config": {
             "app": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-sacred-marmoset",
-                "id": "c7n-codeeditor-builtin-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-quick-seal",
+                "id": "c7n-codeeditor-builtin-quick-seal",
                 "region": "us-west-2",
                 "studio_lifecycle_config_app_type": "CodeEditor",
                 "studio_lifecycle_config_content": "IyEvYmluL2Jhc2gKZWNobyBjN24tcHJvZmlsZS11cGRhdGUK",
-                "studio_lifecycle_config_name": "c7n-codeeditor-builtin-sacred-marmoset",
+                "studio_lifecycle_config_name": "c7n-codeeditor-builtin-quick-seal",
                 "tags": null,
                 "tags_all": {}
             }
         },
         "aws_sagemaker_user_profile": {
             "app": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-apps-sacred-marmoset",
-                "domain_id": "d-permq6ogjmo8",
-                "home_efs_file_system_uid": "200020",
-                "id": "d-permq6ogjmo8/c7n-apps-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-apps-quick-seal",
+                "domain_id": "d-hgyw5epv3wwt",
+                "home_efs_file_system_uid": "200015",
+                "id": "d-hgyw5epv3wwt/c7n-apps-quick-seal",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-apps-sacred-marmoset",
+                "user_profile_name": "c7n-apps-quick-seal",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -574,7 +574,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -590,16 +590,16 @@
                 ]
             },
             "canvas": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-canvas-sacred-marmoset",
-                "domain_id": "d-permq6ogjmo8",
-                "home_efs_file_system_uid": "200005",
-                "id": "d-permq6ogjmo8/c7n-canvas-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-canvas-quick-seal",
+                "domain_id": "d-hgyw5epv3wwt",
+                "home_efs_file_system_uid": "200025",
+                "id": "d-hgyw5epv3wwt/c7n-canvas-quick-seal",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-canvas-sacred-marmoset",
+                "user_profile_name": "c7n-canvas-quick-seal",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -620,7 +620,7 @@
                                 "identity_provider_oauth_settings": [
                                     {
                                         "data_source_name": "SalesforceGenie",
-                                        "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                                        "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                                         "status": "DISABLED"
                                     }
                                 ],
@@ -648,7 +648,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -664,16 +664,16 @@
                 ]
             },
             "main": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-profile-update-sacred-marmoset",
-                "domain_id": "d-permq6ogjmo8",
-                "home_efs_file_system_uid": "200025",
-                "id": "d-permq6ogjmo8/c7n-profile-update-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-profile-update-quick-seal",
+                "domain_id": "d-hgyw5epv3wwt",
+                "home_efs_file_system_uid": "200020",
+                "id": "d-hgyw5epv3wwt/c7n-profile-update-quick-seal",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-profile-update-sacred-marmoset",
+                "user_profile_name": "c7n-profile-update-quick-seal",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -698,7 +698,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [
                             {
                                 "app_lifecycle_management": [],
@@ -750,16 +750,16 @@
                 ]
             },
             "rstudio": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-rstudio-sacred-marmoset",
-                "domain_id": "d-permq6ogjmo8",
-                "home_efs_file_system_uid": "200015",
-                "id": "d-permq6ogjmo8/c7n-rstudio-sacred-marmoset",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-rstudio-quick-seal",
+                "domain_id": "d-hgyw5epv3wwt",
+                "home_efs_file_system_uid": "200005",
+                "id": "d-hgyw5epv3wwt/c7n-rstudio-quick-seal",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-rstudio-sacred-marmoset",
+                "user_profile_name": "c7n-rstudio-quick-seal",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -768,7 +768,7 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
@@ -789,16 +789,16 @@
                 ]
             },
             "settings": {
-                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-permq6ogjmo8/c7n-settings-sacred-marmoset",
-                "domain_id": "d-permq6ogjmo8",
+                "arn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-settings-quick-seal",
+                "domain_id": "d-hgyw5epv3wwt",
                 "home_efs_file_system_uid": "200010",
-                "id": "d-permq6ogjmo8/c7n-settings-sacred-marmoset",
+                "id": "d-hgyw5epv3wwt/c7n-settings-quick-seal",
                 "region": "us-west-2",
                 "single_sign_on_user_identifier": "",
                 "single_sign_on_user_value": "",
                 "tags": null,
                 "tags_all": {},
-                "user_profile_name": "c7n-settings-sacred-marmoset",
+                "user_profile_name": "c7n-settings-quick-seal",
                 "user_settings": [
                     {
                         "auto_mount_home_efs": "DefaultAsDomain",
@@ -807,14 +807,14 @@
                         "custom_file_system_config": [],
                         "custom_posix_user_config": [],
                         "default_landing_uri": "app:JupyterServer:",
-                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-sacred-marmoset",
+                        "execution_role": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
                         "jupyter_lab_app_settings": [],
                         "jupyter_server_app_settings": [],
                         "kernel_gateway_app_settings": [],
                         "r_session_app_settings": [],
                         "r_studio_server_pro_app_settings": [],
                         "security_groups": [
-                            "sg-00087c78fe1ce0902"
+                            "sg-0d8a1ba83bfbc0161"
                         ],
                         "sharing_settings": [
                             {
@@ -854,12 +854,12 @@
         },
         "aws_secretsmanager_secret": {
             "oauth": {
-                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt",
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18",
                 "description": "",
                 "force_overwrite_replica_secret": false,
-                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt",
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18",
                 "kms_key_id": "",
-                "name": "c7n-profile-oauth-8894fe7157a48799bda692bcf0",
+                "name": "c7n-profile-oauth-624f43cd4ab3a7323a03a47eba",
                 "name_prefix": "c7n-profile-oauth-",
                 "policy": "",
                 "recovery_window_in_days": 0,
@@ -870,12 +870,12 @@
                 "type": ""
             },
             "oauth_initial": {
-                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                 "description": "",
                 "force_overwrite_replica_secret": false,
-                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                 "kms_key_id": "",
-                "name": "c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5",
+                "name": "c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4",
                 "name_prefix": "c7n-profile-oauth-initial-",
                 "policy": "",
                 "recovery_window_in_days": 0,
@@ -888,33 +888,33 @@
         },
         "aws_secretsmanager_secret_version": {
             "oauth": {
-                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt",
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18",
                 "has_secret_string_wo": null,
-                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt|terraform-5ohuTyPpM7aoC14Q4Lp4ZyXy6Z",
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18|terraform-tTgXCaCS35Mhkxhdvswrw6veRS",
                 "region": "us-west-2",
-                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt",
+                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18",
                 "secret_binary": "",
-                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-8894fe7157a48799bda692bcf0-eJS7bt",
+                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18",
                 "secret_string": "{\"client_id\":\"c7n-test-client\",\"client_secret\":\"c7n-test-secret\"}",
                 "secret_string_wo": null,
                 "secret_string_wo_version": null,
-                "version_id": "terraform-5ohuTyPpM7aoC14Q4Lp4ZyXy6Z",
+                "version_id": "terraform-tTgXCaCS35Mhkxhdvswrw6veRS",
                 "version_stages": [
                     "AWSCURRENT"
                 ]
             },
             "oauth_initial": {
-                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                "arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                 "has_secret_string_wo": null,
-                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs|terraform-sMDEZmvnZ3gKPWsI8IxIvF3U4I",
+                "id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8|terraform-d8GS6HyidUwuDWsjdy59bO3dtd",
                 "region": "us-west-2",
-                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                "secret_arn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                 "secret_binary": "",
-                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-ea85409949b6cf0127745e72b5-aGzgVs",
+                "secret_id": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8",
                 "secret_string": "{\"client_id\":\"c7n-test-client\",\"client_secret\":\"c7n-test-secret\"}",
                 "secret_string_wo": null,
                 "secret_string_wo_version": null,
-                "version_id": "terraform-sMDEZmvnZ3gKPWsI8IxIvF3U4I",
+                "version_id": "terraform-d8GS6HyidUwuDWsjdy59bO3dtd",
                 "version_stages": [
                     "AWSCURRENT"
                 ]
@@ -922,12 +922,12 @@
         },
         "aws_security_group": {
             "initial": {
-                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-00087c78fe1ce0902",
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-0d8a1ba83bfbc0161",
                 "description": "Managed by Terraform",
                 "egress": [],
-                "id": "sg-00087c78fe1ce0902",
+                "id": "sg-0d8a1ba83bfbc0161",
                 "ingress": [],
-                "name": "c7n-profile-initial-a2892dff77b072cfd8a7293b85",
+                "name": "c7n-profile-initial-54e607ffe03546d1d4f02b0a4c",
                 "name_prefix": "c7n-profile-initial-",
                 "owner_id": "644160558196",
                 "region": "us-west-2",
@@ -938,12 +938,12 @@
                 "vpc_id": "vpc-049c0030ea410c65b"
             },
             "updated": {
-                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-0c5e34bd6914fcad1",
+                "arn": "arn:aws:ec2:us-west-2:644160558196:security-group/sg-093abb2c6a9362c86",
                 "description": "Managed by Terraform",
                 "egress": [],
-                "id": "sg-0c5e34bd6914fcad1",
+                "id": "sg-093abb2c6a9362c86",
                 "ingress": [],
-                "name": "c7n-profile-updated-592800340ad78ca9d28198da83",
+                "name": "c7n-profile-updated-6ba3fcea59fb83fd448336afe5",
                 "name_prefix": "c7n-profile-updated-",
                 "owner_id": "644160558196",
                 "region": "us-west-2",
@@ -956,7 +956,7 @@
         },
         "random_pet": {
             "profile": {
-                "id": "sacred-marmoset",
+                "id": "quick-seal",
                 "keepers": null,
                 "length": 2,
                 "prefix": null,
@@ -965,22 +965,22 @@
         },
         "terraform_data": {
             "image": {
-                "id": "d2345277-d7ea-c2f0-b52f-eb91e8a34066",
+                "id": "c6616a67-8d10-684c-7195-c2050d1f2c74",
                 "input": {
-                    "value": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset",
+                    "value": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal",
                     "type": "string"
                 },
                 "output": {
-                    "value": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-sacred-marmoset",
+                    "value": "644160558196.dkr.ecr.us-west-2.amazonaws.com/c7n-profile-image-quick-seal",
                     "type": "string"
                 },
                 "triggers_replace": null
             },
             "rsession_config": {
-                "id": "a19e21ef-351b-b4df-66ff-48fdf202dc5b",
+                "id": "ee67e416-ee8f-2949-9e69-f02d8f835c22",
                 "input": {
                     "value": {
-                        "name": "c7n-rsession-sacred-marmoset",
+                        "name": "c7n-rsession-quick-seal",
                         "region": "us-west-2"
                     },
                     "type": [
@@ -993,7 +993,7 @@
                 },
                 "output": {
                     "value": {
-                        "name": "c7n-rsession-sacred-marmoset",
+                        "name": "c7n-rsession-quick-seal",
                         "region": "us-west-2"
                     },
                     "type": [
