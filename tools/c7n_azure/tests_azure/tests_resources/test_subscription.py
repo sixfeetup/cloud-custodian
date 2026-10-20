@@ -116,7 +116,7 @@ class SubscriptionDiagnosticSettingsFilterTest(BaseTest):
         Cassettes ignore api-version, so this asserts the request directly.
         """
         setting = {'name': 'sec', 'properties': {
-            'logs': [{'category': 'Security', 'enabled': True, 'categoryGroup': None}]}}
+            'logs': [{'category': None, 'categoryGroup': 'allLogs', 'enabled': True}]}}
         session = Mock()
         get_by_id = session.client.return_value.resources.get_by_id
         get_by_id.side_effect = [{'value': [setting]}, {'value': []}, {'value': None}]
