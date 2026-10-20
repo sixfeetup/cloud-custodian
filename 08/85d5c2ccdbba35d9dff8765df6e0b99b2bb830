@@ -1,0 +1,21 @@
+tests/test_filters.py
+  s_69b3cb51c191fb::t_1b071efdfb854d 618-625
+c7n/filters/core.py
+  s_69b3cb51c191fb::t_f33510f6fc87c0 784-786
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0885d5c2ccdbba35d9dff8765df6e0b99b2bb830",
+  "prompts": {},
+  "sessions": {
+    "s_69b3cb51c191fb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bb6ef696-3609-4221-8696-e8b7518c1c25",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
