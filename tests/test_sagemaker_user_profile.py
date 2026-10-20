@@ -10,14 +10,14 @@ import pytest
 from pytest_terraform import terraform
 
 from c7n.exceptions import PolicyValidationError
-from c7n.resources.sagemaker import UpdateSagemakerUserProfile
+from c7n.resources import sagemaker
 
 from .apicallcaptor import ApiCallCaptor
 
 
 def test_sagemaker_user_profile_update_validate():
     # Accept mutable app defaults, but reject creation-only POSIX settings.
-    action = UpdateSagemakerUserProfile({
+    action = sagemaker.UpdateSagemakerUserProfile({
         'type': 'update',
         'UserSettings': {
             'KernelGatewayAppSettings': {
@@ -30,6 +30,41 @@ def test_sagemaker_user_profile_update_validate():
     action.data['UserSettings'] = {'CustomPosixUserConfig': {'Uid': 10000, 'Gid': 1001}}
     with pytest.raises(PolicyValidationError):
         action.validate()
+
+
+def test_sagemaker_user_profile_schema_older_sdk():
+    # Older SDKs may lack both top-level settings and nested resource-spec fields.
+    shape = copy.deepcopy(sagemaker.get_service_shape('sagemaker', 'UserSettings'))
+    shape.members.pop('AutoMountHomeEFS', None)
+    shape.members['KernelGatewayAppSettings'].members[
+        'DefaultResourceSpec'].members.pop('LifecycleConfigArn', None)
+    schema = copy.deepcopy(sagemaker.UpdateSagemakerUserProfile.schema)
+    schema['properties']['UserSettings'] = sagemaker._user_profile_schema(shape, {
+        'AutoMountHomeEFS': None,
+        'KernelGatewayAppSettings': {
+            'DefaultResourceSpec': {'InstanceType': None, 'LifecycleConfigArn': None},
+        },
+    })
+    settings = {
+        'KernelGatewayAppSettings': {
+            'DefaultResourceSpec': {'InstanceType': 'ml.t3.medium'},
+        },
+    }
+    action = sagemaker.UpdateSagemakerUserProfile({
+        'type': 'update',
+        'UserSettings': settings,
+    })
+    action.schema = schema
+    action.validate()
+
+    # Missing SDK fields must be rejected, not silently dropped from an update.
+    for unavailable in (
+        {'AutoMountHomeEFS': 'Disabled'},
+        {'KernelGatewayAppSettings': {'DefaultResourceSpec': {'LifecycleConfigArn': 'None'}}},
+    ):
+        action.data['UserSettings'] = unavailable
+        with pytest.raises(PolicyValidationError):
+            action.validate()
 
 
 @pytest.mark.audited

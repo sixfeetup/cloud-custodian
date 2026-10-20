@@ -1,33 +1,33 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-hgyw5epv3wwt",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-canvas-quick-seal",
-        "UserProfileName": "c7n-canvas-quick-seal",
-        "HomeEfsFileSystemUid": "200025",
+        "DomainId": "d-msjtvfwmgld1",
+        "UserProfileArn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-msjtvfwmgld1/c7n-canvas-proud-tahr",
+        "UserProfileName": "c7n-canvas-proud-tahr",
+        "HomeEfsFileSystemUid": "200010",
         "Status": "Updating",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 20,
-            "second": 38,
-            "microsecond": 659000
+            "hour": 10,
+            "minute": 31,
+            "second": 36,
+            "microsecond": 995000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 20,
-            "second": 5,
-            "microsecond": 971000
+            "hour": 10,
+            "minute": 30,
+            "second": 11,
+            "microsecond": 46000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-proud-tahr",
             "CanvasAppSettings": {
                 "TimeSeriesForecastingSettings": {
                     "Status": "DISABLED"
@@ -39,7 +39,7 @@
                     {
                         "DataSourceName": "SalesforceGenie",
                         "Status": "DISABLED",
-                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-initial-b73ffb57b28c5d4333073487d4-2kpri8"
+                        "SecretArn": "arn:aws:secretsmanager:us-east-1:644160558196:secret:c7n-profile-oauth-initial-85acbb583fda086c7c0bf940df-YcMp9T"
                     }
                 ],
                 "DirectDeploySettings": {

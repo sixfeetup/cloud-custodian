@@ -205,9 +205,39 @@ resource "aws_sagemaker_user_profile" "app" {
   ]
 }
 
-# JupyterServer's AWS-managed image in the recording region (us-west-2).
+# Managed-image owners are regional, not the account provisioning the profile.
+# https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jl.html
+locals {
+  jupyter_server_image_accounts = {
+    "af-south-1"     = "559312083959"
+    "ap-east-1"      = "493642496378"
+    "ap-northeast-1" = "102112518831"
+    "ap-northeast-2" = "806072073708"
+    "ap-south-1"     = "394103062818"
+    "ap-southeast-1" = "492261229750"
+    "ap-southeast-2" = "452832661640"
+    "ca-central-1"   = "310906938811"
+    "eu-central-1"   = "936697816551"
+    "eu-north-1"     = "243637512696"
+    "eu-south-1"     = "592751261982"
+    "eu-south-2"     = "127363102723"
+    "eu-west-1"      = "470317259841"
+    "eu-west-2"      = "712779665605"
+    "eu-west-3"      = "615547856133"
+    "sa-east-1"      = "782484402741"
+    "us-east-1"      = "081325390199"
+    "us-east-2"      = "429704687514"
+    "us-west-1"      = "742091327244"
+    "us-west-2"      = "236514542706"
+  }
+}
+
 output "jupyter_server_image" {
-  value = "arn:aws:sagemaker:us-west-2:236514542706:image/jupyter-server-3"
+  value = format(
+    "arn:aws:sagemaker:%s:%s:image/jupyter-server-3",
+    data.aws_region.current.region,
+    local.jupyter_server_image_accounts[data.aws_region.current.region],
+  )
 }
 
 output "lifecycle_configs" {

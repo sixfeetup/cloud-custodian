@@ -1776,9 +1776,10 @@ def _user_profile_schema(
             'properties': {
                 name: _user_profile_schema(shape.members[name], children)
                 for name, children in fields.items()
+                if name in shape.members
             },
         })
-        if shape.is_tagged_union:
+        if shape.metadata.get('union'):
             schema['maxProperties'] = 1
         if shape.required_members:
             schema['required'] = shape.required_members

@@ -1,157 +1,58 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-hgyw5epv3wwt",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-apps-quick-seal",
-        "UserProfileName": "c7n-apps-quick-seal",
-        "HomeEfsFileSystemUid": "200015",
+        "DomainId": "d-msjtvfwmgld1",
+        "UserProfileArn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-msjtvfwmgld1/c7n-settings-proud-tahr",
+        "UserProfileName": "c7n-settings-proud-tahr",
+        "HomeEfsFileSystemUid": "200005",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 21,
-            "second": 11,
-            "microsecond": 75000
+            "hour": 10,
+            "minute": 31,
+            "second": 22,
+            "microsecond": 675000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 20,
-            "second": 2,
-            "microsecond": 542000
+            "hour": 10,
+            "minute": 30,
+            "second": 9,
+            "microsecond": 139000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
-            "JupyterServerAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/jupyter-server-3",
-                    "SageMakerImageVersionAlias": "1",
-                    "InstanceType": "system",
-                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-quick-seal"
-                },
-                "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterserver-default-quick-seal"
-                ],
-                "CodeRepositories": [
-                    {
-                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
-                    }
-                ]
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-updated-proud-tahr",
+            "SecurityGroups": [
+                "sg-0e5f64e06df76375a"
+            ],
+            "SharingSettings": {
+                "NotebookOutputOption": "Disabled",
+                "S3OutputPath": "s3://c7n-profile-sharing-936a1c4268be9e94c4b29aa09b/notebooks/",
+                "S3KmsKeyId": "arn:aws:kms:us-east-1:644160558196:key/fe11a702-da1b-4b8d-84b9-9a4d8ce7e1f9"
             },
-            "KernelGatewayAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
-                    "SageMakerImageVersionAlias": "2.0.0",
-                    "InstanceType": "ml.t3.medium",
-                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-quick-seal"
-                },
-                "CustomImages": [
-                    {
-                        "ImageName": "c7n-profile-image-quick-seal",
-                        "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-kernelgateway-quick-seal"
-                    }
-                ],
-                "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-kernelgateway-default-quick-seal"
-                ]
-            },
-            "TensorBoardAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
-                    "SageMakerImageVersionAlias": "2.0.0",
-                    "InstanceType": "ml.t3.medium"
+            "SpaceStorageSettings": {
+                "DefaultEbsStorageSettings": {
+                    "DefaultEbsVolumeSizeInGb": 10,
+                    "MaximumEbsVolumeSizeInGb": 30
                 }
             },
-            "RSessionAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
-                    "SageMakerImageVersionAlias": "2.0.0",
-                    "InstanceType": "ml.t3.medium"
-                },
-                "CustomImages": [
-                    {
-                        "ImageName": "c7n-profile-image-quick-seal",
-                        "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-rsession-quick-seal"
-                    }
-                ]
-            },
-            "CodeEditorAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
-                    "SageMakerImageVersionAlias": "2.0.0",
-                    "InstanceType": "ml.t3.medium",
-                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-quick-seal"
-                },
-                "CustomImages": [
-                    {
-                        "ImageName": "c7n-profile-image-quick-seal",
-                        "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-codeeditor-quick-seal"
-                    }
-                ],
-                "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-default-quick-seal"
-                ],
-                "AppLifecycleManagement": {
-                    "IdleSettings": {
-                        "LifecycleManagement": "ENABLED",
-                        "IdleTimeoutInMinutes": 120,
-                        "MinIdleTimeoutInMinutes": 60,
-                        "MaxIdleTimeoutInMinutes": 240
-                    }
-                },
-                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-codeeditor-builtin-quick-seal"
-            },
-            "JupyterLabAppSettings": {
-                "DefaultResourceSpec": {
-                    "SageMakerImageArn": "arn:aws:sagemaker:us-west-2:644160558196:image/c7n-profile-image-quick-seal",
-                    "SageMakerImageVersionAlias": "2.0.0",
-                    "InstanceType": "ml.t3.medium",
-                    "LifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-quick-seal"
-                },
-                "CustomImages": [
-                    {
-                        "ImageName": "c7n-profile-image-quick-seal",
-                        "ImageVersionNumber": 2,
-                        "AppImageConfigName": "c7n-jupyterlab-quick-seal"
-                    }
-                ],
-                "LifecycleConfigArns": [
-                    "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-default-quick-seal"
-                ],
-                "CodeRepositories": [
-                    {
-                        "RepositoryUrl": "https://github.com/cloud-custodian/cloud-custodian"
-                    }
-                ],
-                "AppLifecycleManagement": {
-                    "IdleSettings": {
-                        "LifecycleManagement": "ENABLED",
-                        "IdleTimeoutInMinutes": 120,
-                        "MinIdleTimeoutInMinutes": 60,
-                        "MaxIdleTimeoutInMinutes": 240
-                    }
-                },
-                "EmrSettings": {
-                    "AssumableRoleArns": [
-                        "arn:aws:iam::644160558196:role/c7n-emr-assumable-quick-seal"
-                    ],
-                    "ExecutionRoleArns": [
-                        "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
-                    ]
-                },
-                "BuiltInLifecycleConfigArn": "arn:aws:sagemaker:us-west-2:644160558196:studio-lifecycle-config/c7n-jupyterlab-builtin-quick-seal"
-            },
+            "DefaultLandingUri": "app:JupyterServer:",
+            "StudioWebPortal": "DISABLED",
             "CustomFileSystemConfigs": [],
-            "AutoMountHomeEFS": "DefaultAsDomain"
+            "StudioWebPortalSettings": {
+                "HiddenMlTools": [],
+                "HiddenAppTypes": [],
+                "HiddenInstanceTypes": [],
+                "HiddenSageMakerImageVersionAliases": [],
+                "ExecutionRoleSessionNameMode": "STATIC"
+            },
+            "AutoMountHomeEFS": "Enabled"
         },
         "ResponseMetadata": {}
     }

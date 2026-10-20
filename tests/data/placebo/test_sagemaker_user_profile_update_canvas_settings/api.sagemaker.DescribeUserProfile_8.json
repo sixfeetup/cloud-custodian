@@ -1,67 +1,33 @@
 {
     "status_code": 200,
     "data": {
-        "DomainId": "d-hgyw5epv3wwt",
-        "UserProfileArn": "arn:aws:sagemaker:us-west-2:644160558196:user-profile/d-hgyw5epv3wwt/c7n-canvas-quick-seal",
-        "UserProfileName": "c7n-canvas-quick-seal",
-        "HomeEfsFileSystemUid": "200025",
+        "DomainId": "d-msjtvfwmgld1",
+        "UserProfileArn": "arn:aws:sagemaker:us-east-1:644160558196:user-profile/d-msjtvfwmgld1/c7n-apps-proud-tahr",
+        "UserProfileName": "c7n-apps-proud-tahr",
+        "HomeEfsFileSystemUid": "200020",
         "Status": "InService",
         "LastModifiedTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 20,
-            "second": 38,
-            "microsecond": 982000
+            "hour": 10,
+            "minute": 30,
+            "second": 17,
+            "microsecond": 833000
         },
         "CreationTime": {
             "__class__": "datetime",
             "year": 2026,
             "month": 10,
             "day": 20,
-            "hour": 7,
-            "minute": 20,
-            "second": 5,
-            "microsecond": 971000
+            "hour": 10,
+            "minute": 30,
+            "second": 14,
+            "microsecond": 659000
         },
         "UserSettings": {
-            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-quick-seal",
-            "CanvasAppSettings": {
-                "TimeSeriesForecastingSettings": {
-                    "Status": "ENABLED",
-                    "AmazonForecastRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
-                },
-                "ModelRegisterSettings": {
-                    "Status": "ENABLED",
-                    "CrossAccountModelRegisterRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
-                },
-                "WorkspaceSettings": {
-                    "S3ArtifactPath": "s3://c7n-profile-sharing-4a484f7c00b79026147b608b7b/canvas/",
-                    "S3KmsKeyId": "arn:aws:kms:us-west-2:644160558196:key/a6c8d726-a954-4c0d-b9c6-3e6f46ce39b9"
-                },
-                "IdentityProviderOAuthSettings": [
-                    {
-                        "DataSourceName": "Snowflake",
-                        "Status": "ENABLED",
-                        "SecretArn": "arn:aws:secretsmanager:us-west-2:644160558196:secret:c7n-profile-oauth-624f43cd4ab3a7323a03a47eba-Yi6A18"
-                    }
-                ],
-                "DirectDeploySettings": {
-                    "Status": "ENABLED"
-                },
-                "KendraSettings": {
-                    "Status": "ENABLED"
-                },
-                "GenerativeAiSettings": {
-                    "AmazonBedrockRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal"
-                },
-                "EmrServerlessSettings": {
-                    "ExecutionRoleArn": "arn:aws:iam::644160558196:role/c7n-canvas-quick-seal",
-                    "Status": "ENABLED"
-                }
-            },
+            "ExecutionRole": "arn:aws:iam::644160558196:role/c7n-profile-update-proud-tahr",
             "CustomFileSystemConfigs": [],
             "AutoMountHomeEFS": "DefaultAsDomain"
         },
