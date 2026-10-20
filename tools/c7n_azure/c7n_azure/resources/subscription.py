@@ -244,8 +244,8 @@ class SetActivityLogAlert(BaseAction):
 
     The alert watches the subscription's activity log and fires when an event
     matches every entry in ``conditions``. It is identified by ``resource-group``
-    and ``name``. If that alert already exists it is replaced as a whole, so any
-    action groups or description on it that the policy doesn't set are removed.
+    and ``name``. If that alert already exists it is replaced as a whole: its tags,
+    and any action groups or description the policy doesn't set, are removed.
 
     - ``name``: the alert's name.
     - ``resource-group``: the resource group to create the alert in. It must
@@ -275,11 +275,11 @@ class SetActivityLogAlert(BaseAction):
                   resource: azure.alert-logs
                   filters:
                     - type: value
-                      key: properties.condition.allOf[].equals | sort(@)
+                      key: "properties.condition.allOf[].join('=', [field, equals]) | sort(@)"
                       op: eq
                       value:
-                        - Administrative
-                        - Microsoft.Network/networkSecurityGroups/write
+                        - category=Administrative
+                        - operationName=Microsoft.Network/networkSecurityGroups/write
             actions:
               - type: set-activity-log-alert
                 name: nsg-write-alert
