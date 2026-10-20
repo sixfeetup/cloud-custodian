@@ -333,8 +333,8 @@ class SetActivityLogAlert(BaseAction):
         }
         if 'description' in self.data:
             properties['description'] = self.data['description']
-        # The REST API's own shape. Older SDKs reshape a flattened dict, but
-        # 8.x sends a dict as-is, so only this shape is right on every version.
+        # The REST API's own request shape, so the body doesn't depend on the
+        # SDK reshaping a flattened dict.
         return {'location': 'Global', 'properties': properties}
 
     def process(self, subscriptions):
