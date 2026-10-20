@@ -1778,6 +1778,8 @@ def _user_profile_schema(
                 for name, children in fields.items()
             },
         })
+        if shape.is_tagged_union:
+            schema['maxProperties'] = 1
         if shape.required_members:
             schema['required'] = shape.required_members
     elif shape.type_name == 'list':
@@ -1878,6 +1880,16 @@ class UpdateSagemakerUserProfile(BaseAction):
                     },
                 },
                 'AutoMountHomeEFS': None,
+                'CustomFileSystemConfigs': {
+                    'EFSFileSystemConfig': {
+                        'FileSystemId': None,
+                        'FileSystemPath': None,
+                    },
+                    'FSxLustreFileSystemConfig': {
+                        'FileSystemId': None,
+                        'FileSystemPath': None,
+                    },
+                },
                 'StudioWebPortalSettings': {
                     'HiddenMlTools': None,
                     'HiddenAppTypes': None,
