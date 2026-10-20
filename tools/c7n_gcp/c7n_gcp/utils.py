@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 
+import jmespath
+
 
 log = logging.getLogger('c7n_gcp.utils')
 
@@ -684,7 +686,8 @@ def filter_tree_has_key(node, key):
 
     Recurses only through boolean clauses (and/or/not) so literal filter
     arguments are never mistaken for filters. Leaf `key` values may be
-    JMESPath expressions, so match `key` as an identifier within them.
+    JMESPath expressions, so parse them and look for a field reference to
+    `key`; string literals within an expression do not count.
     """
     if isinstance(node, list):
         return any(filter_tree_has_key(item, key) for item in node)
@@ -696,7 +699,17 @@ def filter_tree_has_key(node, key):
     leaf_key = node.get('key')
     if not isinstance(leaf_key, str):
         return False
-    return re.search(r'(?<!\w)%s(?!\w)' % re.escape(key), leaf_key) is not None
+    try:
+        ast = jmespath.compile(leaf_key).parsed
+    except jmespath.exceptions.JMESPathError:
+        return leaf_key == key
+    return _ast_has_field(ast, key)
+
+
+def _ast_has_field(ast, name):
+    if ast.get('type') == 'field' and ast.get('value') == name:
+        return True
+    return any(_ast_has_field(child, name) for child in ast.get('children', ()))
 
 
 def get_firewall_port_ranges(firewall_resources):
