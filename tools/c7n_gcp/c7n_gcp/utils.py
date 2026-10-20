@@ -709,7 +709,9 @@ def filter_tree_has_key(node, key):
 def _ast_has_field(ast, name):
     if ast.get('type') == 'field' and ast.get('value') == name:
         return True
-    return any(_ast_has_field(child, name) for child in ast.get('children', ()))
+    # slice nodes carry raw ints/None as children
+    return any(_ast_has_field(child, name) for child in ast.get('children', ())
+               if isinstance(child, dict))
 
 
 def get_firewall_port_ranges(firewall_resources):

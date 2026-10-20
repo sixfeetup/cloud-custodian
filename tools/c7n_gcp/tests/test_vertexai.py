@@ -544,6 +544,9 @@ def test_vertexai_evaluation_run_needs_completion_time_matching():
     assert not filter_tree_has_key(
         [{'type': 'value', 'key': "foo == 'completionTime'", 'value': True}],
         'completionTime')
+    assert not filter_tree_has_key(
+        [{'type': 'value', 'key': 'labels.name[0:3]', 'value': 'x'}],
+        'completionTime')
     assert filter_tree_has_key(
         [{'not': [{'type': 'value', 'key': 'length(completionTime)', 'value': 1}]}],
         'completionTime')
