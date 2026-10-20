@@ -16,6 +16,7 @@ from .apicallcaptor import ApiCallCaptor
 
 
 def test_sagemaker_user_profile_update_validate():
+    # Accept mutable app defaults, but reject creation-only POSIX settings.
     action = UpdateSagemakerUserProfile({
         'type': 'update',
         'UserSettings': {
@@ -39,6 +40,7 @@ def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
     domain_id = sagemaker_user_profile_update['aws_sagemaker_domain.main.id']
     profile_name = sagemaker_user_profile_update[
         'aws_sagemaker_user_profile.main.user_profile_name']
+    # Exercise the documented GPU filter and change all three app defaults to CPU.
     apps = (
         'KernelGatewayAppSettings',
         'JupyterLabAppSettings',
@@ -100,6 +102,7 @@ def test_sagemaker_user_profile_update(test, sagemaker_user_profile_update):
     settings = updated['UserSettings']
     for app in apps:
         assert settings[app]['DefaultResourceSpec']['InstanceType'] == 'ml.t3.medium'
+    # Updating instance defaults must preserve unrelated user and app settings.
     assert settings['ExecutionRole'] == before['ExecutionRole']
     assert settings['JupyterLabAppSettings']['CodeRepositories'] == [{
         'RepositoryUrl': 'https://github.com/cloud-custodian/cloud-custodian',
@@ -112,6 +115,7 @@ def describe_user_profile(
     domain_id: str,
     profile_name: str,
 ) -> dict:
+    # Creation and updates are asynchronous; read settings only after completion.
     for _ in range(60):
         profile = client.describe_user_profile(
             DomainId=domain_id,
@@ -134,6 +138,7 @@ def update_user_profile(
     profile_name: str,
     settings: dict,
 ) -> dict:
+    # Isolate expected values so action-side mutation cannot weaken the assertions.
     policy = test.load_policy(
         {
             'name': 'update-user-profile-settings',
@@ -146,6 +151,7 @@ def update_user_profile(
         },
         session_factory=factory,
     )
+    # Matching replayed readback alone must not let a missing SDK update pass.
     captor = ApiCallCaptor.start_capture()
     [resource] = policy.run()
     assert resource['UserProfileName'] == profile_name
@@ -174,6 +180,7 @@ def test_sagemaker_user_profile_update_settings(test, sagemaker_user_profile_upd
     domain_id = fixture['aws_sagemaker_domain.main.id']
     profile_name = fixture['aws_sagemaker_user_profile.settings.user_profile_name']
     before = describe_user_profile(test, client, domain_id, profile_name)['UserSettings']
+    # Distinct initial role/group values make replacement checks detect no-ops.
     assert before['ExecutionRole'] == fixture['aws_iam_role.execution.arn']
     assert fixture['aws_security_group.initial.id'] in before['SecurityGroups']
     sharing = {
@@ -223,6 +230,7 @@ def test_sagemaker_user_profile_update_settings(test, sagemaker_user_profile_upd
     assert updated['AutoMountHomeEFS'] == 'Disabled'
     assert updated['StudioWebPortalSettings'] == portal
 
+    # Reverse the toggles and remove populated visibility lists, not just omit them.
     cleared = update_user_profile(
         test,
         factory,
@@ -268,6 +276,7 @@ def test_sagemaker_user_profile_update_rstudio(test, sagemaker_user_profile_upda
         domain_id,
         profile_name,
     )['UserSettings']
+    # RStudio permits group selection only when access is enabled for the first time.
     assert before['RStudioServerProAppSettings']['AccessStatus'] == 'DISABLED'
     updated = update_user_profile(
         test,
@@ -297,6 +306,7 @@ def test_sagemaker_user_profile_update_canvas_settings(
     factory = test.replay_flight_data('test_sagemaker_user_profile_update_canvas_settings')
     domain_id = fixture['aws_sagemaker_domain.main.id']
     profile_name = fixture['aws_sagemaker_user_profile.canvas.user_profile_name']
+    # Check every Canvas setting, including role, storage, and OAuth references.
     canvas = {
         'TimeSeriesForecastingSettings': {
             'Status': 'ENABLED',
@@ -333,6 +343,7 @@ def test_sagemaker_user_profile_update_canvas_settings(
         {'CanvasAppSettings': canvas},
     )
     assert updated['CanvasAppSettings'] == canvas
+    # Disable assigned integrations and remove the previously populated OAuth list.
     disabled = {
         'TimeSeriesForecastingSettings': {'Status': 'DISABLED'},
         'ModelRegisterSettings': {'Status': 'DISABLED'},
@@ -356,6 +367,7 @@ def test_sagemaker_user_profile_update_canvas_settings(
 
 
 def assert_settings(actual: dict, expected: dict) -> None:
+    # Compare requested fields while allowing additional service-provided defaults.
     for name, value in expected.items():
         if isinstance(value, dict):
             assert_settings(actual[name], value)
@@ -381,7 +393,9 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
     }
     settings = {}
     clear = {}
+    # Shared API shapes do not imply that every app supports the same settings.
     for app, app_type in apps.items():
+        # JupyterServer requires a managed image and the system instance type.
         instance_type = 'system' if app_type == 'JupyterServer' else 'ml.t3.medium'
         image_arn = fixture['aws_sagemaker_image.app.arn']
         if app_type == 'JupyterServer':
@@ -395,6 +409,7 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
             app_settings['LifecycleConfigArns'] = [lifecycle['default']]
             app_clear['LifecycleConfigArns'] = []
             app_clear['DefaultResourceSpec'] = {'InstanceType': instance_type}
+            # JupyterServer clears the default by omission; other apps accept 'None'.
             if app_type != 'JupyterServer':
                 app_clear['DefaultResourceSpec']['LifecycleConfigArn'] = 'None'
         if app_type in ('KernelGateway', 'RSessionGateway', 'CodeEditor', 'JupyterLab'):
@@ -434,6 +449,7 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
     assert_settings(updated, settings)
     assert updated['ExecutionRole'] == fixture['aws_iam_role.execution.arn']
 
+    # Separate image, version-ARN, and alias updates so precedence cannot mask a no-op.
     versioned_apps = (
         'KernelGatewayAppSettings',
         'TensorBoardAppSettings',
@@ -448,12 +464,14 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
     }
     updated = update_user_profile(test, factory, domain_id, profile_name, versions)
     assert_settings(updated, versions)
+    # Omitting the lifecycle ARN in a resource-spec update removes its default.
     for app in (
         'KernelGatewayAppSettings',
         'CodeEditorAppSettings',
         'JupyterLabAppSettings',
     ):
         assert 'LifecycleConfigArn' not in updated[app]['DefaultResourceSpec']
+    # Remove version pins before checking aliases; a pinned ARN takes precedence.
     updated = update_user_profile(
         test,
         factory,
@@ -475,10 +493,12 @@ def test_sagemaker_user_profile_update_app_settings(test, sagemaker_user_profile
         }}
         for app, app_type in apps.items()
     }
+    # Restore lifecycle defaults so the final clear starts from assigned values.
     for app, lifecycle in lifecycle_configs.items():
         aliases[app]['DefaultResourceSpec']['LifecycleConfigArn'] = lifecycle['default']
     updated = update_user_profile(test, factory, domain_id, profile_name, aliases)
     assert_settings(updated, aliases)
+    # Remove populated collections/defaults and disable idle management.
     updated = update_user_profile(test, factory, domain_id, profile_name, clear)
     for app, app_clear in clear.items():
         for field, value in app_clear.items():

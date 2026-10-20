@@ -27,6 +27,7 @@ def test_sagemaker_user_profile_update_filesystems(
         profile_name,
     )['UserSettings']
     assert not before.get('CustomFileSystemConfigs')
+    # Attach both types with explicit paths and verify the stored IDs and paths.
     configs = [
         {'EFSFileSystemConfig': {
             'FileSystemId': fixture['aws_efs_file_system.custom.id'],
@@ -46,11 +47,13 @@ def test_sagemaker_user_profile_update_filesystems(
     )
     actual = updated['CustomFileSystemConfigs']
     assert len(actual) == len(configs)
+    # Match filesystem types rather than depending on the service's list ordering.
     for expected in configs:
         kind = next(iter(expected))
         [matching] = [item for item in actual if kind in item]
         assert_settings(matching, expected)
 
+    # Replacement must remove FSx and change the EFS path, not append another mount.
     replacement = [{'EFSFileSystemConfig': {
         'FileSystemId': fixture['aws_efs_file_system.custom.id'],
         'FileSystemPath': '/c7n-updated',
@@ -63,6 +66,7 @@ def test_sagemaker_user_profile_update_filesystems(
         {'CustomFileSystemConfigs': replacement},
     )
     assert updated['CustomFileSystemConfigs'] == replacement
+    # An empty list must remove the remaining mount.
     updated = update_user_profile(
         test,
         factory,
