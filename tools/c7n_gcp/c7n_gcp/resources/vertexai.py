@@ -11,7 +11,6 @@ import yaml
 
 from c7n.utils import local_session, jmespath_search, type_schema
 from c7n_gcp.actions import MethodAction
-from c7n_gcp.filters.metrics import GCPMetricsFilter
 from c7n_gcp.provider import resources
 from c7n_gcp.query import (
     config_regions, QueryResourceManager, TypeInfo, ChildResourceManager, ChildTypeInfo)
