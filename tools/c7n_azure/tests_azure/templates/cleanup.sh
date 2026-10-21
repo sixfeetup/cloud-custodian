@@ -57,9 +57,16 @@ delete_resource() {
         dbid=$(az sql db list --ids $sqlid --query [0].id --output tsv)
         az lock delete --ids "${dbid}/providers/Microsoft.Authorization/locks/dblock"
         sleep 10s
+    elif [[ "$fileName" == "keyvault-secret.json" ]]; then
+        vault_name=$(az keyvault list --resource-group $rgName --query [0].name --output tsv)
     fi
 
     az group delete --name $rgName --yes --output None
+
+    # Purge the soft-deleted vault so the fixed vault name can be re-provisioned.
+    if [[ "$fileName" == "keyvault-secret.json" ]] && [[ -n "${vault_name}" ]]; then
+        az keyvault purge --name $vault_name --output None
+    fi
 
     echo "Delete for $filenameNoExtension complete"
 }
