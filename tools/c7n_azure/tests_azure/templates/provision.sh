@@ -184,14 +184,24 @@ deploy_resource() {
 
     elif [[ "$fileName" == "keyvault-secret.json" ]]; then
 
-        az deployment group create --resource-group $rgName --template-file $file --output None
+        az deployment group create --resource-group $rgName --template-file $file --output None || {
+            echo "Failed to deploy Key Vault secret fixture in resource group '${rgName}'."
+            print_failed_group_deployment "$rgName"
+            exit 1
+        }
 
         # The vault uses RBAC authorization; grant Key Vault Secrets Officer for data-plane access.
         principal_type="ServicePrincipal"
         if [[ ${is_user} -eq 1 ]]; then
             principal_type="User"
         fi
-        ensure_role_for_active_principal "$rgName" "b86a8fe4-44ce-4948-aee5-eccb2c155cd7" "$principal_type"
+        if ! ensure_role_for_active_principal \
+            "$rgName" \
+            "b86a8fe4-44ce-4948-aee5-eccb2c155cd7" \
+            "$principal_type"; then
+            echo "Required role assignment check failed; cannot continue with Key Vault secret fixture."
+            exit 1
+        fi
 
     elif [[ "$fileName" == "aks.json" ]]; then
 

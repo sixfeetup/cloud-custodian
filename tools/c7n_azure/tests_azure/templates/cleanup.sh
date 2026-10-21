@@ -65,7 +65,10 @@ delete_resource() {
 
     # Purge the soft-deleted vault so the fixed vault name can be re-provisioned.
     if [[ "$fileName" == "keyvault-secret.json" ]] && [[ -n "${vault_name}" ]]; then
-        az keyvault purge --name $vault_name --output None
+        az keyvault purge --name $vault_name --output None || {
+            echo "Failed to purge soft-deleted Key Vault '${vault_name}'; the name stays reserved until it is purged."
+            exit 1
+        }
     fi
 
     echo "Delete for $filenameNoExtension complete"
