@@ -235,3 +235,34 @@ class KeyVaultKeyTest(BaseTest):
     def test_update_expires_on_unchanged(self):
         kwargs = self._run_update(expires_on='2030-02-02 00:00:00')
         self.assertEqual(kwargs['expires_on'], datetime.datetime(2030, 2, 2))
+
+    @arm_template('keyvault.json')
+    def test_key_vault_key_update_expires_in_action(self):
+        p = self.load_policy({
+            'name': 'test-key-vault-key-update-expires-in',
+            'resource': 'azure.keyvault-key',
+            'filters': [
+                {
+                    'type': 'parent',
+                    'filter': {
+                        'type': 'value',
+                        'key': 'name',
+                        'op': 'glob',
+                        'value': 'cckeyvault1*'
+                    }
+                },
+                {'type': 'value', 'key': 'id', 'op': 'glob', 'value': '*/keys/cctestrsa'},
+                {'type': 'value', 'key': 'attributes.data.exp', 'value': 'absent'}
+            ],
+            'actions': [{'type': 'update', 'expires_in': {'days': 90}}]
+        }, validate=True)
+        resources = p.run()
+        self.assertEqual(len(resources), 1)
+
+        client = p.resource_manager.get_client(
+            vault_url=resources[0]['vault_id']['resource_id']['vault_url'])
+        key = client.get_key(name=resources[0]['vault_id']['resource_id']['name'])
+        self.assertEqual(
+            key.properties.expires_on.replace(tzinfo=None),
+            self._get_test_date() + datetime.timedelta(days=90)
+        )

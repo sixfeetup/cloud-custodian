@@ -232,7 +232,7 @@ class KeyVaultKeyUpdateAction(AzureBaseAction):
               resource: azure.keyvault-keys
               filters:
                 - type: value
-                  key: attributes.exp
+                  key: attributes.data.exp
                   value: absent
               actions:
                 - type: update
