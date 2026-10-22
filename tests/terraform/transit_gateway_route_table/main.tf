@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-1"
+  region = "us-east-2"
 }
 
 resource "aws_ec2_transit_gateway" "example" {
@@ -32,7 +32,7 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "test" {
 resource "aws_subnet" "test" {
   vpc_id            = aws_vpc.test.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+  availability_zone = "us-east-2a"
 
   tags = {
     Name = "c7n-test-subnet"
