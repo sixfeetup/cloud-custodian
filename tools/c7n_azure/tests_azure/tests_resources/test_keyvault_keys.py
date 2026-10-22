@@ -1,6 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import datetime
+from unittest.mock import MagicMock, patch
+
+from c7n.exceptions import PolicyValidationError
 
 from ..azure_common import BaseTest, arm_template
 
@@ -173,3 +176,62 @@ class KeyVaultKeyTest(BaseTest):
             key.properties.not_before,
             datetime.datetime.fromisoformat("2025-03-01 00:00:00+00:00")
         )
+
+    def _update_policy(self, **action):
+        return self.load_policy({
+            'name': 'test-key-vault-key-update-expires-in',
+            'resource': 'azure.keyvault-key',
+            'actions': [dict(type='update', **action)]
+        }, validate=True)
+
+    def _run_update(self, **action):
+        p = self.load_policy({
+            'name': 'test-key-vault-key-update-expires-in',
+            'resource': 'azure.keyvault-key',
+            'actions': [dict(type='update', **action)]
+        })
+        client = MagicMock()
+        resource = {
+            'id': 'https://v.vault.azure.net/keys/k/1',
+            'vault_id': {'resource_id': {'name': 'k'}}
+        }
+        with patch.object(p.resource_manager, 'get_client', return_value=client), \
+                patch('c7n_azure.resources.key_vault_keys.utils.utcnow',
+                      return_value=datetime.datetime(2026, 1, 1, 12, 0, 0)):
+            p.resource_manager.actions[0]._process_resource(resource)
+        return client.update_key_properties.call_args.kwargs
+
+    def test_update_expires_in_accepts_valid(self):
+        self.assertTrue(self._update_policy(expires_in={'days': 90}))
+
+    def test_update_expires_in_rejects_empty(self):
+        with self.assertRaisesRegex(PolicyValidationError, 'should be non-empty'):
+            self._update_policy(expires_in={})
+
+    def test_update_expires_in_rejects_zero(self):
+        with self.assertRaisesRegex(PolicyValidationError, 'must be greater than zero'):
+            self._update_policy(expires_in={'days': 0, 'hours': 0})
+
+    def test_update_expires_in_rejects_negative(self):
+        with self.assertRaisesRegex(PolicyValidationError, 'less than the minimum'):
+            self._update_policy(expires_in={'days': -1})
+
+    def test_update_expires_in_rejects_fractional(self):
+        with self.assertRaisesRegex(PolicyValidationError, "is not of type 'integer'"):
+            self._update_policy(expires_in={'days': 1.5})
+
+    def test_update_expires_in_rejects_with_expires_on(self):
+        with self.assertRaisesRegex(PolicyValidationError, 'mutually exclusive'):
+            self._update_policy(
+                expires_in={'days': 1}, expires_on='2030-01-01 00:00:00')
+
+    def test_update_expires_in_value(self):
+        kwargs = self._run_update(
+            expires_in={'days': 90, 'hours': 2, 'minutes': 30},
+            not_before='2030-01-01 00:00:00')
+        self.assertEqual(kwargs['expires_on'], datetime.datetime(2026, 4, 1, 14, 30, 0))
+        self.assertEqual(kwargs['not_before'], datetime.datetime(2030, 1, 1, 0, 0))
+
+    def test_update_expires_on_unchanged(self):
+        kwargs = self._run_update(expires_on='2030-02-02 00:00:00')
+        self.assertEqual(kwargs['expires_on'], datetime.datetime(2030, 2, 2))
