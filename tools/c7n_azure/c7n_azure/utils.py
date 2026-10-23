@@ -831,7 +831,8 @@ def type_to_jsonschema(input_type, sdk_models=None):
 def model_to_jsonschema(model, sdk_models):
     """
     Builds an object schema from an SDK model's constructor; parameters
-    without a default are required.
+    without a default are required. Unknown fields are rejected, since the
+    SDK drops them with only a log warning.
     """
     properties = {}
     required = []
@@ -842,7 +843,7 @@ def model_to_jsonschema(model, sdk_models):
         if param.default is param.empty:
             required.append(name)
 
-    schema = {"type": "object", "properties": properties}
+    schema = {"type": "object", "properties": properties, "additionalProperties": False}
     if required:
         schema["required"] = required
     return schema

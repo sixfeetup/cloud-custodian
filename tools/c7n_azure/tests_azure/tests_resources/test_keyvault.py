@@ -456,6 +456,9 @@ class KeyVaultUpdateActionTest(BaseTest):
         ('sku_missing_name', {'sku': {'family': 'A'}}),
         ('sku_current_false', {'sku': {'current': False}}),
         ('retention_days_fractional', {'soft_delete_retention_in_days': 7.5}),
+        ('unknown_property', {'public_netwrok_access': 'Disabled'}),
+        ('unknown_nested_property', {'network_acls': {
+            **UPDATE_NETWORK_ACLS, 'ip_rules': [{'value': '1.2.3.4', 'actoin': 'Allow'}]}}),
     ])
     def test_update_action_schema_invalid(self, _, configuration):
         with pytest.raises(PolicyValidationError):

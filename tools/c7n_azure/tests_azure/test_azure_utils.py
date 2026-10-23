@@ -421,11 +421,13 @@ def test_model_to_jsonschema_nested_models():
     schema = model_to_jsonschema(keyvault_models.NetworkRuleSet, keyvault_models)
 
     assert 'required' not in schema
+    assert schema['additionalProperties'] is False
     assert schema['properties']['ip_rules'] == {
         'type': 'array',
         'items': {
             'type': 'object',
             'properties': {'value': {'type': 'string'}},
+            'additionalProperties': False,
             'required': ['value'],
         },
     }
