@@ -122,6 +122,10 @@ class UpdateModelVersion(AzureBaseAction):
         current = self.client.model_versions.get(**arguments)
         properties = current.properties.serialize()
         updates = self.data['properties'].copy()
+
+        # The nested properties.properties dictionary holds custom string metadata,
+        # not model fields such as isArchived. Azure accepts new metadata keys but
+        # silently ignores changes to existing values, so reject those explicitly.
         if 'properties' in updates:
             existing = current.properties.properties or {}
             for key, value in updates['properties'].items():
@@ -129,7 +133,9 @@ class UpdateModelVersion(AzureBaseAction):
                     raise PolicyExecutionError(
                         f'Cannot change existing model version property: {key}',
                     )
+            # Preserve existing keys: Azure rejects attempts to remove them.
             updates['properties'] = {**existing, **updates['properties']}
+
         properties.update(updates)
         current.properties = models.ModelVersionProperties.deserialize(properties)
         self.client.model_versions.create_or_update(**arguments, body=current)
