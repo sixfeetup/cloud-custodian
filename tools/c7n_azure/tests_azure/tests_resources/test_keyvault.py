@@ -16,6 +16,7 @@ from parameterized import parameterized
 import pytest
 from requests import Response
 
+from c7n.exceptions import PolicyValidationError
 from c7n.utils import local_session
 
 
@@ -408,6 +409,20 @@ class KeyVaultFirewallBypassFilterTest(BaseTest):
         self.assertEqual(expected, f._query_bypass(resource))
 
 
+UPDATE_NETWORK_ACLS = {
+    'bypass': 'None',
+    'default_action': 'Allow',
+    'ip_rules': [{'value': '123.45.67.89'}],
+    'virtual_network_rules': [{'id': '/subnet', 'ignore_missing_vnet_service_endpoint': True}],
+}
+
+UPDATE_ACCESS_POLICY = {
+    'tenant_id': 'tenant',
+    'object_id': 'object',
+    'permissions': {'keys': ['get', 'list'], 'secrets': ['get']},
+}
+
+
 class KeyVaultUpdateActionTest(BaseTest):
 
     def _load_update_policy(self, configuration):
@@ -418,11 +433,33 @@ class KeyVaultUpdateActionTest(BaseTest):
                 'actions': [{'type': 'update', 'configuration': configuration}]
             }, validate=True)
 
-    def test_update_action_schema_tenant_and_sku_optional(self):
-        p = self._load_update_policy({'public_network_access': 'Disabled'})
-        assert p.resource_manager.actions[0].data['configuration'] == {
-            'public_network_access': 'Disabled'
-        }
+    @parameterized.expand([
+        ('public_network_access', {'public_network_access': 'Disabled'}),
+        ('keep_tenant_current_sku', {'tenant_id': 'keep', 'sku': {'current': True}}),
+        ('explicit_sku', {'sku': {'family': 'A', 'name': 'premium'}}),
+        ('network_acls', {'network_acls': UPDATE_NETWORK_ACLS}),
+        ('access_policies', {'access_policies': [UPDATE_ACCESS_POLICY]}),
+        ('retention_days', {'soft_delete_retention_in_days': 7}),
+    ])
+    def test_update_action_schema_valid(self, _, configuration):
+        p = self._load_update_policy(configuration)
+        assert p.resource_manager.actions[0].data['configuration'] == configuration
+
+    @parameterized.expand([
+        ('network_acls_missing_bypass', {'network_acls': {'default_action': 'Allow'}}),
+        ('ip_rule_missing_value', {'network_acls': {**UPDATE_NETWORK_ACLS, 'ip_rules': [{}]}}),
+        ('vnet_rule_missing_id',
+         {'network_acls': {**UPDATE_NETWORK_ACLS, 'virtual_network_rules': [{}]}}),
+        ('access_policy_missing_object_id',
+         {'access_policies': [{'tenant_id': 'tenant', 'permissions': {}}]}),
+        ('access_policy_not_a_list', {'access_policies': UPDATE_ACCESS_POLICY}),
+        ('sku_missing_name', {'sku': {'family': 'A'}}),
+        ('sku_current_false', {'sku': {'current': False}}),
+        ('retention_days_fractional', {'soft_delete_retention_in_days': 7.5}),
+    ])
+    def test_update_action_schema_invalid(self, _, configuration):
+        with pytest.raises(PolicyValidationError):
+            self._load_update_policy(configuration)
 
     def test_update_action_keep_tenant_and_current_sku(self):
         action = self._load_update_policy({

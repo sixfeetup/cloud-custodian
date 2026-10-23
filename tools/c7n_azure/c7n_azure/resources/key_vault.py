@@ -3,12 +3,9 @@
 
 import copy
 import logging
-import inspect
-import types
-from typing import Union, get_args, get_origin
 
 from azure.mgmt.keyvault import models
-from c7n_azure.utils import type_to_jsonschema
+from c7n_azure.utils import model_to_jsonschema
 
 from c7n.filters import Filter
 from c7n.utils import type_schema
@@ -372,49 +369,27 @@ class KeyVaultUpdateAction(AzureBaseAction):
 
     @staticmethod
     def generate_schema():
-        vault_properties = models.VaultPatchProperties
-        model_signature = inspect.signature(vault_properties)
+        configuration = model_to_jsonschema(models.VaultPatchProperties, models)
+        properties = configuration["properties"]
 
-        schema_dict = {}
-        required = []
-        # Optional[X] and X | None (python 3.10+)
-        union_types = (Union, getattr(types, "UnionType", Union))
-
-        for name, v in model_signature.parameters.items():
-
-            if name == "kwargs":
-                continue
-
-            schema_dict.setdefault(name, {})
-
-            if hasattr(v, "annotation"):
-                if get_origin(v.annotation) not in union_types:
-                    schema_dict[name] = type_to_jsonschema(v.annotation)
-                    continue
-
-                args = get_args(v.annotation)
-
-                if type(None) not in args:
-                    required.append(name)
-                else:
-                    args = list(args)
-                    args.remove(type(None))
-
-                if len(args) == 1:
-                    schema_dict[name]['type'] = args[0]
-
-                schema_dict[name] = type_to_jsonschema(args[0])
+        properties["sku"] = {
+            "anyOf": [
+                properties["sku"],
+                {
+                    "type": "object",
+                    "properties": {"current": {"enum": [True]}},
+                    "required": ["current"],
+                    "additionalProperties": False,
+                },
+            ]
+        }
+        # optional on NetworkRuleSet, but make_network_acl_rule_set needs them
+        properties["network_acls"]["required"] = ["bypass", "default_action"]
 
         return type_schema(
             "update",
             required=["configuration"],
-            **{
-                "configuration": {
-                    "type": "object",
-                    "properties": schema_dict,
-                    "required": required
-                }
-            }
+            configuration=configuration,
         )
 
     schema = generate_schema.__func__()  # python 3.9 compat
