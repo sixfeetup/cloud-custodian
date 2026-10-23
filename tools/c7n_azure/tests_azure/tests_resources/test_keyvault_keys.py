@@ -1,9 +1,17 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import datetime
+import textwrap
 from unittest.mock import MagicMock, patch
 
+import yaml
+
+from azure.keyvault.keys import KeyProperties
+from azure.keyvault.keys._generated.models import KeyAttributes
+
 from c7n.exceptions import PolicyValidationError
+from c7n_azure.query import _serialize
+from c7n_azure.resources.key_vault_keys import KeyVaultKeyUpdateAction
 
 from ..azure_common import BaseTest, arm_template
 
@@ -271,3 +279,23 @@ class KeyVaultKeyTest(BaseTest):
             key.properties.expires_on.replace(tzinfo=None),
             self._get_test_date() + datetime.timedelta(days=90)
         )
+
+    def test_update_docstring_filter_skips_keys_with_expiration(self):
+        # The last docstring example selects keys that have no expiration.
+        example = KeyVaultKeyUpdateAction.__doc__.split('.. code-block:: yaml')[-1]
+        filters = yaml.safe_load(textwrap.dedent(example))['policies'][0]['filters']
+        p = self.load_policy({
+            'name': 'test-key-vault-key-docstring-filter',
+            'resource': 'azure.keyvault-key',
+            'filters': filters
+        }, validate=True)
+
+        def key(name, **attributes):
+            return _serialize(KeyProperties(
+                key_id=f'https://v.vault.azure.net/keys/{name}/1',
+                attributes=KeyAttributes(enabled=True, **attributes)))
+
+        expiring = key('expiring', expires=datetime.datetime(
+            2030, 1, 1, tzinfo=datetime.timezone.utc))
+        matched = p.resource_manager.filter_resources([expiring, key('open')])
+        self.assertEqual([r['id'].split('/')[-2] for r in matched], ['open'])
