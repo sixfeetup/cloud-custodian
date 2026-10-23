@@ -6,6 +6,7 @@ import logging
 import inspect
 from typing import get_args, _UnionGenericAlias
 
+from azure.mgmt.keyvault import models
 from c7n_azure.utils import type_to_jsonschema
 
 from c7n.filters import Filter
@@ -343,12 +344,15 @@ class KeyVaultUpdateAction(AzureBaseAction):
     """
     Update a keyvault
 
+    Only the configured properties are sent, as a PATCH; the vault's other
+    settings are left unchanged.
+
     To keep the tenant id the same, set it to "keep"
     To keep the sku settings the same, set it to {"current": True}
 
-    For more information on Vault properties:
+    For more information on Vault patch properties:
 
-    https://learn.microsoft.com/en-us/python/api/azure-mgmt-keyvault/azure.mgmt.keyvault.v2023_07_01.models.vaultproperties?view=azure-python
+    https://learn.microsoft.com/en-us/python/api/azure-mgmt-keyvault/azure.mgmt.keyvault.models.vaultpatchproperties?view=azure-python
 
     :example:
 
@@ -362,21 +366,16 @@ class KeyVaultUpdateAction(AzureBaseAction):
               actions:
                 - type: update
                   configuration:
-                    tenant_id: keep
-                    sku:
-                      current: True
-                    public_network_access: disabled
+                    public_network_access: Disabled
     """
 
     @staticmethod
     def generate_schema():
-        from azure.mgmt.keyvault import KeyVaultManagementClient
-
-        vault_properties = KeyVaultManagementClient.models().VaultProperties
+        vault_properties = models.VaultPatchProperties
         model_signature = inspect.signature(vault_properties)
 
         schema_dict = {}
-        required = ["tenant_id", "sku"]
+        required = []
 
         for name, v in model_signature.parameters.items():
 
@@ -421,8 +420,8 @@ class KeyVaultUpdateAction(AzureBaseAction):
         self.client = self.manager.get_client()
 
     def make_access_policy_entry(self, acp):
-        permissions = self.client.models().Permissions(**acp["permissions"])
-        return self.client.models().AccessPolicyEntry(
+        permissions = models.Permissions(**acp["permissions"])
+        return models.AccessPolicyEntry(
             tenant_id=acp["tenant_id"],
             object_id=acp["object_id"],
             application_id=acp["application_id"],
@@ -431,16 +430,16 @@ class KeyVaultUpdateAction(AzureBaseAction):
 
     def make_network_acl_rule_set(self, acl):
         ip_rules = [
-            self.client.models().IPRule(**ip_rule)
+            models.IPRule(**ip_rule)
             for ip_rule in acl.get("ip_rules", [])
         ]
 
         virtual_network_rules = [
-            self.client.models().VirtualNetworkRule(**vn_rule)
+            models.VirtualNetworkRule(**vn_rule)
             for vn_rule in acl.get("virtual_network_rules", [])
         ]
 
-        return self.client.models().NetworkRuleSet(
+        return models.NetworkRuleSet(
             bypass=acl["bypass"],
             default_action=acl["default_action"],
             ip_rules=ip_rules,
@@ -450,11 +449,14 @@ class KeyVaultUpdateAction(AzureBaseAction):
     def _process_resource(self, resource):
         props = copy.deepcopy(self.data["configuration"])
 
-        if props['tenant_id'] == "keep":
+        if props.get("tenant_id") == "keep":
             props["tenant_id"] = resource["properties"]["tenantId"]
 
-        if props["sku"] == {"current": True}:
+        if props.get("sku") == {"current": True}:
             props["sku"] = resource["properties"]["sku"]
+
+        if props.get("sku"):
+            props["sku"] = models.Sku(**props["sku"])
 
         if props.get("access_policies"):
             props["access_policies"] = [
@@ -465,9 +467,11 @@ class KeyVaultUpdateAction(AzureBaseAction):
         if props.get("network_acls"):
             props["network_acls"] = self.make_network_acl_rule_set(props["network_acls"])
 
-        params = self.client.models().VaultCreateOrUpdateParameters(
-            location=resource["location"],
-            properties=self.client.models().VaultProperties(**props)
+        # VaultPatchProperties defaults every field to None, so only the
+        # configured properties are sent; VaultProperties would send its
+        # defaults (e.g. enable_rbac_authorization=False) and overwrite them.
+        params = models.VaultPatchParameters(
+            properties=models.VaultPatchProperties(**props)
         )
         self.client.vaults.update(
             resource_group_name=resource["resourceGroup"],
