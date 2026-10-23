@@ -283,6 +283,10 @@ class KeyVaultKeyUpdateAction(AzureBaseAction):
                 "expires_in and expires_on are mutually exclusive")
         if sum(expires_in.values()) == 0:
             raise PolicyValidationError("expires_in must be greater than zero")
+        try:
+            utils.utcnow() + datetime.timedelta(**expires_in)
+        except OverflowError:
+            raise PolicyValidationError("expires_in is too large")
         return self
 
     def _process_resource(self, resource):

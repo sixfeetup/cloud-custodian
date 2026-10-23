@@ -220,6 +220,11 @@ class KeyVaultKeyTest(BaseTest):
         with self.assertRaisesRegex(PolicyValidationError, "is not of type 'integer'"):
             self._update_policy(expires_in={'days': 1.5})
 
+    def test_update_expires_in_rejects_overflow(self):
+        for expires_in in ({'days': 3000000}, {'days': 10 ** 10}):
+            with self.assertRaisesRegex(PolicyValidationError, 'too large'):
+                self._update_policy(expires_in=expires_in)
+
     def test_update_expires_in_rejects_with_expires_on(self):
         with self.assertRaisesRegex(PolicyValidationError, 'mutually exclusive'):
             self._update_policy(
