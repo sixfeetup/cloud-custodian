@@ -70,8 +70,8 @@ class UpdateModelVersion(AzureBaseAction):
     """Update a model version's description, tags, stage, or archive state.
 
     Tags are replaced. Custom ``properties`` are added to existing properties;
-    changing an existing value raises an error. Archiving also sets ``stage``
-    to ``Archived``.
+    changing an existing value raises an error. When ``isArchived`` is set to
+    ``true``, Azure also sets ``stage`` to ``Archived``.
 
     :example:
 
