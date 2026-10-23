@@ -4,7 +4,8 @@
 import copy
 import logging
 import inspect
-from typing import get_args, _UnionGenericAlias
+import types
+from typing import Union, get_args, get_origin
 
 from azure.mgmt.keyvault import models
 from c7n_azure.utils import type_to_jsonschema
@@ -376,6 +377,8 @@ class KeyVaultUpdateAction(AzureBaseAction):
 
         schema_dict = {}
         required = []
+        # Optional[X] and X | None (python 3.10+)
+        union_types = (Union, getattr(types, "UnionType", Union))
 
         for name, v in model_signature.parameters.items():
 
@@ -385,7 +388,7 @@ class KeyVaultUpdateAction(AzureBaseAction):
             schema_dict.setdefault(name, {})
 
             if hasattr(v, "annotation"):
-                if not isinstance(v.annotation, _UnionGenericAlias):
+                if get_origin(v.annotation) not in union_types:
                     schema_dict[name] = type_to_jsonschema(v.annotation)
                     continue
 
@@ -424,7 +427,7 @@ class KeyVaultUpdateAction(AzureBaseAction):
         return models.AccessPolicyEntry(
             tenant_id=acp["tenant_id"],
             object_id=acp["object_id"],
-            application_id=acp["application_id"],
+            application_id=acp.get("application_id"),
             permissions=permissions
         )
 

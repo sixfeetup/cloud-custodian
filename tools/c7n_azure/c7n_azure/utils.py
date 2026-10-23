@@ -14,7 +14,7 @@ import uuid
 from urllib.parse import urlsplit
 from concurrent.futures import as_completed
 from functools import lru_cache
-from typing import Union, ForwardRef, get_args
+from typing import Union, ForwardRef, get_args, get_origin
 
 from azure.core.pipeline.policies import CustomHookPolicy, RetryMode, RetryPolicy
 from azure.graphrbac.models import DirectoryObject, GetObjectsParameters
@@ -782,7 +782,7 @@ def type_to_jsonschema(input_type):
     if input_type is str or input_type == datetime.datetime:
         return {"type": "string"}
     elif input_type is int:
-        return {"type": "number"}
+        return {"type": "integer"}
     elif input_type is bool:
         return {"type": "boolean"}
     elif isinstance(input_type, ForwardRef):
@@ -793,12 +793,13 @@ def type_to_jsonschema(input_type):
                 type_to_jsonschema(x) for x in get_args(input_type)
             ]
         }
-    elif hasattr(input_type, "_name") and input_type._name == "List":
+    # get_origin covers both typing.List[X] and list[X]
+    elif get_origin(input_type) is list:
         return {
             "type": "array",
             "items": type_to_jsonschema(get_args(input_type)[0]),
         }
-    elif hasattr(input_type, "_name") and input_type._name == "Dict":
+    elif get_origin(input_type) is dict:
         return {
             "anyOf": [
                 type_to_jsonschema(x) for x in get_args(input_type)
