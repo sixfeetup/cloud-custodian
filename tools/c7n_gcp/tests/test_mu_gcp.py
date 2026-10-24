@@ -6,7 +6,9 @@ import time
 import os
 import shutil
 import sys
+import types
 
+import pytest
 
 from c7n.exceptions import PolicyValidationError
 from c7n.testing import functional
@@ -20,6 +22,94 @@ HELLO_WORLD = """\
 def handler(event, context):
     print("gcf handler invoke %s" % event)
 """
+
+
+AUDIT_SELECTION_CASES = [
+    ({}, (False, True)),
+    ({'first': True}, (True, False)),
+    ({'first': False}, (False, True)),
+    ({'last': True}, (False, True)),
+    ({'last': False}, (False, False)),
+    ({'first': True, 'last': False}, (True, False)),
+    ({'first': False, 'last': True}, (False, True)),
+    ({'first': True, 'last': True}, (True, True)),
+    ({'first': False, 'last': False}, (False, False)),
+]
+
+
+@pytest.mark.parametrize('options,expected', AUDIT_SELECTION_CASES)
+def test_audit_record_selection_defaults(options: dict, expected: tuple) -> None:
+    original = options.copy()
+    assert mu.get_audit_record_selection(options) == expected
+    assert options == original
+
+
+@pytest.mark.parametrize('options,expected', AUDIT_SELECTION_CASES)
+def test_audit_record_selection_validation(test, options: dict, expected: tuple) -> None:
+    data = {
+        'name': 'audit-selection',
+        'resource': 'gcp.instance',
+        'mode': {'type': 'gcp-audit', 'methods': ['method.a'], **options},
+    }
+
+    if any(expected):
+        p = test.load_policy(data)
+        assert p.data == data
+    else:
+        with pytest.raises(PolicyValidationError, match='audit-selection.*first.*last'):
+            test.load_policy(data)
+
+
+@pytest.mark.parametrize('field', ['first', 'last'])
+@pytest.mark.parametrize('value', ['true', 0, 1, None])
+def test_audit_record_selection_schema(test, field: str, value: object) -> None:
+    with pytest.raises(PolicyValidationError):
+        test.load_policy({
+            'name': 'audit-selection',
+            'resource': 'gcp.instance',
+            'mode': {'type': 'gcp-audit', 'methods': ['method.a'], field: value},
+        }, validate=True)
+
+
+def test_audit_retrieval_validation_unchanged(test, monkeypatch) -> None:
+    p = test.load_policy({
+        'name': 'audit-selection',
+        'resource': 'gcp.instance',
+        'mode': {'type': 'gcp-audit', 'methods': ['method.a']},
+    })
+    monkeypatch.setattr(p.resource_manager.resource_type, 'get', None)
+
+    with pytest.raises(PolicyValidationError, match='does not implement retrieval method'):
+        p.get_execution_mode().validate()
+
+
+@pytest.mark.parametrize('options,phase_filter', [
+    ({}, 'operation.last = true'),
+    ({'first': False}, 'operation.last = true'),
+    ({'last': True}, 'operation.last = true'),
+    ({'first': False, 'last': True}, 'operation.last = true'),
+    ({'first': True}, 'operation.first = true'),
+    ({'first': True, 'last': False}, 'operation.first = true'),
+    ({'first': True, 'last': True}, 'operation.first = true OR operation.last = true'),
+])
+def test_audit_record_selection_filter(options: dict, phase_filter: str) -> None:
+    data = {'methods': ['method.a', 'method.b'], **options}
+    original = data.copy()
+    session = types.SimpleNamespace(get_default_project=lambda: 'selection-project')
+    func = types.SimpleNamespace(name='selection')
+    subscription = mu.ApiSubscriber(session, data).get_subscription(func)
+    assert subscription == {
+        'topic': 'custodian-auto-audit-selection',
+        'name': 'custodian-auto-audit-selection',
+        'log': 'projects/selection-project/logs/cloudaudit.googleapis.com%2Factivity',
+        'filter': (
+            'logName = "projects/selection-project/logs/cloudaudit.googleapis.com%2Factivity"'
+            ' AND protoPayload.methodName = ("method.a" OR "method.b")'
+            ' AND ((NOT operation.first:* AND NOT operation.last:*)'
+            f' OR {phase_filter})'
+        ),
+    }
+    assert data == original
 
 
 class FunctionTest(BaseTest):
