@@ -1,11 +1,11 @@
 {
-  "insertId": "46sa11d7qnw",
+  "insertId": "-omsyowd708g",
   "labels": {
-    "compute.googleapis.com/root_trigger_id": "93dbbc6e-f298-4680-805d-05ade07b533f"
+    "compute.googleapis.com/root_trigger_id": "7ca98a2e-4526-4295-8765-cc27d16f2804"
   },
   "logName": "projects/cloud-custodian/logs/cloudaudit.googleapis.com%2Factivity",
   "operation": {
-    "id": "operation-1792855893433-65e97caa95ca1-f37bf8d7-ef3b5669",
+    "id": "operation-1792857500547-65e982a73fafb-03b2f8f3-61aa8b25",
     "last": true,
     "producer": "compute.googleapis.com"
   },
@@ -29,19 +29,19 @@
       "destinationAttributes": {},
       "requestAttributes": {}
     },
-    "resourceName": "projects/cloud-custodian/zones/us-central1-a/instances/c7n-selection-b02616f3",
+    "resourceName": "projects/cloud-custodian/zones/us-central1-a/instances/c7n-selection-380a8d93",
     "serviceName": "compute.googleapis.com",
     "status": {}
   },
-  "receiveTimestamp": "2026-10-24T15:31:47.109624321Z",
+  "receiveTimestamp": "2026-10-24T15:58:35.852816883Z",
   "resource": {
     "labels": {
-      "instance_id": "4176242312632955322",
+      "instance_id": "5596281590158289779",
       "project_id": "cloud-custodian",
       "zone": "us-central1-a"
     },
     "type": "gce_instance"
   },
   "severity": "NOTICE",
-  "timestamp": "2026-10-24T15:31:46.572120Z"
+  "timestamp": "2026-10-24T15:58:35.367697Z"
 }

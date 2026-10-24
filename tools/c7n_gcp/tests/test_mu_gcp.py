@@ -6,6 +6,7 @@ import functools
 import json
 import time
 import os
+import pathlib
 import re
 import shutil
 import sys
@@ -205,6 +206,13 @@ def test_audit_record_selection_entries(
     factory = test.replay_flight_data('audit-record-selection-entries')
 
     if test.recording:
+        # Replace this test's event pair so queries use the newly created operation.
+        for phase in ('first', 'last'):
+            pathlib.Path(
+                gcp_common.EVENT_DIR,
+                f'audit-record-selection-create-{phase}.json',
+            ).unlink(missing_ok=True)
+
         setup_factory = functools.partial(client.Session, project_id=test.project_id)
         gcp_common.audit_event_recorder(
             setup_factory,

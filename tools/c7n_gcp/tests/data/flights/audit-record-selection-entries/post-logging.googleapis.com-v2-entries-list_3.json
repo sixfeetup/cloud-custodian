@@ -2,16 +2,16 @@
   "headers": {
     "content-type": "application/json; charset=UTF-8",
     "vary": "Origin, X-Origin, Referer",
-    "date": "Sat, 24 Oct 2026 15:32:07 GMT",
+    "date": "Sat, 24 Oct 2026 15:58:53 GMT",
     "server": "ESF",
     "x-xss-protection": "0",
     "x-frame-options": "SAMEORIGIN",
     "x-content-type-options": "nosniff",
-    "server-timing": "gfet4t7; dur=234",
+    "server-timing": "gfet4t7; dur=239",
     "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000",
     "transfer-encoding": "chunked",
     "status": "200",
-    "content-length": "1894",
+    "content-length": "1895",
     "-content-encoding": "gzip"
   },
   "body": {
@@ -35,33 +35,33 @@
           },
           "serviceName": "compute.googleapis.com",
           "methodName": "v1.compute.instances.insert",
-          "resourceName": "projects/cloud-custodian/zones/us-central1-a/instances/c7n-selection-b02616f3",
+          "resourceName": "projects/cloud-custodian/zones/us-central1-a/instances/c7n-selection-380a8d93",
           "request": {
             "@type": "type.googleapis.com/compute.instances.insert"
           },
           "apiVersionIdentifier": "v1"
         },
-        "insertId": "46sa11d7qnw",
+        "insertId": "-omsyowd708g",
         "resource": {
           "type": "gce_instance",
           "labels": {
-            "instance_id": "4176242312632955322",
             "zone": "us-central1-a",
-            "project_id": "cloud-custodian"
+            "project_id": "cloud-custodian",
+            "instance_id": "5596281590158289779"
           }
         },
-        "timestamp": "2026-10-24T15:31:46.572120Z",
+        "timestamp": "2026-10-24T15:58:35.367697Z",
         "severity": "NOTICE",
         "labels": {
-          "compute.googleapis.com/root_trigger_id": "93dbbc6e-f298-4680-805d-05ade07b533f"
+          "compute.googleapis.com/root_trigger_id": "7ca98a2e-4526-4295-8765-cc27d16f2804"
         },
         "logName": "projects/cloud-custodian/logs/cloudaudit.googleapis.com%2Factivity",
         "operation": {
-          "id": "operation-1792855893433-65e97caa95ca1-f37bf8d7-ef3b5669",
+          "id": "operation-1792857500547-65e982a73fafb-03b2f8f3-61aa8b25",
           "producer": "compute.googleapis.com",
           "last": true
         },
-        "receiveTimestamp": "2026-10-24T15:31:47.109624321Z"
+        "receiveTimestamp": "2026-10-24T15:58:35.852816883Z"
       }
     ]
   }
