@@ -1,20 +1,26 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
+import functools
 import json
 import time
 import os
+import re
 import shutil
 import sys
 import types
 
 import pytest
+from pytest_terraform import terraform
 
 from c7n.exceptions import PolicyValidationError
 from c7n.testing import functional
 
-from c7n_gcp import handler, mu, policy
+from c7n_gcp import client, handler, mu, policy
 
+import gcp_common
+import recorder
 from gcp_common import BaseTest, event_data
 
 
@@ -110,6 +116,142 @@ def test_audit_record_selection_filter(options: dict, phase_filter: str) -> None
         ),
     }
     assert data == original
+
+
+@pytest.fixture
+def sanitized_audit_flights(test, monkeypatch) -> None:
+    sanitize_project = recorder.sanitize_project_name
+
+    def sanitize(value: str) -> str:
+        value = sanitize_project(value).replace(test.project_id, recorder.PROJECT_ID)
+
+        if '"entries":' in value:
+            value = gcp_common.EMAIL_RE.sub(gcp_common.PLACEHOLDER_EMAIL, value)
+            value = re.sub(
+                r'("callerIp":\s*)"[^"]*"',
+                rf'\1"{gcp_common.PLACEHOLDER_IP}"',
+                value,
+            )
+
+        return value
+
+    monkeypatch.setattr(recorder, 'sanitize_project_name', sanitize)
+
+
+def test_audit_record_selection_sanitization(test, sanitized_audit_flights) -> None:
+    # Sanitization must not collapse the distinct IAM identities used in sink setup.
+    source = json.dumps({
+        'entries': [{'principalEmail': 'developer@company.example', 'callerIp': '1.2.3.4'}],
+        'project_id': test.project_id,
+    })
+    result = json.loads(recorder.sanitize_project_name(source))
+    assert result['project_id'] == recorder.PROJECT_ID
+    assert result['entries'] == [{
+        'principalEmail': 'user@example.com',
+        'callerIp': '198.51.100.1',
+    }]
+    iam = json.dumps({'members': ['serviceAccount:logging@system.gserviceaccount.com']})
+    assert recorder.sanitize_project_name(iam) == iam
+
+
+@terraform('gcp_audit_record_selection', scope='session')
+def test_audit_record_selection_sink(
+        test, gcp_audit_record_selection, monkeypatch, sanitized_audit_flights,
+) -> None:
+    state = gcp_audit_record_selection
+    topic = state['google_pubsub_topic.audit.name']
+    func = types.SimpleNamespace(name=state['google_compute_instance.default.name'])
+    factory = test.replay_flight_data('audit-record-selection-sink')
+    session = factory()
+    sink_client = session.client('logging', 'v2', 'projects.sinks')
+    commands = []
+    execute = type(sink_client).execute_command
+
+    def capture(service, method: str, arguments: dict):
+        commands.append((method, copy.deepcopy(arguments)))
+        return execute(service, method, arguments)
+
+    monkeypatch.setattr(type(sink_client), 'execute_command', capture)
+    methods = ['v1.compute.instances.insert']
+    subscriber = mu.ApiSubscriber(session, {'methods': methods})
+    test.addCleanup(subscriber.remove, func)
+
+    for selection in ({}, {'first': True}, {'first': True, 'last': True}):
+        subscriber = mu.ApiSubscriber(session, {'methods': methods, **selection})
+        subscription = subscriber.get_subscription(func)
+        subscriber.add(func)
+        sink = sink_client.execute_command('get', {
+            'sinkName': f'projects/{test.project_id}/sinks/{subscription["name"]}',
+        })
+        assert sink['filter'] == subscription['filter']
+        assert sink['destination'] == (
+            f'pubsub.googleapis.com/projects/{test.project_id}/topics/{topic}'
+        )
+
+    assert len([args for method, args in commands if method == 'create']) == 1
+    updates = [args for method, args in commands if method == 'update']
+    assert len(updates) == 2
+    assert all(args['updateMask'] == 'filter' for args in updates)
+    subscriber.add(func)
+    assert len([args for method, args in commands if method == 'update']) == 2
+
+
+@terraform('gcp_audit_record_selection', scope='session')
+def test_audit_record_selection_entries(
+        test, gcp_audit_record_selection, sanitized_audit_flights,
+) -> None:
+    name = gcp_audit_record_selection['google_compute_instance.default.id']
+    method = 'v1.compute.instances.insert'
+    factory = test.replay_flight_data('audit-record-selection-entries')
+
+    if test.recording:
+        setup_factory = functools.partial(client.Session, project_id=test.project_id)
+        gcp_common.audit_event_recorder(
+            setup_factory,
+            'audit-record-selection-create.json',
+            method=method,
+            resource_name=name,
+            start_time_skew_seconds=900,
+        ).record()
+        test.cleanUp()
+
+    first = event_data('audit-record-selection-create-first.json')
+    last = event_data('audit-record-selection-create-last.json')
+    assert first['operation']['id'] == last['operation']['id']
+    assert first['operation']['first'] and last['operation']['last']
+    assert first['insertId'] != last['insertId']
+    session = factory()
+    entries_client = session.client('logging', 'v2', 'entries')
+    func = types.SimpleNamespace(name='selection')
+
+    # Query the exact sink expressions: Google, not a Python evaluator, selects records.
+    for selection, expected in (
+        ({}, {last['insertId']}),
+        ({'first': True}, {first['insertId']}),
+        ({'first': False, 'last': True}, {last['insertId']}),
+        ({'first': True, 'last': True}, {first['insertId'], last['insertId']}),
+    ):
+        subscription = mu.ApiSubscriber(
+            session,
+            {'methods': [method], **selection},
+        ).get_subscription(func)
+        query_filter = (
+            f'{subscription["filter"]}'
+            f' AND protoPayload.resourceName = {json.dumps(name)}'
+            f' AND operation.id = {json.dumps(first["operation"]["id"])}'
+            f' AND timestamp >= {json.dumps(first["timestamp"])}'
+        )
+        entries = []
+
+        for page in entries_client.execute_paged_query('list', {'body': {
+            'resourceNames': [f'projects/{test.project_id}'],
+            'filter': query_filter,
+            'orderBy': 'timestamp asc',
+        }}):
+            entries.extend(page.get('entries', []))
+
+        assert {e['insertId'] for e in entries} == expected
+        assert len(entries) == len(expected)
 
 
 class FunctionTest(BaseTest):

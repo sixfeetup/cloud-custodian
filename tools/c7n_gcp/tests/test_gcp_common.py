@@ -4,7 +4,29 @@
 import json
 
 import gcp_common
+import recorder
 from gcp_common import audit_event_recorder
+
+
+def test_sanitize_project_name_replaces_unqualified_references() -> None:
+    # Terraform state also carries project IDs in attributes and service-account emails.
+    value = json.dumps({
+        'id': 'projects/private-project/topics/random-topic',
+        'project': 'private-project',
+        'member': 'serviceAccount:publisher@private-project.iam.gserviceaccount.com',
+    })
+    assert json.loads(recorder.sanitize_project_name(value)) == {
+        'id': 'projects/cloud-custodian/topics/random-topic',
+        'project': 'cloud-custodian',
+        'member': 'serviceAccount:publisher@cloud-custodian.iam.gserviceaccount.com',
+    }
+
+
+def test_sanitize_project_name_preserves_resource_names() -> None:
+    value = 'projects/custodian/locations/global/keyRings/cloud-custodian-test'
+    assert recorder.sanitize_project_name(value) == (
+        'projects/cloud-custodian/locations/global/keyRings/cloud-custodian-test'
+    )
 
 
 class FakeLoggingClient:
