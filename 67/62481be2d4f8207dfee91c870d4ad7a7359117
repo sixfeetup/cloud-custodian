@@ -1,0 +1,15 @@
+tools/c7n_gcp/tests/test_artifactregistry.py
+  h_07d49deca46b44 76-81
+  h_07d49deca46b44 70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6762481be2d4f8207dfee91c870d4ad7a7359117",
+  "prompts": {},
+  "humans": {
+    "h_07d49deca46b44": {
+      "author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
