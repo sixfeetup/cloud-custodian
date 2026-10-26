@@ -1,0 +1,19 @@
+tools/c7n_azure/c7n_azure/resources/key_vault.py
+  s_3571787935d581::t_aee5c2d97a6446 427
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "116ed18a076fdc4dd4a7a6d6915ea068bd5bfa34",
+  "prompts": {},
+  "sessions": {
+    "s_3571787935d581": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "00d8685f-9a00-4754-9b02-abcb7200cd6a",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
