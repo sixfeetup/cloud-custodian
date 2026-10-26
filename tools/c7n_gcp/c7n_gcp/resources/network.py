@@ -98,37 +98,97 @@ class SubnetAction(MethodAction):
 
 @Subnet.action_registry.register('set-flow-log')
 class SetFlowLog(SubnetAction):
-    """Enable vpc flow logs on a subnet.
+    """Enable or configure VPC flow logs on a subnet.
 
-    :example: Enable flow logs on all subnets
+    The ``state`` parameter controls whether flow logging is enabled or disabled.
+    Additional ``logConfig`` parameters map directly to the GCP subnetworks API:
+    https://cloud.google.com/compute/docs/reference/rest/v1/subnetworks/patch
 
-    .. yaml:
+    :example: Enable flow logs on all subnets that have them disabled
 
-     policies:
-       - name: flow-active
-         resource: gcp.subnet
-         filters:
-          - enableFlowLogs: empty
-         actions:
-          - set-flow-log
+    .. code-block:: yaml
+
+        policies:
+          - name: flow-active
+            resource: gcp.subnet
+            filters:
+              - enableFlowLogs: empty
+            actions:
+              - set-flow-log
+
+    :example: Enable flow logs with custom logConfig parameters
+
+    .. code-block:: yaml
+
+        policies:
+          - name: flow-log-configure
+            resource: gcp.subnet
+            filters:
+              - enableFlowLogs: empty
+            actions:
+              - type: set-flow-log
+                state: true
+                aggregationInterval: INTERVAL_5_SEC
+                flowSampling: 0.5
+                metadata: INCLUDE_ALL_METADATA
+                filterExpr: "true"
+
+    :example: Enable flow logs with custom metadata fields
+
+    .. code-block:: yaml
+
+        policies:
+          - name: flow-log-custom-metadata
+            resource: gcp.subnet
+            filters:
+              - enableFlowLogs: empty
+            actions:
+              - type: set-flow-log
+                state: true
+                metadata: CUSTOM_METADATA
+                metadataFields:
+                  - src_instance
+                  - dest_instance
+                  - src_vpc
 
     """
 
     schema = type_schema(
         'set-flow-log',
-        state={'type': 'boolean', 'default': True})
+        state={'type': 'boolean', 'default': True},
+        aggregationInterval={
+            'type': 'string',
+            'enum': [
+                'INTERVAL_5_SEC', 'INTERVAL_30_SEC', 'INTERVAL_1_MIN',
+                'INTERVAL_5_MIN', 'INTERVAL_10_MIN', 'INTERVAL_15_MIN',
+            ],
+        },
+        flowSampling={'type': 'number', 'minimum': 0.0, 'maximum': 1.0},
+        metadata={
+            'type': 'string',
+            'enum': ['EXCLUDE_ALL_METADATA', 'INCLUDE_ALL_METADATA', 'CUSTOM_METADATA'],
+        },
+        metadataFields={'type': 'array', 'items': {'type': 'string'}},
+        filterExpr={'type': 'string'},
+    )
     method_spec = {'op': 'patch'}
     method_perm = 'update'
 
     def get_resource_params(self, m, r):
         params = super(SetFlowLog, self).get_resource_params(m, r)
+        log_config = {'enable': self.data.get('state', True)}
+        for field in ('aggregationInterval', 'flowSampling', 'metadata',
+                      'metadataFields', 'filterExpr'):
+            if field in self.data:
+                log_config[field] = self.data[field]
         return {
             'project': params['project'],
             'region': params['region'],
             'subnetwork': params['subnetwork'],
             'body': {
                 'fingerprint': r['fingerprint'],
-                'enableFlowLogs': self.data.get('state', True)}
+                'logConfig': log_config,
+            }
         }
 
 
@@ -339,16 +399,41 @@ class Interconnect(QueryResourceManager):
         component = 'interconnects'
         enum_spec = ('list', 'items[]', None)
         name = id = 'name'
+        labels = True
+        labels_op = 'setLabels'
         default_report_fields = [
             "name", "description", "creationTimestamp", "operationalStatus",
             "linkType", "location"]
         asset_type = "compute.googleapis.com/Interconnect"
 
         @staticmethod
-        def get(client, resource_info):
+        def parse_params(resc_name):
+            """Takes resourceName (from a log) or selfLink (from a resource) and parses from it the
+            parameters needed to make a request (project and interconnect)"""
+            exp = r".*/projects/(.*)/global/interconnects/(.*)"
+            return re.match(exp, resc_name).groups()
+
+        @classmethod
+        def get(cls, client, resource_info):
+            project, interconnect = cls.parse_params(resource_info['resourceName'])
             return client.execute_command(
-                'get', {'project': resource_info['project_id'],
-                        'interconnect': resource_info['resourceName'].rsplit('/', 1)[-1]})
+                'get', {'project': project,
+                        'interconnect': interconnect})
+
+        @classmethod
+        def get_label_params(cls, resource, all_labels):
+            project, interconnect = cls.parse_params(resource['selfLink'])
+            return {'project': project, 'resource': interconnect,
+                    'body': {
+                        'labels': all_labels,
+                        'labelFingerprint': resource['labelFingerprint']
+                    }}
+
+        @classmethod
+        def refresh(cls, client, resource):
+            """This method is used to refresh labelFingerprint when a label action fails because the
+            fingerprint was stale."""
+            return cls.get(client, {'resourceName': resource['selfLink']})
 
 
 @resources.register('interconnect-attachment')
@@ -365,14 +450,40 @@ class InterconnectAttachment(QueryResourceManager):
             "name", "description", "creationTimestamp", "interconnect",
             "router", "region", "operationalStatus"]
         asset_type = "compute.googleapis.com/InterconnectAttachment"
+        labels = True
+        labels_op = 'setLabels'
 
         @staticmethod
-        def get(client, resource_info):
-            project, region, name = re.match(
-                'projects/(.*?)/regions/(.*?)/interconnectAttachments/(.*?)',
-                resource_info['resourceName']).groups()
+        def parse_params(resc_name):
+            """Takes resourceName (from a log) or selfLink (from a resource) and parses from it the
+            parameters needed to make a request (project, region, and name)"""
+            exp = r".*projects\/(.*)\/regions\/(.*)\/interconnectAttachments\/(.*)"
+            return re.match(exp, resc_name).groups()
+
+        @classmethod
+        def get(cls, client, resource_info):
+            project, region, name = cls.parse_params(resource_info['resourceName'])
 
             return client.execute_command(
                 'get', {'project': project,
                         'interconnectAttachment': name,
                         'region': region})
+
+        @classmethod
+        def get_label_params(cls, resource, all_labels):
+            project, region, name = cls.parse_params(resource['selfLink'])
+            return {
+                'project': project,
+                'region': region,
+                'resource': name,
+                'body': {
+                    'labels': all_labels,
+                    'labelFingerprint': resource['labelFingerprint']
+                }
+            }
+
+        @classmethod
+        def refresh(cls, client, resource):
+            """This method is used to refresh labelFingerprint when a label action fails because the
+            fingerprint was stale."""
+            return cls.get(client, {'resourceName': resource['selfLink']})

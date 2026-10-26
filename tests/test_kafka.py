@@ -252,6 +252,44 @@ class KafkaTest(BaseTest):
             resources[0]['CrossAccountViolations'][0]['Resource'],
             'arn:aws:kafka:us-east-1:644160558196:cluster/demo-cluster-1/b12690b6-7337-464f-b334-628d5575a4b0-21')
 
+    def test_kafka_cross_account_filter_policy_not_found(self):
+        """Test that get_resource_policy returns None when policy is not found."""
+        import unittest.mock as mock
+
+        session_factory = self.replay_flight_data('test_kafka_cluster_cross_account_filter')
+        p = self.load_policy(
+            {
+                'name': 'kafka-cross-account-filter',
+                'resource': 'kafka',
+                'filters': [
+                    {
+                        'type': 'cross-account'
+                    }
+                ]
+            },
+            session_factory=session_factory,
+            config={'region': 'us-east-1'}
+        )
+
+        # Get the filter instance
+        f = p.resource_manager.filters[0]
+
+        # Create a test resource without policy annotation
+        test_resource = {
+            'ClusterArn': 'arn:aws:kafka:us-east-1:123456789012:cluster/test-cluster',
+            'ClusterType': 'PROVISIONED'
+        }
+
+        # Mock the retry method to return None (simulating ResourceNotFoundException)
+        with mock.patch.object(f.manager, 'retry', return_value=None):
+            policy = f.get_resource_policy(test_resource)
+
+        # Verify that policy is None and no UnboundLocalError is raised
+        self.assertIsNone(policy)
+        # Verify that the policy annotation is set to None when policy is not found
+        self.assertIn('c7n:Policy', test_resource)
+        self.assertIsNone(test_resource['c7n:Policy'])
+
 
 class TestKafkaClusterConfiguration(BaseTest):
 
@@ -280,3 +318,45 @@ class TestKafkaClusterConfiguration(BaseTest):
                             "configuration/foo-config"
                             "72932df0-5080-40d1-b801-49fa8580952b-7"
                             in cluster_configurations.get('Configurations'))
+
+
+class TestKafkaBroker(BaseTest):
+    """Tests for kafka-broker resource using recorded placebo fixtures."""
+
+    def test_kafka_broker_query(self):
+        """Test basic broker enumeration from provisioned cluster."""
+        factory = self.replay_flight_data('test_kafka_broker_query')
+
+        p = self.load_policy({
+            'name': 'kafka-brokers',
+            'resource': 'aws.kafka-broker',
+        }, session_factory=factory)
+
+        resources = p.run()
+        self.assertGreaterEqual(len(resources), 2)
+
+        for r in resources:
+            self.assertIn('BrokerId', r)
+            self.assertIn('c7n:parent-id', r)
+            self.assertIn('ClusterName', r)
+            self.assertIn('ClusterArn', r)
+
+    def test_kafka_broker_metrics(self):
+        """Test metrics filter on kafka brokers."""
+        factory = self.replay_flight_data('test_kafka_broker_metrics')
+
+        p = self.load_policy({
+            'name': 'underutilized-kafka-brokers',
+            'resource': 'aws.kafka-broker',
+            'filters': [
+                {'type': 'metrics',
+                 'name': 'CpuUser',
+                 'days': 14,
+                 'value': 10,
+                 'op': 'less-than'}
+            ]
+        }, session_factory=factory)
+
+        resources = p.run()
+        self.assertEqual(len(resources), 2)
+        self.assertIn('c7n.metrics', resources[0])

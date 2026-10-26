@@ -886,6 +886,19 @@ class ConfigSG(query.ConfigSource):
         return r
 
 
+class DescribeSecurityGroups(query.DescribeSource):
+
+    def resources(self, query):
+        # Without MaxResults, DescribeSecurityGroups returns every group in the
+        # region in one response, which does not scale to large accounts.
+        # Paging here rather than in the manager keeps the cache key unchanged
+        # and leaves by-id lookups alone since EC2 rejects MaxResults alongside
+        # GroupIds.
+        query = dict(query or {})
+        query.setdefault('MaxResults', 1000)
+        return super().resources(query)
+
+
 @resources.register('security-group')
 class SecurityGroup(query.QueryResourceManager):
 
@@ -902,7 +915,7 @@ class SecurityGroup(query.QueryResourceManager):
 
     source_mapping = {
         'config': ConfigSG,
-        'describe': query.DescribeSource
+        'describe': DescribeSecurityGroups
     }
 
 
@@ -2820,6 +2833,19 @@ class VpcEndpoint(query.QueryResourceManager):
         cfn_type = config_type = "AWS::EC2::VPCEndpoint"
 
 
+@VpcEndpoint.action_registry.register('delete')
+class DeleteVpcEndpoint(BaseAction):
+
+    schema = type_schema('delete')
+    permissions = ('ec2:DeleteVpcEndpoints',)
+
+    def process(self, resources):
+        client = local_session(self.manager.session_factory).client('ec2')
+        for resource_set in chunks(resources, 25):
+            client.delete_vpc_endpoints(
+                VpcEndpointIds=[r['VpcEndpointId'] for r in resource_set])
+
+
 @VpcEndpoint.filter_registry.register('metrics')
 class VpcEndpointMetricsFilter(MetricsFilter):
 
@@ -2885,6 +2911,122 @@ class EndpointSubnetFilter(net_filters.SubnetFilter):
 class EndpointVpcFilter(net_filters.VpcFilter):
 
     RelatedIdsExpression = "VpcId"
+
+
+@VpcEndpoint.filter_registry.register('service-details')
+class EndpointServiceDetailsFilter(ValueFilter):
+    """Filter VPC Endpoints based on their associated endpoint service details.
+
+    :example:
+
+    .. code-block:: yaml
+
+      policies:
+        - name: vpc-endpoints-has-policy-support
+          resource: aws.vpc-endpoint
+          filters:
+            - type: service-details
+              key: VpcEndpointPolicySupported
+              value: true
+    """
+
+    annotation_key = "c7n:ServiceDetails"
+    schema = type_schema(
+        "service-details",
+        rinherit=ValueFilter.schema
+    )
+    permissions = ("ec2:DescribeVpcEndpointServices",)
+
+    def process(self, resources, event=None):
+        client = local_session(self.manager.session_factory).client("ec2")
+        current_region = self.manager.config.region
+
+        # VPC Lattice Resource/ServiceNetwork endpoints have no ServiceName,
+        # so they can't be matched against endpoint service details; skip them.
+        named_resources = []
+        for r in resources:
+            if "ServiceName" not in r:
+                self.log.warning(
+                    "Skipping VPC endpoint %s (type=%s) with no ServiceName",
+                    r.get("VpcEndpointId"), r.get("VpcEndpointType"))
+                continue
+            named_resources.append(r)
+
+        # Group unique service names by ServiceRegion, which is set directly on
+        # each endpoint and correctly identifies cross-region endpoints without
+        # any string parsing. Falls back to current region for older endpoints
+        # that pre-date the ServiceRegion field.
+        regional_groups = {}
+        for r in named_resources:
+            region = r.get("ServiceRegion", current_region)
+            regional_groups.setdefault(region, set()).add(r["ServiceName"])
+
+        service_map = self._describe_services(client, regional_groups, current_region)
+
+        results = []
+        for resource in named_resources:
+            service_detail = service_map.get(resource["ServiceName"], {})
+            resource[self.annotation_key] = service_detail or {}
+
+            if self.match(resource[self.annotation_key]):
+                results.append(resource)
+
+        return results
+
+    def _describe_services(self, client, regional_groups, current_region):
+        cache = self.manager._cache
+        cache_key = {
+            "account": self.manager.config.account_id,
+            "region": current_region,
+            "ServiceRegions": [
+                (region, sorted(names))
+                for region, names in sorted(regional_groups.items())
+            ],
+        }
+
+        with cache:
+            cached = cache.get(cache_key)
+            if cached is not None:
+                return cached
+
+            service_map = {}
+            for region, names in regional_groups.items():
+                # Cross-region endpoints must be described using a client for
+                # the service's region; using the wrong regional client returns
+                # InvalidServiceName.
+                regional_client = (
+                    client
+                    if region == current_region
+                    else self.manager.session_factory(region=region).client('ec2')
+                )
+                sorted_names = sorted(names)
+                try:
+                    # Query all services in this region in one batch first.
+                    resp = regional_client.describe_vpc_endpoint_services(
+                        ServiceNames=sorted_names)
+                    for d in resp.get("ServiceDetails", []):
+                        service_map[d["ServiceName"]] = d
+                except ClientError as e:
+                    if e.response["Error"]["Code"] != "InvalidServiceName":
+                        raise
+                    for name in sorted_names:
+                        try:
+                            # If the batch fails, query each service individually
+                            # to isolate and skip invalid service names.
+                            resp = regional_client.describe_vpc_endpoint_services(
+                                ServiceNames=[name])
+                            for d in resp.get("ServiceDetails", []):
+                                service_map[d["ServiceName"]] = d
+                        except ClientError as e:
+                            if e.response["Error"]["Code"] != "InvalidServiceName":
+                                raise
+                            self.log.warning(
+                                "Error describing VPC endpoint service %s: %s",
+                                name, e
+                            )
+
+            cache.save(cache_key, service_map)
+            return service_map
 
 
 @Vpc.filter_registry.register("vpc-endpoint")
@@ -3608,3 +3750,158 @@ class ResolverQueryLoggingFilter(Filter):
                 results.append(r)
 
         return results
+
+
+class TransitGatewayRouteTableConfigSource(query.ConfigSource):
+
+    def load_resource(self, item):
+        resource = super().load_resource(item)
+        resource['TransitGatewayRouteTableId'] = item['resourceId']
+        return resource
+
+
+@resources.register('transit-gateway-route-table')
+class TransitGatewayRouteTable(query.QueryResourceManager):
+    """Transit gateway route tables.
+
+    https://docs.aws.amazon.com/vpc/latest/tgw/tgw-route-tables.html
+
+    Associations and propagations take an API call per route table, so only
+    the ``associations`` and ``propagations`` filters fetch them. To include
+    them for every route table, match any count.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: tgw-route-table-inventory
+            resource: aws.transit-gateway-route-table
+            filters:
+              - type: associations
+                count: 0
+                count_op: gte
+              - type: propagations
+                count: 0
+                count_op: gte
+    """
+
+    class resource_type(query.TypeInfo):
+        id = name = 'TransitGatewayRouteTableId'
+        service = 'ec2'
+        enum_spec = ('describe_transit_gateway_route_tables', 'TransitGatewayRouteTables', None)
+        filter_name = 'TransitGatewayRouteTableIds'
+        filter_type = 'list'
+
+        arn_type = 'transit-gateway-route-table'
+        date = 'CreationTime'
+        cfn_type = config_type = 'AWS::EC2::TransitGatewayRouteTable'
+        id_prefix = 'tgw-rtb-'
+
+    source_mapping = {
+        'describe': query.DescribeSource,
+        'config': TransitGatewayRouteTableConfigSource,
+    }
+
+
+class TransitGatewayRouteTableAttachmentFilter(ListItemFilter):
+    """Base for filters on the attachments listed against a route table."""
+    schema_alias = False
+    annotate_items = True
+    operation = None
+    result_key = None
+
+    def process(self, resources, event=None):
+        client = local_session(self.manager.session_factory).client('ec2')
+        paginator = client.get_paginator(self.operation)
+        paginator.PAGE_ITERATOR_CLS = query.RetryPageIterator
+        found = []
+        for r in resources:
+            if self.annotation_key not in r:
+                try:
+                    r[self.annotation_key] = paginator.paginate(
+                        TransitGatewayRouteTableId=r['TransitGatewayRouteTableId']
+                    ).build_full_result().get(self.result_key, [])
+                except ClientError as e:
+                    if e.response['Error']['Code'] != 'InvalidRouteTableID.NotFound':
+                        raise
+                    self.log.warning(
+                        "Resource not found: %s using %s",
+                        self.operation, r['TransitGatewayRouteTableId'])
+                    continue
+            found.append(r)
+        return super().process(found, event)
+
+    def get_item_values(self, resource):
+        return resource[self.annotation_key]
+
+
+@TransitGatewayRouteTable.filter_registry.register('associations')
+class TransitGatewayRouteTableAssociations(TransitGatewayRouteTableAttachmentFilter):
+    """Filter transit gateway route tables by their associated attachments.
+
+    Calls ``GetTransitGatewayRouteTableAssociations`` for each route table and
+    stores the list under ``c7n:Associations``. Each item has
+    ``TransitGatewayAttachmentId``, ``ResourceId``, ``ResourceType`` and
+    ``State``. ``attrs`` matches items, ``count`` and ``count_op`` compare how
+    many match, and matched items are stored under ``c7n:MatchedAssociations``.
+
+    :example:
+
+    Find route tables that no attachment is associated with:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: tgw-route-table-unassociated
+            resource: aws.transit-gateway-route-table
+            filters:
+              - type: associations
+                count: 0
+    """
+    schema = type_schema(
+        'associations',
+        attrs={'$ref': '#/definitions/filters_common/list_item_attrs'},
+        count={'type': 'number'},
+        count_op={'$ref': '#/definitions/filters_common/comparison_operators'})
+    permissions = ('ec2:GetTransitGatewayRouteTableAssociations',)
+    annotation_key = 'c7n:Associations'
+    item_annotation_key = 'c7n:MatchedAssociations'
+    operation = 'get_transit_gateway_route_table_associations'
+    result_key = 'Associations'
+
+
+@TransitGatewayRouteTable.filter_registry.register('propagations')
+class TransitGatewayRouteTablePropagations(TransitGatewayRouteTableAttachmentFilter):
+    """Filter transit gateway route tables by the attachments propagating routes to them.
+
+    Calls ``GetTransitGatewayRouteTablePropagations`` for each route table and
+    stores the list under ``c7n:Propagations``. Each item has
+    ``TransitGatewayAttachmentId``, ``ResourceId``, ``ResourceType`` and
+    ``State``. ``attrs`` matches items, ``count`` and ``count_op`` compare how
+    many match, and matched items are stored under ``c7n:MatchedPropagations``.
+
+    :example:
+
+    Find route tables that learn routes from a VPN attachment:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: tgw-route-table-vpn-propagation
+            resource: aws.transit-gateway-route-table
+            filters:
+              - type: propagations
+                attrs:
+                  - ResourceType: vpn
+    """
+    schema = type_schema(
+        'propagations',
+        attrs={'$ref': '#/definitions/filters_common/list_item_attrs'},
+        count={'type': 'number'},
+        count_op={'$ref': '#/definitions/filters_common/comparison_operators'})
+    permissions = ('ec2:GetTransitGatewayRouteTablePropagations',)
+    annotation_key = 'c7n:Propagations'
+    item_annotation_key = 'c7n:MatchedPropagations'
+    operation = 'get_transit_gateway_route_table_propagations'
+    result_key = 'TransitGatewayRouteTablePropagations'

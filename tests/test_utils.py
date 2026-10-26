@@ -1,6 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
 import json
+import pytest
 import ipaddress
 import os
 import tempfile
@@ -14,6 +15,7 @@ from c7n import query
 from c7n import utils
 from c7n.config import Config
 from .common import BaseTest
+from datetime import datetime, timedelta
 
 
 class TestTesting(BaseTest):
@@ -676,6 +678,15 @@ class UtilTest(BaseTest):
     def test_parse_s3(self):
         self.assertRaises(ValueError, utils.parse_s3, "bogus")
         self.assertEqual(utils.parse_s3("s3://things"), ("s3://things", "things", ""))
+        self.assertEqual(
+            utils.parse_s3("s3://bucket/key"),
+            ("s3://bucket/key", "bucket", "/key"))
+        self.assertEqual(
+            utils.parse_s3("s3://bucket/path/to/key"),
+            ("s3://bucket/path/to/key", "bucket", "/path/to/key"))
+        self.assertEqual(
+            utils.parse_s3("s3://bucket/key/"),
+            ("s3://bucket/key", "bucket", "/key"))
 
     def test_reformat_schema(self):
         # Not a real schema, just doing a smoke test of the function
@@ -926,6 +937,34 @@ class UtilTest(BaseTest):
                 {"Description": ""}),
             'unknown')
 
+    def test_start_of_day(self):
+        """
+        Verify that 'start-of-day' correctly snaps start and end to UTC day boundaries.
+        """
+        # Example times
+        start = datetime(2026, 2, 17, 14, 30, 45)
+        end = datetime(2026, 2, 18, 14, 30, 45)
+
+        new_start, new_end = utils.snap_to_period_start(start, end, "start-of-day")
+
+        self.assertEqual(new_start, datetime(2026, 2, 17, 0, 0, 0))
+        self.assertEqual(new_end, datetime(2026, 2, 18, 0, 0, 0))
+
+        # This now spans 1 day (midnight-to-midnight)
+        self.assertEqual((new_end - new_start).days, 1)
+
+    def test_auto(self):
+        """
+        Verify that 'auto' leaves start and end unchanged.
+        """
+        start = datetime(2026, 2, 17, 10, 15, 30)
+        end = datetime(2026, 2, 17, 12, 45, 50)
+
+        new_start, new_end = utils.snap_to_period_start(start, end, "auto")
+
+        self.assertEqual(new_start, start)
+        self.assertEqual(new_end, end)
+
 
 def test_parse_date_floor():
     # bulk of parse date tests are actually in test_filters
@@ -933,6 +972,34 @@ def test_parse_date_floor():
     assert utils.parse_date(1) is None
     assert utils.parse_date('3000') is None
     assert utils.parse_date('30') is None
+
+
+@pytest.mark.parametrize('value, expected', [
+    ('PT30M', timedelta(minutes=30)),
+    ('P1DT12H', timedelta(days=1, hours=12)),
+    ('P2W', timedelta(weeks=2)),
+    ('PT1.5H', timedelta(minutes=90)),
+    ('PT1,5H', timedelta(minutes=90)),
+    ('PT1M30S', timedelta(seconds=90)),
+    ('P1DT1.5H', timedelta(days=1, minutes=90)),
+    ('PT0S', timedelta(0)),
+    ('P0W', timedelta(0)),
+    (' PT1H\n', timedelta(hours=1)),
+])
+def test_parse_duration(value, expected):
+    assert utils.parse_duration(value) == expected
+
+
+# P1Y and P1M (a month) vary in length, so they're rejected, as are durations
+# too large for a timedelta (including one that overflows to infinity) and
+# non-ASCII digits. Weeks can't be combined with other units, and only the
+# smallest unit may have a fraction.
+@pytest.mark.parametrize('value', [
+    'P', 'PT', 'P1DT', 'PT1', 'P1Y', 'P1M', 'pt1h', '1h', None, 3600,
+    'P1000000000D', 'P' + '9' * 20 + 'D', 'P' + '9' * 400 + 'D', 'PT١H',
+    'P1W1D', 'P1WT1H', 'PT1.5H30M'])
+def test_parse_duration_invalid(value):
+    assert utils.parse_duration(value) is None
 
 
 def test_output_path_join():
@@ -980,3 +1047,52 @@ def test_jmespath_parse_to_json():
         {'foo': '{"]}'}
     )
     assert result is None
+
+
+@pytest.mark.parametrize("region,expected", [
+    ('us-east-1', 'aws'),
+    ('us-gov-west-1', 'aws-us-gov'),
+    ('cn-north-1', 'aws-cn'),
+    ('us-iso-east-1', 'aws-iso'),
+    ('unknown-region', 'aws'),
+    ('', ''),
+    (None, ''),
+])
+def test_get_partition(region, expected):
+    assert utils.get_partition(region) == expected
+
+
+def test_get_partition_region():
+    import botocore.session
+
+    for partition in botocore.session.get_session().get_available_partitions():
+        region = utils.get_partition_region(partition)
+        assert utils.get_partition(region) == partition
+    # us-east-1 only exists in the commercial partition
+    assert utils.get_partition_region('aws') == 'us-east-1'
+    # a partition botocore doesn't know, or none at all, keeps the default
+    for partition in ('aws-not-a-partition', '', None):
+        assert utils.get_partition_region(partition) == 'us-east-1'
+
+
+@pytest.mark.parametrize("size,expected", [
+    (0, '0.00 B'),
+    (1023, '1023.00 B'),
+    (1024, '1.00 KB'),
+    (1024 ** 2, '1.00 MB'),
+    (1024 ** 3, '1.00 GB'),
+    (1024 ** 4, '1.00 TB'),
+    (1024 ** 5, '1.00 PB'),
+    (1024 ** 6, '1.00 EB'),
+    (1024 ** 7, '1.00 ZB'),
+    (1024 ** 8, '1.00 YB'),
+])
+def test_get_human_size(size, expected):
+    assert utils.get_human_size(size) == expected
+
+
+def test_get_human_size_beyond_largest_suffix():
+    # sizes larger than the largest known suffix should stay on that
+    # suffix rather than raising IndexError
+    assert utils.get_human_size(1024 ** 9) == '1024.00 YB'
+    assert utils.get_human_size(1024 ** 5 * 2000) == '1.95 EB'

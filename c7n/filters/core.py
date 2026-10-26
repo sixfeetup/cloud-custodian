@@ -6,11 +6,14 @@ Resource Filtering Logic
 import copy
 import datetime
 from datetime import timedelta
+import enum
+from functools import partial, reduce
 import fnmatch
 import ipaddress
 import logging
 import operator
 import re
+import sys
 
 from dateutil.tz import tzutc
 from dateutil.parser import parse
@@ -27,6 +30,7 @@ from c7n.utils import (
     type_schema,
     parse_cidr,
     parse_date,
+    parse_duration,
     jmespath_search,
     jmespath_compile
 )
@@ -108,10 +112,17 @@ OPERATORS = {
     'mod': mod}
 
 
+# Comparisons between two timedeltas. Other operators never match a
+# duration, and mod would divide by zero on a PT0S value.
+DURATION_OPERATORS = {
+    'eq', 'equal', 'ne', 'not-equal', 'gt', 'greater-than', 'ge', 'gte',
+    'le', 'lte', 'lt', 'less-than'}
+
+
 VALUE_TYPES = [
     'age', 'integer', 'expiration', 'normalize', 'size',
     'cidr', 'cidr_size', 'swap', 'resource_count', 'expr',
-    'unique_size', 'date', 'version', 'float']
+    'unique_size', 'date', 'version', 'float', 'duration']
 
 
 class FilterRegistry(PluginRegistry):
@@ -245,20 +256,25 @@ class BaseValueFilter(Filter):
     def get_resource_value(self, k, i, regex=None):
         r = None
         if k.startswith('tag:'):
+            normalize_if_needed = NormalizeFilterTagKeys.transform_func_if_needed(
+                self.data.get("tag_key_transforms")
+            )
             tk = k.split(':', 1)[1]
             if 'Tags' in i:
-                for t in i.get("Tags", []):
+                for t in _normalize_aws_tag_keys(i.get("Tags", []), normalize_if_needed):
                     if t.get('Key') == tk:
                         r = t.get('Value')
                         break
             # GCP schema: 'labels': {'key': 'value'}
             elif 'labels' in i:
-                r = i.get('labels', {}).get(tk, None)
+                r = _normalize_tag_dict_keys(i.get('labels', {}), normalize_if_needed).get(tk, None)
             # GCP has a secondary form of labels called tags
             # as labels without values.
             # Azure schema: 'tags': {'key': 'value'}
             elif 'tags' in i:
-                r = (i.get('tags', {}) or {}).get(tk, None)
+                r = _normalize_tag_dict_keys(i.get('tags', {}) or {}, normalize_if_needed).get(
+                    tk, None
+                )
         elif k in i:
             r = i.get(k)
         elif k not in self.expr:
@@ -290,6 +306,97 @@ class BaseValueFilter(Filter):
             raise PolicyValidationError(
                 "Invalid value_regex: %s %s" % (e, self.data))
         return self
+
+    def _validate_tag_key_transforms(self, transforms_list):
+        if not transforms_list:
+            return self
+        invalid_transforms = [
+            t for t in transforms_list if NormalizeFilterTagKeys.is_not_valid_transform(t)
+        ]
+        if invalid_transforms:
+            raise PolicyValidationError(
+                "Invalid tag_transforms: %s %s" % (", ".join(invalid_transforms), self.data)
+            )
+        return self
+
+
+# Setting a callable Enum value overrides Enum methods so we need to wrap in either:
+# functools.partial (3.10) or enum.member (3.11+).
+# functools.partial has changed behavior in 3.13 so we can't use it for all python versions
+# Once 3.10 is no longer supported, just use enum.member
+_member = enum.member if sys.version_info[0] >= 3 and sys.version_info[1] >= 11 else partial
+
+
+class NormalizeFilterTagKeys(enum.Enum):
+    noop = _member(lambda v: v)
+    capitalize = _member(lambda v: v.capitalize())
+    lower = _member(lambda v: v.lower())
+    strip = _member(lambda v: v.strip())
+    title = _member(lambda v: v.title())
+    upper = _member(lambda v: v.upper())
+    nospaces = _member(lambda v: v.replace(" ", ""))
+    nounderscores = _member(lambda v: v.replace("_", ""))
+    nodashes = _member(lambda v: v.replace("-", ""))
+
+    @classmethod
+    def is_not_valid_transform(cls, transform):
+        return transform not in cls.__members__
+
+    @classmethod
+    def transform_func_if_needed(cls, transforms: list[str]):
+        """Return a callable func to do the transformation of tag keys as specified in the tag
+         strategy. For example: this example would normalize all the tag keys to do the following
+         commands in order: strip(), title(), replace("_", "") and look for a normalized key of
+         FooBar to match spam
+        filters:
+          - type: value
+            key: tag:FooBar
+            tag_key_transforms:
+                - strip
+                - title
+                - nounderscores
+            op: eq
+            value: spam
+        ."""
+        if not transforms:
+            return None
+
+        return _combine(
+            cls[transform].value for transform in transforms if transform in cls.__members__
+        )
+
+
+def _combine(callables_list):
+    def compose_function(f, g):
+        return lambda x: g(f(x))
+
+    return reduce(compose_function, callables_list)
+
+
+def _normalize_aws_tag_keys(tags: list, normalize_func) -> list:
+    # schema: [{'Key': 'key1', 'Value': 'value1'}, {'Key': 'key2', 'Value': 'value2'}]
+    if not normalize_func:
+        return tags
+    normalized_tags = []
+    for t in tags:
+        try:
+            normalized_tags.append({"Key": normalize_func(t["Key"]), "Value": t["Value"]})
+        except (AttributeError, SyntaxError, KeyError):
+            pass
+    return normalized_tags
+
+
+def _normalize_tag_dict_keys(tags: dict, normalize_func) -> dict:
+    # schema: {'key1': 'value1', 'key2': 'value2'}
+    if not normalize_func:
+        return tags
+    normalized_tags = {}
+    for k, v in tags.items():
+        try:
+            normalized_tags[normalize_func(k)] = v
+        except (AttributeError, SyntaxError):
+            pass
+    return normalized_tags
 
 
 def intersect_list(a, b):
@@ -507,7 +614,8 @@ class ValueFilter(BaseValueFilter):
             'value_from': {'$ref': '#/definitions/filters_common/value_from'},
             'value': {'$ref': '#/definitions/filters_common/value'},
             'op': {'$ref': '#/definitions/filters_common/comparison_operators'},
-            'value_path': {'type': 'string'}
+            'value_path': {'type': 'string'},
+            'tag_key_transforms': {'type': 'array', 'items': {'type': 'string'}}
         }
     }
     schema_alias = True
@@ -555,6 +663,21 @@ class ValueFilter(BaseValueFilter):
                 raise PolicyValidationError(
                     "value_type: date with invalid date value:%s",
                     self.data.get('value', ''))
+        elif self.data.get('value_type') == 'duration':
+            if 'op' in self.data and self.data['op'] not in DURATION_OPERATORS:
+                raise PolicyValidationError(
+                    "value_type: duration can't be used with op: %s" % self.data['op'])
+            if ('value' not in self.data or
+                    'value_from' in self.data or
+                    'value_path' in self.data):
+                raise PolicyValidationError(
+                    "value_type: duration needs a literal value; "
+                    "value_from and value_path aren't supported")
+            if parse_duration(self.data['value']) is None:
+                raise PolicyValidationError(
+                    "value_type: duration needs an ISO 8601 duration in weeks, days, "
+                    "hours, minutes or seconds, such as PT1H (years and months aren't "
+                    "supported), got: %s" % self.data['value'])
         if 'key' not in self.data and 'key' in self.required_keys:
             raise PolicyValidationError(
                 "Missing 'key' in value filter %s" % self.data)
@@ -575,6 +698,8 @@ class ValueFilter(BaseValueFilter):
                 except re.error as e:
                     raise PolicyValidationError(
                         "Invalid regex: %s %s" % (e, self.data))
+        if 'tag_key_transforms' in self.data:
+            self._validate_tag_key_transforms(self.data['tag_key_transforms'])
         if 'value_regex' in self.data:
             return self._validate_value_regex(self.data['value_regex'])
 
@@ -607,7 +732,7 @@ class ValueFilter(BaseValueFilter):
 
         When using a Value Filter, a ``value_path`` can be specified.
         This means the value(s) the filter will compare against are
-        calculated during the initialization of the filter.
+        recalculated for each resource being filtered.
 
         Note that this option only pulls properties of the resource
         currently being filtered.
@@ -637,12 +762,13 @@ class ValueFilter(BaseValueFilter):
             if 'value_from' in self.data:
                 values = ValuesFrom(self.data['value_from'], self.manager)
                 self.v = values.get_values()
-            elif 'value_path' in self.data:
-                self.v = self.get_path_value(i)
-            else:
+            elif 'value_path' not in self.data:
                 self.v = self.data.get('value')
             self.content_initialized = True
             self.vtype = self.data.get('value_type')
+
+        if 'value_path' in self.data and 'value_from' not in self.data:
+            self.v = self.get_path_value(i)
 
         if i is None:
             return False
@@ -655,6 +781,9 @@ class ValueFilter(BaseValueFilter):
         # value type conversion
         if self.vtype is not None:
             v, r = self.process_value_type(self.v, r, i)
+            # a resource value that isn't a duration never matches, even for not-equal
+            if self.vtype == 'duration' and r is None:
+                return False
         else:
             v = self.v
 
@@ -710,6 +839,8 @@ class ValueFilter(BaseValueFilter):
             return value, sentinel
         elif self.vtype == 'date':
             return parse_date(sentinel), parse_date(value)
+        elif self.vtype == 'duration':
+            return parse_duration(sentinel), parse_duration(value)
         elif self.vtype == 'age':
             if not isinstance(sentinel, datetime.datetime):
                 sentinel = datetime.datetime.now(tz=tzutc()) - timedelta(sentinel)
@@ -1047,13 +1178,15 @@ class ReduceFilter(BaseValueFilter):
         if 'group-by' in self.data or 'order' in self.data:
             ordered = self.reorder(ordered, key=lambda r: groups[r]['sortkey'])
         for g in ordered:
-            # discard X first
+            # discard X first, computing the per-group count fresh so a larger
+            # group's discard doesn't leak into subsequent, smaller groups
+            gdrop = drop
             if droppct > 0:
                 n = int(droppct / 100 * len(groups[g]['resources']))
-                if n > drop:
-                    drop = n
-            if drop > 0:
-                groups[g]['resources'] = groups[g]['resources'][drop:]
+                if n > gdrop:
+                    gdrop = n
+            if gdrop > 0:
+                groups[g]['resources'] = groups[g]['resources'][gdrop:]
 
             # then limit the remaining
             count = len(groups[g]['resources'])

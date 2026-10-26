@@ -7,7 +7,7 @@ from c7n.actions import BaseAction
 from c7n.filters import ValueFilter
 from c7n.filters.kms import KmsRelatedFilter
 from c7n.manager import resources
-from c7n.query import QueryResourceManager, TypeInfo, DescribeSource, ConfigSource
+from c7n.query import DescribeWithResourceTags, QueryResourceManager, TypeInfo, ConfigSource
 from c7n.tags import universal_augment, Tag, RemoveTag
 from c7n.exceptions import PolicyValidationError, PolicyExecutionError
 from c7n.utils import get_retry, local_session, type_schema, chunks, jmespath_search
@@ -15,12 +15,6 @@ from c7n.filters.iamaccess import CrossAccountAccessFilter
 from c7n.resolver import ValuesFrom
 import c7n.filters.vpc as net_filters
 import json
-
-
-class DescribeWorkspace(DescribeSource):
-
-    def augment(self, resources):
-        return universal_augment(self.manager, resources)
 
 
 @resources.register('workspaces')
@@ -33,10 +27,9 @@ class Workspace(QueryResourceManager):
         name = id = dimension = 'WorkspaceId'
         universal_taggable = True
         cfn_type = config_type = 'AWS::WorkSpaces::Workspace'
-        permissions_augment = ("workspaces:DescribeTags",)
 
     source_mapping = {
-        'describe': DescribeWorkspace,
+        'describe': DescribeWithResourceTags,
         'config': ConfigSource
     }
 
@@ -172,13 +165,29 @@ class WorkspaceImage(QueryResourceManager):
         arn_type = 'workspaceimage'
         name = id = 'ImageId'
         universal_taggable = True
-        permissions_augment = ("workspaces:DescribeTags",)
 
-    augment = universal_augment
+    source_mapping = {'describe': DescribeWithResourceTags}
 
 
 @WorkspaceImage.filter_registry.register('cross-account')
 class WorkspaceImageCrossAccount(CrossAccountAccessFilter):
+    """Find WorkSpaces images that are shared with accounts that are not in the allowed
+    accounts.
+
+    Only the ``whitelist`` and ``whitelist_from`` options are supported.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+          - name: workspace-image-cross-account
+            resource: aws.workspaces-image
+            filters:
+              - type: cross-account
+                whitelist:
+                  - "123456789012"
+    """
 
     schema = type_schema(
         'cross-account',
@@ -262,7 +271,7 @@ class WorkspaceDirectory(QueryResourceManager):
         filter_name = 'DirectoryIds'
         filter_type = 'list'
 
-    augment = universal_augment
+    source_mapping = {'describe': DescribeWithResourceTags}
 
 
 @WorkspaceDirectory.filter_registry.register('security-group')
@@ -782,6 +791,8 @@ class WorkspacesBundle(QueryResourceManager):
         arn_type = 'workspacebundle'
         name = id = 'BundleId'
         universal_taggable = True
+
+    source_mapping = {'describe': DescribeWithResourceTags}
 
 
 @WorkspacesBundle.action_registry.register('delete')

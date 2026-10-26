@@ -1,12 +1,18 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+import datetime
 import json
-from .common import BaseTest
+from unittest.mock import MagicMock, patch
+
+from botocore.exceptions import ClientError
+from dateutil import parser
+
 from c7n.exceptions import PolicyValidationError
 from c7n.executor import MainThreadExecutor
 from c7n.resources.secretsmanager import SecretsManager
-from unittest.mock import patch, MagicMock
-from botocore.exceptions import ClientError
+from c7n.testing import mock_datetime_now
+
+from .common import BaseTest
 
 
 class TestSecretsManager(BaseTest):
@@ -271,6 +277,17 @@ class TestSecretsManager(BaseTest):
         self.assertEqual(resources[1].get('VersionIdsToStages'), None)
         self.assertEqual(resources[1]['c7n:DeniedMethods'], ['describe_secret'])
 
+    def test_secrets_manager_get_resources_by_arn(self):
+        self.patch(SecretsManager, 'executor_factory', MainThreadExecutor)
+        session_factory = self.replay_flight_data("test_secrets_manager_describe")
+        p = self.load_policy({
+            "name": "get-secret-by-arn",
+            "resource": "aws.secrets-manager",
+        }, session_factory=session_factory)
+        arn = "arn:aws:secretsmanager:us-east-1:644160558196:secret:c7n-test-key-XTUSpD"
+        resources = p.resource_manager.get_resources([arn])
+        self.assertEqual([r['Name'] for r in resources], ['c7n-test-key'])
+
     def test_secrets_manager_replica_access_denied(self):
         self.patch(SecretsManager, 'executor_factory', MainThreadExecutor)
         session_factory = self.replay_flight_data('test_secrets_manager_replica_access_denied')
@@ -373,14 +390,15 @@ class TestSecretsManager(BaseTest):
                         'type': 'current-version',
                         'key': 'CreatedDate',
                         'op': 'lt',
-                        'value': 90,
+                        'value': 180,
                         'value_type': 'age'
                     }
                 ]
             },
             session_factory=session_factory
         )
-        resources = p.run()
+        with mock_datetime_now(parser.parse("2026-05-01T00:00:00+00:00"), datetime):
+            resources = p.run()
         self.assertEqual(len(resources), 1)
         self.assertEqual(resources[0]['Name'], 'test_lambda_secret')
         self.assertIn('c7n:CurrentSecretVersion', resources[0])
