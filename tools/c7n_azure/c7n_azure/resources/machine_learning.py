@@ -1,6 +1,7 @@
 import logging
 
 from azure.core.exceptions import ResourceNotFoundError
+from c7n_azure.actions.base import AzureBaseAction
 from c7n_azure.provider import resources
 from c7n_azure.resources.arm import ArmResourceManager, ChildArmResourceManager
 from c7n.utils import type_schema
@@ -162,7 +163,7 @@ class MachineLearningDataContainer(MachineLearningWorkspaceChildMixin, ChildArmR
                 - type: value
                   key: systemData.lastModifiedAt
                   value_type: age
-                  op: lt
+                  op: gt
                   value: 90
 
     """
@@ -187,7 +188,8 @@ class MachineLearningDataContainer(MachineLearningWorkspaceChildMixin, ChildArmR
         def extra_args(cls, parent_resource):
             return {
                 'resource_group_name': parent_resource['resourceGroup'],
-                'workspace_name': parent_resource['name']
+                'workspace_name': parent_resource['name'],
+                'list_view_type': 'All',
             }
 
     def augment(self, resources):
@@ -195,3 +197,47 @@ class MachineLearningDataContainer(MachineLearningWorkspaceChildMixin, ChildArmR
             if 'id' in resource:
                 resource['resourceGroup'] = ResourceIdParser.get_resource_group(resource['id'])
         return resources
+
+
+@MachineLearningDataContainer.action_registry.register('archive')
+class MachineLearningDataContainerArchiveAction(AzureBaseAction):
+    """Archive Machine Learning data containers.
+
+    Archiving hides the container and its versions from the workspace's
+    active views. It does not delete the backing data.
+
+    :example:
+
+    .. code-block:: yaml
+
+        policies:
+            - name: archive-stale-machine-learning-data-containers
+              resource: azure.machine-learning-data-container
+              filters:
+                - type: value
+                  key: systemData.lastModifiedAt
+                  value_type: age
+                  op: gt
+                  value: 90
+              actions:
+                - type: archive
+
+    """
+
+    schema = type_schema('archive')
+
+    def _prepare_processing(self):
+        self.client = self.manager.get_client()
+
+    def _process_resource(self, resource):
+        if resource['properties']['isArchived']:
+            return
+
+        resource['properties']['isArchived'] = True
+        self.client.data_containers.create_or_update(
+            resource_group_name=resource['resourceGroup'],
+            workspace_name=ResourceIdParser.get_resource_name(
+                resource['c7n:parent-id']),
+            name=resource['name'],
+            body=resource,
+            )
