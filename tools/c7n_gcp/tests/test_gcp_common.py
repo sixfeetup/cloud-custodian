@@ -22,6 +22,25 @@ def test_sanitize_project_name_replaces_unqualified_references() -> None:
     }
 
 
+def test_sanitize_project_name_preserves_unrelated_quoted_values() -> None:
+    value = json.dumps({
+        'id': 'projects/custodian/topics/custodian',
+        'project': 'custodian',
+        'project_id': 'custodian',
+        'projectId': 'custodian',
+        'name': 'custodian',
+        'labels': {'custodian': 'custodian'},
+    })
+    assert json.loads(recorder.sanitize_project_name(value)) == {
+        'id': 'projects/cloud-custodian/topics/custodian',
+        'project': 'cloud-custodian',
+        'project_id': 'cloud-custodian',
+        'projectId': 'cloud-custodian',
+        'name': 'custodian',
+        'labels': {'custodian': 'custodian'},
+    }
+
+
 def test_sanitize_project_name_preserves_resource_names() -> None:
     value = 'projects/custodian/locations/global/keyRings/cloud-custodian-test'
     assert recorder.sanitize_project_name(value) == (
