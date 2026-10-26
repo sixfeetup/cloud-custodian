@@ -1,5 +1,7 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
+from botocore.exceptions import ClientError
+
 from .common import BaseTest
 
 
@@ -91,14 +93,9 @@ class BackupPlanTest(BaseTest):
             },
             session_factory=factory,
         )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-
-        # Verify the backup plan still exists (deletion should have failed)
-        client = factory().client("backup")
-        plans = client.list_backup_plans().get('BackupPlansList', [])
-        plan_ids = [p['BackupPlanId'] for p in plans]
-        self.assertIn(resources[0]['BackupPlanId'], plan_ids)
+        with self.assertRaises(ClientError) as ctx:
+            p.run()
+        self.assertEqual(ctx.exception.response['Error']['Code'], 'InvalidRequestException')
 
     def test_backup_plan_delete_with_remove_selections(self):
         factory = self.replay_flight_data("test_backup_plan_delete_with_remove_selections")
@@ -225,14 +222,9 @@ class BackupVaultTest(BaseTest):
             },
             session_factory=factory,
         )
-        resources = p.run()
-        self.assertEqual(len(resources), 1)
-
-        # Verify the backup vault still exists (deletion should have failed)
-        client = factory().client("backup")
-        vaults = client.list_backup_vaults().get('BackupVaultList', [])
-        vault_names = [v['BackupVaultName'] for v in vaults]
-        self.assertIn(resources[0]['BackupVaultName'], vault_names)
+        with self.assertRaises(ClientError) as ctx:
+            p.run()
+        self.assertEqual(ctx.exception.response['Error']['Code'], 'InvalidRequestException')
 
     def test_backup_vault_delete_with_remove_recovery_points(self):
         factory = self.replay_flight_data("test_backup_vault_delete_with_remove_recovery_points")

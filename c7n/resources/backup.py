@@ -9,6 +9,7 @@ from c7n.utils import local_session, type_schema
 
 
 class DescribeBackup(DescribeSource):
+
     def augment(self, resources):
         resources = super(DescribeBackup, self).augment(resources)
         client = local_session(self.manager.session_factory).client('backup')
@@ -41,6 +42,7 @@ class DescribeBackup(DescribeSource):
 
 @resources.register('backup-plan')
 class BackupPlan(QueryResourceManager):
+
     class resource_type(TypeInfo):
         service = 'backup'
         enum_spec = ('list_backup_plans', 'BackupPlansList', None)
@@ -52,7 +54,10 @@ class BackupPlan(QueryResourceManager):
         universal_taggable = object()
         permissions_augment = ("backup:ListTags",)
 
-    source_mapping = {'describe': DescribeBackup, 'config': ConfigSource}
+    source_mapping = {
+        'describe': DescribeBackup,
+        'config': ConfigSource
+    }
 
 
 @BackupPlan.action_registry.register('delete')
@@ -104,17 +109,11 @@ class BackupPlanDeleteAction(BaseAction):
 
     def process_resource(self, client, resource):
         backup_plan_id = resource['BackupPlanId']
-        remove_selections = self.data.get("remove-selections", False)
-        existing_selections = self.get_selections_for_plan(client, backup_plan_id)
 
-        if len(existing_selections):
-            if not remove_selections:
-                self.log.error(
-                    f"Error while deleting backup plan {backup_plan_id}, plan is not empty"
-                )
-                return False
-
-            for selection_id in existing_selections:
+        # Without `remove-selections`, a non-empty plan makes the delete call
+        # raise, which is surfaced to the user.
+        if self.data.get("remove-selections", False):
+            for selection_id in self.get_selections_for_plan(client, backup_plan_id):
                 self.manager.retry(
                     client.delete_backup_selection,
                     BackupPlanId=backup_plan_id,
@@ -130,6 +129,7 @@ class BackupPlanDeleteAction(BaseAction):
 
 
 class DescribeVault(DescribeSource):
+
     def augment(self, resources):
         return universal_augment(self.manager, super(DescribeVault, self).augment(resources))
 
@@ -138,7 +138,8 @@ class DescribeVault(DescribeSource):
         resources = []
         for rid in resource_ids:
             try:
-                resources.append(client.describe_backup_vault(BackupVaultName=rid))
+                resources.append(
+                    client.describe_backup_vault(BackupVaultName=rid))
             except client.exceptions.ResourceNotFoundException:
                 continue
         return resources
@@ -146,6 +147,7 @@ class DescribeVault(DescribeSource):
 
 @resources.register('backup-vault')
 class BackupVault(QueryResourceManager):
+
     class resource_type(TypeInfo):
         service = 'backup'
         enum_spec = ('list_backup_vaults', 'BackupVaultList', None)
@@ -155,11 +157,15 @@ class BackupVault(QueryResourceManager):
         universal_taggable = object()
         config_type = cfn_type = 'AWS::Backup::BackupVault'
 
-    source_mapping = {'describe': DescribeVault, 'config': ConfigSource}
+    source_mapping = {
+        'describe': DescribeVault,
+        'config': ConfigSource
+    }
 
 
 @BackupVault.filter_registry.register('kms-key')
 class KmsFilter(KmsRelatedFilter):
+
     RelatedIdsExpression = 'EncryptionKeyArn'
 
 
@@ -211,17 +217,13 @@ class BackupVaultDeleteAction(BaseAction):
 
     def process_resource(self, client, resource):
         backup_vault_name = resource['BackupVaultName']
-        remove_recovery_points = self.data.get("remove-recovery-points", False)
-        existing_recovery_points = self.get_recovery_points_for_vault(client, backup_vault_name)
 
-        if len(existing_recovery_points):
-            if not remove_recovery_points:
-                self.log.error(
-                    f"Error while deleting backup vault {backup_vault_name}, vault is not empty"
-                )
-                return False
-
-            for recovery_point_arn in existing_recovery_points:
+        # Without `remove-recovery-points`, a non-empty vault makes the delete
+        # call raise, which is surfaced to the user.
+        if self.data.get("remove-recovery-points", False):
+            for recovery_point_arn in self.get_recovery_points_for_vault(
+                client, backup_vault_name
+            ):
                 self.manager.retry(
                     client.delete_recovery_point,
                     BackupVaultName=backup_vault_name,
