@@ -275,7 +275,7 @@ class GraphPermissionTest(unittest.TestCase):
 
     def test_transitive_members_maps_to_least_privilege(self):
         self.assertEqual(
-            get_required_permissions_for_endpoint('groups/%s/transitiveMembers' % GROUP),
+            get_required_permissions_for_endpoint(f'groups/{GROUP}/transitiveMembers'),
             ['GroupMember.ReadBasic.All'])
 
 

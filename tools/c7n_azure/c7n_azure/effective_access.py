@@ -168,12 +168,12 @@ def transitive_members(session, group_id):
     Documented at
     https://learn.microsoft.com/en-us/graph/api/group-list-transitivemembers
     """
-    endpoint = 'groups/%s/transitiveMembers' % group_id
+    endpoint = f'groups/{group_id}/transitiveMembers'
     permissions = get_required_permissions_for_endpoint(endpoint)
     graph = session.get_session_for_resource(MSGRAPH_RESOURCE_ID)
     graph._initialize_session()
     token = graph.credentials.get_token('https://graph.microsoft.com/.default')
-    headers = {'Authorization': 'Bearer %s' % token.token}
+    headers = {'Authorization': f'Bearer {token.token}'}
     url = 'https://graph.microsoft.com/v1.0/' + endpoint
     params = {'$top': 999}
     members = []
