@@ -9,7 +9,6 @@ from pytest_terraform import terraform
 
 from gcp_common import BaseTest, event_data
 from googleapiclient.errors import HttpError
-from pytest_terraform import terraform
 
 from c7n.exceptions import PolicyExecutionError
 from c7n.utils import local_session
