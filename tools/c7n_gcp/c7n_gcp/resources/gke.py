@@ -3,7 +3,8 @@
 import re
 
 from c7n_gcp.provider import resources
-from c7n_gcp.query import QueryResourceManager, TypeInfo, ChildTypeInfo, ChildResourceManager
+from c7n_gcp.query import (QueryResourceManager, TypeInfo, ChildTypeInfo,
+                           ChildResourceManager)
 from c7n.utils import type_schema, local_session
 from c7n_gcp.actions import MethodAction
 from c7n_gcp.utils import get_firewall_port_ranges
@@ -27,14 +28,8 @@ class KubernetesCluster(QueryResourceManager):
         scope_template = "projects/{}/locations/-"
         name = id = "name"
         default_report_fields = [
-            'name',
-            'description',
-            'status',
-            'currentMasterVersion',
-            'currentNodeVersion',
-            'currentNodeCount',
-            'location',
-        ]
+            'name', 'description', 'status', 'currentMasterVersion', 'currentNodeVersion',
+            'currentNodeCount', 'location']
         asset_type = 'container.googleapis.com/Cluster'
         scc_type = 'google.container.Cluster'
         metric_key = 'resource.labels.cluster_name'
@@ -47,15 +42,11 @@ class KubernetesCluster(QueryResourceManager):
         @staticmethod
         def get(client, resource_info):
             return client.execute_query(
-                'get',
-                verb_arguments={
+                'get', verb_arguments={
                     'name': 'projects/{}/locations/{}/clusters/{}'.format(
                         resource_info['project_id'],
                         resource_info['location'],
-                        resource_info['cluster_name'],
-                    )
-                },
-            )
+                        resource_info['cluster_name'])})
 
         @staticmethod
         def get_label_params(resource, all_labels):
@@ -63,17 +54,18 @@ class KubernetesCluster(QueryResourceManager):
             if resource['selfLink'].find(location_str) < 0:
                 location_str = "zones"
             path_param_re = re.compile(
-                "%s%s%s" % ('.*?/projects/(.*?)/', location_str, '/(.*?)/clusters/(.*)')
+                "%s%s%s" % (
+                    '.*?/projects/(.*?)/', location_str, '/(.*?)/clusters/(.*)'
+                )
             )
-            project, zone, cluster_name = path_param_re.match(resource['selfLink']).groups()
-            return {
-                'name': "%s%s%s%s%s%s"
-                % ('projects/', project, '/locations/', zone, '/clusters/', cluster_name),
-                'body': {
-                    'resourceLabels': all_labels,
-                    'labelFingerprint': resource['labelFingerprint'],
-                },
-            }
+            project, zone, cluster_name = path_param_re.match(
+                resource['selfLink']).groups()
+            return {'name': "%s%s%s%s%s%s" % (
+                'projects/', project, '/locations/', zone, '/clusters/', cluster_name),
+                    'body': {
+                        'resourceLabels': all_labels,
+                        'labelFingerprint': resource['labelFingerprint']
+                    }}
 
         @classmethod
         def refresh(cls, client, resource):
@@ -83,8 +75,8 @@ class KubernetesCluster(QueryResourceManager):
                 {
                     'project_id': project_id,
                     'location': resource['zone'],
-                    'cluster_name': resource['name'],
-                },
+                    'cluster_name': resource['name']
+                }
             )
 
     def augment(self, resources):
@@ -126,9 +118,8 @@ class EffectiveFirewall(ValueFilter):
 
     def get_firewalls(self, client, p, r):
         if self.annotation_key not in r:
-            firewalls = client.execute_command(
-                'getEffectiveFirewalls', verb_arguments={'project': p, 'network': r['network']}
-            ).get('firewalls', [])
+            firewalls = client.execute_command('getEffectiveFirewalls',
+                verb_arguments={'project': p, 'network': r['network']}).get('firewalls', [])
 
             r[self.annotation_key] = get_firewall_port_ranges(firewalls)
         return super(EffectiveFirewall, self).process(r[self.annotation_key], None)
@@ -136,8 +127,11 @@ class EffectiveFirewall(ValueFilter):
     def process(self, resources, event=None):
         session = local_session(self.manager.session_factory)
         project = session.get_default_project()
-        client = session.client("compute", "v1", "networks")
-        resource_list = [r for r in resources if self.get_firewalls(client, project, r)]
+        client = session.client(
+            "compute", "v1", "networks"
+        )
+        resource_list = [r for r in resources
+                            if self.get_firewalls(client, project, r)]
         return resource_list
 
 
@@ -163,7 +157,7 @@ class KubernetesClusterNodePool(ChildResourceManager):
             'parent': 'projects/{}/locations/{}/clusters/{}'.format(
                 local_session(self.session_factory).get_default_project(),
                 parent_instance['location'],
-                parent_instance['name'],
+                parent_instance['name']
             )
         }
 
@@ -185,19 +179,16 @@ class KubernetesClusterNodePool(ChildResourceManager):
         def get(client, resource_info):
             cluster_name = resource_info['cluster_name']
             name = re.match(
-                r".*{}-(.*)-[^-]+-[^-]?".format(cluster_name), resource_info['resourceName']
-            ).group(1)
+                r".*{}-(.*)-[^-]+-[^-]?".format(cluster_name),
+                resource_info['resourceName']).group(1)
 
             return client.execute_command(
-                'get',
-                verb_arguments={
+                'get', verb_arguments={
                     'name': 'projects/{}/locations/{}/clusters/{}/nodePools/{}'.format(
                         resource_info['project_id'],
                         resource_info['location'],
                         resource_info['cluster_name'],
-                        name,
-                    )
-                },
+                        name)}
             )
 
         @classmethod
@@ -253,8 +244,8 @@ class ServerConfig(ValueFilter):
             return
         location = self._get_location(resource)
         resource[self.annotation_key] = client.execute_command(
-            'getServerConfig',
-            verb_arguments={'name': 'projects/{}/locations/{}'.format(project, location)},
+            'getServerConfig', verb_arguments={
+                'name': 'projects/{}/locations/{}'.format(project, location)}
         )
 
     def __call__(self, r):
@@ -297,11 +288,10 @@ class Delete(MethodAction):
     def get_resource_params(self, model, resource_info):
         project = local_session(self.manager.source.query.session_factory).get_default_project()
 
-        return {
-            'name': 'projects/{}/locations/{}/clusters/{}'.format(
-                project, resource_info['location'], resource_info['name']
-            )
-        }
+        return {'name': 'projects/{}/locations/{}/clusters/{}'.format(
+                        project,
+                        resource_info['location'],
+                        resource_info['name'])}
 
 
 @KubernetesClusterNodePool.action_registry.register('delete')
