@@ -117,7 +117,7 @@ class BucketDeleteAction(MethodAction):
                   - type: value
                     key: name
                     op: regex
-                    value: '^(test-|demo-)*'
+                    value: '^(test-|demo-)'
                 actions:
                   - type: delete
     """

@@ -3,11 +3,14 @@
 import logging
 import re
 import time
+from unittest import mock
+
 import pytest
 from pytest_terraform import terraform
 
 from gcp_common import BaseTest, event_data
 from c7n.config import Config
+from c7n_gcp.actions import MethodAction
 
 
 class KubernetesClusterTest(BaseTest):
@@ -382,8 +385,17 @@ class KubernetesClusterNodePoolTest(BaseTest):
             },
             session_factory=factory,
         )
-        resources = p.run()
+        with mock.patch.object(
+            MethodAction, "invoke_api", autospec=True, side_effect=MethodAction.invoke_api
+        ) as invoke_api:
+            resources = p.run()
         self.assertEqual(len(resources), 1)
+
+        # The DELETE request itself was issued, for the right nodepool.
+        invoke_api.assert_called_once()
+        op_name, params = invoke_api.call_args.args[2:]
+        self.assertEqual(op_name, "delete")
+        self.assertTrue(params["name"].endswith("/nodePools/" + nodepool_name))
 
         if self.recording:
             time.sleep(3)

@@ -277,7 +277,7 @@ class Delete(MethodAction):
                   - type: value
                     key: name
                     op: regex
-                    value: '^(test-|demo-)*'
+                    value: '^(test-|demo-)'
                 actions:
                   - type: delete
     """
@@ -311,7 +311,7 @@ class NodepoolDeleteAction(MethodAction):
                   - type: value
                     key: name
                     op: regex
-                    value: '^(test-|demo-)*'
+                    value: '^(test-|demo-)'
                 actions:
                   - type: delete
     """

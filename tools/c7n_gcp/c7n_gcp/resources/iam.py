@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 import re
 
+from googleapiclient.errors import HttpError
+
+from c7n.exceptions import PolicyExecutionError
 from c7n.utils import local_session, type_schema
 from c7n_gcp.filters.iampolicy import IamPolicyFilter
 from c7n_gcp.provider import resources
@@ -271,11 +274,31 @@ class RoleDeleteAction(MethodAction):
         for r in resources:
             roles_by_type.setdefault(r['name'].partition('/')[0], []).append(r)
 
+        errors = []
         for role_type, component in self.role_components.items():
             if not roles_by_type.get(role_type):
                 continue
             client = session.client('iam', 'v1', component)
-            self.process_resource_set(client, model, roles_by_type[role_type])
+            errors.extend(self.process_resource_set(client, model, roles_by_type[role_type]))
+
+        if errors:
+            raise PolicyExecutionError(
+                "failed to delete %d role(s): %s" % (
+                    len(errors), "; ".join("%s: %s" % err for err in errors)))
+
+    def process_resource_set(self, client, model, resources):
+        """Attempt every role, returning (name, error) pairs for any failures."""
+        errors = []
+        for resource in resources:
+            try:
+                super().process_resource_set(client, model, [resource])
+            except HttpError as e:
+                self.log.error("Failed to delete role %s: %s", resource['name'], e)
+                errors.append((resource['name'], e))
+        return errors
+
+
+ProjectRole.action_registry.register('delete', RoleDeleteAction)
 
 
 @resources.register('api-key')

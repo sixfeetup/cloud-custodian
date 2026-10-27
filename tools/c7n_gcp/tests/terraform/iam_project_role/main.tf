@@ -6,15 +6,15 @@ provider "google" {
 data "google_project" "current" {
 }
 
-# Create a custom IAM role for testing deletion
+# Create a custom project-level IAM role for testing deletion
 resource "google_project_iam_custom_role" "test_role" {
-  role_id     = "custodianTestRole"
-  title       = "Custodian Test Role"
-  description = "A custom role for testing Cloud Custodian delete action"
+  role_id     = "customAccessContextManagerAdmin"
+  title       = "Custom Access Context Manager Admin"
+  description = "Custom role for testing Cloud Custodian delete action"
 
   permissions = [
-    "storage.buckets.list",
-    "storage.buckets.get",
+    "accesscontextmanager.accessLevels.get",
+    "accesscontextmanager.accessLevels.list",
   ]
 }
 
