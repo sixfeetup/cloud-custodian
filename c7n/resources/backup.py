@@ -77,9 +77,9 @@ class BackupPlanDeleteAction(BaseAction):
             resource: aws.backup-plan
             filters:
               - type: value
-                key: "Owner"
-                value: "{account_id}"
-                op: ne
+                key: "BackupPlanName"
+                value: "test-backup-plan"
+                op: eq
             actions:
               - type: delete
                 # If there are any selections still in the plan, remove them first.
@@ -87,7 +87,11 @@ class BackupPlanDeleteAction(BaseAction):
     """
 
     schema = type_schema('delete', **{'remove-selections': {'type': 'boolean'}})
-    permissions = ("backup:*",)
+    permissions = (
+        "backup:ListBackupSelections",
+        "backup:DeleteBackupSelection",
+        "backup:DeleteBackupPlan",
+    )
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client(
@@ -101,9 +105,11 @@ class BackupPlanDeleteAction(BaseAction):
         selections = []
         paginator = client.get_paginator('list_backup_selections')
 
-        for resp in paginator.paginate(BackupPlanId=backup_plan_id):
-            for selection_data in resp.get("BackupSelectionsList", []):
-                selections.append(selection_data['SelectionId'])
+        result = self.manager.retry(
+            paginator.paginate(BackupPlanId=backup_plan_id).build_full_result
+        )
+        for selection_data in result.get("BackupSelectionsList", []):
+            selections.append(selection_data['SelectionId'])
 
         return selections
 
@@ -195,7 +201,11 @@ class BackupVaultDeleteAction(BaseAction):
     """
 
     schema = type_schema('delete', **{'remove-recovery-points': {'type': 'boolean'}})
-    permissions = ("backup:*",)
+    permissions = (
+        "backup:ListRecoveryPointsByBackupVault",
+        "backup:DeleteRecoveryPoint",
+        "backup:DeleteBackupVault",
+    )
 
     def process(self, resources):
         client = local_session(self.manager.session_factory).client(
@@ -209,9 +219,11 @@ class BackupVaultDeleteAction(BaseAction):
         recovery_points = []
         paginator = client.get_paginator('list_recovery_points_by_backup_vault')
 
-        for resp in paginator.paginate(BackupVaultName=backup_vault_name):
-            for recovery_point_data in resp.get("RecoveryPoints", []):
-                recovery_points.append(recovery_point_data['RecoveryPointArn'])
+        result = self.manager.retry(
+            paginator.paginate(BackupVaultName=backup_vault_name).build_full_result
+        )
+        for recovery_point_data in result.get("RecoveryPoints", []):
+            recovery_points.append(recovery_point_data['RecoveryPointArn'])
 
         return recovery_points
 
