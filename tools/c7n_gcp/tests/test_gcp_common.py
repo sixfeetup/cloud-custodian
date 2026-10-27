@@ -3,6 +3,8 @@
 
 import json
 
+import pytest
+
 import gcp_common
 import recorder
 from gcp_common import audit_event_recorder
@@ -18,6 +20,18 @@ def test_sanitize_project_name_replaces_unqualified_references() -> None:
     assert json.loads(recorder.sanitize_project_name(value)) == {
         'id': 'projects/cloud-custodian/topics/random-topic',
         'project': 'cloud-custodian',
+        'member': 'serviceAccount:publisher@cloud-custodian.iam.gserviceaccount.com',
+    }
+
+
+@pytest.mark.parametrize('field', ['project', 'project_id', 'projectId'])
+def test_sanitize_project_name_without_qualified_path(field: str) -> None:
+    value = json.dumps({
+        'datasetReference': {field: 'private-project', 'datasetId': 'private-project'},
+        'member': 'serviceAccount:publisher@private-project.iam.gserviceaccount.com',
+    })
+    assert json.loads(recorder.sanitize_project_name(value)) == {
+        'datasetReference': {field: 'cloud-custodian', 'datasetId': 'private-project'},
         'member': 'serviceAccount:publisher@cloud-custodian.iam.gserviceaccount.com',
     }
 

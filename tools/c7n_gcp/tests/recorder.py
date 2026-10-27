@@ -15,7 +15,13 @@ PROJECT_ID = "cloud-custodian"
 
 def sanitize_project_name(dirty_str: str) -> str:
     # State also includes bare project attributes and service-account email domains.
-    for project_id in set(re.findall(r'projects/([0-9a-zA-Z_-]+)/', dirty_str)):
+    project_ids = set(re.findall(r'projects/([0-9a-zA-Z_-]+)/', dirty_str))
+    project_ids.update(re.findall(
+        r'"(?:project|project_id|projectId)"\s*:\s*"([0-9a-zA-Z_-]+)"',
+        dirty_str,
+    ))
+
+    for project_id in project_ids:
         dirty_str = re.sub(
             rf'("(?:project|project_id|projectId)"\s*:\s*)"{re.escape(project_id)}"',
             rf'\1"{PROJECT_ID}"',
