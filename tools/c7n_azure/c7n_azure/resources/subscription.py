@@ -430,7 +430,8 @@ class CreateBastionHost(BaseAction):
     schema = type_schema(
         'create-bastion-host',
         required=['name', 'resource-group', 'location'],
-        name={'type': 'string', 'minLength': 1, 'maxLength': 80},
+        # 76 leaves room for the "-pip" suffix within Azure's 80-character limit.
+        name={'type': 'string', 'minLength': 1, 'maxLength': 76},
         location={'type': 'string', 'minLength': 1},
         sku={
             'type': 'object',
@@ -464,10 +465,17 @@ class CreateBastionHost(BaseAction):
     )
 
     def validate(self):
+        policy = self.manager.data['name']
         if ('subnet-id' in self.data) == ('virtual-network' in self.data):
             raise PolicyValidationError(
                 f"{self.type}: set exactly one of subnet-id or virtual-network "
-                f"on policy {self.manager.data['name']}")
+                f"on policy {policy}")
+        # Azure only rejects this at the Bastion PUT, after the network
+        # resources have been created.
+        if 'scale-units' in self.data and self.data.get('sku', {}).get('name') == 'Basic':
+            raise PolicyValidationError(
+                f"{self.type}: scale-units can't be set with the Basic sku "
+                f"on policy {policy}")
         return self
 
     # The bodies below follow the REST API's request shape:

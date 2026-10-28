@@ -504,10 +504,13 @@ class SubscriptionCreateBastionHostTest(BaseTest):
     def test_schema_validate(self):
         assert self._load_bastion_policy(**{'subnet-id': self.subnet_id})
 
-    def test_validate_rejects_subnet_id_with_virtual_network(self):
+    def test_validate_rejects_invalid_options(self):
         with pytest.raises(PolicyValidationError, match='exactly one of subnet-id or virtual'):
             self._load_bastion_policy(
                 **{'subnet-id': self.subnet_id, 'virtual-network': self.virtual_network})
+        with pytest.raises(PolicyValidationError, match="scale-units can't be set with the Basic"):
+            self._load_bastion_policy(
+                sku={'name': 'Basic'}, **{'scale-units': 2, 'subnet-id': self.subnet_id})
 
     @arm_template('subscription-bastion-host.json')
     @strict_cassette('create-bastion-host')
