@@ -112,6 +112,7 @@ class DefenderPricingSetTierAction(AzureBaseAction):
               - type: set-pricing-tier
                 pricing-tier: Free
     """
+    permissions = ('Microsoft.Security/pricings/write',)
 
     schema = type_schema(
         'set-pricing-tier',

@@ -179,15 +179,24 @@ class DefenderPricingSetTierTest(BaseTest):
         })
         assert [r['name'] for r in p.run()] == [plan]
 
-    def assert_starts_free(self, plan):
+    def get_pricing(self, plan):
         resources = self.load_policy({
             'name': 'test-defender-pricing',
             'resource': 'azure.defender-pricing',
             'filters': [{'name': plan}],
         }).run()
         assert len(resources) == 1
-        assert resources[0]['properties']['pricingTier'] == 'Free', \
+        return resources[0]['properties']
+
+    def assert_starts_free(self, plan):
+        assert self.get_pricing(plan)['pricingTier'] == 'Free', \
             f'record with the {plan} plan on Free'
+
+    def assert_ends_free(self, plan):
+        pricing = self.get_pricing(plan)
+        assert pricing['pricingTier'] == 'Free'
+        assert 'subPlan' not in pricing
+        assert 'extensions' not in pricing
 
     @strict_cassette('set-pricing-tier-keyvaults')
     def test_set_pricing_tier(self):
@@ -202,6 +211,7 @@ class DefenderPricingSetTierTest(BaseTest):
         self.run_set_pricing_tier(
             'KeyVaults', {'properties.pricingTier': 'Standard'},
             {'type': 'set-pricing-tier', 'pricing-tier': 'Free'})
+        self.assert_ends_free('KeyVaults')
 
     @strict_cassette('set-pricing-tier-sub-plan')
     def test_set_pricing_tier_sub_plan(self):
@@ -220,40 +230,53 @@ class DefenderPricingSetTierTest(BaseTest):
         self.run_set_pricing_tier(
             'VirtualMachines', {'properties.subPlan': 'P1'},
             {'type': 'set-pricing-tier', 'pricing-tier': 'Free'})
+        self.assert_ends_free('VirtualMachines')
 
-    def test_set_pricing_tier_merges_extensions(self):
+    def process_with_mock_client(self, action_data, current):
+        """Run the action on the VirtualMachines plan against a mocked client
+        whose plan is ``current``, and return the Pricing it sent to update.
+
+        Cassettes don't keep request bodies, so mocked tests check them.
+        """
         with self.sign_out_patch():
             p = self.load_policy({
                 'name': 'test-defender-set-pricing-tier',
                 'resource': 'azure.defender-pricing',
-                'actions': [{
-                    'type': 'set-pricing-tier',
-                    'pricing-tier': 'Standard',
-                    'enforce': True,
-                    'extensions': [
-                        {'name': 'AgentlessVmScanning', 'isEnabled': False},
-                        {'name': 'FileIntegrityMonitoring', 'isEnabled': True,
-                         'additionalExtensionProperties': {'DefinedWorkspaceId': 'ws'}},
-                    ],
-                }],
+                'actions': [dict(action_data, type='set-pricing-tier')],
             }, validate=True)
         action = p.resource_manager.actions[0]
         action.client = MagicMock()
         action.scope_id = 'subscriptions/00000000-0000-0000-0000-000000000000'
-        action.client.pricings.get.return_value = Pricing(
-            pricing_tier='Standard',
-            sub_plan='P2',
-            extensions=[
-                Extension(name='MdeDesignatedSubscription', is_enabled='False'),
-                Extension(name='AgentlessVmScanning', is_enabled='True',
-                          additional_extension_properties={'ExclusionTags': '[]'}),
-            ],
-        )
+        action.client.pricings.get.return_value = current
 
         action._process_resource({'name': 'VirtualMachines'})
 
         _, name, sent = action.client.pricings.update.call_args.args
         assert name == 'VirtualMachines'
+        return sent
+
+    def test_set_pricing_tier_merges_extensions(self):
+        sent = self.process_with_mock_client(
+            {
+                'pricing-tier': 'Standard',
+                'enforce': True,
+                'extensions': [
+                    {'name': 'AgentlessVmScanning', 'isEnabled': False},
+                    {'name': 'FileIntegrityMonitoring', 'isEnabled': True,
+                     'additionalExtensionProperties': {'DefinedWorkspaceId': 'ws'}},
+                ],
+            },
+            Pricing(
+                pricing_tier='Standard',
+                sub_plan='P2',
+                extensions=[
+                    Extension(name='MdeDesignatedSubscription', is_enabled='False'),
+                    Extension(name='AgentlessVmScanning', is_enabled='True',
+                              additional_extension_properties={'ExclusionTags': '[]'}),
+                ],
+            ),
+        )
+        assert sent.pricing_tier == 'Standard'
         assert sent.enforce == 'True'
         assert sent.sub_plan == 'P2'
         # Named extensions are updated or added; the plan's others are kept
@@ -263,3 +286,15 @@ class DefenderPricingSetTierTest(BaseTest):
             'AgentlessVmScanning': ('False', {'ExclusionTags': '[]'}),
             'FileIntegrityMonitoring': ('True', {'DefinedWorkspaceId': 'ws'}),
         }
+
+    def test_set_pricing_tier_free_clears_sub_plan_and_extensions(self):
+        sent = self.process_with_mock_client(
+            {'pricing-tier': 'Free'},
+            Pricing(
+                pricing_tier='Standard',
+                sub_plan='P1',
+                extensions=[Extension(name='MdeDesignatedSubscription', is_enabled='False')],
+            ),
+        )
+        # Azure rejects a sub-plan or extensions on Free
+        assert (sent.pricing_tier, sent.sub_plan, sent.extensions) == ('Free', None, None)
