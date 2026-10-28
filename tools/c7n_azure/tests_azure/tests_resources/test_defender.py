@@ -1,8 +1,9 @@
 # Copyright The Cloud Custodian Authors.
 # SPDX-License-Identifier: Apache-2.0
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+from azure.core.exceptions import HttpResponseError
 from azure.mgmt.security.models import Extension, Pricing
 
 from c7n.exceptions import PolicyValidationError
@@ -298,3 +299,24 @@ class DefenderPricingSetTierTest(BaseTest):
         )
         # Azure rejects a sub-plan or extensions on Free
         assert (sent.pricing_tier, sent.sub_plan, sent.extensions) == ('Free', None, None)
+
+    def test_set_pricing_tier_raises_after_batch(self):
+        # The base class would swallow the error outside pytest and report success
+        with self.sign_out_patch():
+            p = self.load_policy({
+                'name': 'test-defender-set-pricing-tier',
+                'resource': 'azure.defender-pricing',
+                'actions': [{'type': 'set-pricing-tier', 'pricing-tier': 'Standard'}],
+            }, validate=True)
+        action = p.resource_manager.actions[0]
+        action.client = MagicMock()
+        action.scope_id = 'subscriptions/00000000-0000-0000-0000-000000000000'
+        action.client.pricings.update.side_effect = [
+            HttpResponseError('Plan update failed'), MagicMock()]
+
+        with patch.object(action, '_prepare_processing'):
+            with pytest.raises(HttpResponseError, match='Plan update failed'):
+                action.process([{'name': 'KeyVaults'}, {'name': 'VirtualMachines'}])
+
+        assert [c.args[1] for c in action.client.pricings.update.call_args_list] == [
+            'KeyVaults', 'VirtualMachines']

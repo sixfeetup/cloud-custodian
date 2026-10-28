@@ -145,6 +145,23 @@ class DefenderPricingSetTierAction(AzureBaseAction):
                         f"{self.type}: {key} is not supported with pricing-tier 'Free'")
         return self
 
+    def _process_resources(self, resources, event):
+        # The base class logs and swallows errors outside pytest, so a failed
+        # update would leave the run looking successful. Set the rest, then raise.
+        self._prepare_processing()
+        failures = []
+        for resource in resources:
+            try:
+                self._log_modified_resource(resource, self._process_resource(resource))
+            except Exception as e:
+                self.log.error(
+                    f"Setting pricing tier '{self.data['pricing-tier']}' on "
+                    f"'{resource.get('name')}' failed: {e}",
+                    exc_info=True, extra=self._get_action_log_metadata(resource))
+                failures.append(e)
+        if failures:
+            raise failures[0]
+
     def _prepare_processing(self):
         self.client = self.manager.get_client()
         self.scope_id = f'subscriptions/{self.manager.get_session().get_subscription_id()}'
