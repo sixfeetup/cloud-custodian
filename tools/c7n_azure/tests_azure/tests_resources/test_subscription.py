@@ -576,3 +576,29 @@ class SubscriptionCreateBastionHostTest(BaseTest):
         assert after.address_space.address_prefixes == ['10.0.0.0/16']
         with pytest.raises(ResourceNotFoundError):
             client.public_ip_addresses.get(group, f'{self.host_name}-pip')
+
+    @arm_template('subscription-bastion-host-existing-subnet.json')
+    @strict_cassette('create-bastion-host-existing-subnet')
+    def test_creates_host_in_existing_subnet(self):
+        group = 'test_subscription-bastion-host-existing-subnet'
+        client = self.session.client('azure.mgmt.network.NetworkManagementClient')
+        subnet = client.subnets.get(group, self.network_name, 'AzureBastionSubnet')
+        public_ip = client.public_ip_addresses.get(group, 'cctest-bastion-existing-pip')
+        with pytest.raises(ResourceNotFoundError):
+            client.bastion_hosts.get(group, self.host_name)
+
+        self._bastion_policy(**{
+            'resource-group': group,
+            'subnet-id': subnet.id,
+            'public-ip-address-id': public_ip.id,
+        }).run()
+
+        host = client.bastion_hosts.get(group, self.host_name)
+        network = client.virtual_networks.get(group, self.network_name)
+        assert [c.subnet.id.lower() for c in host.ip_configurations] == [subnet.id.lower()]
+        assert [c.public_ip_address.id.lower() for c in host.ip_configurations] == [
+            public_ip.id.lower()]
+        assert [(s.name, s.address_prefix) for s in network.subnets] == [
+            ('AzureBastionSubnet', '10.0.0.0/26')]
+        with pytest.raises(ResourceNotFoundError):
+            client.public_ip_addresses.get(group, f'{self.host_name}-pip')
