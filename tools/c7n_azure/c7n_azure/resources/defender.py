@@ -314,6 +314,23 @@ class SetSecurityContactAction(AzureBaseAction):
             )
         return self
 
+    def _process_resources(self, resources, event):
+        # The base class logs and swallows errors outside pytest, so a failed write
+        # would leave the run looking successful. Set the rest, then raise.
+        self._prepare_processing()
+        failures = []
+        for resource in resources:
+            try:
+                self._log_modified_resource(resource, self._process_resource(resource))
+            except Exception as e:
+                self.log.error(
+                    "Setting security contact '%s' failed: %s",
+                    resource.get('name'), e,
+                    exc_info=True, extra=self._get_action_log_metadata(resource))
+                failures.append(e)
+        if failures:
+            raise failures[0]
+
     def _prepare_processing(self):
         self.client = self.manager.get_client()
 
