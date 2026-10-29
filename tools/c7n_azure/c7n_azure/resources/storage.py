@@ -840,7 +840,8 @@ class SetBlobServicesAction(AzureBaseAction):
     same keys as the ``blob-services`` filter. Properties not set are left as-is.
 
     On accounts with point-in-time restore, Azure rejects soft delete days that
-    are not greater than the restore days.
+    are not greater than the restore days. Versioning is not supported on accounts
+    with a hierarchical namespace, and Azure rejects the whole update there.
 
     :example:
 
@@ -868,6 +869,30 @@ class SetBlobServicesAction(AzureBaseAction):
                   containerDeleteRetentionPolicy:
                     enabled: true
                     days: 7
+
+    :example:
+
+    Enable blob versioning. Accounts that never set it don't return the key, so
+    match anything that isn't true, and skip hierarchical namespace accounts.
+
+    .. code-block:: yaml
+
+        policies:
+          - name: storage-enable-blob-versioning
+            resource: azure.storage
+            filters:
+              - type: value
+                key: properties.isHnsEnabled
+                value: true
+                op: ne
+              - type: blob-services
+                key: isVersioningEnabled
+                value: true
+                op: ne
+            actions:
+              - type: set-blob-services
+                properties:
+                  isVersioningEnabled: true
     """
 
     # Azure keeps no days while a retention policy is off: it drops days sent with
@@ -896,6 +921,7 @@ class SetBlobServicesAction(AzureBaseAction):
             'properties': {
                 'deleteRetentionPolicy': RETENTION_POLICY_SCHEMA,
                 'containerDeleteRetentionPolicy': RETENTION_POLICY_SCHEMA,
+                'isVersioningEnabled': {'type': 'boolean'},
             },
         },
     )

@@ -1153,6 +1153,10 @@ class StorageSetBlobServicesActionTest(BaseTest):
                     {'type': 'blob-services',
                      'key': 'containerDeleteRetentionPolicy.enabled',
                      'value': False},
+                    {'type': 'blob-services',
+                     'key': 'isVersioningEnabled',
+                     'value': True,
+                     'op': 'ne'},
                 ]},
             ],
             'actions': [{
@@ -1160,6 +1164,7 @@ class StorageSetBlobServicesActionTest(BaseTest):
                 'properties': {
                     'deleteRetentionPolicy': {'enabled': True, 'days': 7},
                     'containerDeleteRetentionPolicy': {'enabled': True, 'days': 14},
+                    'isVersioningEnabled': True,
                 },
             }]
         })
@@ -1173,6 +1178,7 @@ class StorageSetBlobServicesActionTest(BaseTest):
         self.assertEqual(after.delete_retention_policy.days, 7)
         self.assertTrue(after.container_delete_retention_policy.enabled)
         self.assertEqual(after.container_delete_retention_policy.days, 14)
+        self.assertTrue(after.is_versioning_enabled)
 
     def _load_action(self, properties):
         with self.sign_out_patch():
@@ -1207,6 +1213,7 @@ class StorageSetBlobServicesActionTest(BaseTest):
         ('blob_and_container', {
             'deleteRetentionPolicy': {'enabled': True, 'days': 7},
             'containerDeleteRetentionPolicy': {'enabled': False}}),
+        ('versioning', {'isVersioningEnabled': True}),
     ])
     def test_schema_accepts(self, _name, properties):
         action = self._load_action(properties)
@@ -1221,7 +1228,9 @@ class StorageSetBlobServicesActionTest(BaseTest):
         ('days_while_disabled', {'deleteRetentionPolicy': {'enabled': False, 'days': 30}}),
         ('unsupported_policy_field', {'deleteRetentionPolicy': {
             'enabled': True, 'days': 7, 'allowPermanentDelete': True}}),
-        ('unsupported_property', {'isVersioningEnabled': True}),
+        ('unsupported_property', {'changeFeed': {'enabled': True}}),
+        ('versioning_not_boolean', {'isVersioningEnabled': 'true'}),
+        ('null_versioning', {'isVersioningEnabled': None}),
         ('empty_properties', {}),
         ('empty_retention_policy', {'deleteRetentionPolicy': {}}),
         ('null_retention_policy', {'deleteRetentionPolicy': None}),
@@ -1285,6 +1294,19 @@ class StorageSetBlobServicesActionTest(BaseTest):
         self.assertEqual(sent.serialize(), {'properties': {
             'deleteRetentionPolicy': {'enabled': True, 'days': 7},
             'containerDeleteRetentionPolicy': {'enabled': True, 'days': 14},
+        }})
+
+    def test_enable_versioning_keeps_policies(self):
+        # Accounts that never set versioning don't return the key at all.
+        action = self._load_action({'isVersioningEnabled': True})
+        blob_services = self._process(action, {
+            'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+        })
+
+        sent = blob_services.set_service_properties.call_args.kwargs['parameters']
+        self.assertEqual(sent.serialize(), {'properties': {
+            'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+            'isVersioningEnabled': True,
         }})
 
     def test_disable(self):

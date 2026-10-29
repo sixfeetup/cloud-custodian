@@ -14,8 +14,11 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 29 Oct 2026 18:16:31 GMT"
                     ],
                     "content-type": [
                         "application/json; charset=utf-8"
@@ -26,20 +29,17 @@
                         "00000000-0000-0000-0000-000000000003",
                         "00000000-0000-0000-0000-000000000004"
                     ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "date": [
-                        "Thu, 29 Oct 2026 17:27:06 GMT"
-                    ],
                     "content-length": [
                         "11251"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T17:27:06Z"
+                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T18:16:31Z"
                     ]
                 },
                 "body": {
@@ -58,8 +58,8 @@
                                 "tags": {},
                                 "properties": {
                                     "keyCreationTime": {
-                                        "key1": "2026-10-29T17:25:10.5320044Z",
-                                        "key2": "2026-10-29T17:25:10.5320044Z"
+                                        "key1": "2026-10-29T18:13:37.4381065Z",
+                                        "key2": "2026-10-29T18:13:37.4381065Z"
                                     },
                                     "allowCrossTenantReplication": false,
                                     "privateEndpointConnections": [],
@@ -78,19 +78,19 @@
                                             "file": {
                                                 "keyType": "Account",
                                                 "enabled": true,
-                                                "lastEnabledTime": "2026-10-29T17:25:10.5422950Z"
+                                                "lastEnabledTime": "2026-10-29T18:13:37.4532033Z"
                                             },
                                             "blob": {
                                                 "keyType": "Account",
                                                 "enabled": true,
-                                                "lastEnabledTime": "2026-10-29T17:25:10.5422950Z"
+                                                "lastEnabledTime": "2026-10-29T18:13:37.4532033Z"
                                             }
                                         },
                                         "keySource": "Microsoft.Storage"
                                     },
                                     "accessTier": "Hot",
                                     "provisioningState": "Succeeded",
-                                    "creationTime": "2026-10-29T17:25:10.1872715Z",
+                                    "creationTime": "2026-10-29T18:13:37.1043211Z",
                                     "primaryEndpoints": {
                                         "dfs": "https://ccblobsvc0000000000000.dfs.core.windows.net/",
                                         "web": "https://ccblobsvc0000000000000.z21.web.core.windows.net/",
@@ -121,26 +121,26 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 29 Oct 2026 18:16:32 GMT"
                     ],
                     "content-type": [
                         "application/json"
                     ],
+                    "content-length": [
+                        "500"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Thu, 29 Oct 2026 17:27:06 GMT"
-                    ],
-                    "content-length": [
-                        "499"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
                     "x-msedge-ref": [
-                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T17:27:07Z"
+                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T18:16:32Z"
                     ]
                 },
                 "body": {
@@ -163,7 +163,7 @@
                                 "allowPermanentDelete": false,
                                 "enabled": false
                             },
-                            "isVersioningEnabled": true
+                            "isVersioningEnabled": false
                         }
                     }
                 }
@@ -182,26 +182,26 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 29 Oct 2026 18:16:32 GMT"
                     ],
                     "content-type": [
                         "application/json"
                     ],
+                    "content-length": [
+                        "500"
+                    ],
+                    "cache-control": [
+                        "no-cache"
+                    ],
                     "x-cache": [
                         "CONFIG_NOCACHE"
                     ],
-                    "date": [
-                        "Thu, 29 Oct 2026 17:27:07 GMT"
-                    ],
-                    "content-length": [
-                        "499"
-                    ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
-                    ],
                     "x-msedge-ref": [
-                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T17:27:07Z"
+                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T18:16:32Z"
                     ]
                 },
                 "body": {
@@ -224,7 +224,7 @@
                                 "allowPermanentDelete": false,
                                 "enabled": false
                             },
-                            "isVersioningEnabled": true
+                            "isVersioningEnabled": false
                         }
                     }
                 }
@@ -243,29 +243,29 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-ratelimit-remaining-subscription-writes": [
+                        "199"
                     ],
                     "content-type": [
                         "application/json"
                     ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
                     "date": [
-                        "Thu, 29 Oct 2026 17:27:08 GMT"
+                        "Thu, 29 Oct 2026 18:16:33 GMT"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-writes": [
-                        "199"
+                    "x-ms-ratelimit-remaining-subscription-global-writes": [
+                        "2999"
                     ],
                     "content-length": [
                         "468"
                     ],
-                    "x-msedge-ref": [
-                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T17:27:08Z"
+                    "cache-control": [
+                        "no-cache"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-writes": [
-                        "2999"
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
+                    ],
+                    "x-msedge-ref": [
+                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T18:16:33Z"
                     ]
                 },
                 "body": {
@@ -305,26 +305,26 @@
                     "message": "OK"
                 },
                 "headers": {
-                    "cache-control": [
-                        "no-cache"
+                    "x-ms-ratelimit-remaining-subscription-global-reads": [
+                        "3749"
+                    ],
+                    "date": [
+                        "Thu, 29 Oct 2026 18:16:34 GMT"
                     ],
                     "content-type": [
                         "application/json"
                     ],
-                    "x-cache": [
-                        "CONFIG_NOCACHE"
-                    ],
-                    "date": [
-                        "Thu, 29 Oct 2026 17:27:09 GMT"
-                    ],
                     "content-length": [
                         "516"
                     ],
-                    "x-ms-ratelimit-remaining-subscription-global-reads": [
-                        "3749"
+                    "cache-control": [
+                        "no-cache"
+                    ],
+                    "x-cache": [
+                        "CONFIG_NOCACHE"
                     ],
                     "x-msedge-ref": [
-                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T17:27:09Z"
+                        "Ref A: 00000000000000000000000000000000 Ref B: REDACTED Ref C: 2026-10-29T18:16:34Z"
                     ]
                 },
                 "body": {

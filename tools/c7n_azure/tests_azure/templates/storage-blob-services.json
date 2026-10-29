@@ -37,7 +37,7 @@
             "containerDeleteRetentionPolicy": {
               "enabled": false
             },
-            "isVersioningEnabled": true
+            "isVersioningEnabled": false
           }
         }
       ]
