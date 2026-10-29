@@ -1146,13 +1146,21 @@ class StorageSetBlobServicesActionTest(BaseTest):
                 {'type': 'value',
                  'key': 'resourceGroup',
                  'value': self.recording_resource_group},
-                {'type': 'blob-services',
-                 'key': 'deleteRetentionPolicy.enabled',
-                 'value': False},
+                {'or': [
+                    {'type': 'blob-services',
+                     'key': 'deleteRetentionPolicy.enabled',
+                     'value': False},
+                    {'type': 'blob-services',
+                     'key': 'containerDeleteRetentionPolicy.enabled',
+                     'value': False},
+                ]},
             ],
             'actions': [{
                 'type': 'set-blob-services',
-                'properties': {'deleteRetentionPolicy': {'enabled': True, 'days': 7}},
+                'properties': {
+                    'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+                    'containerDeleteRetentionPolicy': {'enabled': True, 'days': 14},
+                },
             }]
         })
         resources = p.run()
@@ -1163,6 +1171,8 @@ class StorageSetBlobServicesActionTest(BaseTest):
             resources[0]['resourceGroup'], resources[0]['name'])
         self.assertTrue(after.delete_retention_policy.enabled)
         self.assertEqual(after.delete_retention_policy.days, 7)
+        self.assertTrue(after.container_delete_retention_policy.enabled)
+        self.assertEqual(after.container_delete_retention_policy.days, 14)
 
     def _load_action(self, properties):
         with self.sign_out_patch():
@@ -1193,6 +1203,10 @@ class StorageSetBlobServicesActionTest(BaseTest):
         ('days_minimum', {'deleteRetentionPolicy': {'enabled': True, 'days': 1}}),
         ('days_maximum', {'deleteRetentionPolicy': {'enabled': True, 'days': 365}}),
         ('disabled', {'deleteRetentionPolicy': {'enabled': False}}),
+        ('container_only', {'containerDeleteRetentionPolicy': {'enabled': True, 'days': 7}}),
+        ('blob_and_container', {
+            'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+            'containerDeleteRetentionPolicy': {'enabled': False}}),
     ])
     def test_schema_accepts(self, _name, properties):
         action = self._load_action(properties)
@@ -1212,6 +1226,10 @@ class StorageSetBlobServicesActionTest(BaseTest):
         ('empty_retention_policy', {'deleteRetentionPolicy': {}}),
         ('null_retention_policy', {'deleteRetentionPolicy': None}),
         ('null_days', {'deleteRetentionPolicy': {'enabled': True, 'days': None}}),
+        # Azure accepts this for containers but then reports no retention period.
+        ('container_enabled_without_days', {'containerDeleteRetentionPolicy': {'enabled': True}}),
+        ('container_days_while_disabled', {'containerDeleteRetentionPolicy': {
+            'enabled': False, 'days': 30}}),
     ])
     def test_schema_rejects(self, _name, properties):
         with self.assertRaises(PolicyValidationError):
@@ -1253,6 +1271,20 @@ class StorageSetBlobServicesActionTest(BaseTest):
         sent = blob_services.set_service_properties.call_args.kwargs['parameters']
         self.assertEqual(sent.serialize(), {'properties': {
             'deleteRetentionPolicy': {'enabled': True, 'days': 30},
+        }})
+
+    def test_enable_container_keeps_blob_policy(self):
+        action = self._load_action(
+            {'containerDeleteRetentionPolicy': {'enabled': True, 'days': 14}})
+        blob_services = self._process(action, {
+            'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+            'containerDeleteRetentionPolicy': {'enabled': False},
+        })
+
+        sent = blob_services.set_service_properties.call_args.kwargs['parameters']
+        self.assertEqual(sent.serialize(), {'properties': {
+            'deleteRetentionPolicy': {'enabled': True, 'days': 7},
+            'containerDeleteRetentionPolicy': {'enabled': True, 'days': 14},
         }})
 
     def test_disable(self):

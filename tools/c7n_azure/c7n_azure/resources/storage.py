@@ -844,27 +844,35 @@ class SetBlobServicesAction(AzureBaseAction):
 
     :example:
 
-    Enable blob soft delete with a 7 day retention period.
+    Enable blob and container soft delete with a 7 day retention period.
 
     .. code-block:: yaml
 
         policies:
-          - name: storage-enable-blob-soft-delete
+          - name: storage-enable-soft-delete
             resource: azure.storage
             filters:
-              - type: blob-services
-                key: deleteRetentionPolicy.enabled
-                value: false
+              - or:
+                  - type: blob-services
+                    key: deleteRetentionPolicy.enabled
+                    value: false
+                  - type: blob-services
+                    key: containerDeleteRetentionPolicy.enabled
+                    value: false
             actions:
               - type: set-blob-services
                 properties:
                   deleteRetentionPolicy:
                     enabled: true
                     days: 7
+                  containerDeleteRetentionPolicy:
+                    enabled: true
+                    days: 7
     """
 
     # Azure keeps no days while a retention policy is off: it drops days sent with
-    # enabled false and rejects enabled true without days.
+    # enabled false. Days are required when enabled because blob soft delete rejects
+    # a missing value, and container soft delete accepts it but reports no period.
     RETENTION_POLICY_SCHEMA = {
         'type': 'object',
         'additionalProperties': False,
@@ -887,6 +895,7 @@ class SetBlobServicesAction(AzureBaseAction):
             'minProperties': 1,
             'properties': {
                 'deleteRetentionPolicy': RETENTION_POLICY_SCHEMA,
+                'containerDeleteRetentionPolicy': RETENTION_POLICY_SCHEMA,
             },
         },
     )
