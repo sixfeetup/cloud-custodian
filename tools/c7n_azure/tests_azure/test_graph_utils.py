@@ -501,12 +501,17 @@ class TestGraphResourceManager(BaseTest):
         response._content = b''
 
         with patch.object(manager, 'get_client', return_value=mock_session):
-            with patch('c7n_azure.graph_utils.requests.patch', return_value=response):
+            with patch('c7n_azure.graph_utils.requests.patch',
+                       return_value=response) as mock_patch:
                 result = manager.make_graph_request(
                     'policies/authorizationPolicy', method='PATCH',
                     data={'blockMsolPowerShell': True})
 
         self.assertIsNone(result)
+        args, kwargs = mock_patch.call_args
+        self.assertEqual(
+            args[0], 'https://graph.microsoft.com/v1.0/policies/authorizationPolicy')
+        self.assertEqual(kwargs['json'], {'blockMsolPowerShell': True})
 
     def test_make_graph_request_url_construction(self):
         """Test URL construction with various endpoint formats"""
