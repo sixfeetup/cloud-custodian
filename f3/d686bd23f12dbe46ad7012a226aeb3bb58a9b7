@@ -1,0 +1,117 @@
+c7n/resources/account.py
+  s_dbbb1ea59c536d::t_701bd5a2145e92 2931-2971
+c7n/resources/appstream.py
+  s_dbbb1ea59c536d::t_b9aede83ec97cc 3-4,7-8,39-134,139-236
+c7n/resources/resource_map.py
+  s_dbbb1ea59c536d::t_299cde0a2b0989 25-27,29-30,32
+tests/data/placebo/test_appstream_app_block_builder_network_filters/appstream2.DescribeAppBlockBuilders_1.json
+  s_dbbb1ea59c536d::t_564858663f5fb1 1-36
+tests/data/placebo/test_appstream_app_block_builder_network_filters/ec2.DescribeSecurityGroups_1.json
+  s_dbbb1ea59c536d::t_0da222cfbfe063 1-36
+tests/data/placebo/test_appstream_app_block_builder_network_filters/ec2.DescribeSubnets_1.json
+  s_dbbb1ea59c536d::t_18eb11bc286e8d 1-60
+tests/data/placebo/test_appstream_app_block_builder_network_filters/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_cb23635a8c6c07 1-18
+tests/data/placebo/test_appstream_app_block_builder_query/appstream2.DescribeAppBlockBuilders_1.json
+  s_dbbb1ea59c536d::t_7acc51f8d25499 1-36
+tests/data/placebo/test_appstream_app_block_builder_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_95cf9f2fed2ef7 1-18
+tests/data/placebo/test_appstream_app_block_query/appstream2.DescribeAppBlocks_1.json
+  s_dbbb1ea59c536d::t_c77e0cb546fc73 1-38
+tests/data/placebo/test_appstream_app_block_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_cba95dffe271d1 1-18
+tests/data/placebo/test_appstream_application_query/appstream2.DescribeApplications_1.json
+  s_dbbb1ea59c536d::t_9ae36b1ef5f264 1-38
+tests/data/placebo/test_appstream_application_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_75201ca8b66fc2 1-18
+tests/data/placebo/test_appstream_fleet_network_location/appstream2.DescribeFleets_1.json
+  s_dbbb1ea59c536d::t_292e47e2a1aa4b 1-54
+tests/data/placebo/test_appstream_fleet_network_location/ec2.DescribeSecurityGroups_1.json
+  s_dbbb1ea59c536d::t_c798cb87167daa 1-36
+tests/data/placebo/test_appstream_fleet_network_location/ec2.DescribeSubnets_1.json
+  s_dbbb1ea59c536d::t_343c33980ae6d3 1-34
+tests/data/placebo/test_appstream_fleet_network_location/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_a755521ca39194 1-22
+tests/data/placebo/test_appstream_fleet_query/appstream2.DescribeFleets_1.json
+  s_dbbb1ea59c536d::t_1338faca6f0703 1-54
+tests/data/placebo/test_appstream_fleet_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_3d6f6c9700d137 1-22
+tests/data/placebo/test_appstream_fleet_security_group_filter/appstream2.DescribeFleets_1.json
+  s_dbbb1ea59c536d::t_ca8929aeffef1e 1-54
+tests/data/placebo/test_appstream_fleet_security_group_filter/ec2.DescribeSecurityGroups_1.json
+  s_dbbb1ea59c536d::t_f1b72f10bacc75 1-36
+tests/data/placebo/test_appstream_fleet_security_group_filter/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_7498f7064a7387 1-22
+tests/data/placebo/test_appstream_fleet_subnet_filter/appstream2.DescribeFleets_1.json
+  s_dbbb1ea59c536d::t_84e0889879825e 1-54
+tests/data/placebo/test_appstream_fleet_subnet_filter/ec2.DescribeSubnets_1.json
+  s_dbbb1ea59c536d::t_c75634f875ef16 1-34
+tests/data/placebo/test_appstream_fleet_subnet_filter/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_dcba8ebc522118 1-22
+tests/data/placebo/test_appstream_image_builder_network_filters/appstream2.DescribeImageBuilders_1.json
+  s_dbbb1ea59c536d::t_b2a9cb7c6b6c03 1-46
+tests/data/placebo/test_appstream_image_builder_network_filters/ec2.DescribeSecurityGroups_1.json
+  s_dbbb1ea59c536d::t_b2b20214334574 1-36
+tests/data/placebo/test_appstream_image_builder_network_filters/ec2.DescribeSubnets_1.json
+  s_dbbb1ea59c536d::t_04264ec993fba3 1-34
+tests/data/placebo/test_appstream_image_builder_network_filters/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_0b638e50063b90 1-18
+tests/data/placebo/test_appstream_image_builder_query/appstream2.DescribeImageBuilders_1.json
+  s_dbbb1ea59c536d::t_e122290787654f 1-46
+tests/data/placebo/test_appstream_image_builder_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_0e56df059e2fb1 1-18
+tests/data/placebo/test_appstream_image_builder_tag/appstream2.DescribeImageBuilders_1.json
+  s_dbbb1ea59c536d::t_cbc1b1a2a4afad 1-46
+tests/data/placebo/test_appstream_image_builder_tag/appstream2.ListTagsForResource_1.json
+  s_dbbb1ea59c536d::t_b42781190f8f90 1-10
+tests/data/placebo/test_appstream_image_builder_tag/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_c3aacc28e694a9 1-18
+tests/data/placebo/test_appstream_image_builder_tag/tagging.TagResources_1.json
+  s_dbbb1ea59c536d::t_91450130a47056 1-7
+tests/data/placebo/test_appstream_image_cross_account/appstream2.DescribeImagePermissions_1.json
+  s_dbbb1ea59c536d::t_1a7569937e984d 1-17
+tests/data/placebo/test_appstream_image_cross_account/appstream2.DescribeImagePermissions_2.json
+  s_dbbb1ea59c536d::t_7f15276b5c1114 1-16
+tests/data/placebo/test_appstream_image_cross_account/appstream2.DescribeImages_1.json
+  s_dbbb1ea59c536d::t_7c243d030c49a3 1-106
+tests/data/placebo/test_appstream_image_cross_account/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_d0c93dcb0e5afb 1-18
+tests/data/placebo/test_appstream_image_query/appstream2.DescribeImages_1.json
+  s_dbbb1ea59c536d::t_4e95620214ea88 1-106
+tests/data/placebo/test_appstream_image_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_da795e036d85ee 1-18
+tests/data/placebo/test_appstream_stack_query/appstream2.DescribeStacks_1.json
+  s_dbbb1ea59c536d::t_89397579467c4a 1-63
+tests/data/placebo/test_appstream_stack_query/tagging.GetResources_1.json
+  s_dbbb1ea59c536d::t_0133740a12e0b3 1-18
+tests/data/placebo/test_appstream_usage_reports_disabled/appstream2.DescribeUsageReportSubscriptions_1.json
+  s_dbbb1ea59c536d::t_bc5cf383ef8f55 1-7
+tests/data/placebo/test_appstream_usage_reports_disabled/iam.ListAccountAliases_1.json
+  s_dbbb1ea59c536d::t_1d9522f27ab981 1-10
+tests/data/placebo/test_appstream_usage_reports_enabled/appstream2.DescribeUsageReportSubscriptions_1.json
+  s_dbbb1ea59c536d::t_069e3c632e0e5e 1-13
+tests/data/placebo/test_appstream_usage_reports_enabled/iam.ListAccountAliases_1.json
+  s_dbbb1ea59c536d::t_260af8e30d2aa3 1-10
+tests/data/placebo/test_appstream_user_query/appstream2.DescribeUsers_1.json
+  s_dbbb1ea59c536d::t_d59877cb0b6a97 1-27
+tests/test_account.py
+  s_dbbb1ea59c536d::t_8ea6148b856fab 1558-1586
+tests/test_appstream.py
+  s_dbbb1ea59c536d::t_105b1832143822 1-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3d686bd23f12dbe46ad7012a226aeb3bb58a9b7",
+  "prompts": {},
+  "sessions": {
+    "s_dbbb1ea59c536d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ea6710a8-895a-4543-9f24-9392be3cfc36",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
