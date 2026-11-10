@@ -1,0 +1,20 @@
+tools/c7n_azure/tests_azure/tests_resources/test_vnet.py
+  s_d4d1a9c55d05d3::t_b0bcbe1acb5108 11-13
+  s_d4d1a9c55d05d3::t_7db6e53a415f7e 209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c5d105b15d4bfc2e193fdbebf89ab6c8a9a230fe",
+  "prompts": {},
+  "sessions": {
+    "s_d4d1a9c55d05d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b0c25ed2-4d94-401c-9844-ddcf7b316401",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "AJ Kerrigan <aj@stacklet.io>"
+    }
+  }
+}
